@@ -1,0 +1,13 @@
+*.iml
+.idea/
+.classpath
+.project
+.settings/
+.meta-data/
+.java-version
+.DS_Store
+target/
+pom.xml.versionsBackup
+
+dist/
+node_modules/
