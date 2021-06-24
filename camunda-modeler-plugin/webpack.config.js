@@ -1,4 +1,5 @@
 const path = require("path");
+const webpack = require("webpack");
 
 module.exports = {
   mode: "development",
@@ -29,5 +30,10 @@ module.exports = {
       }
     ]
   },
-  devtool: "cheap-module-source-map"
+  devtool: "cheap-module-source-map",
+  plugins: [
+    new webpack.DefinePlugin({
+        '__REACT_DEVTOOLS_GLOBAL_HOOK__': '({ isDisabled: true })'
+    }),
+  ]
 };
