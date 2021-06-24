@@ -2,7 +2,7 @@
 
 ```xml
 <plugin>
-  <groupId>org.camunda.bpm.extension</groupId>
+  <groupId>org.camunda.community</groupId>
   <artifactId>bpmn-driven-testing-maven-plugin</artifactId>
   <version>${plugin.version}</version>
   <executions>

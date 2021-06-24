@@ -126,8 +126,9 @@ public class MavenPluginRule extends TestWatcher {
     // e.g.: bpmn-driven-testing-maven-plugin-0.1.jar
     fileName = path.getFileName().toString();
 
-    groupId = "org.camunda.bpm.extension";
-    // e.g.: bpmn-driven-testing-maven-plugin
+    // idea: read from pom?
+    groupId = "org.camunda.community";
+    // bpmn-driven-testing-maven-plugin
     artifactId = extractArtifactId(fileName);
     // e.g.: 0.1
     version = extractVersion(fileName);
