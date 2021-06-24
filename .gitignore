@@ -9,5 +9,6 @@
 target/
 pom.xml.versionsBackup
 
+bpmn-driven-testing-plugin.zip
 dist/
 node_modules/
