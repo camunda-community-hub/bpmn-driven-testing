@@ -6,9 +6,6 @@ on:
     types: [ published ]
 jobs:
   publish:
-    defaults:
-      run:
-        working-directory: ./maven-plugin
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
@@ -36,6 +33,7 @@ jobs:
           maven-psw: ${{ secrets.MAVEN_CENTRAL_DEPLOYMENT_PSW }}
           maven-gpg-passphrase: ${{ secrets.MAVEN_CENTRAL_GPG_SIGNING_KEY_PASSPHRASE }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          maven-release-options: -f maven-plugin/pom.xml
         id: release
       - if: github.event.release
         name: Attach artifacts to GitHub Release (Release only)
