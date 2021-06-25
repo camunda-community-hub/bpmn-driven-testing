@@ -6,6 +6,9 @@ on:
     types: [ published ]
 jobs:
   publish:
+    defaults:
+      run:
+        working-directory: ./maven-plugin
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
@@ -23,7 +26,6 @@ jobs:
           gpg-private-key: ${{ secrets.MAVEN_CENTRAL_GPG_SIGNING_KEY_SEC }}
           gpg-passphrase: MAVEN_CENTRAL_GPG_PASSPHRASE
       - name: Deploy SNAPSHOT / Release
-        working-directory: ./maven-plugin
         uses: camunda-community-hub/community-action-maven-release@v1
         with:
           release-version: ${{ github.event.release.tag_name }}
@@ -37,7 +39,6 @@ jobs:
         id: release
       - if: github.event.release
         name: Attach artifacts to GitHub Release (Release only)
-        working-directory: ./maven-plugin
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
