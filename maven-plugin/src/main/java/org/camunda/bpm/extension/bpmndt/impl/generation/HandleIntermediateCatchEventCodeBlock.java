@@ -28,7 +28,7 @@ public class HandleIntermediateCatchEventCodeBlock implements Function<BpmnNode,
     builder.addStatement("assertThat($L).isWaitingAt($S)", PROCESS_INSTANCE, node.getId());
 
     Optional<EventDefinition> eventDefinition = event.getEventDefinitions().stream().findFirst();
-    if (eventDefinition.isEmpty()) {
+    if (!eventDefinition.isPresent()) {
       builder.add("// no event definition found for intermediate message catch event $L\n", node.getId());
     } else if (eventDefinition.get() instanceof MessageEventDefinition) {
       Message message = ((MessageEventDefinition) eventDefinition.get()).getMessage();

@@ -30,7 +30,7 @@ public class HandleIntermediateCatchEvent implements Function<BpmnNode, MethodSp
     IntermediateCatchEvent event = node.as(IntermediateCatchEvent.class);
 
     Optional<EventDefinition> eventDefinition = event.getEventDefinitions().stream().findFirst();
-    if (eventDefinition.isEmpty()) {
+    if (!eventDefinition.isPresent()) {
       builder.addCode("// no event definition found for intermediate catch event $L\n", node.getId());
     } else if (eventDefinition.get() instanceof MessageEventDefinition) {
       builder.addJavadoc("Overwrite to handle intermediate message catch event $L.", node.getId());
