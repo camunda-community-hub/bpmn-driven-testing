@@ -1,7 +1,10 @@
 # Camunda Modeler Plugin
-The bundled modeler plugin needs to be installed under `<camunda-modeler>/resources/plugins`.
 
-If installed correctly, the plugin is available within the **Plugins** menu as `BPMN Driven Testing` > `Show / Hide` (shortcut CTRL+T).
+1. Ensure that Camunda Modeler 4.4.0 or higher is installed
+2. [Download](https://github.com/camunda-community-hub/bpmn-driven-testing/releases/latest/download/bpmn-driven-testing-plugin.zip) latest Camunda Modeler plugin release
+3. Unpackage downloaded ZIP file to the `resources/plugins/` directory of the Camunda Modeler installation
+4. Start Camunda Modeler
+5. Verify that the plugin is available within the **Plugins** menu as `BPMN Driven Testing` > `Show / Hide` (shortcut CTRL+T).
 
 ## Development
 For the plugin development `npm` (a Node.js installation) is required.
@@ -25,9 +28,7 @@ rd resources\plugins\bpmn-driven-testing
 ```
 
 2. Start the Camunda Modeler
-
 3. Press **F12** to show developer tools
-
 4. Run webpack to build `dist/client.js` on the fly, when saving changes
 
 ```
@@ -42,3 +43,13 @@ Tests are performed using [mocha](https://mochajs.org/) and [chai](https://www.c
 ```
 npm run test-watch
 ```
+
+## Releasing
+When creating a release, run:
+
+```
+npm run build && npm run package
+```
+
+This command bundles the Camunda Modeler plugin and creates a ZIP file called `bpmn-driven-testing-plugin.zip`.
+This binary asset can now be attached to a **bpmn-driven-testing** [release](https://github.com/camunda-community-hub/bpmn-driven-testing/releases) on Github.

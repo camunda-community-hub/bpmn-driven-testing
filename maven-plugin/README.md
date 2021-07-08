@@ -1,4 +1,8 @@
 # Maven Plugin
+The plugin's `generator` goal runs within Maven's default lifecycle in phase `generate-test-sources` (run `mvn test-compile` to see the generator's log).
+It generates the test code under `target/bpmndt` and adds this directory as test source directory.
+
+## Usage
 
 ```xml
 <plugin>
@@ -15,7 +19,7 @@
 </plugin>
 ```
 
-Dependencies, required to execute the generate test code:
+Add dependencies, which are required to execute the generate test code:
 
 ```xml
 <dependency>
