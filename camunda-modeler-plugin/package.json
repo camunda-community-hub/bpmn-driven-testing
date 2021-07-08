@@ -1,6 +1,6 @@
 {
   "name": "bpmn-driven-testing-plugin",
-  "version": "0.1.0-SNAPSHOT",
+  "version": "0.1.2-SNAPSHOT",
   "description": "Camunda Modeler Plugin for BPMN Driven Testing",
   "main": "index.js",
   "scripts": {
