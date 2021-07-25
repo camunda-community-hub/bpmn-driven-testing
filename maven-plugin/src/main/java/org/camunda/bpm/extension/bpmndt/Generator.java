@@ -1,9 +1,8 @@
 package org.camunda.bpm.extension.bpmndt;
 
-import java.util.List;
-
 import org.camunda.bpm.extension.bpmndt.impl.GeneratorBuilderImpl;
 import org.camunda.bpm.extension.bpmndt.type.TestCase;
+import org.springframework.context.annotation.Configuration;
 
 import com.squareup.javapoet.JavaFile;
 
@@ -31,11 +30,11 @@ public interface Generator {
   JavaFile generate(TestCase testCase);
 
   /**
-   * Generates all framework classes like {@code AbstractTestCase}.
+   * Generates the Spring configuration.
    * 
-   * @return A list with framework classes.
+   * @return The generated Java file, containing @{@link Configuration} annotated class.
    */
-  List<JavaFile> generateFramework();
+  JavaFile generateSpringConfiguration();
 
   /**
    * Generator builder.

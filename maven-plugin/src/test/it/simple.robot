@@ -59,15 +59,33 @@ mvn clean test
   File should exist  ${testSources}/generated/TC_simpleTimerCatchEvent__startEvent__endEvent.java
   File should exist  ${testSources}/generated/TC_simpleUserTask__startEvent__endEvent.java
 
-  # framework classes written
-  Should contain  ${result.stdout}  Writing framework classes
-  Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/AbstractTestCase.java
-  Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/CallActivityParseListener.java
-  Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/CallActivityRule.java
+  # API classes written
+  Should contain  ${result.stdout}  Writing API classes
+  Should contain  ${result.stdout}  Writing file: target/bpmndt/org/camunda/community/bpmndt/api/AbstractJUnit4TestRule.java
+  Should contain  ${result.stdout}  Writing file: target/bpmndt/org/camunda/community/bpmndt/api/CallActivityDefinition.java
+  Should contain  ${result.stdout}  Writing file: target/bpmndt/org/camunda/community/bpmndt/api/CallActivityHandler.java
+  Should contain  ${result.stdout}  Writing file: target/bpmndt/org/camunda/community/bpmndt/api/ExternalTaskHandler.java
+  Should contain  ${result.stdout}  Writing file: target/bpmndt/org/camunda/community/bpmndt/api/IntermediateCatchEventHandler.java
+  Should contain  ${result.stdout}  Writing file: target/bpmndt/org/camunda/community/bpmndt/api/JobHandler.java
+  Should contain  ${result.stdout}  Writing file: target/bpmndt/org/camunda/community/bpmndt/api/TestCaseInstance.java
+  Should contain  ${result.stdout}  Writing file: target/bpmndt/org/camunda/community/bpmndt/api/TestCaseExecutor.java
+  Should contain  ${result.stdout}  Writing file: target/bpmndt/org/camunda/community/bpmndt/api/UserTaskHandler.java
+  Should contain  ${result.stdout}  Writing file: target/bpmndt/org/camunda/community/bpmndt/api/cfg/BpmndtCallActivityBehavior.java
+  Should contain  ${result.stdout}  Writing file: target/bpmndt/org/camunda/community/bpmndt/api/cfg/BpmndtParseListener.java
+  Should contain  ${result.stdout}  Writing file: target/bpmndt/org/camunda/community/bpmndt/api/cfg/BpmndtProcessEnginePlugin.java
 
-  File should exist  ${testSources}/generated/AbstractTestCase.java
-  File should exist  ${testSources}/generated/CallActivityParseListener.java
-  File should exist  ${testSources}/generated/CallActivityRule.java
+  File should exist  ${testSources}/org/camunda/community/bpmndt/api/AbstractJUnit4TestRule.java
+  File should exist  ${testSources}/org/camunda/community/bpmndt/api/CallActivityDefinition.java
+  File should exist  ${testSources}/org/camunda/community/bpmndt/api/CallActivityHandler.java
+  File should exist  ${testSources}/org/camunda/community/bpmndt/api/ExternalTaskHandler.java
+  File should exist  ${testSources}/org/camunda/community/bpmndt/api/IntermediateCatchEventHandler.java
+  File should exist  ${testSources}/org/camunda/community/bpmndt/api/JobHandler.java
+  File should exist  ${testSources}/org/camunda/community/bpmndt/api/TestCaseInstance.java
+  File should exist  ${testSources}/org/camunda/community/bpmndt/api/TestCaseExecutor.java
+  File should exist  ${testSources}/org/camunda/community/bpmndt/api/UserTaskHandler.java
+  File should exist  ${testSources}/org/camunda/community/bpmndt/api/cfg/BpmndtCallActivityBehavior.java
+  File should exist  ${testSources}/org/camunda/community/bpmndt/api/cfg/BpmndtParseListener.java
+  File should exist  ${testSources}/org/camunda/community/bpmndt/api/cfg/BpmndtProcessEnginePlugin.java
 
   # tests executed
   Should contain  ${result.stdout}  Running org.example.it.SimpleTest

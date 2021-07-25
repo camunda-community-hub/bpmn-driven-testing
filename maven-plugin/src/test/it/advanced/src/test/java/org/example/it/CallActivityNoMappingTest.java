@@ -5,20 +5,28 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-import org.camunda.bpm.engine.delegate.VariableScope;
 import org.camunda.bpm.engine.impl.core.model.BaseCallableElement.CallableElementBinding;
+import org.junit.Rule;
+import org.junit.Test;
 
 import generated.TC_advancedCallActivityNoMapping__startEvent__endEvent;
 
-public class CallActivityNoMappingTest extends TC_advancedCallActivityNoMapping__startEvent__endEvent {
+public class CallActivityNoMappingTest {
 
-  @Override
-  protected void callActivity_input(VariableScope subInstance) {
-    assertThat(callActivityRule.getBinding(), is(CallableElementBinding.LATEST));
-    assertThat(callActivityRule.getBusinessKey(), equalTo("advancedBusinessKey"));
-    assertThat(callActivityRule.getDefinitionKey(), equalTo("advanced"));
-    assertThat(callActivityRule.getTenantId(), equalTo("advancedTenantId"));
-    assertThat(callActivityRule.getVersion(), nullValue());
-    assertThat(callActivityRule.getVersionTag(), nullValue());
+  @Rule
+  public TC_advancedCallActivityNoMapping__startEvent__endEvent tc = new TC_advancedCallActivityNoMapping__startEvent__endEvent();
+
+  @Test
+  public void testExecute() {
+    tc.handleCallActivity().verify((pi, callActivity) -> {
+      assertThat(callActivity.getBinding(), is(CallableElementBinding.LATEST));
+      assertThat(callActivity.getBusinessKey(), equalTo("advancedBusinessKey"));
+      assertThat(callActivity.getDefinitionKey(), equalTo("advanced"));
+      assertThat(callActivity.getDefinitionTenantId(), equalTo("advancedTenantId"));
+      assertThat(callActivity.getVersion(), nullValue());
+      assertThat(callActivity.getVersionTag(), nullValue());
+    });
+
+    tc.createExecutor().execute();
   }
 }

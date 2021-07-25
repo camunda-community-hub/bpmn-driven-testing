@@ -50,7 +50,7 @@ public class MavenPluginRule extends TestWatcher {
   /**
    * Returns the version of the installed Maven plugin jar.
    * 
-   * @return The plugin version e.g. "0.1".
+   * @return The plugin version e.g. "0.1.0".
    */
   public String getVersion() {
     return version;
@@ -121,16 +121,16 @@ public class MavenPluginRule extends TestWatcher {
       return;
     }
 
-    // e.g.: ./target/bpmn-driven-testing-maven-plugin-0.1.jar
+    // e.g.: ./target/bpmn-driven-testing-maven-plugin-0.1.0.jar
     path = pluginJar.get();
-    // e.g.: bpmn-driven-testing-maven-plugin-0.1.jar
+    // e.g.: bpmn-driven-testing-maven-plugin-0.1.0.jar
     fileName = path.getFileName().toString();
 
     // idea: read from pom?
     groupId = "org.camunda.community";
     // bpmn-driven-testing-maven-plugin
     artifactId = extractArtifactId(fileName);
-    // e.g.: 0.1
+    // e.g.: 0.1.0
     version = extractVersion(fileName);
 
     // install Maven plugin

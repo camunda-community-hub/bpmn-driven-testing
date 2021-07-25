@@ -1,19 +1,36 @@
 package org.camunda.bpm.extension.bpmndt;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.logging.Log;
 import org.camunda.bpm.extension.bpmndt.type.TestCase;
+import org.camunda.community.bpmndt.api.AbstractJUnit4SpringBasedTestRule;
+import org.camunda.community.bpmndt.api.AbstractJUnit4TestRule;
+import org.camunda.community.bpmndt.api.CallActivityDefinition;
+import org.camunda.community.bpmndt.api.CallActivityHandler;
+import org.camunda.community.bpmndt.api.ExternalTaskHandler;
+import org.camunda.community.bpmndt.api.IntermediateCatchEventHandler;
+import org.camunda.community.bpmndt.api.JobHandler;
+import org.camunda.community.bpmndt.api.TestCaseExecutor;
+import org.camunda.community.bpmndt.api.TestCaseInstance;
+import org.camunda.community.bpmndt.api.UserTaskHandler;
+import org.camunda.community.bpmndt.api.cfg.AbstractConfiguration;
+import org.camunda.community.bpmndt.api.cfg.BpmndtCallActivityBehavior;
+import org.camunda.community.bpmndt.api.cfg.BpmndtParseListener;
+import org.camunda.community.bpmndt.api.cfg.BpmndtProcessEnginePlugin;
 
 import com.squareup.javapoet.JavaFile;
 
@@ -78,9 +95,40 @@ public class GeneratorTask {
 
     log.info("");
 
-    // generate and write framework classes
-    log.info("Writing framework classes");
-    generateFramework().forEach(this::writeJavaFile);
+    Set<Class<?>> apiClasses = new TreeSet<>(Comparator.comparing(Class::getName));
+
+    apiClasses.add(AbstractJUnit4TestRule.class);
+    apiClasses.add(CallActivityDefinition.class);
+    apiClasses.add(CallActivityHandler.class);
+    apiClasses.add(ExternalTaskHandler.class);
+    apiClasses.add(IntermediateCatchEventHandler.class);
+    apiClasses.add(JobHandler.class);
+    apiClasses.add(TestCaseInstance.class);
+    apiClasses.add(TestCaseExecutor.class);
+    apiClasses.add(UserTaskHandler.class);
+
+    apiClasses.add(BpmndtCallActivityBehavior.class);
+    apiClasses.add(BpmndtParseListener.class);
+    apiClasses.add(BpmndtProcessEnginePlugin.class);
+
+    if (springEnabled) {
+      apiClasses.add(AbstractJUnit4SpringBasedTestRule.class);
+      apiClasses.add(AbstractConfiguration.class);
+    }
+    
+    // write API types
+    log.info("Writing API classes");
+    apiClasses.forEach(this::writeJavaType);
+
+    if (!springEnabled) {
+      return;
+    }
+
+    log.info("");
+
+    // generate and write Spring configuration class
+    log.info("Writing Spring configuration class");
+    writeJavaFile(generateSpringConfiguration());
   }
 
   protected void generate(List<JavaFile> javaFiles, Path bpmnFile) {
@@ -123,13 +171,13 @@ public class GeneratorTask {
     testCaseNames.clear();
   }
 
-  protected List<JavaFile> generateFramework() {
+  protected JavaFile generateSpringConfiguration() {
     Generator generator = Generator.builder()
         .packageName(packageName)
         .springEnabled(springEnabled)
         .build();
 
-    return generator.generateFramework();
+    return generator.generateSpringConfiguration();
   }
 
   private String relativize(Path parent, Path child) {
@@ -151,7 +199,32 @@ public class GeneratorTask {
     try (Writer w = Files.newBufferedWriter(javaFilePath, StandardCharsets.UTF_8)) {
       javaFile.writeTo(w);
     } catch (IOException e) {
-      throw new RuntimeException("Test case could not be written", e);
+      throw new RuntimeException("Java file could not be written", e);
+    }
+  }
+
+  protected void writeJavaType(Class<?> type) {
+    String resourceName = String.format("%s.java", type.getName().replace('.', '/'));
+    
+    Path target = testSourcePath.resolve(resourceName);
+    log.info(String.format("Writing file: %s", relativize(basePath, target)));
+    
+    // create parent directories
+    try {
+      Files.createDirectories(target.getParent());
+    } catch (IOException e) {
+      throw new RuntimeException("Parent directories could not be created", e);
+    }
+    
+    InputStream resource = this.getClass().getClassLoader().getResourceAsStream(resourceName);
+    
+    // write Java type
+    try {
+      FileUtils.copyInputStreamToFile(resource, target.toFile());
+    } catch (NullPointerException e) {
+      throw new RuntimeException(String.format("Java type resource '%s' could not be found", resourceName), e);
+    } catch (IOException e) {
+      throw new RuntimeException(String.format("Java type '%s' could not be written", type.getName()), e);
     }
   }
 }

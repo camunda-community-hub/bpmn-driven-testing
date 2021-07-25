@@ -15,7 +15,7 @@
     <camunda.bpm.assert.version>10.0.0</camunda.bpm.assert.version>
     <junit.version>4.13.2</junit.version>
 
-    <plugin.version>0.1.0-SNAPSHOT</plugin.version>
+    <plugin.version>0.2.0-SNAPSHOT</plugin.version>
   </properties>
 
   <repositories>
