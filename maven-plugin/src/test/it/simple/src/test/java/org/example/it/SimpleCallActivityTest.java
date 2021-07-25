@@ -3,18 +3,25 @@ package org.example.it;
 import org.camunda.bpm.engine.delegate.DelegateExecution;
 import org.camunda.bpm.engine.delegate.DelegateVariableMapping;
 import org.camunda.bpm.engine.delegate.VariableScope;
-import org.camunda.bpm.engine.test.mock.Mocks;
 import org.camunda.bpm.engine.variable.VariableMap;
+import org.junit.Rule;
+import org.junit.Test;
 
 import generated.TC_simpleCallActivity__startEvent__endEvent;
 
-public class SimpleCallActivityTest extends TC_simpleCallActivity__startEvent__endEvent {
+public class SimpleCallActivityTest {
 
-  @Override
-  protected String before(VariableMap variables) {
-    Mocks.register("callActivityMapping", new CallActivityMapping());
+  @Rule
+  public TC_simpleCallActivity__startEvent__endEvent tc = new TC_simpleCallActivity__startEvent__endEvent();
 
-    return null;
+  @Test
+  public void testExecute() {
+    tc.createExecutor()
+      .withMock("callActivityMapping", new CallActivityMapping())
+      .verify(pi -> {
+        pi.isEnded();
+      })
+      .execute();
   }
 
   /**
@@ -31,10 +38,5 @@ public class SimpleCallActivityTest extends TC_simpleCallActivity__startEvent__e
     public void mapOutputVariables(DelegateExecution superExecution, VariableScope subInstance) {
       // empty implementation
     }
-  }
-
-  @Override
-  protected void after() {
-    assertThatPi().isEnded();
   }
 }

@@ -2,7 +2,6 @@ package org.camunda.bpm.extension.bpmndt.impl;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.Mockito.when;
@@ -39,12 +38,13 @@ public class GeneratorImplTest {
   @Test
   public void testPathEmpty() {
     TypeSpec.Builder classBuilder = TypeSpec.classBuilder("Test");
-    assertThat(generator.buildTestCase(testCase, classBuilder), is(false));
+
+    generator.buildTestCase(testCase, classBuilder);
 
     TypeSpec test = classBuilder.build();
-    assertThat(test.methodSpecs, hasSize(1));
-    assertThat(test.methodSpecs.get(0).name, equalTo(GeneratorConstants.TEST_PATH));
-    assertThat(test.methodSpecs.get(0).code.toString(), containsString("throw new java.lang.RuntimeException(\"Path is empty\");"));
+    assertThat(test.methodSpecs, hasSize(7));
+    assertThat(test.methodSpecs.get(1).name, equalTo(GeneratorConstants.EXECUTE));
+    assertThat(test.methodSpecs.get(1).code.toString(), containsString("throw new java.lang.RuntimeException(\"Path is empty\");"));
   }
 
   @Test
@@ -52,13 +52,14 @@ public class GeneratorImplTest {
     when(testCase.getPath().getFlowNodeIds()).thenReturn(Collections.singletonList("not-existing"));
     
     TypeSpec.Builder classBuilder = TypeSpec.classBuilder("Test");
-    assertThat(generator.buildTestCase(testCase, classBuilder), is(false));
+
+    generator.buildTestCase(testCase, classBuilder);
 
     TypeSpec test = classBuilder.build();
-    assertThat(test.methodSpecs, hasSize(1));
-    assertThat(test.methodSpecs.get(0).name, equalTo(GeneratorConstants.TEST_PATH));
-    assertThat(test.methodSpecs.get(0).code.toString(), containsString("// Not existing flow nodes:\n"));
-    assertThat(test.methodSpecs.get(0).code.toString(), containsString("// not-existing\n"));
-    assertThat(test.methodSpecs.get(0).code.toString(), containsString("throw new java.lang.RuntimeException(\"Path is not valid\");"));
+    assertThat(test.methodSpecs, hasSize(7));
+    assertThat(test.methodSpecs.get(1).name, equalTo(GeneratorConstants.EXECUTE));
+    assertThat(test.methodSpecs.get(1).code.toString(), containsString("// Not existing flow nodes:\n"));
+    assertThat(test.methodSpecs.get(1).code.toString(), containsString("// not-existing\n"));
+    assertThat(test.methodSpecs.get(1).code.toString(), containsString("throw new java.lang.RuntimeException(\"Path is not valid\");"));
   }
 }

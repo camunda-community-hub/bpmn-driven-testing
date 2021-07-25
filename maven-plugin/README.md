@@ -51,11 +51,11 @@ Add dependencies, which are required to execute the generate test code:
 ## Configuration
 Available parameters for the plugin's `generator` goal:
 
-| Parameter           | Type    | Description                                                                |
-|:--------------------|:--------|:---------------------------------------------------------------------------|
-| packageName         | String  | Package name, used for the generated test sources                          |
-| springEnabled       | Boolean | Enables Spring based testing                                               |
-| testSourceDirectory | String  | Name of the directory under `target/`, used for the generated test sources |
+| Parameter           | Type    | Description                                                                | Default value |
+|:--------------------|:--------|:---------------------------------------------------------------------------|:--------------|
+| packageName         | String  | Package name, used for the generated test sources                          | generated     |
+| springEnabled       | Boolean | Enables Spring based testing                                               | false         |
+| testSourceDirectory | String  | Name of the directory under `target/`, used for the generated test sources | bpmndt        |
 
 ## Testing
 Beside unit tests, a set of integration tests exist under [src/test/it](src/test/it).
