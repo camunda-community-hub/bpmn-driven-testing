@@ -311,6 +311,10 @@
     </profile>
   </profiles>
 
+  <name>BPMN Driven Testing Maven Plugin</name>
+  <description>Camunda extension, which is able to generate test code based on an extended BPMN model</description>
+  <url>https://github.com/camunda-community-hub/bpmn-driven-testing</url>
+
   <licenses>
     <license>
       <name>The Apache Software License, Version 2.0</name>
