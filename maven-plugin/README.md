@@ -66,3 +66,5 @@ To execute unit and integration tests, run:
 ```
 mvn clean integration-test
 ```
+
+The Robot test report is written to `target/robot/report.html`.

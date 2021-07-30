@@ -2,17 +2,17 @@
 [![](https://img.shields.io/badge/Community%20Extension-An%20open%20source%20community%20maintained%20project-FF4700)](https://github.com/camunda-community-hub/community)
 [![](https://img.shields.io/badge/Lifecycle-Incubating-blue)](https://github.com/Camunda-Community-Hub/community/blob/main/extension-lifecycle.md#incubating-)
 
-Camunda extension, which is able to generate JUnit tests based on an extended BPMN model.
+Camunda extension, which is able to generate test code based on an extended BPMN model.
 
 The extension lets the developer focus on testing the business logic, rather than writing boilerplate code.
-The generated test code handles process instance start at any selected flow node and advances a process instance in case of waiting states.
+The generated test code handles process instance start at any selected flow node and advances a process instance in case of wait states.
 Since the test code is generated, there is no need to deal with process definition keys and flow node IDs.
 If the BPMN model changes, any breaking changes (e.g. a service task becomes an external task) in the BPMN process will result in test compile errors.
 
 The extension consists of:
 
 - [Camunda Modeler plugin](camunda-modeler-plugin) for a visual selection and the management of test cases
-- [Maven plugin](maven-plugin) for generation of JUnit test code
+- [Maven plugin](maven-plugin) for generation of JUnit based test code
 
 ## How does it work?
 
@@ -68,7 +68,7 @@ Calling `createExecutor()` on the test rule, provides a fluent API,
 which is used to specify variables, business key and/or [mocks](https://docs.camunda.org/manual/7.15/user-guide/testing/#resolving-beans-without-spring-cdi) that are considered during test case execution.
 After the specification, `execute()` is called to create a new process instance and exeute the test case.
 
-Moreover the default behavior of waiting states and call activities can be adjusted using fluent APIs.
+Moreover the default behavior of wait states and call activities can be adjusted using fluent APIs.
 For each applicable flow node a "handle" method is generated - for example: `handleCheckAvailabilityUserTask()`.
 
 ```java
@@ -87,7 +87,7 @@ public class OrderFulfillmentTest {
     // fluent API for user task "checkAvailabilityUserTask"
     tc.handleCheckAvailabilityUserTask()
       .verify((pi, task) -> {
-        // verify waiting state
+        // verify wait state
         pi.variables().containsEntry("customerId", 123);
 
         task.hasCandidateGroup("group-xyz");
@@ -122,7 +122,7 @@ A developer can solely focus on the actual implementation!
   - BPMN collaborations with one expanded participant
   - Loop detection
 - Generated test cases provide
-  - Automatic handling of waiting states
+  - Automatic handling of wait states
   - Call activity stubbing for isolated testing - see [CallActivityTest](maven-plugin/src/test/it/advanced/src/test/java/org/example/it/CallActivityTest.java)
   - Fluent API to override default behavior
 - Spring test support - see [integration test](maven-plugin/src/test/it/advanced-spring)
