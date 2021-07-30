@@ -23,8 +23,9 @@ mvn clean test
   File should exist  ${testSources}/org/camunda/community/bpmndt/api/AbstractJUnit4SpringBasedTestRule.java
   File should exist  ${testSources}/org/camunda/community/bpmndt/api/cfg/AbstractConfiguration.java
 
-  # Spring configuration generate and written
-  Should contain  ${result.stdout}  Writing Spring configuration class
+  # Spring configuration generated and written
+  Should contain  ${result.stdout}  Generating Spring configuration
+  Should contain  ${result.stdout}  Writing additional classes
   Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/BpmndtConfiguration.java
 
   File should exist  ${testSources}/generated/BpmndtConfiguration.java
