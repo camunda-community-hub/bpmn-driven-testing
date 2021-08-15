@@ -15,8 +15,16 @@ mvn clean test
   Should contain  ${result.stdout}  bpmn-driven-testing-maven-plugin:${VERSION}:generator
 
   # tests executed
-  Should contain  ${result.stdout}  Running org.example.it.CallActivityNoMappingTest
-  Should contain  ${result.stdout}  Running org.example.it.CallActivityTest
+  Should contain  ${result.stdout}  Running org.example.it.CallActivityErrorTest
+  Should contain  ${result.stdout}  Running org.example.it.CallActivityEscalationTest
+  Should contain  ${result.stdout}  Running org.example.it.CallActivityMessageTest
+  Should contain  ${result.stdout}  Running org.example.it.CallActivitySignalTest
+  Should contain  ${result.stdout}  Running org.example.it.CallActivityTimerTest
+  Should contain  ${result.stdout}  Running org.example.it.CallActivityWithMappingTest
+  Should contain  ${result.stdout}  Running org.example.it.CallActivityWithoutMappingTest
+  Should contain  ${result.stdout}  Running org.example.it.ExternalTaskErrorTest
+  Should contain  ${result.stdout}  Running org.example.it.ExternalTaskMessageTest
+  Should contain  ${result.stdout}  Running org.example.it.UserTaskErrorTest
   # tests executed successfully
   Should contain  ${result.stdout}  Failures: 0, Errors: 0, Skipped: 0
 

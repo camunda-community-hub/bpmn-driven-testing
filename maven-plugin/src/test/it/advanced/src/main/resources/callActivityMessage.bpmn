@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:bpmndt="http://camunda.org/schema/extension/bpmn-driven-testing" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_014rcwu" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.4.0">
+  <bpmn:process id="callActivityMessage" isExecutable="true">
+    <bpmn:extensionElements>
+      <bpmndt:testCases>
+        <bpmndt:testCase>
+          <bpmndt:path>
+            <bpmndt:node>startEvent</bpmndt:node>
+            <bpmndt:node>callActivity</bpmndt:node>
+            <bpmndt:node>messageBoundaryEvent</bpmndt:node>
+            <bpmndt:node>endEvent</bpmndt:node>
+          </bpmndt:path>
+        </bpmndt:testCase>
+      </bpmndt:testCases>
+    </bpmn:extensionElements>
+    <bpmn:startEvent id="startEvent">
+      <bpmn:outgoing>Flow_1mvwkq4</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_1mvwkq4" sourceRef="startEvent" targetRef="callActivity" />
+    <bpmn:endEvent id="Event_0ofckg3">
+      <bpmn:incoming>Flow_01pnx9v</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_01pnx9v" sourceRef="callActivity" targetRef="Event_0ofckg3" />
+    <bpmn:callActivity id="callActivity" calledElement="advanced" camunda:calledElementBinding="deployment">
+      <bpmn:incoming>Flow_1mvwkq4</bpmn:incoming>
+      <bpmn:outgoing>Flow_01pnx9v</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:boundaryEvent id="messageBoundaryEvent" attachedToRef="callActivity">
+      <bpmn:outgoing>Flow_0se1k63</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_1x29yvs" messageRef="Message_0y8ui2p" />
+    </bpmn:boundaryEvent>
+    <bpmn:endEvent id="endEvent">
+      <bpmn:incoming>Flow_0se1k63</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_0se1k63" sourceRef="messageBoundaryEvent" targetRef="endEvent" />
+  </bpmn:process>
+  <bpmn:message id="Message_0y8ui2p" name="callActivityMessage" />
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="callActivityMessage">
+      <bpmndi:BPMNEdge id="Flow_0se1k63_di" bpmnElement="Flow_0se1k63">
+        <di:waypoint x="350" y="175" />
+        <di:waypoint x="350" y="240" />
+        <di:waypoint x="432" y="240" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_01pnx9v_di" bpmnElement="Flow_01pnx9v">
+        <di:waypoint x="370" y="117" />
+        <di:waypoint x="432" y="117" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1mvwkq4_di" bpmnElement="Flow_1mvwkq4">
+        <di:waypoint x="215" y="117" />
+        <di:waypoint x="270" y="117" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="startEvent">
+        <dc:Bounds x="179" y="99" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0ntw7bv_di" bpmnElement="Event_0ofckg3">
+        <dc:Bounds x="432" y="99" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1rwbux5_di" bpmnElement="callActivity">
+        <dc:Bounds x="270" y="77" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_13bhn26_di" bpmnElement="endEvent">
+        <dc:Bounds x="432" y="222" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0a8nchq_di" bpmnElement="messageBoundaryEvent">
+        <dc:Bounds x="332" y="139" width="36" height="36" />
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

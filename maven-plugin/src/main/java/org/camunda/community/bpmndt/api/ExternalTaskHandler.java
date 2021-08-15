@@ -1,6 +1,7 @@
 package org.camunda.community.bpmndt.api;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -20,19 +21,24 @@ import org.camunda.bpm.engine.variable.value.TypedValue;
 public class ExternalTaskHandler {
   
   private static final String WORKER_ID = "bpmndt-worker";
-  
+
   private final ProcessEngine processEngine;
+  private final String activityId;
   private final String topicName;
 
   private final VariableMap variables;
   private final VariableMap localVariables;
 
+  private String errorCode;
+  private String errorMessage;
+
   private BiConsumer<ProcessInstanceAssert, String> verifier;
 
   private Consumer<String> action;
 
-  public ExternalTaskHandler(ProcessEngine processEngine, String topicName) {
+  public ExternalTaskHandler(ProcessEngine processEngine, String activityId, String topicName) {
     this.processEngine = processEngine;
+    this.activityId = activityId;
     this.topicName = topicName;
 
     variables = Variables.createVariables();
@@ -59,27 +65,59 @@ public class ExternalTaskHandler {
     action = this::complete;
   }
 
+  protected void complete(String topicName) {
+    LockedExternalTask externalTask = fetchAndLock();
+    processEngine.getExternalTaskService().complete(externalTask.getId(), WORKER_ID, variables, localVariables);
+  }
+
   /**
-   * Completes the external task with a custom action that is executed when the handler is applied.
+   * Executes a custom action that handles the external task.
    * 
    * @param action A specific action that accepts the related topic name (String).
    */
-  public void complete(Consumer<String> action) {
+  public void execute(Consumer<String> action) {
     this.action = action;
   }
-
-  protected void complete(String topicName) {
+  
+  private LockedExternalTask fetchAndLock() {
     ExternalTaskService externalTaskService = processEngine.getExternalTaskService();
-    
+
     List<LockedExternalTask> externalTasks = externalTaskService.fetchAndLock(1, WORKER_ID)
-        .topic(topicName, 1000L)
+        .topic(topicName, TimeUnit.SECONDS.toMillis(60L))
         .execute();
 
     if (externalTasks.isEmpty()) {
-      throw new RuntimeException("Expected at least one fetched external task");
+      throw new RuntimeException(String.format("Expected to fetch at least one external task for topic '%s'", topicName));
     }
 
-    externalTaskService.complete(externalTasks.get(0).getId(), WORKER_ID, variables, localVariables);
+    LockedExternalTask externalTask = externalTasks.get(0);
+    if (!externalTask.getActivityId().equals(activityId)) {
+      throw new RuntimeException(String.format("Expected to fetch at least one external task for activity '%s'", activityId));
+    }
+
+    return externalTask;
+  }
+
+  /**
+   * Continues the execution with an action that calls {@code handleBpmnError} using the given error
+   * code and message.
+   * 
+   * @param errorCode The error code of the attached boundary error event.
+   * 
+   * @param errorMessage An error message or {@code null}.
+   * 
+   * @see ExternalTaskService#handleBpmnError(String, String, String, String, java.util.Map)
+   */
+  public void handleBpmnError(String errorCode, String errorMessage) {
+    this.errorCode = errorCode;
+    this.errorMessage = errorMessage;
+
+    action = this::handleBpmnError;
+  }
+
+  protected void handleBpmnError(String topicName) {
+    LockedExternalTask externalTask = fetchAndLock();
+    processEngine.getExternalTaskService().handleBpmnError(externalTask.getId(), WORKER_ID, errorCode, errorMessage, variables);
   }
 
   /**
@@ -92,6 +130,19 @@ public class ExternalTaskHandler {
    */
   public ExternalTaskHandler verify(BiConsumer<ProcessInstanceAssert, String> verifier) {
     this.verifier = verifier;
+    return this;
+  }
+
+  /**
+   * Sets the error message, which is used when the next activity is an error boundary event - in this
+   * case the handler's default action is {@code handleBpmnError}.
+   * 
+   * @param errorMessage An error message or {@code null}.
+   * 
+   * @return The handler.
+   */
+  public ExternalTaskHandler withErrorMessage(String errorMessage) {
+    this.errorMessage = errorMessage;
     return this;
   }
 

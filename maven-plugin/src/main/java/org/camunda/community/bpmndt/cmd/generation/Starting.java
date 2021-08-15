@@ -4,14 +4,9 @@ import java.util.function.Function;
 
 import javax.lang.model.element.Modifier;
 
-import org.camunda.bpm.model.bpmn.instance.ServiceTask;
+import org.camunda.community.bpmndt.GeneratorStrategy;
 import org.camunda.community.bpmndt.TestCaseActivity;
 import org.camunda.community.bpmndt.TestCaseContext;
-import org.camunda.community.bpmndt.api.CallActivityHandler;
-import org.camunda.community.bpmndt.api.ExternalTaskHandler;
-import org.camunda.community.bpmndt.api.IntermediateCatchEventHandler;
-import org.camunda.community.bpmndt.api.JobHandler;
-import org.camunda.community.bpmndt.api.UserTaskHandler;
 import org.junit.runner.Description;
 
 import com.squareup.javapoet.MethodSpec;
@@ -35,50 +30,16 @@ public class Starting implements Function<TestCaseContext, MethodSpec> {
     }
 
     for (TestCaseActivity activity : ctx.getActivities()) {
-      String id = activity.getId();
-      String literal = activity.getLiteral();
-      String typeName = activity.getTypeName();
+      GeneratorStrategy strategy = activity.getStrategy();
 
       if (activity.isAsyncBefore()) {
-        builder.addCode("\n// $L: $L\n", typeName, id);
-        builder.addStatement("$L = new $T(getProcessEngine(), $S)", activity.getLiteralBefore(), JobHandler.class, id);
+        strategy.initHandlerBefore(builder);
       }
 
-      switch (activity.getType()) {
-        case CALL_ACTIVITY:
-          builder.addCode("\n// $L: $L\n", typeName, id);
-          builder.addStatement("$L = new $T(instance, $S)", literal, CallActivityHandler.class, id);
-          break;
-        case EXTERNAL_TASK:
-          ServiceTask serviceTask = activity.as(ServiceTask.class);
-          String topicName = serviceTask.getCamundaTopic();
-
-          builder.addCode("\n// $L: $L\n", typeName, id);
-          builder.addStatement("$L = new $T(getProcessEngine(), $S)", literal, ExternalTaskHandler.class, topicName);
-          break;
-        case MESSAGE_CATCH_EVENT:
-        case SIGNAL_CATCH_EVENT:
-          String eventName = activity.getEventName();
-
-          builder.addCode("\n// $L: $L\n", typeName, id);
-          builder.addStatement("$L = new $T(getProcessEngine(), $S, $S)", literal, IntermediateCatchEventHandler.class, id, eventName);
-          break;
-        case TIMER_CATCH_EVENT:
-          builder.addCode("\n// $L: $L\n", typeName, id);
-          builder.addStatement("$L = new $T(getProcessEngine(), $S)", literal, JobHandler.class, id);
-          break;
-        case USER_TASK:
-          builder.addCode("\n// $L: $L\n", typeName, id);
-          builder.addStatement("$L = new $T(getProcessEngine(), $S)", literal, UserTaskHandler.class, id);
-          break;
-        default:
-          // other activities are not handled
-          break;
-      }
+      strategy.initHandler(builder);
 
       if (activity.isAsyncAfter()) {
-        builder.addCode("\n// $L: $L\n", typeName, id);
-        builder.addStatement("$L = new $T(getProcessEngine(), $S)", activity.getLiteralAfter(), JobHandler.class, id);
+        strategy.initHandlerAfter(builder);
       }
     }
 

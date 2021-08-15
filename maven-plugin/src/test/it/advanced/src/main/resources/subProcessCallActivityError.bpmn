@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:bpmndt="http://camunda.org/schema/extension/bpmn-driven-testing" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" id="Definitions_18nty76" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.4.0">
+  <bpmn:process id="subProcessCallActivityError" isExecutable="true">
+    <bpmn:extensionElements>
+      <bpmndt:testCases>
+        <bpmndt:testCase>
+          <bpmndt:path>
+            <bpmndt:node>startEvent</bpmndt:node>
+            <bpmndt:node>subProcessStartEvent</bpmndt:node>
+            <bpmndt:node>callActivity</bpmndt:node>
+            <bpmndt:node>messageBoundaryEvent</bpmndt:node>
+            <bpmndt:node>endEvent</bpmndt:node>
+          </bpmndt:path>
+        </bpmndt:testCase>
+      </bpmndt:testCases>
+    </bpmn:extensionElements>
+    <bpmn:startEvent id="startEvent">
+      <bpmn:outgoing>Flow_0vio7j8</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:subProcess id="subProcess">
+      <bpmn:incoming>Flow_0vio7j8</bpmn:incoming>
+      <bpmn:outgoing>Flow_105w7hx</bpmn:outgoing>
+      <bpmn:startEvent id="subProcessStartEvent">
+        <bpmn:outgoing>Flow_08d3nx7</bpmn:outgoing>
+      </bpmn:startEvent>
+      <bpmn:sequenceFlow id="Flow_08d3nx7" sourceRef="subProcessStartEvent" targetRef="callActivity" />
+      <bpmn:endEvent id="subProcessEndEvent">
+        <bpmn:incoming>Flow_1i0hrl4</bpmn:incoming>
+      </bpmn:endEvent>
+      <bpmn:sequenceFlow id="Flow_1i0hrl4" sourceRef="callActivity" targetRef="subProcessEndEvent" />
+      <bpmn:callActivity id="callActivity" calledElement="advanced" camunda:calledElementBinding="deployment">
+        <bpmn:incoming>Flow_08d3nx7</bpmn:incoming>
+        <bpmn:outgoing>Flow_1i0hrl4</bpmn:outgoing>
+      </bpmn:callActivity>
+    </bpmn:subProcess>
+    <bpmn:sequenceFlow id="Flow_0vio7j8" sourceRef="startEvent" targetRef="subProcess" />
+    <bpmn:endEvent id="Event_0ofckg3">
+      <bpmn:incoming>Flow_105w7hx</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_105w7hx" sourceRef="subProcess" targetRef="Event_0ofckg3" />
+    <bpmn:boundaryEvent id="messageBoundaryEvent" attachedToRef="subProcess">
+      <bpmn:outgoing>Flow_0bqux3c</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_0mvqyd9" messageRef="Message_16tgg1h" />
+    </bpmn:boundaryEvent>
+    <bpmn:endEvent id="endEvent">
+      <bpmn:incoming>Flow_0bqux3c</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_0bqux3c" sourceRef="messageBoundaryEvent" targetRef="endEvent" />
+  </bpmn:process>
+  <bpmn:message id="Message_16tgg1h" name="subProcessMessage" />
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="subProcessCallActivityError">
+      <bpmndi:BPMNEdge id="Flow_0bqux3c_di" bpmnElement="Flow_0bqux3c">
+        <di:waypoint x="440" y="295" />
+        <di:waypoint x="440" y="360" />
+        <di:waypoint x="672" y="360" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_105w7hx_di" bpmnElement="Flow_105w7hx">
+        <di:waypoint x="620" y="177" />
+        <di:waypoint x="672" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0vio7j8_di" bpmnElement="Flow_0vio7j8">
+        <di:waypoint x="215" y="177" />
+        <di:waypoint x="260" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="startEvent">
+        <dc:Bounds x="179" y="159" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_08ik2um_di" bpmnElement="subProcess" isExpanded="true">
+        <dc:Bounds x="260" y="77" width="360" height="200" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1i0hrl4_di" bpmnElement="Flow_1i0hrl4">
+        <di:waypoint x="490" y="177" />
+        <di:waypoint x="552" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_08d3nx7_di" bpmnElement="Flow_08d3nx7">
+        <di:waypoint x="336" y="177" />
+        <di:waypoint x="390" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Event_1r29up5_di" bpmnElement="subProcessStartEvent">
+        <dc:Bounds x="300" y="159" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1svaly8_di" bpmnElement="subProcessEndEvent">
+        <dc:Bounds x="552" y="159" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_07efac1_di" bpmnElement="callActivity">
+        <dc:Bounds x="390" y="137" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0ofckg3_di" bpmnElement="Event_0ofckg3">
+        <dc:Bounds x="672" y="159" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0poncx7_di" bpmnElement="endEvent">
+        <dc:Bounds x="672" y="342" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1v0oiko_di" bpmnElement="messageBoundaryEvent">
+        <dc:Bounds x="422" y="259" width="36" height="36" />
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

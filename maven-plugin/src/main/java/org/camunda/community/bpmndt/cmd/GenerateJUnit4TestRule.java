@@ -1,24 +1,20 @@
 package org.camunda.community.bpmndt.cmd;
 
 import java.lang.reflect.Type;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.function.BiConsumer;
 
 import javax.lang.model.element.Modifier;
 
-import org.apache.commons.lang3.StringUtils;
 import org.camunda.bpm.engine.test.assertions.ProcessEngineTests;
 import org.camunda.community.bpmndt.GeneratorContext;
 import org.camunda.community.bpmndt.GeneratorResult;
+import org.camunda.community.bpmndt.GeneratorStrategy;
 import org.camunda.community.bpmndt.TestCaseActivity;
-import org.camunda.community.bpmndt.TestCaseActivityType;
 import org.camunda.community.bpmndt.TestCaseContext;
 import org.camunda.community.bpmndt.api.AbstractJUnit4SpringBasedTestRule;
 import org.camunda.community.bpmndt.api.AbstractJUnit4TestRule;
-import org.camunda.community.bpmndt.api.CallActivityHandler;
-import org.camunda.community.bpmndt.api.ExternalTaskHandler;
-import org.camunda.community.bpmndt.api.IntermediateCatchEventHandler;
-import org.camunda.community.bpmndt.api.JobHandler;
-import org.camunda.community.bpmndt.api.UserTaskHandler;
 import org.camunda.community.bpmndt.cmd.generation.Execute;
 import org.camunda.community.bpmndt.cmd.generation.GetProcessEnginePlugins;
 import org.camunda.community.bpmndt.cmd.generation.Starting;
@@ -84,34 +80,16 @@ public class GenerateJUnit4TestRule implements BiConsumer<GeneratorContext, Test
     }
 
     for (TestCaseActivity activity : ctx.getActivities()) {
+      GeneratorStrategy strategy = activity.getStrategy();
+
       if (activity.isAsyncBefore()) {
-        classBuilder.addField(JobHandler.class, activity.getLiteralBefore(), Modifier.PRIVATE);
+        strategy.addHandlerFieldBefore(classBuilder);
       }
 
-      switch (activity.getType()) {
-        case CALL_ACTIVITY:
-          classBuilder.addField(CallActivityHandler.class, activity.getLiteral(), Modifier.PRIVATE);
-          break;
-        case EXTERNAL_TASK:
-          classBuilder.addField(ExternalTaskHandler.class, activity.getLiteral(), Modifier.PRIVATE);
-          break;
-        case MESSAGE_CATCH_EVENT:
-        case SIGNAL_CATCH_EVENT:
-          classBuilder.addField(IntermediateCatchEventHandler.class, activity.getLiteral(), Modifier.PRIVATE);
-          break;
-        case TIMER_CATCH_EVENT:
-          classBuilder.addField(JobHandler.class, activity.getLiteral(), Modifier.PRIVATE);
-          break;
-        case USER_TASK:
-          classBuilder.addField(UserTaskHandler.class, activity.getLiteral(), Modifier.PRIVATE);
-          break;
-        default:
-          // other activities are not handled
-          break;
-      }
+      strategy.addHandlerField(classBuilder);
 
       if (activity.isAsyncAfter()) {
-        classBuilder.addField(JobHandler.class, activity.getLiteralAfter(), Modifier.PRIVATE);
+        strategy.addHandlerFieldAfter(classBuilder);
       }
     }
   }
@@ -121,58 +99,17 @@ public class GenerateJUnit4TestRule implements BiConsumer<GeneratorContext, Test
       return;
     }
     
-    MethodSpec.Builder builder;
-    
     for (TestCaseActivity activity : ctx.getActivities()) {
+      GeneratorStrategy strategy = activity.getStrategy();
+
       if (activity.isAsyncBefore()) {
-        builder = MethodSpec.methodBuilder(buildHandleMethodName(activity.getLiteralBefore()))
-            .addJavadoc(buildHandleMethodJavadoc(activity))
-            .addModifiers(Modifier.PUBLIC)
-            .returns(JobHandler.class)
-            .addStatement("return $L", activity.getLiteralBefore());
-        
-        classBuilder.addMethod(builder.build());
-      }
-      
-      builder = MethodSpec.methodBuilder(buildHandleMethodName(activity.getLiteral()))
-          .addJavadoc(buildHandleMethodJavadoc(activity))
-          .addModifiers(Modifier.PUBLIC)
-          .addStatement("return $L", activity.getLiteral());
-
-      switch (activity.getType()) {
-        case CALL_ACTIVITY:
-          builder.returns(CallActivityHandler.class);
-          break;
-        case EXTERNAL_TASK:
-          builder.returns(ExternalTaskHandler.class);
-          break;
-        case MESSAGE_CATCH_EVENT:
-        case SIGNAL_CATCH_EVENT:
-          builder.returns(IntermediateCatchEventHandler.class);
-          break;
-        case TIMER_CATCH_EVENT:
-          builder.returns(JobHandler.class);
-          break;
-        case USER_TASK:
-          builder.returns(UserTaskHandler.class);
-          break;
-        default:
-          // other activities are not handled
-          break;
+        strategy.addHandlerMethodBefore(classBuilder);
       }
 
-      if (activity.getType() != TestCaseActivityType.OTHER) {
-        classBuilder.addMethod(builder.build());
-      }
+      strategy.addHandlerMethod(classBuilder);
 
       if (activity.isAsyncAfter()) {
-        builder = MethodSpec.methodBuilder(buildHandleMethodName(activity.getLiteralAfter()))
-            .addJavadoc(buildHandleMethodJavadoc(activity))
-            .addModifiers(Modifier.PUBLIC)
-            .returns(JobHandler.class)
-            .addStatement("return $L", activity.getLiteralAfter());
-        
-        classBuilder.addMethod(builder.build());
+        strategy.addHandlerMethodAfter(classBuilder);
       }
     }
   }
@@ -217,14 +154,6 @@ public class GenerateJUnit4TestRule implements BiConsumer<GeneratorContext, Test
         .build();
   }
 
-  protected String buildHandleMethodJavadoc(TestCaseActivity activity) {
-    return String.format("Returns the handler for %s: %s", activity.getTypeName(), activity.getId());
-  }
-
-  protected String buildHandleMethodName(String literal) {
-    return String.format("handle%s", StringUtils.capitalize(literal));
-  }
-
   protected CodeBlock buildJavadoc(TestCaseContext ctx) {
     CodeBlock.Builder builder = CodeBlock.builder();
 
@@ -237,12 +166,14 @@ public class GenerateJUnit4TestRule implements BiConsumer<GeneratorContext, Test
       TestCaseActivity a = ctx.getStartActivity();
       TestCaseActivity b = ctx.getEndActivity();
 
-      builder.add("From: ");
-      builder.add("$L: $L", a.getType(), a.getId());
-      builder.add(", To: ");
-      builder.add("$L: $L", b.getType(), b.getId());
-      builder.add(", Length: ");
-      builder.add("$L", ctx.getActivities().size());
+      List<Object> args = new LinkedList<>();
+      args.add(a.getTypeName());
+      args.add(a.getId());
+      args.add(b.getTypeName());
+      args.add(b.getId());
+      args.add(ctx.getActivities().size());
+
+      builder.add("From: $L: $L, To: $L: $L, Length: $L", args.toArray(new Object[0]));
     }
 
     return builder.build();

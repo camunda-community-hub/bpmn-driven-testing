@@ -5,6 +5,7 @@ import java.util.function.Function;
 import javax.lang.model.element.Modifier;
 
 import org.camunda.bpm.engine.runtime.ProcessInstance;
+import org.camunda.community.bpmndt.GeneratorStrategy;
 import org.camunda.community.bpmndt.TestCaseActivity;
 import org.camunda.community.bpmndt.TestCaseContext;
 
@@ -29,33 +30,18 @@ public class Execute implements Function<TestCaseContext, MethodSpec> {
     }
 
     for (TestCaseActivity activity : ctx.getActivities()) {
+      GeneratorStrategy strategy = activity.getStrategy();
+
       builder.addCode("\n// $L: $L\n", activity.getTypeName(), activity.getId());
 
       if (activity.isAsyncBefore()) {
-        builder.addStatement("assertThat(pi).isWaitingAt($S)", activity.getId());
-        builder.addStatement("instance.apply($L)", activity.getLiteralBefore());
+        strategy.applyHandlerBefore(builder);
       }
 
-      switch (activity.getType()) {
-        case CALL_ACTIVITY:
-          // nothing to do here, since a CallActivity has no waite state
-          break;
-        case EXTERNAL_TASK:
-        case MESSAGE_CATCH_EVENT:
-        case SIGNAL_CATCH_EVENT:
-        case TIMER_CATCH_EVENT:
-        case USER_TASK:
-          builder.addStatement("assertThat(pi).isWaitingAt($S)", activity.getId());
-          builder.addStatement("instance.apply($L)", activity.getLiteral());
-          break;
-        default:
-          // other activities are not handled
-          break;
-      }
+      strategy.applyHandler(builder);
 
       if (activity.isAsyncAfter()) {
-        builder.addStatement("assertThat(pi).isWaitingAt($S)", activity.getId());
-        builder.addStatement("instance.apply($L)", activity.getLiteralAfter());
+        strategy.applyHandlerAfter(builder);
       }
 
       builder.addStatement("assertThat(pi).hasPassed($S)", activity.getId());

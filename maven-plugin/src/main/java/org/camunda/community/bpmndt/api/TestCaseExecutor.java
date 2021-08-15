@@ -44,6 +44,16 @@ public class TestCaseExecutor {
         .startBeforeActivity(instance.getStart())
         .execute();
 
+    execute(pi);
+  }
+
+  /**
+   * Executes the actual test case and verifies the state after, using the given
+   * {@link ProcessInstance}.
+   * 
+   * @param pi A process instance, used to execute the test case.
+   */
+  public void execute(ProcessInstance pi) {
     // announce process instance
     instance.setProcessInstance(pi);
 
