@@ -29,13 +29,13 @@
   <bpmn:message id="Message_035lrmm" name="simpleMessage" />
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="simpleMessageCatchEvent">
-      <bpmndi:BPMNEdge id="Flow_1fyh7sd_di" bpmnElement="Flow_1fyh7sd">
-        <di:waypoint x="215" y="97" />
-        <di:waypoint x="272" y="97" />
-      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0gl161g_di" bpmnElement="Flow_0gl161g">
         <di:waypoint x="308" y="97" />
         <di:waypoint x="372" y="97" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1fyh7sd_di" bpmnElement="Flow_1fyh7sd">
+        <di:waypoint x="215" y="97" />
+        <di:waypoint x="272" y="97" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="startEvent">
         <dc:Bounds x="179" y="79" width="36" height="36" />

@@ -21,8 +21,11 @@ mvn clean test
   Should contain  ${result.stdout}  Found BPMN file: simple.bpmn
   Should contain  ${result.stdout}  Found BPMN file: simpleAsync.bpmn
   Should contain  ${result.stdout}  Found BPMN file: simpleCallActivity.bpmn
+  Should contain  ${result.stdout}  Found BPMN file: simpleCollaboration.bpmn
+  Should contain  ${result.stdout}  Found BPMN file: simpleConditionalCatchEvent.bpmn
   Should contain  ${result.stdout}  Found BPMN file: simpleExternalTask.bpmn
   Should contain  ${result.stdout}  Found BPMN file: simpleMessageCatchEvent.bpmn
+  Should contain  ${result.stdout}  Found BPMN file: simpleReceiveTask.bpmn
   Should contain  ${result.stdout}  Found BPMN file: simpleSignalCatchEvent.bpmn
   Should contain  ${result.stdout}  Found BPMN file: simpleSubProcess.bpmn
   Should contain  ${result.stdout}  Found BPMN file: simpleTimerCatchEvent.bpmn
@@ -42,8 +45,11 @@ mvn clean test
   Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/TC_simple__startEvent__endEvent.java
   Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/TC_simpleAsync__startEvent__endEvent.java
   Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/TC_simpleCallActivity__startEvent__endEvent.java
+  Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/TC_simpleCollaboration__startEvent__endEvent.java
+  Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/TC_simpleConditionalCatchEvent__startEvent__endEvent.java
   Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/TC_simpleExternalTask__startEvent__endEvent.java
   Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/TC_simpleMessageCatchEvent__startEvent__endEvent.java
+  Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/TC_simpleReceiveTask__startEvent__endEvent.java
   Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/TC_simpleSignalCatchEvent__startEvent__endEvent.java
   Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/TC_simpleSubProcess__startEvent__endEvent.java
   Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/TC_simpleTimerCatchEvent__startEvent__endEvent.java
@@ -52,8 +58,11 @@ mvn clean test
   File should exist  ${testSources}/generated/TC_simple__startEvent__endEvent.java
   File should exist  ${testSources}/generated/TC_simpleAsync__startEvent__endEvent.java
   File should exist  ${testSources}/generated/TC_simpleCallActivity__startEvent__endEvent.java
+  File should exist  ${testSources}/generated/TC_simpleCollaboration__startEvent__endEvent.java
+  File should exist  ${testSources}/generated/TC_simpleConditionalCatchEvent__startEvent__endEvent.java
   File should exist  ${testSources}/generated/TC_simpleExternalTask__startEvent__endEvent.java
   File should exist  ${testSources}/generated/TC_simpleMessageCatchEvent__startEvent__endEvent.java
+  File should exist  ${testSources}/generated/TC_simpleReceiveTask__startEvent__endEvent.java
   File should exist  ${testSources}/generated/TC_simpleSignalCatchEvent__startEvent__endEvent.java
   File should exist  ${testSources}/generated/TC_simpleSubProcess__startEvent__endEvent.java
   File should exist  ${testSources}/generated/TC_simpleTimerCatchEvent__startEvent__endEvent.java
@@ -64,8 +73,8 @@ mvn clean test
   Should contain  ${result.stdout}  Writing file: target/bpmndt/org/camunda/community/bpmndt/api/AbstractJUnit4TestRule.java
   Should contain  ${result.stdout}  Writing file: target/bpmndt/org/camunda/community/bpmndt/api/CallActivityDefinition.java
   Should contain  ${result.stdout}  Writing file: target/bpmndt/org/camunda/community/bpmndt/api/CallActivityHandler.java
+  Should contain  ${result.stdout}  Writing file: target/bpmndt/org/camunda/community/bpmndt/api/EventHandler.java
   Should contain  ${result.stdout}  Writing file: target/bpmndt/org/camunda/community/bpmndt/api/ExternalTaskHandler.java
-  Should contain  ${result.stdout}  Writing file: target/bpmndt/org/camunda/community/bpmndt/api/IntermediateCatchEventHandler.java
   Should contain  ${result.stdout}  Writing file: target/bpmndt/org/camunda/community/bpmndt/api/JobHandler.java
   Should contain  ${result.stdout}  Writing file: target/bpmndt/org/camunda/community/bpmndt/api/TestCaseInstance.java
   Should contain  ${result.stdout}  Writing file: target/bpmndt/org/camunda/community/bpmndt/api/TestCaseExecutor.java
@@ -77,8 +86,8 @@ mvn clean test
   File should exist  ${testSources}/org/camunda/community/bpmndt/api/AbstractJUnit4TestRule.java
   File should exist  ${testSources}/org/camunda/community/bpmndt/api/CallActivityDefinition.java
   File should exist  ${testSources}/org/camunda/community/bpmndt/api/CallActivityHandler.java
+  File should exist  ${testSources}/org/camunda/community/bpmndt/api/EventHandler.java
   File should exist  ${testSources}/org/camunda/community/bpmndt/api/ExternalTaskHandler.java
-  File should exist  ${testSources}/org/camunda/community/bpmndt/api/IntermediateCatchEventHandler.java
   File should exist  ${testSources}/org/camunda/community/bpmndt/api/JobHandler.java
   File should exist  ${testSources}/org/camunda/community/bpmndt/api/TestCaseInstance.java
   File should exist  ${testSources}/org/camunda/community/bpmndt/api/TestCaseExecutor.java
@@ -91,8 +100,11 @@ mvn clean test
   Should contain  ${result.stdout}  Running org.example.it.SimpleTest
   Should contain  ${result.stdout}  Running org.example.it.SimpleAsyncTest
   Should contain  ${result.stdout}  Running org.example.it.SimpleCallActivityTest
+  Should contain  ${result.stdout}  Running org.example.it.SimpleCollaborationTest
+  Should contain  ${result.stdout}  Running org.example.it.SimpleConditionalCatchEventTest
   Should contain  ${result.stdout}  Running org.example.it.SimpleExternalTaskTest
   Should contain  ${result.stdout}  Running org.example.it.SimpleMessageCatchEventTest
+  Should contain  ${result.stdout}  Running org.example.it.SimpleReceiveTaskTest
   Should contain  ${result.stdout}  Running org.example.it.SimpleSignalCatchEventTest
   Should contain  ${result.stdout}  Running org.example.it.SimpleSubProcessTest
   Should contain  ${result.stdout}  Running org.example.it.SimpleTimerCatchEventTest

@@ -18,9 +18,9 @@ public class TestCaseContext {
 
   private boolean duplicateName;
 
-  public TestCaseContext(Path bpmnFile, String processId, TestCase testCase) {
-    this.bpmnFile = bpmnFile;
-    this.processId = processId;
+  public TestCaseContext(BpmnSupport bpmnSupport, TestCase testCase) {
+    this.bpmnFile = bpmnSupport.getFile();
+    this.processId = bpmnSupport.getProcessId();
     this.testCase = testCase;
 
     activities = new ArrayList<>(testCase.getPath().length());
@@ -29,18 +29,27 @@ public class TestCaseContext {
     // build test case name
     if (testCase.getName() != null) {
       testCaseName = BpmnSupport.toJavaLiteral(testCase.getName());
-    } else {
+    } else if (testCase.getPath().length() >= 2) {
       List<String> flowNodeIds = testCase.getPath().getFlowNodeIds();
 
       String a = BpmnSupport.toJavaLiteral(flowNodeIds.get(0));
       String b = BpmnSupport.toJavaLiteral(flowNodeIds.get(flowNodeIds.size() - 1));
 
       testCaseName = String.format("%s__%s", a, b);
+    } else {
+      testCaseName = testCase.getPath().length() == 0 ? "empty" : "incomplete";
     }
   }
 
-  public void addActivity(TestCaseActivity activity) {
-    activities.add(activity);
+  public void addActivity(TestCaseActivity next) {
+    if (!activities.isEmpty()) {
+      TestCaseActivity prev = activities.get(activities.size() - 1);
+
+      prev.setNext(next);
+      next.setPrev(prev);
+    }
+
+    activities.add(next);
   }
 
   public void addInvalidFlowNodeId(String flowNodeId) {
@@ -60,7 +69,7 @@ public class TestCaseContext {
   }
 
   public TestCaseActivity getEndActivity() {
-    if (isPathEmpty() || isPathIncomplete()) {
+    if (activities.size() < 2) {
       return null;
     } else {
       return activities.get(activities.size() - 1);
@@ -84,7 +93,7 @@ public class TestCaseContext {
   }
 
   public TestCaseActivity getStartActivity() {
-    if (isPathEmpty() || isPathIncomplete()) {
+    if (activities.size() < 2) {
       return null;
     } else {
       return activities.get(0);

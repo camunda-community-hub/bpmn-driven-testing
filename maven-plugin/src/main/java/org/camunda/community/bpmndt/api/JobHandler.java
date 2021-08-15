@@ -50,7 +50,7 @@ public class JobHandler {
   }
 
   /**
-   * Executes the job with a custom action that is executed when the handler is applied.
+   * Executes a custom action that handles the job.
    * 
    * @param action A specific action that accepts the related {@link Job}.
    */

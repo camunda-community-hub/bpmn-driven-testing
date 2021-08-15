@@ -2,6 +2,7 @@ package org.camunda.community.bpmndt.api;
 
 import static org.camunda.community.bpmndt.api.TestCaseInstance.PROCESS_ENGINE_NAME;
 
+import java.io.InputStream;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -45,7 +46,11 @@ public abstract class AbstractJUnit4TestRule extends TestWatcher {
     instance = new TestCaseInstance(processEngine, getProcessDefinitionKey(), getStart(), getEnd());
 
     // deploy BPMN resource
-    deploymentId = instance.deploy(getClass().getName(), getBpmnResourceName());
+    if (getBpmnResourceName() != null) {
+      deploymentId = instance.deploy(getClass().getName(), getBpmnResourceName());
+    } else {
+      deploymentId = instance.deploy(getClass().getName(), getBpmnResource());
+    }
 
     // perform optional annotation based deployment (via @Deployment) for DMN files
     Class<?> testClass = description.getTestClass();
@@ -113,12 +118,24 @@ public abstract class AbstractJUnit4TestRule extends TestWatcher {
   protected abstract void execute(ProcessInstance pi);
 
   /**
-   * Returns the name of the BPMN resource, which is used to deploy the process definition that is
-   * tested.
+   * Returns an input stream that provides the BPMN resource with the process definition to be tested
+   * - either this method or {@link #getBpmnResourceName()} must be overriden!
+   * 
+   * @return The BPMN resource as stream.
+   */
+  protected InputStream getBpmnResource() {
+    return null;
+  }
+
+  /**
+   * Returns the name of the BPMN resource, that provides the process definition to be tested - either
+   * this method or {@link #getBpmnResource()} must be overriden!
    * 
    * @return The BPMN resource name, within {@code src/main/resources}.
    */
-  protected abstract String getBpmnResourceName();
+  protected String getBpmnResourceName() {
+    return null;
+  }
 
   /**
    * Returns the ID of the test case's end activity.

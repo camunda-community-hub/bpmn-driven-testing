@@ -14,7 +14,7 @@ import org.camunda.community.bpmndt.api.AbstractJUnit4TestRule;
 import org.camunda.community.bpmndt.api.CallActivityDefinition;
 import org.camunda.community.bpmndt.api.CallActivityHandler;
 import org.camunda.community.bpmndt.api.ExternalTaskHandler;
-import org.camunda.community.bpmndt.api.IntermediateCatchEventHandler;
+import org.camunda.community.bpmndt.api.EventHandler;
 import org.camunda.community.bpmndt.api.JobHandler;
 import org.camunda.community.bpmndt.api.TestCaseExecutor;
 import org.camunda.community.bpmndt.api.TestCaseInstance;
@@ -94,7 +94,7 @@ public class Generator {
     apiClasses.add(CallActivityDefinition.class);
     apiClasses.add(CallActivityHandler.class);
     apiClasses.add(ExternalTaskHandler.class);
-    apiClasses.add(IntermediateCatchEventHandler.class);
+    apiClasses.add(EventHandler.class);
     apiClasses.add(JobHandler.class);
     apiClasses.add(TestCaseInstance.class);
     apiClasses.add(TestCaseExecutor.class);

@@ -1,5 +1,12 @@
 package org.camunda.community.bpmndt;
 
+import static org.camunda.bpm.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_BOUNDARY_EVENT;
+import static org.camunda.bpm.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_CALL_ACTIVITY;
+import static org.camunda.bpm.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_INTERMEDIATE_CATCH_EVENT;
+import static org.camunda.bpm.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_RECEIVE_TASK;
+import static org.camunda.bpm.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_SERVICE_TASK;
+import static org.camunda.bpm.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_USER_TASK;
+
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -11,7 +18,6 @@ import java.util.Map;
 
 import org.camunda.bpm.model.bpmn.Bpmn;
 import org.camunda.bpm.model.bpmn.BpmnModelInstance;
-import org.camunda.bpm.model.bpmn.impl.BpmnModelConstants;
 import org.camunda.bpm.model.bpmn.instance.FlowNode;
 import org.camunda.bpm.model.bpmn.instance.Process;
 import org.camunda.bpm.model.bpmn.instance.ServiceTask;
@@ -122,12 +128,16 @@ public class BpmnSupport {
     return flowNode != null && flowNode.getElementType().getTypeName().equals(typeName);
   }
 
+  public boolean isBoundaryEvent(String flowNodeId) {
+    return is(flowNodeId, BPMN_ELEMENT_BOUNDARY_EVENT);
+  }
+
   public boolean isCallActivity(String flowNodeId) {
-    return is(flowNodeId, BpmnModelConstants.BPMN_ELEMENT_CALL_ACTIVITY);
+    return is(flowNodeId, BPMN_ELEMENT_CALL_ACTIVITY);
   }
 
   public boolean isExternalTask(String flowNodeId) {
-    if (is(flowNodeId, BpmnModelConstants.BPMN_ELEMENT_SERVICE_TASK)) {
+    if (is(flowNodeId, BPMN_ELEMENT_SERVICE_TASK)) {
       ServiceTask serviceTask = (ServiceTask) flowNodes.get(flowNodeId);
       return "external".equals(serviceTask.getCamundaType());
     } else {
@@ -136,10 +146,14 @@ public class BpmnSupport {
   }
 
   public boolean isIntermediateCatchEvent(String flowNodeId) {
-    return is(flowNodeId, BpmnModelConstants.BPMN_ELEMENT_INTERMEDIATE_CATCH_EVENT);
+    return is(flowNodeId, BPMN_ELEMENT_INTERMEDIATE_CATCH_EVENT);
+  }
+
+  public boolean isReceiveTask(String flowNodeId) {
+    return is(flowNodeId, BPMN_ELEMENT_RECEIVE_TASK);
   }
 
   public boolean isUserTask(String flowNodeId) {
-    return is(flowNodeId, BpmnModelConstants.BPMN_ELEMENT_USER_TASK);
+    return is(flowNodeId, BPMN_ELEMENT_USER_TASK);
   }
 }

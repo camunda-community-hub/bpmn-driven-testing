@@ -19,7 +19,7 @@ It generates the test code under `target/bpmndt` and adds this directory as test
 </plugin>
 ```
 
-Add dependencies, which are required to execute the generate test code:
+Add dependencies, which are required to execute the generated test code:
 
 ```xml
 <dependency>
@@ -59,7 +59,8 @@ Available parameters for the plugin's `generator` goal:
 
 ## Testing
 Beside unit tests, a set of integration tests exist under [src/test/it](src/test/it).
-These tests verify the integration of the Maven plugin. The integration tests are implemented using the [Robot Framework](https://robotframework.org/).
+These tests verify that the Maven plugin works correctly when executed within a Maven build.
+The integration tests are implemented using the [Robot Framework](https://robotframework.org/).
 
 To execute unit and integration tests, run:
 

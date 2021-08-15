@@ -60,24 +60,24 @@ public class UserTaskHandler {
     action = this::complete;
   }
 
+  protected void complete(Task task) {
+    processEngine.getTaskService().complete(task.getId(), variables);
+  }
+
   /**
-   * Completes the user task with a custom action that is executed when the handler is applied.
+   * Executes a custom action that handles the user task.
    * 
    * @param action A specific action that accepts the related {@link Task}.
    */
-  public void complete(Consumer<Task> action) {
+  public void execute(Consumer<Task> action) {
     this.action = action;
-  }
-
-  protected void complete(Task task) {
-    processEngine.getTaskService().complete(task.getId(), variables);
   }
 
   /**
    * Continues the execution with an action that calls {@code handleBpmnError} using the given error
    * code and message.
    * 
-   * @param errorCode The error code of the related boundary error event.
+   * @param errorCode The error code of the attached boundary error event.
    * 
    * @param errorMessage An error message or {@code null}.
    * 
@@ -98,7 +98,7 @@ public class UserTaskHandler {
    * Continues the execution with an action that calls {@code handleEscalation} using the given
    * escalation code.
    * 
-   * @param escalationCode The escalation code of the related boundary escalation event.
+   * @param escalationCode The escalation code of the attached boundary escalation event.
    * 
    * @see TaskService#handleEscalation(String, String, java.util.Map)
    */
@@ -122,6 +122,19 @@ public class UserTaskHandler {
    */
   public UserTaskHandler verify(BiConsumer<ProcessInstanceAssert, TaskAssert> verifier) {
     this.verifier = verifier;
+    return this;
+  }
+
+  /**
+   * Sets the error message, which is used when the next activity is an error boundary event - in this
+   * case the handler's default action is {@code handleBpmnError}.
+   * 
+   * @param errorMessage An error message or {@code null}.
+   * 
+   * @return The handler.
+   */
+  public UserTaskHandler withErrorMessage(String errorMessage) {
+    this.errorMessage = errorMessage;
     return this;
   }
 

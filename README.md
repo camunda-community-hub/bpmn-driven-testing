@@ -116,7 +116,8 @@ On the other hand, the test case execution handles the process instance start, a
 A developer can solely focus on the actual implementation!
 
 ## Features
-- Visual test case selection with
+- Visual test case selection
+- Automatic path finding with
   - Support for embedded sub processes
   - Support for boundary events
   - BPMN collaborations with one expanded participant

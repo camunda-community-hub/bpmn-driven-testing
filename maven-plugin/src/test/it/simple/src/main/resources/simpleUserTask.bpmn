@@ -20,7 +20,7 @@
       <bpmn:incoming>Flow_0pd7z5n</bpmn:incoming>
     </bpmn:endEvent>
     <bpmn:sequenceFlow id="Flow_0pd7z5n" sourceRef="userTask" targetRef="endEvent" />
-    <bpmn:userTask id="userTask">
+    <bpmn:userTask id="userTask" name="User task">
       <bpmn:incoming>Flow_0miw6xn</bpmn:incoming>
       <bpmn:outgoing>Flow_0pd7z5n</bpmn:outgoing>
     </bpmn:userTask>
