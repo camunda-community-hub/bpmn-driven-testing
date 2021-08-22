@@ -1,14 +1,8 @@
+import { MODE_SELECTOR } from "../Constants";
 import PathSelection from "../PathSelection";
 import TestCase from "../TestCase";
 
-// element types, that are not supported for selection
-const unsupportedElementTypes = new Set([
-  "bpmn:Collaboration",
-  "bpmn:Participant",
-  "bpmn:Process",
-  "bpmn:SequenceFlow",
-  "bpmn:SubProcess"
-]);
+import { UNSUPPORTED_ELEMENT_TYPES } from "../Constants";
 
 export default class SelectorMode {
   constructor(plugin) {
@@ -88,7 +82,7 @@ export default class SelectorMode {
     this._plugin.updateView();
   }
 
-    /**
+  /**
    * Called when a modeler element is clicked. This function handles the selection of a path's
    * start and end element. If start and end element are selected, the PathFinder tries to find
    * possible paths.
@@ -102,7 +96,7 @@ export default class SelectorMode {
     // reset
     selection.path = [];
 
-    if (unsupportedElementTypes.has(event.element.type)) {
+    if (UNSUPPORTED_ELEMENT_TYPES.has(event.element.type)) {
       // skip clicks on unsupported elements
       return;
     } else if (selection.hasEnd() && id === selection.start) {
@@ -157,7 +151,7 @@ export default class SelectorMode {
   }
 
   get name() {
-    return "selector";
+    return MODE_SELECTOR;
   }
 
   get paths() {

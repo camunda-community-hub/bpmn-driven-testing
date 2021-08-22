@@ -1,14 +1,17 @@
+import {
+  MODE_EDITOR,
+  MODE_SELECTOR
+} from "./Constants";
+
 import PathFinder from "./PathFinder";
 import PathMarker from "./PathMarker";
+import pluginTabState from "./PluginTabState";
 import PluginView from "./PluginView";
 import TestCaseModdle from "./TestCaseModdle";
 
-// Modes
 import CoverageMode from "./mode/CoverageMode";
 import EditorMode from "./mode/EditorMode";
 import SelectorMode from "./mode/SelectorMode";
-
-import state from "./ModelerTabState";
 
 export default class Plugin {
   constructor(options) {
@@ -29,7 +32,7 @@ export default class Plugin {
     this._addMode(new SelectorMode(this));
 
     // state
-    this._activeMode = this._modes["selector"];
+    this._activeMode = this._modes[MODE_SELECTOR];
     this._enabled = false;
     this._testCases = [];
 
@@ -49,8 +52,7 @@ export default class Plugin {
     });
   
     eventBus.on("import.done", () => {
-      // register plugin instance at tab state
-      this._tabId = state.register(this);
+      this._tabId = pluginTabState.register(this);
 
       this._testCaseModdle = new TestCaseModdle({
         elementRegistry: this._elementRegistry,
@@ -62,9 +64,9 @@ export default class Plugin {
       this._testCases = this._testCaseModdle.getTestCases();
 
       if (this._testCases.length === 0) {
-        this._activeMode = this._modes["selector"];
+        this._activeMode = this._modes[MODE_SELECTOR];
       } else {
-        this._activeMode = this._modes["editor"];
+        this._activeMode = this._modes[MODE_EDITOR];
       }
     });
 
@@ -75,8 +77,7 @@ export default class Plugin {
         return;
       }
 
-      // when element ID was changed
-      // update path of all test cases
+      // when element ID was changed, update path of all test cases
       this._testCases.forEach(testCase => testCase.update(oldProperties.id, properties.id));
     });
 
@@ -87,8 +88,7 @@ export default class Plugin {
     eventBus.on("diagram.destroy", () => {
       this.disable();
 
-      // unregister plugin instance at tab state
-      state.unregister(this._tabId);
+      pluginTabState.unregister(this._tabId);
     });
   }
 
@@ -135,6 +135,15 @@ export default class Plugin {
     this._testCaseModdle.markAsChanged();
   }
 
+  setMode(modeName) {
+    this.mode.disable();
+
+    this._activeMode = this._modes[modeName];
+    this._activeMode.enable();
+
+    this._updateView();
+  }
+
   _addMode(mode) {
     this._modes[mode.name] = mode;
   }
@@ -161,14 +170,5 @@ export default class Plugin {
   }
   get testCases() {
     return this._testCases;
-  }
-
-  set mode(mode) {
-    this.mode.disable();
-
-    this._activeMode = this._modes[mode];
-    this._activeMode.enable();
-
-    this._updateView();
   }
 }

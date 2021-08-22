@@ -1,7 +1,7 @@
 /**
  * Class, which keeps track if the plugin instances and their last state.
  */
-class ModelerTabState {
+class PluginTabState {
   constructor() {
     this._tabs = {};
   }
@@ -11,8 +11,10 @@ class ModelerTabState {
    * This function is called when the active tab is changed to a DMN or CMMN diagram.
    */
   disablePlugin() {
-    if (this._hasActiveTab() && this._hasTab(this._activeTabId)) {
-      const tab = this._getActiveTab();
+    const { _activeTabId, _tabs } = this;
+
+    if (_activeTabId !== undefined && _tabs[_activeTabId] !== undefined) {
+      const tab = this._tabs[this._activeTabId];
 
       // remember plugin state
       tab.enabled = tab.plugin.enabled;
@@ -29,31 +31,13 @@ class ModelerTabState {
     return this._activeTabId;
   }
 
-  unregister(tabId) {
-    delete this._tabs[tabId];
-  }
+  setActiveTabId(activeTabId) {
+    const { _tabs } = this;
 
-  _getActiveTab() {
-    return this._tabs[this._activeTabId];
-  }
-
-  _getTab(tabId) {
-    return this._tabs[tabId];
-  }
-
-  _hasActiveTab() {
-    return this._activeTabId !== undefined;
-  }
-
-  _hasTab(tabId) {
-    return this._tabs[tabId] !== undefined;
-  }
-
-  set activeTabId(activeTabId) {
     this.disablePlugin();
   
-    if (this._hasTab(activeTabId)) {
-      const tab = this._getTab(activeTabId);
+    if (_tabs[activeTabId] !== undefined) {
+      const tab = _tabs[activeTabId];
 
       if (tab.enabled) {
         tab.plugin.enable();
@@ -62,7 +46,11 @@ class ModelerTabState {
   
     this._activeTabId = activeTabId;
   }
+
+  unregister(tabId) {
+    delete this._tabs[tabId];
+  }
 }
 
 // create shared state
-export default new ModelerTabState();
+export default new PluginTabState();

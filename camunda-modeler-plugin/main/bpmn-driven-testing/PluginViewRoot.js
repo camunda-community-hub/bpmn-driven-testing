@@ -1,18 +1,18 @@
 import React from "react";
 
-import EditorModeModal from "../mode/EditorModeModal";
-import EditorModeView from "../mode/EditorModeView";
-import SelectorModeView from "../mode/SelectorModeView";
+import {
+  MODE_COVERAGE,
+  MODE_EDITOR,
+  MODE_SELECTOR
+} from "./Constants";
 
 import Button from "./component/Button";
 
-const modes = {
-  coverage: "coverage",
-  editor: "editor",
-  selector: "selector"
-}
+import Editor from "./mode/Editor";
+import EditorModal from "./mode/EditorModal";
+import Selector from "./mode/Selector";
 
-export default class Root extends React.Component {
+export default class PluginViewRoot extends React.Component {
   constructor(props) {
     super(props);
 
@@ -23,8 +23,8 @@ export default class Root extends React.Component {
     this._handleClickClose = this._handleClickClose.bind(this);
     this._handleClickModalBackdrop = this._handleClickModalBackdrop.bind(this);
 
-    this._handleToggleSelection = this._toggleMode.bind(this, modes.selector);
-    this._handleToggleCoverage = this._toggleMode.bind(this, modes.coverage);
+    this._handleToggleSelection = this._toggleMode.bind(this, MODE_SELECTOR);
+    this._handleToggleCoverage = this._toggleMode.bind(this, MODE_COVERAGE);
   }
 
   componentDidMount() {
@@ -43,16 +43,16 @@ export default class Root extends React.Component {
   _handleClickModalBackdrop() {
     const { mode } = this.props.plugin;
 
-    mode.modal = false;
+    mode.showModal(false);
   }
 
   _toggleMode(modeName) {
     const { mode } = this.props.plugin;
 
     if (mode.name !== modeName) {
-      this.props.plugin.mode = modeName;
+      this.props.plugin.setMode(modeName);
     } else {
-      this.props.plugin.mode = modes.editor;
+      this.props.plugin.setMode(MODE_EDITOR);
     }
   }
 
@@ -64,9 +64,9 @@ export default class Root extends React.Component {
     const { mode, testCases } = this.props.plugin;
 
     const active = [
-      mode.name === modes.coverage,
-      mode.name === modes.editor,
-      mode.name === modes.selector
+      mode.name === MODE_COVERAGE,
+      mode.name === MODE_EDITOR,
+      mode.name === MODE_SELECTOR
     ];
 
     return (
@@ -84,13 +84,13 @@ export default class Root extends React.Component {
 
         <div className="root">
           <div className="root-container">
-            {active[1] ? <EditorModeView mode={mode} testCases={testCases} /> : null}
-            {active[2] ? <SelectorModeView mode={mode} /> : null}
+            {active[1] ? <Editor mode={mode} testCases={testCases} /> : null}
+            {active[2] ? <Selector mode={mode} /> : null}
           </div>
         </div>
 
-        {active[1] && mode.modal ? <EditorModeModal mode={mode} /> : null}
-        {active[1] && mode.modal ? <div className="modal-backdrop" onClick={this._handleClickModalBackdrop}></div> : null}
+        {active[1] && mode.isModalShown() ? <EditorModal mode={mode} /> : null}
+        {active[1] && mode.isModalShown() ? <div className="modal-backdrop" onClick={this._handleClickModalBackdrop}></div> : null}
       </div>
     )
   }

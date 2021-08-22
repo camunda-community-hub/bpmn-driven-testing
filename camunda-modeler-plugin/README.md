@@ -48,7 +48,7 @@ npm run test-watch
 When creating a release, run:
 
 ```
-npm run build && npm run package
+npm run build && npm run zip
 ```
 
 This command bundles the Camunda Modeler plugin and creates a ZIP file called `bpmn-driven-testing-plugin.zip`.

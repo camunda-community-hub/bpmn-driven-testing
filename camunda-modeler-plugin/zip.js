@@ -1,5 +1,5 @@
-// script to package the Camunda Modeler plugin
-// used via 'npm run package'
+// script to zip the bundled Camunda Modeler plugin
+// used via 'npm run zip'
 const AdmZip = require('adm-zip');
 
 const zip = new AdmZip();

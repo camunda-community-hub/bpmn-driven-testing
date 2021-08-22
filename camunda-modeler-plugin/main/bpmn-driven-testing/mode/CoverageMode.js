@@ -1,3 +1,5 @@
+import { MODE_COVERAGE } from "../Constants";
+
 export default class CoverageMode {
   constructor(plugin) {
     this._plugin = plugin;
@@ -21,6 +23,6 @@ export default class CoverageMode {
   }
 
   get name() {
-    return "coverage";
+    return MODE_COVERAGE;
   }
 }

@@ -1,5 +1,12 @@
+import {
+  BPMN_BOUNDARY_EVENT,
+  BPMN_END_EVENT,
+  BPMN_START_EVENT,
+  BPMN_SUB_PROCESS
+} from "./Constants";
+
 /**
- * Class to find possible paths through a BPMN process definition.
+ * Class to find possible paths through a BPMN process.
  */
 export default class PathFinder {
   constructor(elementRegistry) {
@@ -63,7 +70,7 @@ export default class PathFinder {
   }
 
   _findStartEvent(subProcessId) {
-    return this._filter("bpmn:StartEvent").find(element => {
+    return this._filter(BPMN_START_EVENT).find(element => {
       return element.businessObject.$parent.id === subProcessId;
     });
   }
@@ -71,7 +78,7 @@ export default class PathFinder {
   _getBoundary(elementId) {
     const next = [];
     
-    this._filter("bpmn:BoundaryEvent").forEach(element => {
+    this._filter(BPMN_BOUNDARY_EVENT).forEach(element => {
       if (element.businessObject.attachedToRef.id === elementId) {
         next.push(element.id);
       }
@@ -83,10 +90,10 @@ export default class PathFinder {
   _getOutgoing(element) {
     const next = [];
 
-    if (element.type === "bpmn:EndEvent") {
+    if (element.type === BPMN_END_EVENT) {
       const parent = element.businessObject.$parent;
 
-      if (parent.$type === "bpmn:SubProcess") {
+      if (parent.$type === BPMN_SUB_PROCESS) {
         const incoming = this._findIncoming(parent.id);
         if (incoming) {
           return [ incoming.id ];
@@ -98,7 +105,7 @@ export default class PathFinder {
       const target = this._elementRegistry.get(sequenceFlow.targetRef.id);
 
       let id;
-      if (target.type === "bpmn:SubProcess") {
+      if (target.type === BPMN_SUB_PROCESS) {
         id = (this._findStartEvent(target.id) || {}).id;
       } else {
         id = target.id;

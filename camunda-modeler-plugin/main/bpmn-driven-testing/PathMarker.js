@@ -1,10 +1,9 @@
-// marker class names, used within the canvas
-const styles = {
-  start: "bpmn-driven-testing-path-start",
-  node: "bpmn-driven-testing-path",
-  end: "bpmn-driven-testing-path-end",
-  error: "bpmn-driven-testing-path-error"
-};
+import {
+  MARKER,
+  MARKER_END,
+  MARKER_ERROR,
+  MARKER_START
+} from "./Constants";
 
 export default class PathMarker {
   constructor(elementRegistry, canvas) {
@@ -25,19 +24,19 @@ export default class PathMarker {
     }
 
     if (selection.hasStart()) {
-      const marker = { id: selection.start, style: styles.start };
+      const marker = { id: selection.start, style: MARKER_START };
       this._markers.push(marker);
       this._add(marker);
     }
 
     for (let i = 1; i < selection.path.length - 1; i++) {
-      const marker = { id: selection.path[i], style: styles.node };
+      const marker = { id: selection.path[i], style: MARKER };
       this._markers.push(marker);
       this._add(marker);
     }
 
     if (selection.hasEnd()) {
-      const marker = { id: selection.end, style: styles.end };
+      const marker = { id: selection.end, style: MARKER_END };
       this._markers.push(marker);
       this._add(marker);
     }
@@ -50,7 +49,7 @@ export default class PathMarker {
     }
 
     for (const element of elements) {
-      const marker = { id: element, style: styles.node };
+      const marker = { id: element, style: MARKER };
       this._markers.push(marker);
       this._add(marker);
     }
@@ -59,7 +58,7 @@ export default class PathMarker {
   markError() {
     const marker = this._markers[this._markers.length - 1];
     this._remove(marker);
-    marker.style = styles.error;
+    marker.style = MARKER_ERROR;
     this._add(marker);
   }
 
