@@ -1,10 +1,11 @@
+import { MODE_EDITOR } from "../Constants";
 import PathSelection from "../PathSelection";
 
 export default class EditorMode {
   constructor(plugin) {
     this._plugin = plugin;
 
-    this._modal = false;
+    this._showModal = false;
     this._testCaseIndex = -1;
   }
 
@@ -24,6 +25,10 @@ export default class EditorMode {
 
   disable() {
     this._plugin.pathMarker.mark(null);
+  }
+
+  isModalShown() {
+    return this._showModal;
   }
 
   markNextTestCase() {
@@ -70,6 +75,12 @@ export default class EditorMode {
     }
   }
 
+  showModal(show) {
+    this._showModal = show;
+    this._plugin.editTestCase();
+    this._plugin.updateView();
+  }
+
   _markTestCase(testCase) {
     this._selection = new PathSelection(testCase.path);
     this._selection.enrich(this._plugin.elementRegistry);
@@ -77,12 +88,8 @@ export default class EditorMode {
     this._plugin.pathMarker.mark(this._selection);
   }
 
-  get modal() {
-    return this._modal;
-  }
-
   get name() {
-    return "editor";
+    return MODE_EDITOR;
   }
 
   get testCase() {
@@ -94,11 +101,5 @@ export default class EditorMode {
 
   get selection() {
     return this._selection;
-  }
-
-  set modal(modal) {
-    this._modal = modal;
-    this._plugin.editTestCase();
-    this._plugin.updateView();
   }
 }

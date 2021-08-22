@@ -1,19 +1,8 @@
 import React from "react";
 import ReactDOM from "react-dom";
 
-import Root from "./view/Root";
-
-// class name of the view's parent DOM node
-const PARENT_CLASS_NAME = "bjs-container";
-
-const STYLE = `
-  .djs-element {cursor: pointer}
-  .djs-minimap { display: none; }
-  .djs-overlay-context-pad { display: none; }
-  .djs-palette { display: none; }
-  .properties { display: none; }
-  .secondary.links { display: none; }
-`;
+import { PLUGIN_VIEW_PARENT_CLASS_NAME, PLUGIN_VIEW_STYLE } from "./Constants";
+import PluginViewRoot from "./PluginViewRoot";
 
 export default class PluginView {
   constructor(plugin) {
@@ -41,14 +30,14 @@ export default class PluginView {
   show() {
     if (this._style.childNodes.length === 0) {
       // hide diagram elements
-      this._style.appendChild(document.createTextNode(STYLE));
+      this._style.appendChild(document.createTextNode(PLUGIN_VIEW_STYLE));
 
       // find parent element by class name
-      const parent = document.getElementsByClassName(PARENT_CLASS_NAME)[0];
+      const parent = document.getElementsByClassName(PLUGIN_VIEW_PARENT_CLASS_NAME)[0];
       // append root node
       parent.appendChild(this._root);
       // render view
-      ReactDOM.render(<Root plugin={this._plugin} />, this._root);
+      ReactDOM.render(<PluginViewRoot plugin={this._plugin} />, this._root);
     }
   }
 }

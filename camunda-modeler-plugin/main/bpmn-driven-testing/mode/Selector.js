@@ -1,13 +1,12 @@
 import React from "react";
 
-import Button from "../view/component/Button";
+import Button from "../component/Button";
 
-export default class SelectorModeView extends React.Component {
+export default class Selector extends React.Component {
   constructor(props) {
     super(props);
 
     this._handleClickAdd = this._handleClickAdd.bind(this);
-
     this._handleClickNext = this._handleClickNext.bind(this);
     this._handleClickPrev = this._handleClickPrev.bind(this);
   }
@@ -21,7 +20,6 @@ export default class SelectorModeView extends React.Component {
 
     mode.addPath();
   }
-
   _handleClickNext() {
     this.props.mode.markNextPath();
   }

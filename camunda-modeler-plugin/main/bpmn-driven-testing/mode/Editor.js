@@ -1,8 +1,8 @@
 import React from "react";
 
-import Button from "../view/component/Button";
+import Button from "../component/Button";
 
-export default class EditorModeView extends React.Component {
+export default class Editor extends React.Component {
   constructor(props) {
     super(props);
 
@@ -21,7 +21,7 @@ export default class EditorModeView extends React.Component {
   }
 
   _handleClickEdit() {
-    this.props.mode.modal = true;
+    this.props.mode.showModal(true);
   }
   _handleClickRemove() {
     this.props.mode.removeTestCase();
@@ -110,7 +110,7 @@ export default class EditorModeView extends React.Component {
   }
 
   _renderActionCenter(mode) {
-    if (mode.modal) {
+    if (mode.isModalShown()) {
       return null;
     }
 
@@ -128,7 +128,7 @@ export default class EditorModeView extends React.Component {
     )
   }
   _renderActionRight(mode) {
-    if (mode.modal) {
+    if (mode.isModalShown()) {
       return null;
     }
 

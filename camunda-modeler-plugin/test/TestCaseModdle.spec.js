@@ -8,6 +8,12 @@ import bpmndt from "../main/bpmn-driven-testing.json";
 import TestCase from "../main/bpmn-driven-testing/TestCase";
 import TestCaseModdle from "../main/bpmn-driven-testing/TestCaseModdle";
 
+import {
+  BPMNDT_PATH,
+  BPMNDT_TEST_CASE,
+  BPMNDT_TEST_CASES
+} from "../main/bpmn-driven-testing/Constants";
+
 const expect = chai.expect;
 
 const moddle = new BpmnModdle({
@@ -24,6 +30,8 @@ function createTestCaseModdle(modelInstance) {
 describe("TestCaseModdle", () => {
   // other extension
   let camundaPropertiesXml;
+  // test case with name and description
+  let happyPathXml;
   // no test cases, no extensionElements
   let noTestCasesXml;
   // one test case
@@ -33,6 +41,7 @@ describe("TestCaseModdle", () => {
 
   before(() => {
     camundaPropertiesXml = readBpmnFile("camundaProperties.bpmn");
+    happyPathXml = readBpmnFile("happyPath.bpmn")
     noTestCasesXml = readBpmnFile("noTestCases.bpmn");
     simpleXml = readBpmnFile("simple.bpmn");
     simpleCollaborationXml = readBpmnFile("simpleCollaboration.bpmn");
@@ -62,6 +71,24 @@ describe("TestCaseModdle", () => {
       expect(testCase.path).to.have.lengthOf(2);
       expect(testCase.path[0]).to.equal("startEvent");
       expect(testCase.path[1]).to.equal("endEvent");
+    });
+
+    it("should get one test case with name and description from happyPath.bpmn", async () => {
+      const modelInstance = await moddle.fromXML(happyPathXml);
+
+      const testCaseModdle = createTestCaseModdle(modelInstance);
+
+      const testCases = testCaseModdle.getTestCases();
+      expect(testCases).to.have.lengthOf(1);
+
+      const testCase = testCases[0];
+      expect(testCase).to.have.property("path");
+      expect(testCase.path).to.be.an("array")
+      expect(testCase.path).to.have.lengthOf(2);
+      expect(testCase.path[0]).to.equal("startEvent");
+      expect(testCase.path[1]).to.equal("endEvent");
+      expect(testCase.name).to.equal("Happy Path");
+      expect(testCase.description).to.equal("The happy path");
     });
 
     it("should get one test case from simpleCollaboration.bpmn", async () => {
@@ -116,7 +143,9 @@ describe("TestCaseModdle", () => {
         const testCaseModdle = createTestCaseModdle(modelInstance);
   
         const testCase = new TestCase({
-          path: ["a", "b"]
+          path: ["a", "b"],
+          name: "A name",
+          description: "A description",
         });
   
         testCaseModdle.setTestCases([testCase]);
@@ -126,19 +155,21 @@ describe("TestCaseModdle", () => {
         const extensionElements = testCaseModdle._process.extensionElements;
         expect(extensionElements.values).to.be.an("array");
         expect(extensionElements.values).to.have.lengthOf(1);
-        expect(extensionElements.values[0].$type).to.equal("bpmndt:TestCases");
+        expect(extensionElements.values[0].$type).to.equal(BPMNDT_TEST_CASES);
   
         const extension = extensionElements.values[0];
         expect(extension.testCases).to.be.an("array");
         expect(extension.testCases).to.have.lengthOf(1);
-        expect(extension.testCases[0].$type).to.equal("bpmndt:TestCase")
+        expect(extension.testCases[0].$type).to.equal(BPMNDT_TEST_CASE)
         expect(extension.testCases[0]).to.have.property("path");
-        expect(extension.testCases[0].path.$type).to.equal("bpmndt:Path");
+        expect(extension.testCases[0].path.$type).to.equal(BPMNDT_PATH);
         expect(extension.testCases[0].path).to.have.property("node");
         expect(extension.testCases[0].path.node).to.be.an("array");
         expect(extension.testCases[0].path.node).to.have.lengthOf(2);
         expect(extension.testCases[0].path.node[0]).to.be.equal("a");
         expect(extension.testCases[0].path.node[1]).to.be.equal("b");
+        expect(extension.testCases[0].name).to.be.equal("A name");
+        expect(extension.testCases[0].description).to.be.equal("A description");
       });
 
       it("should update the extension", async () => {
@@ -159,7 +190,7 @@ describe("TestCaseModdle", () => {
         const extensionElements = testCaseModdle._process.extensionElements;
         expect(extensionElements.values).to.be.an("array");
         expect(extensionElements.values).to.have.lengthOf(1);
-        expect(extensionElements.values[0].$type).to.equal("bpmndt:TestCases");
+        expect(extensionElements.values[0].$type).to.equal(BPMNDT_TEST_CASES);
   
         const extension = extensionElements.values[0];
         expect(extension.testCases).to.be.an("array");

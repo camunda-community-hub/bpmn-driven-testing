@@ -1,6 +1,6 @@
 import { PureComponent } from "camunda-modeler-plugin-helpers/react";
 
-import state from "./ModelerTabState";
+import pluginTabState from "./PluginTabState";
 
 /**
  * Extension, which runs outside of BPMN JS to be able to subscribe to tab change events.
@@ -13,9 +13,9 @@ export default class ModelerExtension extends PureComponent {
       const { activeTab } = event;
 
       if (activeTab.type === "bpmn") {
-        state.activeTabId = activeTab.id;
+        pluginTabState.setActiveTabId(activeTab.id);
       } else {
-        state.disablePlugin();
+        pluginTabState.disablePlugin();
       }
     });
   }

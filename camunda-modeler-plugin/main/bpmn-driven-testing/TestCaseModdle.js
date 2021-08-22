@@ -1,5 +1,14 @@
 import TestCase from "./TestCase";
 
+import {
+  BPMN_EXTENSION_ELEMENTS,
+  BPMN_PARTICIPANT,
+  BPMN_PROCESS,
+  BPMNDT_PATH,
+  BPMNDT_TEST_CASE,
+  BPMNDT_TEST_CASES
+} from "./Constants";
+
 export default class TestCaseModdle {
   constructor(options) {
     this._modeling = options.modeling;
@@ -13,7 +22,7 @@ export default class TestCaseModdle {
     const extensionElements = this._process.extensionElements || {};
 
     // find "bpmndt:TestCases" extension element
-    const extension = (extensionElements.values || []).find(extensionElement => extensionElement.$type === "bpmndt:TestCases");
+    const extension = (extensionElements.values || []).find(extensionElement => extensionElement.$type === BPMNDT_TEST_CASES);
 
     if (extension) {
       return (extension.testCases || []).map(testCase => this._testCaseFromModdle(testCase));
@@ -27,11 +36,11 @@ export default class TestCaseModdle {
   }
 
   setTestCases(testCases) {
-    const extensionElements = this._process.extensionElements || this._moddle.create("bpmn:ExtensionElements")
+    const extensionElements = this._process.extensionElements || this._moddle.create(BPMN_EXTENSION_ELEMENTS)
 
     // remove extension
     extensionElements.values = (extensionElements.values || []).filter(extensionElement => {
-      return extensionElement.$type !== "bpmndt:TestCases"
+      return extensionElement.$type !== BPMNDT_TEST_CASES
     });
 
     if (testCases.length === 0 && extensionElements.values.length === 0) {
@@ -42,7 +51,7 @@ export default class TestCaseModdle {
     }
 
     if (testCases.length !== 0) {
-      extensionElements.values.push(this._moddle.create("bpmndt:TestCases", {
+      extensionElements.values.push(this._moddle.create(BPMNDT_TEST_CASES, {
         testCases: testCases.map(testCase => this._testCaseToModdle(testCase))
       }));
     }
@@ -51,13 +60,13 @@ export default class TestCaseModdle {
   }
 
   _findProcess(elementRegistry) {
-    const process = elementRegistry.find(element => element.type === "bpmn:Process");
+    const process = elementRegistry.find(element => element.type === BPMN_PROCESS);
     if (process) {
       return process.businessObject;
     }
 
     // in case of a collaboration
-    const participant = elementRegistry.filter(element => element.type === "bpmn:Participant").find(element => {
+    const participant = elementRegistry.filter(element => element.type === BPMN_PARTICIPANT).find(element => {
       return element.businessObject.processRef !== undefined;
     });
 
@@ -85,11 +94,11 @@ export default class TestCaseModdle {
    * @param {TestCase} testCase 
    */
   _testCaseToModdle(testCase) {
-    const path = this._moddle.create("bpmndt:Path", {
+    const path = this._moddle.create(BPMNDT_PATH, {
       node: testCase.path
     });
 
-    return this._moddle.create("bpmndt:TestCase", {
+    return this._moddle.create(BPMNDT_TEST_CASE, {
       name: testCase.name,
       description: testCase.description,
       path: path

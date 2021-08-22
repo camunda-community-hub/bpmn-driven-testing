@@ -1,6 +1,6 @@
 import React from "react";
 
-export default class EditorModeModal extends React.Component {
+export default class EditorModal extends React.Component {
   constructor(props) {
     super(props);
 
@@ -43,21 +43,17 @@ export default class EditorModeModal extends React.Component {
 
     return (
       <div className="container">
-        <div className="row" style={this._getMargin()}>
+        <div className="row" style={{"marginTop": "10px", "marginBottom": "10px"}}>
           <div className="col">
             <input className="text-center" type="text" placeholder="Name" value={testCase.name || ""} onChange={this._handleChangeName} />
           </div>
         </div>
-        <div className="row" style={this._getMargin()}>
+        <div className="row" style={{"marginTop": "10px", "marginBottom": "10px"}}>
           <div className="col">
             <textarea placeholder="Description" rows="3" value={testCase.description || ""} onChange={this._handleChangeDescription} />
           </div>
         </div>
       </div>
     )
-  }
-
-  _getMargin() {
-    return {"marginTop": "10px", "marginBottom": "10px"};
   }
 }
