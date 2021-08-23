@@ -2,6 +2,8 @@
 export const BPMN_BOUNDARY_EVENT = "bpmn:BoundaryEvent";
 export const BPMN_COLLABORATION = "bpmn:Collaboration";
 export const BPMN_END_EVENT = "bpmn:EndEvent";
+export const BPMN_ERROR_EVENT_DEFINITION = "bpmn:ErrorEventDefinition";
+export const BPMN_ESCALATION_EVENT_DEFINITION = "bpmn:EscalationEventDefinition";
 export const BPMN_EXTENSION_ELEMENTS = "bpmn:ExtensionElements";
 export const BPMN_PARTICIPANT = "bpmn:Participant";
 export const BPMN_PROCESS = "bpmn:Process";

@@ -1,6 +1,8 @@
 import {
   BPMN_BOUNDARY_EVENT,
   BPMN_END_EVENT,
+  BPMN_ERROR_EVENT_DEFINITION,
+  BPMN_ESCALATION_EVENT_DEFINITION,
   BPMN_START_EVENT,
   BPMN_SUB_PROCESS
 } from "./Constants";
@@ -57,6 +59,13 @@ export default class PathFinder {
     return this._elementRegistry.filter(element => element.type === elementType);
   }
 
+  /**
+   * Finds all elements with a sequence flow that is coming from the given embedded sub process.
+   * 
+   * @param {String} subProcessId ID of an embedded sub process.
+   * 
+   * @returns The found elements.
+   */
   _findIncoming(subProcessId) {
     return this._elementRegistry.find(element => {
       const { incoming } = element.businessObject;
@@ -87,16 +96,67 @@ export default class PathFinder {
     return next;
   }
 
+  _getErrorBoundary(elementId, expectedErrorCode) {
+    const next = [];
+
+    this._filter(BPMN_BOUNDARY_EVENT).forEach(element => {
+      if (element.businessObject.attachedToRef.id !== elementId) {
+        return;
+      }
+
+      const eventDefinitions = element.businessObject.eventDefinitions;
+      if (!this._isErrorEventDefinition(eventDefinitions)) {
+        return;
+      }
+
+      const errorCode = eventDefinitions[0]?.errorRef?.errorCode;
+      if (expectedErrorCode && expectedErrorCode === errorCode) {
+        next.push(element.id);
+      }
+    });
+
+    return next;
+  }
+
+  _getEscalationBoundary(elementId, expectedEscalationCode) {
+    const next = [];
+
+    this._filter(BPMN_BOUNDARY_EVENT).forEach(element => {
+      if (element.businessObject.attachedToRef.id !== elementId) {
+        return;
+      }
+
+      const eventDefinitions = element.businessObject.eventDefinitions;
+      if (!this._isEscalationEventDefinition(eventDefinitions)) {
+        return;
+      }
+
+      const escalationCode = eventDefinitions[0]?.escalationRef?.escalationCode;
+      if (expectedEscalationCode && expectedEscalationCode === escalationCode) {
+        next.push(element.id);
+      }
+    });
+
+    return next;
+  }
+
   _getOutgoing(element) {
     const next = [];
 
     if (element.type === BPMN_END_EVENT) {
-      const parent = element.businessObject.$parent;
+      const { eventDefinitions, $parent } = element.businessObject;
 
-      if (parent.$type === BPMN_SUB_PROCESS) {
-        const incoming = this._findIncoming(parent.id);
-        if (incoming) {
-          return [ incoming.id ];
+      if ($parent.$type === BPMN_SUB_PROCESS) {
+        if (this._isErrorEventDefinition(eventDefinitions)) {
+          // handle error end events of embedded sub processes
+          return this._getErrorBoundary($parent.id, eventDefinitions[0].errorRef?.errorCode);
+        } else if (this._isEscalationEventDefinition(eventDefinitions)) {
+          // handle escalation end events of embedded sub processes
+          return this._getEscalationBoundary($parent.id, eventDefinitions[0].escalationRef?.escalationCode);
+        } else {
+          // handle end events of embedded sub processes
+          const incoming = this._findIncoming($parent.id);
+          return incoming ? [ incoming.id ] : [];
         }
       }
     }
@@ -117,6 +177,14 @@ export default class PathFinder {
     });
 
     return next;
+  }
+
+  _isErrorEventDefinition(eventDefinitions) {
+    return eventDefinitions && eventDefinitions.length !== 0 && eventDefinitions[0].$type === BPMN_ERROR_EVENT_DEFINITION;
+  }
+
+  _isEscalationEventDefinition(eventDefinitions) {
+    return eventDefinitions && eventDefinitions.length !== 0 && eventDefinitions[0].$type === BPMN_ESCALATION_EVENT_DEFINITION;
   }
 
   _isLoop(state) {
