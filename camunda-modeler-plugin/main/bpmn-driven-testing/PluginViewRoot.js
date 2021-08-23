@@ -69,6 +69,10 @@ export default class PluginViewRoot extends React.Component {
       mode.name === MODE_SELECTOR
     ];
 
+    // hide root to make complete diagram clickable
+    // when selector is active and no paths have been found yet
+    const hideRoot = active[2] && mode.paths.length === 0;
+
     return (
       <div>
         <div className="root-action">
@@ -80,9 +84,10 @@ export default class PluginViewRoot extends React.Component {
 
           {this._renderToggleSelector(active[2])}
           {this._renderToggleCoverage(active[0])}
+          {this._renderToggleEditorModal(active[1] && mode.isModalShown())}
         </div>
 
-        <div className="root">
+        <div className="root" style={hideRoot ? {display: "none"} : {}}>
           <div className="root-container">
             {active[1] ? <Editor mode={mode} testCases={testCases} /> : null}
             {active[2] ? <Selector mode={mode} /> : null}
@@ -104,6 +109,20 @@ export default class PluginViewRoot extends React.Component {
           title={`${active ? "Hide" : "Show"} coverage`}
         >
           <i className="fas fa-tasks"></i>
+        </Button>
+      </div>
+    )
+  }
+
+  _renderToggleEditorModal(active) {
+    if (!active) {
+      return null;
+    }
+
+    return (
+      <div style={{float: "left", marginBottom: "0.5rem"}}>
+        <Button style="primary">
+          <i className="fas fa-pencil-alt"></i>
         </Button>
       </div>
     )
