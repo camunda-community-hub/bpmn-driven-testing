@@ -52,6 +52,11 @@ export default class PathValidator {
         problems.push({type: UNRESOLVABLE});
       }
 
+      if (paths.find(foundPath => this._pathEquals(path, foundPath)) !== undefined) {
+        // path is still valid
+        return [];
+      }
+
       if (a != 0) {
         // a is no the start node
         problems.push({type: START, end: path[a], missing: start});
@@ -92,5 +97,19 @@ export default class PathValidator {
     }
 
     return problems;
+  }
+
+  _pathEquals(a, b) {
+    if (a.length !== b.length) {
+      return false;
+    }
+
+    for (let i = a.length - 1; i >= 0; i--) {
+      if (a[i] !== b[i]) {
+        return false;
+      }
+    }
+
+    return true;
   }
 }

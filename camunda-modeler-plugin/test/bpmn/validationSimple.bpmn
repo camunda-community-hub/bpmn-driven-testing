@@ -43,6 +43,13 @@
             <bpmndt:node>messageEndEvent</bpmndt:node>
           </bpmndt:path>
         </bpmndt:testCase>
+        <bpmndt:testCase>
+          <bpmndt:path>
+            <bpmndt:node>startEvent</bpmndt:node>
+            <bpmndt:node>intermediateEvent</bpmndt:node>
+            <bpmndt:node>endEvent</bpmndt:node>
+          </bpmndt:path>
+        </bpmndt:testCase>
       </bpmndt:testCases>
     </bpmn:extensionElements>
     <bpmn:startEvent id="startEvent">

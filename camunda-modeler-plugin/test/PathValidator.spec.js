@@ -94,6 +94,11 @@ describe("PathValidator", () => {
         type: END, start: "intermediateEvent", startType: "bpmn:IntermediateThrowEvent", missing: "messageEndEvent"
       });
     });
+
+    it("should detect no issues, when path is still valid", () => {
+      const problems = validator.validate(testCases[6]);
+      expect(problems).to.have.lengthOf(0);
+    });
   });
 
   describe("advanced", () => {
@@ -123,6 +128,11 @@ describe("PathValidator", () => {
       expect(problems[0]).to.deep.include({
         type: PATH, start: "startEvent", startType: "bpmn:StartEvent", end: "endEvent", endType: "bpmn:EndEvent"
       });
+    });
+
+    it("should detect no issues, when path is still valid", () => {
+      const problems = validator.validate(testCases[2]);
+      expect(problems).to.have.lengthOf(0);
     });
   });
 });

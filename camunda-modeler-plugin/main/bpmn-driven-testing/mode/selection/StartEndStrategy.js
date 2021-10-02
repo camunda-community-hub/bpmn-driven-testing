@@ -39,7 +39,7 @@ export default class StartEndStrategy extends BaseStrategy {
   }
 
   migrate(path) {
-    this.testCase.path = path;
+    return path;
   }
 
   _getMarkers() {
