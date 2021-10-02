@@ -82,7 +82,7 @@ export default class EditorMode {
     } else {
       this._testCaseIndex = -1;
 
-      this._plugin.pathMarker.mark(null);
+      this._plugin.pathMarker.unmark();
       this._plugin.updateView();
     }
   }
