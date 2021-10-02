@@ -1,44 +1,46 @@
-import {
-  MODE_EDITOR,
-  MODE_SELECTOR
-} from "./Constants";
+import { MODE_EDITOR, MODE_MIGRATION, MODE_SELECTION } from "./Constants";
 
 import PathFinder from "./PathFinder";
 import PathMarker from "./PathMarker";
+import PathValidator from "./PathValidator";
 import pluginTabState from "./PluginTabState";
 import PluginView from "./PluginView";
 import TestCaseModdle from "./TestCaseModdle";
 
 import CoverageMode from "./mode/CoverageMode";
 import EditorMode from "./mode/EditorMode";
-import SelectorMode from "./mode/SelectorMode";
+import MigrationMode from "./mode/MigrationMode";
+import SelectionMode from "./mode/SelectionMode";
 
 export default class Plugin {
   constructor(options) {
-    this._elementRegistry = options.elementRegistry;
-    this._eventBus = options.eventBus;
-    this._modeling = options.modeling;
-    this._moddle = options.moddle;
+    const { canvas, elementRegistry, eventBus, moddle, modeling } = options;
 
-    this._pathMarker = new PathMarker(options.elementRegistry, options.canvas);
-    this._pathFinder = new PathFinder(options.elementRegistry);
+    this._elementRegistry = elementRegistry;
+    this._eventBus = eventBus;
+    this._moddle = moddle;
+    this._modeling = modeling;
+
+    this._pathMarker = new PathMarker(elementRegistry, canvas);
+    this._pathFinder = new PathFinder(elementRegistry);
+    this._pathValidator = new PathValidator(elementRegistry, this._pathFinder);
 
     this._view = new PluginView(this);
 
-    // define possible modes
+    // modes
     this._modes = {};
     this._addMode(new CoverageMode(this));
     this._addMode(new EditorMode(this));
-    this._addMode(new SelectorMode(this));
+    this._addMode(new MigrationMode(this));
+    this._addMode(new SelectionMode(this));
 
     // state
-    this._activeMode = this._modes[MODE_SELECTOR];
+    this._activeMode = this._modes[MODE_SELECTION];
+    this._elementsChanged = false;
     this._enabled = false;
     this._testCases = [];
 
     // subscribe events
-    const eventBus = options.eventBus;
-
     eventBus.on("editorActions.init", (event) => {
       const editorActions = event.editorActions;
   
@@ -64,10 +66,31 @@ export default class Plugin {
       this._testCases = this._testCaseModdle.getTestCases();
 
       if (this._testCases.length === 0) {
-        this._activeMode = this._modes[MODE_SELECTOR];
+        this._activeMode = this._modes[MODE_SELECTION];
       } else {
         this._activeMode = this._modes[MODE_EDITOR];
       }
+
+      // validate test cases
+      setTimeout(() => {
+        this._testCases.forEach(testCase => {
+          testCase.problems = this._pathValidator.validate(testCase);
+          
+          if (testCase.autoResolveProblem()) {
+            this.markAsChanged();
+
+            if (this._enabled) {
+              this.mode.enable();
+            }
+          }
+        });
+
+        this.updateView();
+      }, 1000);
+    });
+
+    eventBus.on("elements.changed", () => {
+      this._elementsChanged = true;
     });
 
     eventBus.on("commandStack.element.updateProperties.postExecuted", event => {
@@ -96,6 +119,27 @@ export default class Plugin {
     this._enabled = true;
     this._activeMode.enable();
     this._view.show();
+
+    if (this._testCases === undefined) {
+      return;
+    }
+
+    // validate test cases
+    setTimeout(() => {
+      this._testCases.forEach(testCase => {
+        testCase.problems = this._pathValidator.validate(testCase);
+        
+        if (testCase.autoResolveProblem()) {
+          this.markAsChanged();
+
+          if (this._enabled) {
+            this.mode.enable();
+          }
+        }
+      });
+
+      this.updateView();
+    }, 1000);
   }
 
   disable() {
@@ -109,14 +153,16 @@ export default class Plugin {
   }
 
   updateView() {
-    this._updateView();
+    if (this._updateView) {
+      this._updateView();
+    }
   }
 
   addTestCase(testCase) {
     this._testCases.push(testCase);
 
     // mark diagram as changed
-    this._testCaseModdle.markAsChanged();
+    this.markAsChanged();
   }
 
   /**
@@ -124,7 +170,18 @@ export default class Plugin {
    */
   editTestCase() {
     // mark diagram as changed
+    this.markAsChanged();
+  }
+
+  markAsChanged() {
     this._testCaseModdle.markAsChanged();
+  }
+
+  migrateTestCase(testCase) {
+    const mode = this._modes[MODE_MIGRATION];
+    mode.testCase = testCase;
+
+    this.setMode(mode.name);
   }
 
   removeTestCase(index) {
@@ -132,13 +189,26 @@ export default class Plugin {
     this._testCases.splice(index, 1);
 
     // mark diagram as changed
-    this._testCaseModdle.markAsChanged();
+    this.markAsChanged();
   }
 
-  setMode(modeName) {
+  resolveProblem(strategy) {
+    const mode = this._modes[MODE_SELECTION];
+    mode.strategy = strategy;
+
+    this.setMode(mode.name);
+  }
+
+  setMode(modeName, reset) {
+    // disable currently active mode
     this.mode.disable();
 
     this._activeMode = this._modes[modeName];
+
+    if (reset) {
+      this._activeMode.reset();
+    }
+
     this._activeMode.enable();
 
     this._updateView();

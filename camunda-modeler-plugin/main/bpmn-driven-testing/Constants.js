@@ -15,16 +15,11 @@ export const BPMNDT_PATH = "bpmndt:Path";
 export const BPMNDT_TEST_CASE = "bpmndt:TestCase";
 export const BPMNDT_TEST_CASES = "bpmndt:TestCases";
 
-// marker styles
-export const MARKER = "bpmn-driven-testing-path";
-export const MARKER_END = `${MARKER}-end`;
-export const MARKER_ERROR = `${MARKER}-error`;
-export const MARKER_START = `${MARKER}-start`;
-
 // modes
 export const MODE_COVERAGE = "coverage";
 export const MODE_EDITOR = "editor";
-export const MODE_SELECTOR = "selector";
+export const MODE_MIGRATION = "migration";
+export const MODE_SELECTION = "selection";
 
 // class name of the plugin view's parent DOM node
 export const PLUGIN_VIEW_PARENT_CLASS_NAME = "bjs-container";

@@ -16,15 +16,13 @@ export default class PathFinder {
   }
 
   /**
-   * Finds all paths between a given start and end flow node.
-   * 
-   * @param {PathSelection} selection A path selection, containing start and end flow node.
+   * Finds all paths between a given start and end element.
    */
-  findPaths(selection) {
+  findPaths(start, end) {
     const paths = [];
 
     const stack = [];
-    stack.push({ id: selection.start, path: [] });
+    stack.push({ id: start, path: [] });
 
     while (stack.length !== 0) {
       const current = stack.pop();
@@ -34,7 +32,7 @@ export default class PathFinder {
       }
 
       current.path.push(current.id);
-      if (current.id === selection.end) {
+      if (current.id === end) {
         // stop branch, if end is reached
         paths.push(current.path);
         continue;

@@ -2,29 +2,20 @@ import React from "react";
 
 import Button from "../component/Button";
 
-export default class Selector extends React.Component {
-  constructor(props) {
-    super(props);
-
-    this._handleClickAdd = this._handleClickAdd.bind(this);
-    this._handleClickNext = this._handleClickNext.bind(this);
-    this._handleClickPrev = this._handleClickPrev.bind(this);
+export default class Selection extends React.Component {
+  _handleClickNext = () => {
+    this.props.mode.nextPath();
+  }
+  _handleClickPrev = () => {
+    this.props.mode.prevPath();
   }
 
-  _handleClickAdd() {
-    const { mode } = this.props;
-
-    if (mode.pathEquality) {
-      return;
-    }
-
-    mode.addPath();
+  _handleClickAddTestCase = () => {
+    this.props.mode.addTestCase();
   }
-  _handleClickNext() {
-    this.props.mode.markNextPath();
-  }
-  _handleClickPrev() {
-    this.props.mode.markPrevPath();
+
+  _handleClickMigrateTestCase = () => {
+    this.props.mode.migrateTestCase();
   }
 
   render() {
@@ -44,7 +35,9 @@ export default class Selector extends React.Component {
           </div>
           <div className={`col-10 box ${mode.pathEquality ? "box-not-allowed" : "box-pointer"}`}>
             {this._renderSelectedPath(mode)}
-            {this._renderActionCenter(mode)}
+            <div className="container-center">
+              {this._renderActionCenter(mode)}
+            </div>
           </div>
           <div className="col-1 h-100">
             <div className="v-center-r">
@@ -83,8 +76,21 @@ export default class Selector extends React.Component {
   _renderSelectedPath(mode) {
     const { paths, pathIndex, selection } = mode;
 
+    let onClick;
+    let title;
+    if (mode.pathEquality) {
+      onClick = null;
+      title = "Path already added";
+    } else if (mode.isMigration()) {
+      onClick = this._handleClickMigrateTestCase;
+      title = "Migrate test case";
+    } else {
+      onClick = this._handleClickAddTestCase;
+      title = "Add test case";
+    }
+
     return (
-      <div className="container" onClick={this._handleClickAdd} title={mode.pathEquality ? "Path already added" : "Add test case"}>
+      <div className="container" onClick={onClick} title={title}>
         <div className="row">
           <div className="col text-center">
             <span style={{display: "inline-block", marginBottom: "0.5rem"}}>Path {pathIndex + 1} / {paths.length}</span>
@@ -109,19 +115,21 @@ export default class Selector extends React.Component {
   _renderActionCenter(mode) {
     if (mode.pathEquality) {
       return (
-        <div className="container-center">
-          <div className="icon-danger" title="Path already added">
-            <i className="fas fa-exclamation-triangle" />
-          </div>
+        <div className="icon-danger" title="Path already added">
+          <i className="fas fa-exclamation-triangle" />
         </div>
+      )
+    } else if (mode.isMigration()) {
+      return (
+        <Button small onClick={this._handleClickMigrateTestCase} style="primary" title="Migrate test case">
+          <i className="fas fa-check" />
+        </Button>
       )
     } else {
       return (
-        <div className="container-center">
-          <Button small onClick={this._handleClickAdd} style="success" title="Add test case">
-            <i className="fas fa-plus" />
-          </Button>
-        </div>
+        <Button small onClick={this._handleClickAddTestCase} style="success" title="Add test case">
+          <i className="fas fa-plus" />
+        </Button>
       )
     }
   }

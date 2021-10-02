@@ -124,9 +124,18 @@ A developer can solely focus on the actual implementation!
   - Loop detection
 - Generated test cases provide
   - Automatic handling of wait states
-  - Call activity stubbing for isolated testing - see [CallActivityTest](maven-plugin/src/test/it/advanced/src/test/java/org/example/it/CallActivityTest.java)
+  - Call activity stubbing for isolated testing - see [CallActivityTest](maven-plugin/src/test/it/advanced/src/test/java/org/example/it/CallActivityWithMappingTest.java)
   - Fluent API to override default behavior
-- Spring test support - see [integration test](maven-plugin/src/test/it/advanced-spring)
+- Spring test support - see [AdvancedSpringTest](maven-plugin/src/test/it/advanced-spring/src/test/java/org/example/it/AdvancedSpringTest.java)
 - Testing of arbitrary paths through a BPMN process
+- Test case validation and migration, when a BPMN process was changed - see [docs](docs/test-case-validation-and-migration.md)
 
-![order-fulfillment-canceled-by-customer.png](docs/order-fulfillment-canceled-by-customer.png)
+## More screenshots
+
+| ![order-fulfillment-canceled-by-customer.png](docs/order-fulfillment-canceled-by-customer.png) | 
+|:--:| 
+| *Arbitrary paths* |
+
+| ![order-fulfillment-invalid-path.png](docs/order-fulfillment-invalid-path.png) | 
+|:--:| 
+| *Test case validation* |

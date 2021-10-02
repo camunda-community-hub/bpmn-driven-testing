@@ -19,7 +19,11 @@ export default class CoverageMode {
   disable() {
     const { pathMarker } = this._plugin;
 
-    pathMarker.mark(null);
+    pathMarker.unmark();
+  }
+
+  reset() {
+    // nothing to do here
   }
 
   get name() {

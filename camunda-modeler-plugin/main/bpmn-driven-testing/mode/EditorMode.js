@@ -1,4 +1,6 @@
 import { MODE_EDITOR } from "../Constants";
+import { END, PATH, START } from "../PathMarker";
+
 import PathSelection from "../PathSelection";
 
 export default class EditorMode {
@@ -24,7 +26,11 @@ export default class EditorMode {
   }
 
   disable() {
-    this._plugin.pathMarker.mark(null);
+    this._plugin.pathMarker.unmark();
+  }
+
+  reset() {
+    // nothing to do here
   }
 
   isModalShown() {
@@ -40,8 +46,8 @@ export default class EditorMode {
       this._testCaseIndex++;
     }
 
+    // update
     this._markTestCase(testCases[this._testCaseIndex]);
-
     this._plugin.updateView();
   }
 
@@ -54,9 +60,15 @@ export default class EditorMode {
       this._testCaseIndex--;
     }
 
+    // update
     this._markTestCase(testCases[this._testCaseIndex]);
-
     this._plugin.updateView();
+  }
+
+  migrateTestCase() {
+    const { testCases } = this._plugin;
+
+    this._plugin.migrateTestCase(testCases[this._testCaseIndex]);
   }
 
   removeTestCase() {
@@ -82,24 +94,38 @@ export default class EditorMode {
   }
 
   _markTestCase(testCase) {
-    this._selection = new PathSelection(testCase.path);
-    this._selection.enrich(this._plugin.elementRegistry);
+    const selection = new PathSelection(testCase.path);
+    
+    selection.enrich(this._plugin.elementRegistry);
 
-    this._plugin.pathMarker.mark(this._selection);
+    const markers = [];
+    if (selection.hasStart()) {
+      markers.push({ id: selection.start, style: START });
+    }
+    for (let i = 1; i < selection.path.length - 1; i++) {
+      markers.push({ id: selection.path[i], style: PATH });
+    }
+    if (selection.hasEnd()) {
+      markers.push({ id: selection.end, style: END });
+    }
+
+    this._plugin.pathMarker.mark(markers);
+    this._selection = selection;
   }
 
   get name() {
     return MODE_EDITOR;
   }
 
+  get selection() {
+    return this._selection;
+  }
+
   get testCase() {
     return this._plugin.testCases[this._testCaseIndex];
   }
+
   get testCaseIndex() {
     return this._testCaseIndex;
-  }
-
-  get selection() {
-    return this._selection;
   }
 }

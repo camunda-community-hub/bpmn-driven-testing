@@ -5,25 +5,22 @@ import Button from "../component/Button";
 export default class Editor extends React.Component {
   constructor(props) {
     super(props);
-
-    this._handleClickNext = this._handleClickNext.bind(this);
-    this._handleClickPrev = this._handleClickPrev.bind(this);
-
-    this._handleClickEdit = this._handleClickEdit.bind(this);
-    this._handleClickRemove = this._handleClickRemove.bind(this);
   }
 
-  _handleClickNext() {
+  _handleClickNext = () => {
     this.props.mode.markNextTestCase();
   }
-  _handleClickPrev() {
+  _handleClickPrev = () => {
     this.props.mode.markPrevTestCase();
   }
 
-  _handleClickEdit() {
+  _handleClickMigrate = () => {
+    this.props.mode.migrateTestCase();
+  }
+  _handleClickEdit = () => {
     this.props.mode.showModal(true);
   }
-  _handleClickRemove() {
+  _handleClickRemove = () => {
     this.props.mode.removeTestCase();
   }
 
@@ -44,6 +41,7 @@ export default class Editor extends React.Component {
           </div>
           <div className="col-10 box">
             {this._renderTestCase(mode, testCases)}
+            {this._renderActionLeft(mode, testCases)}
             {this._renderActionCenter(mode)}
             {this._renderActionRight(mode)}
           </div>
@@ -109,6 +107,34 @@ export default class Editor extends React.Component {
     )
   }
 
+  _renderActionLeft(mode, testCases) {
+    if (mode.isModalShown()) {
+      return null;
+    }
+
+    const { testCaseIndex } = mode;
+
+    const testCase = testCases[testCaseIndex];
+    if (testCase.valid) {
+      return null;
+    }
+
+    const problemCount = testCase.problems.length;
+
+    return (
+      <div className="container-left">
+        <Button
+          onClick={this._handleClickMigrate}
+          small
+          style="warning"
+          title={`Path is invalid - click to resolve ${problemCount} problem${problemCount > 1 ? "s" : ""}`}
+        >
+          <i className="fas fa-exclamation"></i>
+        </Button>
+      </div>
+    )
+  }
+
   _renderActionCenter(mode) {
     if (mode.isModalShown()) {
       return null;
@@ -127,6 +153,7 @@ export default class Editor extends React.Component {
       </div>
     )
   }
+
   _renderActionRight(mode) {
     if (mode.isModalShown()) {
       return null;

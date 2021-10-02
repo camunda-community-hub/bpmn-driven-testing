@@ -3,14 +3,16 @@ import React from "react";
 import {
   MODE_COVERAGE,
   MODE_EDITOR,
-  MODE_SELECTOR
+  MODE_MIGRATION,
+  MODE_SELECTION
 } from "./Constants";
 
 import Button from "./component/Button";
 
 import Editor from "./mode/Editor";
 import EditorModal from "./mode/EditorModal";
-import Selector from "./mode/Selector";
+import Migration from "./mode/Migration";
+import Selection from "./mode/Selection";
 
 export default class PluginViewRoot extends React.Component {
   constructor(props) {
@@ -20,11 +22,9 @@ export default class PluginViewRoot extends React.Component {
       registered: false
     };
 
-    this._handleClickClose = this._handleClickClose.bind(this);
-    this._handleClickModalBackdrop = this._handleClickModalBackdrop.bind(this);
-
-    this._handleToggleSelection = this._toggleMode.bind(this, MODE_SELECTOR);
+    this._handleToggleSelection = this._toggleMode.bind(this, MODE_SELECTION);
     this._handleToggleCoverage = this._toggleMode.bind(this, MODE_COVERAGE);
+    this._handleToggleMigration = this._toggleMode.bind(this, MODE_MIGRATION);
   }
 
   componentDidMount() {
@@ -37,10 +37,10 @@ export default class PluginViewRoot extends React.Component {
     this.setState({registered: false});
   }
 
-  _handleClickClose() {
+  _handleClickClose = () => {
     this.props.plugin.disable();
   }
-  _handleClickModalBackdrop() {
+  _handleClickModalBackdrop = () => {
     const { mode } = this.props.plugin;
 
     mode.showModal(false);
@@ -50,7 +50,9 @@ export default class PluginViewRoot extends React.Component {
     const { mode } = this.props.plugin;
 
     if (mode.name !== modeName) {
-      this.props.plugin.setMode(modeName);
+      this.props.plugin.setMode(modeName, true);
+    } else if (modeName === MODE_SELECTION && mode.isMigration()) {
+      this.props.plugin.setMode(MODE_MIGRATION);
     } else {
       this.props.plugin.setMode(MODE_EDITOR);
     }
@@ -64,14 +66,16 @@ export default class PluginViewRoot extends React.Component {
     const { mode, testCases } = this.props.plugin;
 
     const active = [
-      mode.name === MODE_COVERAGE,
       mode.name === MODE_EDITOR,
-      mode.name === MODE_SELECTOR
+      mode.name === MODE_SELECTION,
+      mode.name === MODE_COVERAGE,
+      mode.name === MODE_MIGRATION
     ];
 
     // hide root to make complete diagram clickable
-    // when selector is active and no paths have been found yet
-    const hideRoot = active[2] && mode.paths.length === 0;
+    // when selector mode is active and no paths have been found yet
+    // or coverage mode is active
+    const hideRoot = (active[1] && mode.paths.length === 0) || active[2];
 
     return (
       <div>
@@ -82,20 +86,22 @@ export default class PluginViewRoot extends React.Component {
             </Button>
           </div>
 
-          {this._renderToggleSelector(active[2])}
-          {this._renderToggleCoverage(active[0])}
-          {this._renderToggleEditorModal(active[1] && mode.isModalShown())}
+          {this._renderToggleEditorModal(active[0] && mode.isModalShown())}
+          {this._renderToggleSelection(active[1])}
+          {this._renderToggleCoverage(active[2])}
+          {this._renderToggleMigration(active[3] || (active[1] && mode.isMigration()))}
         </div>
 
         <div className="root" style={hideRoot ? {display: "none"} : {}}>
           <div className="root-container">
-            {active[1] ? <Editor mode={mode} testCases={testCases} /> : null}
-            {active[2] ? <Selector mode={mode} /> : null}
+            {active[0] ? <Editor mode={mode} testCases={testCases} /> : null}
+            {active[1] ? <Selection mode={mode} /> : null}
+            {active[3] ? <Migration mode={mode} /> : null}
           </div>
         </div>
 
-        {active[1] && mode.isModalShown() ? <EditorModal mode={mode} /> : null}
-        {active[1] && mode.isModalShown() ? <div className="modal-backdrop" onClick={this._handleClickModalBackdrop}></div> : null}
+        {active[0] && mode.isModalShown() ? <EditorModal mode={mode} /> : null}
+        {active[0] && mode.isModalShown() ? <div className="modal-backdrop" onClick={this._handleClickModalBackdrop}></div> : null}
       </div>
     )
   }
@@ -128,7 +134,25 @@ export default class PluginViewRoot extends React.Component {
     )
   }
 
-  _renderToggleSelector(active) {
+  _renderToggleMigration(active) {
+    if (!active) {
+      return null;
+    }
+
+    return (
+      <div style={{float: "left", marginBottom: "0.5rem"}}>
+        <Button
+          onClick={this._handleToggleMigration}
+          style="primary"
+          title="Cancel migration"
+        >
+          <i className="fas fa-tools"></i>
+        </Button>
+      </div>
+    )
+  }
+
+  _renderToggleSelection(active) {
     return (
       <div style={{float: "left", marginBottom: "0.5rem"}}>
         <Button
