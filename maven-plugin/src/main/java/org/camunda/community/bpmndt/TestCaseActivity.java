@@ -65,7 +65,7 @@ public class TestCaseActivity {
    * 
    * @return The ID as Java literal.
    * 
-   * @see BpmnSupport#convert(String)
+   * @see BpmnSupport#toJavaLiteral(String)
    */
   public String getLiteral() {
     return literal;
