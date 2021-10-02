@@ -1,9 +1,12 @@
-import {
-  MARKER,
-  MARKER_END,
-  MARKER_ERROR,
-  MARKER_START
-} from "./Constants";
+// marker styles
+export const PATH = "bpmn-driven-testing-path";
+export const PATH_BRIGHT = `${PATH}-bright`;
+
+export const END = `${PATH}-end`;
+export const ERROR = `${PATH}-error`;
+export const EXISTING = `${PATH}-existing`;
+export const EXISTING_BRIGHT = `${PATH}-existing-bright`;
+export const START = `${PATH}-start`;
 
 export default class PathMarker {
   constructor(elementRegistry, canvas) {
@@ -13,43 +16,20 @@ export default class PathMarker {
     this._markers = [];
   }
 
-  mark(selection) {
-    while (this._markers.length > 0) {
-      const marker = this._markers.pop();
-      this._remove(marker);
-    }
+  mark(markers) {
+    this.unmark();
 
-    if (selection === null) {
-      return;
-    }
-
-    if (selection.hasStart()) {
-      const marker = { id: selection.start, style: MARKER_START };
-      this._markers.push(marker);
-      this._add(marker);
-    }
-
-    for (let i = 1; i < selection.path.length - 1; i++) {
-      const marker = { id: selection.path[i], style: MARKER };
-      this._markers.push(marker);
-      this._add(marker);
-    }
-
-    if (selection.hasEnd()) {
-      const marker = { id: selection.end, style: MARKER_END };
+    for (const marker of markers) {
       this._markers.push(marker);
       this._add(marker);
     }
   }
 
-  markAll(elements) {
-    while (this._markers.length > 0) {
-      const marker = this._markers.pop();
-      this._remove(marker);
-    }
+  markAll(elementIds, style = PATH) {
+    this.unmark();
 
-    for (const element of elements) {
-      const marker = { id: element, style: MARKER };
+    for (const elementId of elementIds) {
+      const marker = { id: elementId, style: style };
       this._markers.push(marker);
       this._add(marker);
     }
@@ -58,8 +38,26 @@ export default class PathMarker {
   markError() {
     const marker = this._markers[this._markers.length - 1];
     this._remove(marker);
-    marker.style = MARKER_ERROR;
+    marker.style = ERROR;
     this._add(marker);
+  }
+
+  markOne(elementId, style) {
+    let marker = this._markers.find(m => m.id === elementId);
+    if (marker) {
+      this._remove(marker);
+    }
+
+    marker = { id: elementId, style: style };
+    this._markers.push(marker);
+    this._add(marker);
+  }
+
+  unmark() {
+    while (this._markers.length > 0) {
+      const marker = this._markers.pop();
+      this._remove(marker);
+    }
   }
 
   _add(marker) {

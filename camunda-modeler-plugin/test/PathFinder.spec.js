@@ -4,7 +4,6 @@ import BpmnModdle from "bpmn-moddle";
 import { readBpmnFile, ElementRegistry } from "./helper";
 
 import PathFinder from "../main/bpmn-driven-testing/PathFinder";
-import PathSelection from "../main/bpmn-driven-testing/PathSelection";
 
 const expect = chai.expect;
 
@@ -16,7 +15,7 @@ describe("PathFinder", () => {
 
     const pathFinder = new PathFinder(new ElementRegistry(modelInstance));
 
-    const paths = pathFinder.findPaths(new PathSelection(["startEvent", "endEvent"]));
+    const paths = pathFinder.findPaths("startEvent", "endEvent");
     expect(paths).to.have.lengthOf(1);
 
     const path = paths[0];
@@ -30,7 +29,7 @@ describe("PathFinder", () => {
 
     const pathFinder = new PathFinder(new ElementRegistry(modelInstance));
 
-    const paths = pathFinder.findPaths(new PathSelection(["startEvent", "endEvent"]));
+    const paths = pathFinder.findPaths("startEvent", "endEvent");
     expect(paths).to.have.lengthOf(1);
 
     const path = paths[0];
@@ -44,7 +43,7 @@ describe("PathFinder", () => {
 
     const pathFinder = new PathFinder(new ElementRegistry(modelInstance));
 
-    const paths = pathFinder.findPaths(new PathSelection(["startEvent", "notExisting"]));
+    const paths = pathFinder.findPaths("startEvent", "notExisting");
     expect(paths).to.have.lengthOf(0);
   });
 
@@ -53,7 +52,7 @@ describe("PathFinder", () => {
 
     const pathFinder = new PathFinder(new ElementRegistry(modelInstance));
 
-    const paths = pathFinder.findPaths(new PathSelection(["startEvent", "endEvent"]));
+    const paths = pathFinder.findPaths("startEvent", "endEvent");
     expect(paths).to.have.lengthOf(1);
 
     const path = paths[0];
@@ -69,7 +68,7 @@ describe("PathFinder", () => {
 
     const pathFinder = new PathFinder(new ElementRegistry(modelInstance));
 
-    const paths = pathFinder.findPaths(new PathSelection(["startEvent", "altEndEvent"]));
+    const paths = pathFinder.findPaths("startEvent", "altEndEvent");
     expect(paths).to.have.lengthOf(4);
 
     expect(paths[0]).to.have.lengthOf(7);
@@ -90,7 +89,7 @@ describe("PathFinder", () => {
 
     const pathFinder = new PathFinder(new ElementRegistry(modelInstance));
 
-    const paths = pathFinder.findPaths(new PathSelection(["startEvent", "altEndEvent"]));
+    const paths = pathFinder.findPaths("startEvent", "altEndEvent");
     expect(paths).to.have.lengthOf(0);
   });
 });

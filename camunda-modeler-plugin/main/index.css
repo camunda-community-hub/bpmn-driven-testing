@@ -85,6 +85,11 @@
   margin-right: auto;
   margin-left: auto;
 }
+.bpmn-driven-testing .container-left {
+  top: -16px;
+  left: 42px;
+  position: absolute;
+}
 .bpmn-driven-testing .container-center {
   bottom: -12px;
   left: 50%;
@@ -184,6 +189,17 @@
   background-color: #218838;
   border-color: #1e7e34;
 }
+.bpmn-driven-testing .btn-warning {
+  color: #000;
+  background-color: #ffc107;
+  border: solid 1px #ffc107;
+  box-shadow: 0 2px 2px 0 var(--color-000000-opacity-10);
+}
+.bpmn-driven-testing .btn-warning:hover {
+  color: #000;
+  background-color: #ffca2c;
+  border-color: #ffc720;
+}
 .bpmn-driven-testing .btn-danger {
   color: #fff;
   background-color: #dc3545;
@@ -213,9 +229,12 @@
   text-align: center;
 }
 
-.bpmn-driven-testing-path:not(.djs-connection)       .djs-visual > :first-child {fill:#ffffb9 !important}
-.bpmn-driven-testing-path-end:not(.djs-connection)   .djs-visual > :first-child {fill:#92e8db !important}
+.bpmn-driven-testing-path:not(.djs-connection) .djs-visual > :first-child {fill:#ffffb9 !important}
+.bpmn-driven-testing-path-bright:not(.djs-connection) .djs-visual > :first-child {fill:#ffff5b !important}
+.bpmn-driven-testing-path-end:not(.djs-connection) .djs-visual > :first-child {fill:#92e8db !important}
 .bpmn-driven-testing-path-error:not(.djs-connection) .djs-visual > :first-child {fill:#ff0000 !important}
+.bpmn-driven-testing-path-existing:not(.djs-connection) .djs-visual > :first-child {fill:#f1f8ff !important}
+.bpmn-driven-testing-path-existing-bright:not(.djs-connection) .djs-visual > :first-child {fill:#69afff !important}
 .bpmn-driven-testing-path-start:not(.djs-connection) .djs-visual > :first-child {fill:#90dd5f !important}
 
 .bpmn-driven-testing input {
