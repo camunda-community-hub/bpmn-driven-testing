@@ -1,5 +1,7 @@
 package org.camunda.community.bpmndt.api.cfg;
 
+import static org.camunda.community.bpmndt.api.TestCaseInstance.PROCESS_ENGINE_NAME;
+
 import java.util.LinkedList;
 import java.util.List;
 
@@ -10,7 +12,6 @@ import org.camunda.bpm.engine.ProcessEngine;
 import org.camunda.bpm.engine.impl.cfg.ProcessEnginePlugin;
 import org.camunda.bpm.engine.spring.SpringExpressionManager;
 import org.camunda.bpm.engine.spring.SpringProcessEngineConfiguration;
-import org.camunda.community.bpmndt.api.TestCaseInstance;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -51,7 +52,7 @@ public abstract class AbstractConfiguration implements InitializingBean {
     processEngineConfiguration.setApplicationContext(applicationContext);
     processEngineConfiguration.setDataSource(dataSource);
     processEngineConfiguration.setExpressionManager(new SpringExpressionManager(applicationContext, null));
-    processEngineConfiguration.setProcessEngineName(TestCaseInstance.PROCESS_ENGINE_NAME);
+    processEngineConfiguration.setProcessEngineName(PROCESS_ENGINE_NAME);
     processEngineConfiguration.setProcessEnginePlugins(processEnginePlugins);
     processEngineConfiguration.setTransactionManager(transactionManager);
 

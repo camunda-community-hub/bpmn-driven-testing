@@ -27,8 +27,7 @@ public class SpringBasedTest {
   @Test
   public void testExecute() {
     assertThat(tc.getProcessEngine(), notNullValue());
-
-    tc.createExecutor().execute();
+    assertThat(tc.createExecutor().execute(), notNullValue());
   }
 
   private class TestCase extends AbstractJUnit4SpringBasedTestRule {
@@ -52,17 +51,17 @@ public class SpringBasedTest {
     }
 
     @Override
-    protected String getProcessDefinitionKey() {
+    public String getProcessDefinitionKey() {
       return "simple";
     }
 
     @Override
-    protected String getStart() {
+    public String getStart() {
       return "startEvent";
     }
 
     @Override
-    protected String getEnd() {
+    public String getEnd() {
       return "endEvent";
     }
   }

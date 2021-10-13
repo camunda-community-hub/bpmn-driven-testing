@@ -142,14 +142,14 @@ public abstract class AbstractJUnit4TestRule extends TestWatcher {
    * 
    * @return The end activity ID.
    */
-  protected abstract String getEnd();
+  public abstract String getEnd();
 
   /**
    * Returns the key of the process definition that is tested.
    * 
    * @return The process definition key.
    */
-  protected abstract String getProcessDefinitionKey();
+  public abstract String getProcessDefinitionKey();
 
   /**
    * Returns the process engine, used to execute the test case.
@@ -177,5 +177,5 @@ public abstract class AbstractJUnit4TestRule extends TestWatcher {
    * 
    * @return The start activity ID.
    */
-  protected abstract String getStart();
+  public abstract String getStart();
 }

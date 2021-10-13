@@ -128,7 +128,7 @@ public class GenerateJUnit4TestRule implements BiConsumer<GeneratorContext, Test
 
     return MethodSpec.methodBuilder("getEnd")
         .addAnnotation(Override.class)
-        .addModifiers(Modifier.PROTECTED)
+        .addModifiers(Modifier.PUBLIC)
         .returns(String.class)
         .addStatement("return $S", end != null ? end.getId() : null)
         .build();
@@ -137,7 +137,7 @@ public class GenerateJUnit4TestRule implements BiConsumer<GeneratorContext, Test
   protected MethodSpec buildGetProcessDefinitionKey(TestCaseContext testCaseContext) {
     return MethodSpec.methodBuilder("getProcessDefinitionKey")
         .addAnnotation(Override.class)
-        .addModifiers(Modifier.PROTECTED)
+        .addModifiers(Modifier.PUBLIC)
         .returns(String.class)
         .addStatement("return $S", testCaseContext.getProcessId())
         .build();
@@ -148,7 +148,7 @@ public class GenerateJUnit4TestRule implements BiConsumer<GeneratorContext, Test
 
     return MethodSpec.methodBuilder("getStart")
         .addAnnotation(Override.class)
-        .addModifiers(Modifier.PROTECTED)
+        .addModifiers(Modifier.PUBLIC)
         .returns(String.class)
         .addStatement("return $S", start != null ? start.getId() : null)
         .build();

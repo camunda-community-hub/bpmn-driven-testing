@@ -59,17 +59,17 @@ public class ExternalTaskErrorTest {
     }
 
     @Override
-    protected String getProcessDefinitionKey() {
+    public String getProcessDefinitionKey() {
       return "externalTaskError";
     }
 
     @Override
-    protected String getStart() {
+    public String getStart() {
       return "startEvent";
     }
 
     @Override
-    protected String getEnd() {
+    public String getEnd() {
       return "endEvent";
     }
   }

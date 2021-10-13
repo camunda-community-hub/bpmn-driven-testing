@@ -37,7 +37,7 @@ public class CallActivityWithMappingTest {
       assertThat(variables.getVariable("x"), equalTo("b"));
     });
 
-    tc.createExecutor().withMock("callActivityMapping", new CallActivityMapping()).execute();
+    tc.createExecutor().withBean("callActivityMapping", new CallActivityMapping()).execute();
   }
 
   private class CallActivityMapping implements DelegateVariableMapping {

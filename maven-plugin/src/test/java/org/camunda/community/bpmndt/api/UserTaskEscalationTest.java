@@ -59,17 +59,17 @@ public class UserTaskEscalationTest {
     }
 
     @Override
-    protected String getProcessDefinitionKey() {
+    public String getProcessDefinitionKey() {
       return "userTaskEscalation";
     }
 
     @Override
-    protected String getStart() {
+    public String getStart() {
       return "startEvent";
     }
 
     @Override
-    protected String getEnd() {
+    public String getEnd() {
       return "endEvent";
     }
   }
