@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+import org.camunda.bpm.engine.RuntimeService;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.test.assertions.ProcessEngineTests;
 import org.camunda.bpm.engine.test.assertions.bpmn.ProcessInstanceAssert;
@@ -30,7 +31,25 @@ public class UserTaskTest {
 
   @Test
   public void testExecute() {
-    tc.createExecutor().execute();
+    assertThat(tc.createExecutor().execute(), notNullValue());
+  }
+
+  @Test
+  public void testExecuteWithProcessInstance() {
+    RuntimeService runtimeService = tc.getProcessEngine().getRuntimeService();
+
+    ProcessInstance pi = runtimeService.startProcessInstanceByKey(tc.getProcessDefinitionKey());
+
+    tc.createExecutor().execute(pi);
+  }
+
+  @Test
+  public void testExecuteWithProcessInstanceId() {
+    RuntimeService runtimeService = tc.getProcessEngine().getRuntimeService();
+
+    ProcessInstance pi = runtimeService.startProcessInstanceByKey(tc.getProcessDefinitionKey());
+
+    tc.createExecutor().execute(pi.getId());
   }
 
   @Test
@@ -93,17 +112,17 @@ public class UserTaskTest {
     }
 
     @Override
-    protected String getProcessDefinitionKey() {
+    public String getProcessDefinitionKey() {
       return "simpleUserTask";
     }
 
     @Override
-    protected String getStart() {
+    public String getStart() {
       return "startEvent";
     }
 
     @Override
-    protected String getEnd() {
+    public String getEnd() {
       return "endEvent";
     }
   }

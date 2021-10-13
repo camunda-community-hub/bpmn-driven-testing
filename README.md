@@ -52,7 +52,7 @@ When the BPMN model is saved, the selected test cases are attached to the BPMN p
 ```
 
 ### Generate test cases
-To generate the code for the selected test cases, a developer must  run the **generator** goal of the [bpmn-driven-testing-maven-plugin](maven-plugin) - in Eclipse select the project and press **ALT+F5** to update.
+To generate the code for the selected test cases, a developer must run the **generator** goal of the [bpmn-driven-testing-maven-plugin](maven-plugin) - in Eclipse select the project and press **ALT+F5** to update.
 The goal finds all *.bpmn files under `src/main/resources` and looks for BPMN processes with a `bpmndt:testCases` extension element.
 Each test case will result in a [JUnit test rule](https://github.com/junit-team/junit4/wiki/Rules) - in this example: `generated.TC_order_fulfillment__Happy_Path`.
 
@@ -65,11 +65,11 @@ public TC_order_fulfillment__Happy_Path tc = new TC_order_fulfillment__Happy_Pat
 ```
 
 Calling `createExecutor()` on the test rule, provides a fluent API,
-which is used to specify variables, business key and/or [mocks](https://docs.camunda.org/manual/7.15/user-guide/testing/#resolving-beans-without-spring-cdi) that are considered during test case execution.
+which is used to specify variables, business key and/or [beans](https://docs.camunda.org/manual/7.15/user-guide/testing/#resolving-beans-without-spring-cdi) that are considered during test case execution.
 After the specification, `execute()` is called to create a new process instance and exeute the test case.
 
 Moreover the default behavior of wait states and call activities can be adjusted using fluent APIs.
-For each applicable flow node a "handle" method is generated - for example: `handleCheckAvailabilityUserTask()`.
+For each applicable flow node a "handle*" method is generated - for example: `handleCheckAvailabilityUserTask()`.
 
 ```java
 import org.junit.Rule;
@@ -100,7 +100,7 @@ public class OrderFulfillmentTest {
       .withBusinessKey("order-123-456")
       .withVariable("customerId", 123)
       .withVariable("items", "[{\"id\": 1, \"quantity\": 3},{\"id\": 7, \"quantity\": 1}]")
-      .withMock("approveOrder", new ApproveOrderDelegate())
+      .withBean("approveOrder", new ApproveOrderDelegate())
       .verify(pi -> {
         // verify state after execution
         pi.isEnded();

@@ -34,8 +34,10 @@ public class TestCaseExecutor {
 
   /**
    * Create a new {@link ProcessInstance}, executes the actual test case and verifies the state after.
+   * 
+   * @return The ID of the created process instance.
    */
-  public void execute() {
+  public String execute() {
     RuntimeService runtimeService = instance.getProcessEngine().getRuntimeService();
 
     ProcessInstance pi = runtimeService.createProcessInstanceByKey(instance.getProcessDefinitionKey())
@@ -45,6 +47,8 @@ public class TestCaseExecutor {
         .execute();
 
     execute(pi);
+
+    return pi.getId();
   }
 
   /**
@@ -65,6 +69,18 @@ public class TestCaseExecutor {
   }
 
   /**
+   * Executes the actual test case and verifies the state after, using the {@link ProcessInstance},
+   * identified by the given ID.
+   * 
+   * @param processInstanceId The ID of an existing process instance.
+   */
+  public void execute(String processInstanceId) {
+    RuntimeService runtimeService = instance.getProcessEngine().getRuntimeService();
+
+    execute(runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult());
+  }
+
+  /**
    * Verifies that state after the test case execution has finished.
    * 
    * @param verifier Verifier that accepts an {@link ProcessInstanceAssert} instance.
@@ -77,6 +93,24 @@ public class TestCaseExecutor {
   }
 
   /**
+   * Registers a bean for the given key.<br>
+   * Please note: If Spring is enabled, the beans will be provided via Spring's application context
+   * (e.g. by providing a specific test configuration).
+   * 
+   * @param key The key, under which the bean is registered.
+   * 
+   * @param value The value.
+   * 
+   * @return The executor.
+   * 
+   * @see Mocks#register(String, Object)
+   */
+  public TestCaseExecutor withBean(String key, Object value) {
+    Mocks.register(key, value);
+    return this;
+  }
+
+  /**
    * Sets the business key of the process instance that will be created.
    * 
    * @param businessKey A specific business key.
@@ -85,24 +119,6 @@ public class TestCaseExecutor {
    */
   public TestCaseExecutor withBusinessKey(String businessKey) {
     this.businessKey = businessKey;
-    return this;
-  }
-
-  /**
-   * Registers a mock (bean) for the given key.<br>
-   * Please note: If Spring is enabled, the beans will be provided via Spring's application context
-   * (e.g. by providing a specific test configuration).
-   * 
-   * @param key The key, under which the mock is registered.
-   * 
-   * @param value The mock's value.
-   * 
-   * @return The executor.
-   * 
-   * @see Mocks#register(String, Object)
-   */
-  public TestCaseExecutor withMock(String key, Object value) {
-    Mocks.register(key, value);
     return this;
   }
 

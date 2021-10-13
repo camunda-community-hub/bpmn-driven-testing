@@ -55,17 +55,17 @@ public class CallActivityEscalationTest {
     }
 
     @Override
-    protected String getProcessDefinitionKey() {
+    public String getProcessDefinitionKey() {
       return "callActivityEscalation";
     }
 
     @Override
-    protected String getStart() {
+    public String getStart() {
       return "startEvent";
     }
 
     @Override
-    protected String getEnd() {
+    public String getEnd() {
       return "endEvent";
     }
   }

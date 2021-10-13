@@ -37,7 +37,7 @@ public class CallActivityTest {
 
   @Test
   public void testExecute() {
-    tc.createExecutor().withMock("callActivityMapping", new CallActivityMapping()).execute();
+    tc.createExecutor().withBean("callActivityMapping", new CallActivityMapping()).execute();
   }
 
   @Test
@@ -58,7 +58,7 @@ public class CallActivityTest {
       assertThat(variables.getVariable("x"), equalTo("b"));
     });
 
-    tc.createExecutor().withBusinessKey("simpleKey").withMock("callActivityMapping", new CallActivityMapping()).execute();
+    tc.createExecutor().withBusinessKey("simpleKey").withBean("callActivityMapping", new CallActivityMapping()).execute();
   }
 
   private class TestCase extends AbstractJUnit4TestRule {
@@ -82,17 +82,17 @@ public class CallActivityTest {
     }
 
     @Override
-    protected String getProcessDefinitionKey() {
+    public String getProcessDefinitionKey() {
       return "simpleCallActivity";
     }
 
     @Override
-    protected String getStart() {
+    public String getStart() {
       return "startEvent";
     }
 
     @Override
-    protected String getEnd() {
+    public String getEnd() {
       return "endEvent";
     }
   }

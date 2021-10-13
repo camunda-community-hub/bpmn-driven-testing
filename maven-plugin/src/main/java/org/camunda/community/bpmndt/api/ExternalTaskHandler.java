@@ -19,7 +19,7 @@ import org.camunda.bpm.engine.variable.value.TypedValue;
  * Fluent API to handle external tasks.
  */
 public class ExternalTaskHandler {
-  
+
   private static final String WORKER_ID = "bpmndt-worker";
 
   private final ProcessEngine processEngine;

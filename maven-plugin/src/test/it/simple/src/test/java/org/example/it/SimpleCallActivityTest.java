@@ -17,7 +17,7 @@ public class SimpleCallActivityTest {
   @Test
   public void testExecute() {
     tc.createExecutor()
-      .withMock("callActivityMapping", new CallActivityMapping())
+      .withBean("callActivityMapping", new CallActivityMapping())
       .verify(pi -> {
         pi.isEnded();
       })
