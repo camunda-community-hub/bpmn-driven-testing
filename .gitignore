@@ -9,6 +9,9 @@
 target/
 pom.xml.versionsBackup
 
+# camunda-modeler-plugin
+.nyc_output/
+coverage/
 bpmn-driven-testing-plugin.zip
 dist/
 node_modules/
