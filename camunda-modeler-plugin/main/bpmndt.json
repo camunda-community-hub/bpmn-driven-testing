@@ -1,0 +1,52 @@
+{
+  "name": "BPMN Driven Testing",
+  "uri": "http://camunda.org/schema/extension/bpmn-driven-testing",
+  "prefix": "bpmndt",
+  "xml": {
+    "tagAlias": "lowerCase"
+  },
+  "types": [
+    {
+      "name": "TestCases",
+      "superClass": [ "Element" ],
+      "properties": [
+        {
+          "name": "testCases",
+          "type": "TestCase",
+          "isMany": true
+        }
+      ]
+    },
+    {
+      "name": "TestCase",
+      "superClass": [ "Element" ],
+      "properties": [
+        {
+          "name": "name",
+          "type": "String"
+        },
+        {
+          "name": "description",
+          "type": "String"
+        },
+        {
+          "name": "path",
+          "type": "Path"
+        }
+      ]
+    },
+    {
+      "name": "Path",
+      "superClass": [ "Element" ],
+      "properties": [
+        {
+          "name": "node",
+          "type": "String",
+          "isMany": true
+        }
+      ]
+    }
+  ],
+  "emumerations": [],
+  "associations": []
+}

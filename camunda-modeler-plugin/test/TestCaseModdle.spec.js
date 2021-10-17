@@ -3,16 +3,16 @@ import chai from "chai";
 import BpmnModdle from "bpmn-moddle";
 import { readBpmnFile, ElementRegistry } from "./helper";
 
-import bpmndt from "../main/bpmn-driven-testing.json";
-
-import TestCase from "../main/bpmn-driven-testing/TestCase";
-import TestCaseModdle from "../main/bpmn-driven-testing/TestCaseModdle";
-
 import {
   BPMNDT_PATH,
   BPMNDT_TEST_CASE,
   BPMNDT_TEST_CASES
-} from "../main/bpmn-driven-testing/Constants";
+} from "../main/bpmndt/constants";
+
+import bpmndt from "../main/bpmndt.json";
+
+import TestCase from "../main/bpmndt/TestCase";
+import TestCaseModdle from "../main/bpmndt/TestCaseModdle";
 
 const expect = chai.expect;
 
@@ -29,38 +29,41 @@ function createTestCaseModdle(modelInstance) {
 
 describe("TestCaseModdle", () => {
   // other extension
-  let camundaPropertiesXml;
+  let camundaProperties;
   // test case with name and description
-  let happyPathXml;
+  let happyPath;
   // no test cases, no extensionElements
-  let noTestCasesXml;
+  let noTestCases;
   // one test case
-  let simpleXml;
+  let simple;
   // collaboration with two participants
-  let simpleCollaborationXml;
+  let simpleCollaboration;
 
-  before(() => {
-    camundaPropertiesXml = readBpmnFile("camundaProperties.bpmn");
-    happyPathXml = readBpmnFile("happyPath.bpmn")
-    noTestCasesXml = readBpmnFile("noTestCases.bpmn");
-    simpleXml = readBpmnFile("simple.bpmn");
-    simpleCollaborationXml = readBpmnFile("simpleCollaboration.bpmn");
+  before(async () => {
+    camundaProperties = await moddle.fromXML(readBpmnFile("camundaProperties.bpmn"));
+    happyPath = await moddle.fromXML(readBpmnFile("happyPath.bpmn"));
+    noTestCases = await moddle.fromXML(readBpmnFile("noTestCases.bpmn"));
+    simple = await moddle.fromXML(readBpmnFile("simple.bpmn"));
+    simpleCollaboration = await moddle.fromXML(readBpmnFile("simpleCollaboration.bpmn"));
+  });
+
+  beforeEach(async () => {
+    // reused and modified in different tests
+    simple = await moddle.fromXML(readBpmnFile("simple.bpmn"));
   });
 
   describe("getTestCase", () => {
-    it("should get no test cases from noTestCases.bpmn", async () => {
-      const modelInstance = await moddle.fromXML(noTestCasesXml);
-
-      const testCaseModdle = createTestCaseModdle(modelInstance);
+    it("should get no test cases from noTestCases.bpmn", () => {
+      const testCaseModdle = createTestCaseModdle(noTestCases);
+      expect(testCaseModdle.findProcess()).to.be.true;
 
       const testCases = testCaseModdle.getTestCases();
       expect(testCases).to.have.lengthOf(0);
     });
 
-    it("should get one test case from simple.bpmn", async () => {
-      const modelInstance = await moddle.fromXML(simpleXml);
-
-      const testCaseModdle = createTestCaseModdle(modelInstance);
+    it("should get one test case from simple.bpmn", () => {
+      const testCaseModdle = createTestCaseModdle(simple);
+      expect(testCaseModdle.findProcess()).to.be.true;
 
       const testCases = testCaseModdle.getTestCases();
       expect(testCases).to.have.lengthOf(1);
@@ -73,10 +76,9 @@ describe("TestCaseModdle", () => {
       expect(testCase.path[1]).to.equal("endEvent");
     });
 
-    it("should get one test case with name and description from happyPath.bpmn", async () => {
-      const modelInstance = await moddle.fromXML(happyPathXml);
-
-      const testCaseModdle = createTestCaseModdle(modelInstance);
+    it("should get one test case with name and description from happyPath.bpmn", () => {
+      const testCaseModdle = createTestCaseModdle(happyPath);
+      expect(testCaseModdle.findProcess()).to.be.true;
 
       const testCases = testCaseModdle.getTestCases();
       expect(testCases).to.have.lengthOf(1);
@@ -91,10 +93,9 @@ describe("TestCaseModdle", () => {
       expect(testCase.description).to.equal("The happy path");
     });
 
-    it("should get one test case from simpleCollaboration.bpmn", async () => {
-      const modelInstance = await moddle.fromXML(simpleCollaborationXml);
-
-      const testCaseModdle = createTestCaseModdle(modelInstance);
+    it("should get one test case from simpleCollaboration.bpmn", () => {
+      const testCaseModdle = createTestCaseModdle(simpleCollaboration);
+      expect(testCaseModdle.findProcess()).to.be.true;
 
       const testCases = testCaseModdle.getTestCases();
       expect(testCases).to.have.lengthOf(1);
@@ -110,26 +111,24 @@ describe("TestCaseModdle", () => {
 
   describe("setTestCase", () => {
     describe("if test cases are empty", () => {
-      it("should delete the extension and remove the extensionElements", async () => {
-        const modelInstance = await moddle.fromXML(simpleXml);
-  
-        const testCaseModdle = createTestCaseModdle(modelInstance);
+      it("should delete the extension and remove the extensionElements", () => {
+        const testCaseModdle = createTestCaseModdle(simple);
+        expect(testCaseModdle.findProcess()).to.be.true;
   
         testCaseModdle.setTestCases([]);
   
-        expect(testCaseModdle._process).to.not.have.property("extensionElements");
+        expect(testCaseModdle.process).to.not.have.property("extensionElements");
       });
 
-      it("should delete the extension and not remove the extensionElements, when there are other extensions", async () => {
-        const modelInstance = await moddle.fromXML(camundaPropertiesXml);
-  
-        const testCaseModdle = createTestCaseModdle(modelInstance);
+      it("should delete the extension and not remove the extensionElements, when there are other extensions", () => {
+        const testCaseModdle = createTestCaseModdle(camundaProperties);
+        expect(testCaseModdle.findProcess()).to.be.true;
   
         testCaseModdle.setTestCases([]);
   
-        expect(testCaseModdle._process).to.have.property("extensionElements");
+        expect(testCaseModdle.process).to.have.property("extensionElements");
   
-        const extensionElements = testCaseModdle._process.extensionElements;
+        const extensionElements = testCaseModdle.process.extensionElements;
         expect(extensionElements.values).to.be.an("array");
         expect(extensionElements.values).to.have.lengthOf(1);
         expect(extensionElements.values[0].$type).to.equal("camunda:properties");
@@ -138,9 +137,8 @@ describe("TestCaseModdle", () => {
 
     describe("if test cases are specified", () => {
       it("should create the extension", async () => {
-        const modelInstance = await moddle.fromXML(noTestCasesXml);
-  
-        const testCaseModdle = createTestCaseModdle(modelInstance);
+        const testCaseModdle = createTestCaseModdle(noTestCases);
+        expect(testCaseModdle.findProcess()).to.be.true;
   
         const testCase = new TestCase({
           path: ["a", "b"],
@@ -150,9 +148,9 @@ describe("TestCaseModdle", () => {
   
         testCaseModdle.setTestCases([testCase]);
   
-        expect(testCaseModdle._process).to.have.property("extensionElements");
+        expect(testCaseModdle.process).to.have.property("extensionElements");
   
-        const extensionElements = testCaseModdle._process.extensionElements;
+        const extensionElements = testCaseModdle.process.extensionElements;
         expect(extensionElements.values).to.be.an("array");
         expect(extensionElements.values).to.have.lengthOf(1);
         expect(extensionElements.values[0].$type).to.equal(BPMNDT_TEST_CASES);
@@ -173,21 +171,21 @@ describe("TestCaseModdle", () => {
       });
 
       it("should update the extension", async () => {
-        const modelInstance = await moddle.fromXML(simpleXml);
-  
-        const testCaseModdle = createTestCaseModdle(modelInstance);
+        const testCaseModdle = createTestCaseModdle(simple);
+        expect(testCaseModdle.findProcess()).to.be.true;
 
         const testCases = testCaseModdle.getTestCases();
+        expect(testCases).to.have.lengthOf(1);
   
         testCases.push(new TestCase({
           path: ["a", "b"]
         }));
-  
+
         testCaseModdle.setTestCases(testCases);
   
-        expect(testCaseModdle._process).to.have.property("extensionElements");
+        expect(testCaseModdle.process).to.have.property("extensionElements");
   
-        const extensionElements = testCaseModdle._process.extensionElements;
+        const extensionElements = testCaseModdle.process.extensionElements;
         expect(extensionElements.values).to.be.an("array");
         expect(extensionElements.values).to.have.lengthOf(1);
         expect(extensionElements.values[0].$type).to.equal(BPMNDT_TEST_CASES);

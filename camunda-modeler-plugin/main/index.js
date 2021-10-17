@@ -7,22 +7,16 @@ import {
   registerClientExtension
 } from "camunda-modeler-plugin-helpers";
 
-import bpmndt from "./bpmn-driven-testing.json";
-import Plugin from "./bpmn-driven-testing/Plugin";
+import bpmndt from "./bpmndt.json";
+import Plugin from "./bpmndt/Plugin";
 
-import ModelerExtension from "./bpmn-driven-testing/ModelerExtension";
+import ModelerExtension from "./bpmndt/ModelerExtension";
 
 /**
  * Plugin bridge, which is used to instantiate the actual plugin class.
  */
 function PluginBridge(canvas, elementRegistry, eventBus, modeling, moddle) {
-  new Plugin({
-    canvas: canvas,
-    elementRegistry: elementRegistry,
-    eventBus: eventBus,
-    modeling: modeling,
-    moddle: moddle
-  });
+  new Plugin({ canvas, elementRegistry, eventBus, modeling, moddle });
 }
 
 PluginBridge.$inject = [ "canvas", "elementRegistry", "eventBus", "modeling", "moddle" ];

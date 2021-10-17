@@ -3,19 +3,38 @@ import chai from "chai";
 import BpmnModdle from "bpmn-moddle";
 import { readBpmnFile, ElementRegistry } from "./helper";
 
-import PathFinder from "../main/bpmn-driven-testing/PathFinder";
+import PathFinder from "../main/bpmndt/PathFinder";
 
 const expect = chai.expect;
 
-const moddle = new BpmnModdle();
+function createPathFinder(modelInstance) {
+  const elementRegistry = new ElementRegistry(modelInstance);
+  return new PathFinder({ elementRegistry });
+}
 
 describe("PathFinder", () => {
-  it("should find simple path", async () => {
-    const modelInstance = await moddle.fromXML(readBpmnFile("simple.bpmn"));
+  let simple;
+  let simpleCollaboration;
+  let simpleLoop;
 
-    const pathFinder = new PathFinder(new ElementRegistry(modelInstance));
+  let subProcessErrorEscalation;
+  let subProcessErrorEscalationNegative;
 
-    const paths = pathFinder.findPaths("startEvent", "endEvent");
+  before(async () => {
+    const moddle = new BpmnModdle();
+
+    simple = await moddle.fromXML(readBpmnFile("simple.bpmn"));
+    simpleCollaboration = await moddle.fromXML(readBpmnFile("simpleCollaboration.bpmn"));
+    simpleLoop = await moddle.fromXML(readBpmnFile("simpleLoop.bpmn"));
+    
+    subProcessErrorEscalation = await moddle.fromXML(readBpmnFile("subProcessErrorEscalation.bpmn"));
+    subProcessErrorEscalationNegative = await moddle.fromXML(readBpmnFile("subProcessErrorEscalationNegative.bpmn"));
+  });
+
+  it("should find simple path", () => {
+    const pathFinder = createPathFinder(simple);
+
+    const paths = pathFinder.find("startEvent", "endEvent");
     expect(paths).to.have.lengthOf(1);
 
     const path = paths[0];
@@ -24,12 +43,10 @@ describe("PathFinder", () => {
     expect(path[1]).to.equal("endEvent");
   });
 
-  it("should find simple path within participant of collaboration", async () => {
-    const modelInstance = await moddle.fromXML(readBpmnFile("simpleCollaboration.bpmn"));
+  it("should find simple path within participant of collaboration", () => {
+    const pathFinder = createPathFinder(simpleCollaboration);
 
-    const pathFinder = new PathFinder(new ElementRegistry(modelInstance));
-
-    const paths = pathFinder.findPaths("startEvent", "endEvent");
+    const paths = pathFinder.find("startEvent", "endEvent");
     expect(paths).to.have.lengthOf(1);
 
     const path = paths[0];
@@ -38,21 +55,17 @@ describe("PathFinder", () => {
     expect(path[2]).to.equal("endEvent");
   });
 
-  it("should not find path, when end node does not exist", async () => {
-    const modelInstance = await moddle.fromXML(readBpmnFile("simple.bpmn"));
+  it("should not find path, when end node does not exist", () => {
+    const pathFinder = createPathFinder(simple);
 
-    const pathFinder = new PathFinder(new ElementRegistry(modelInstance));
-
-    const paths = pathFinder.findPaths("startEvent", "notExisting");
+    const paths = pathFinder.find("startEvent", "notExisting");
     expect(paths).to.have.lengthOf(0);
   });
 
-  it("should detect and ignore loops", async () => {
-    const modelInstance = await moddle.fromXML(readBpmnFile("simpleLoop.bpmn"));
+  it("should detect and ignore loops", () => {
+    const pathFinder = createPathFinder(simpleLoop);
 
-    const pathFinder = new PathFinder(new ElementRegistry(modelInstance));
-
-    const paths = pathFinder.findPaths("startEvent", "endEvent");
+    const paths = pathFinder.find("startEvent", "endEvent");
     expect(paths).to.have.lengthOf(1);
 
     const path = paths[0];
@@ -63,12 +76,10 @@ describe("PathFinder", () => {
     expect(path[3]).to.equal("endEvent");
   });
 
-  it("should find path through embedded sub process error and escalation end events", async () => {
-    const modelInstance = await moddle.fromXML(readBpmnFile("subProcessErrorEscalation.bpmn"));
+  it("should find path through embedded sub process error and escalation end events", () => {
+    const pathFinder = createPathFinder(subProcessErrorEscalation);
 
-    const pathFinder = new PathFinder(new ElementRegistry(modelInstance));
-
-    const paths = pathFinder.findPaths("startEvent", "altEndEvent");
+    const paths = pathFinder.find("startEvent", "altEndEvent");
     expect(paths).to.have.lengthOf(4);
 
     expect(paths[0]).to.have.lengthOf(7);
@@ -84,12 +95,10 @@ describe("PathFinder", () => {
     expect(paths[3]).to.deep.equal(["startEvent", "subProcessStartEvent", "g1", "escalationEndEventB", "escalationBoundaryEventB", "g2", "altEndEvent"]);
   });
 
-  it("should not find path through embedded sub process error and escalation end events", async () => {
-    const modelInstance = await moddle.fromXML(readBpmnFile("subProcessErrorEscalationNegative.bpmn"));
+  it("should not find path through embedded sub process error and escalation end events", () => {
+    const pathFinder = createPathFinder(subProcessErrorEscalationNegative);
 
-    const pathFinder = new PathFinder(new ElementRegistry(modelInstance));
-
-    const paths = pathFinder.findPaths("startEvent", "altEndEvent");
+    const paths = pathFinder.find("startEvent", "altEndEvent");
     expect(paths).to.have.lengthOf(0);
   });
 });
