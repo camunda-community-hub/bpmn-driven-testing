@@ -3,12 +3,12 @@ package org.example.it;
 import org.junit.Rule;
 import org.junit.Test;
 
-import generated.TC_simpleConditionalCatchEvent__startEvent__endEvent;
+import generated.simpleconditionalcatchevent.TC_startEvent__endEvent;
 
 public class SimpleConditionalCatchEventTest {
 
   @Rule
-  public TC_simpleConditionalCatchEvent__startEvent__endEvent tc = new TC_simpleConditionalCatchEvent__startEvent__endEvent();
+  public TC_startEvent__endEvent tc = new TC_startEvent__endEvent();
 
   @Test
   public void testExecute() {

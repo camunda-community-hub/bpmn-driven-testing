@@ -42,31 +42,31 @@ mvn clean test
 
   # test cases written
   Should contain  ${result.stdout}  Writing test cases
-  Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/TC_simple__startEvent__endEvent.java
-  Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/TC_simpleAsync__startEvent__endEvent.java
-  Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/TC_simpleCallActivity__startEvent__endEvent.java
-  Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/TC_simpleCollaboration__startEvent__endEvent.java
-  Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/TC_simpleConditionalCatchEvent__startEvent__endEvent.java
-  Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/TC_simpleExternalTask__startEvent__endEvent.java
-  Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/TC_simpleMessageCatchEvent__startEvent__endEvent.java
-  Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/TC_simpleReceiveTask__startEvent__endEvent.java
-  Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/TC_simpleSignalCatchEvent__startEvent__endEvent.java
-  Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/TC_simpleSubProcess__startEvent__endEvent.java
-  Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/TC_simpleTimerCatchEvent__startEvent__endEvent.java
-  Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/TC_simpleUserTask__startEvent__endEvent.java
+  Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/simple/TC_startEvent__endEvent.java
+  Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/simpleasync/TC_startEvent__endEvent.java
+  Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/simplecallactivity/TC_startEvent__endEvent.java
+  Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/simplecollaboration/TC_startEvent__endEvent.java
+  Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/simpleconditionalcatchevent/TC_startEvent__endEvent.java
+  Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/simpleexternaltask/TC_startEvent__endEvent.java
+  Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/simplemessagecatchevent/TC_startEvent__endEvent.java
+  Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/simplereceivetask/TC_startEvent__endEvent.java
+  Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/simplesignalcatchevent/TC_startEvent__endEvent.java
+  Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/simplesubprocess/TC_startEvent__endEvent.java
+  Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/simpletimercatchevent/TC_startEvent__endEvent.java
+  Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/simpleusertask/TC_startEvent__endEvent.java
 
-  File should exist  ${testSources}/generated/TC_simple__startEvent__endEvent.java
-  File should exist  ${testSources}/generated/TC_simpleAsync__startEvent__endEvent.java
-  File should exist  ${testSources}/generated/TC_simpleCallActivity__startEvent__endEvent.java
-  File should exist  ${testSources}/generated/TC_simpleCollaboration__startEvent__endEvent.java
-  File should exist  ${testSources}/generated/TC_simpleConditionalCatchEvent__startEvent__endEvent.java
-  File should exist  ${testSources}/generated/TC_simpleExternalTask__startEvent__endEvent.java
-  File should exist  ${testSources}/generated/TC_simpleMessageCatchEvent__startEvent__endEvent.java
-  File should exist  ${testSources}/generated/TC_simpleReceiveTask__startEvent__endEvent.java
-  File should exist  ${testSources}/generated/TC_simpleSignalCatchEvent__startEvent__endEvent.java
-  File should exist  ${testSources}/generated/TC_simpleSubProcess__startEvent__endEvent.java
-  File should exist  ${testSources}/generated/TC_simpleTimerCatchEvent__startEvent__endEvent.java
-  File should exist  ${testSources}/generated/TC_simpleUserTask__startEvent__endEvent.java
+  File should exist  ${testSources}/generated/simple/TC_startEvent__endEvent.java
+  File should exist  ${testSources}/generated/simpleasync/TC_startEvent__endEvent.java
+  File should exist  ${testSources}/generated/simplecallactivity/TC_startEvent__endEvent.java
+  File should exist  ${testSources}/generated/simplecollaboration/TC_startEvent__endEvent.java
+  File should exist  ${testSources}/generated/simpleconditionalcatchevent/TC_startEvent__endEvent.java
+  File should exist  ${testSources}/generated/simpleexternaltask/TC_startEvent__endEvent.java
+  File should exist  ${testSources}/generated/simplemessagecatchevent/TC_startEvent__endEvent.java
+  File should exist  ${testSources}/generated/simplereceivetask/TC_startEvent__endEvent.java
+  File should exist  ${testSources}/generated/simplesignalcatchevent/TC_startEvent__endEvent.java
+  File should exist  ${testSources}/generated/simplesubprocess/TC_startEvent__endEvent.java
+  File should exist  ${testSources}/generated/simpletimercatchevent/TC_startEvent__endEvent.java
+  File should exist  ${testSources}/generated/simpleusertask/TC_startEvent__endEvent.java
 
   # API classes written
   Should contain  ${result.stdout}  Writing API classes

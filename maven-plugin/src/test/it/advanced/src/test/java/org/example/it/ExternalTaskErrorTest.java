@@ -3,12 +3,12 @@ package org.example.it;
 import org.junit.Rule;
 import org.junit.Test;
 
-import generated.TC_externalTaskError__startEvent__endEvent;
+import generated.externaltaskerror.TC_startEvent__endEvent;
 
 public class ExternalTaskErrorTest {
 
   @Rule
-  public TC_externalTaskError__startEvent__endEvent tc = new TC_externalTaskError__startEvent__endEvent();
+  public TC_startEvent__endEvent tc = new TC_startEvent__endEvent();
 
   @Test
   public void testExecute() {

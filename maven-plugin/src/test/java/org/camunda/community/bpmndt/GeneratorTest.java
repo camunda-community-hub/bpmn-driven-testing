@@ -64,18 +64,20 @@ public class GeneratorTest {
   public void testDuplicateTestCaseNames() {
     generator.generateTestCases(ctx, result, bpmnFile);
     assertThat(result.getFiles(), hasSize(1));
+    assertThat(result.getFiles().get(0).packageName, equalTo("org.example.duplicate_test_case_names"));
 
     TypeSpec typeSpec = result.getFiles().get(0).typeSpec;
-    assertThat(typeSpec.name, equalTo("TC_duplicateTestCaseNames__startEvent__endEvent"));
+    assertThat(typeSpec.name, equalTo("TC_startEvent__endEvent"));
   }
 
   @Test
   public void testEmpty() {
     generator.generateTestCases(ctx, result, bpmnFile);
     assertThat(result.getFiles(), hasSize(1));
+    assertThat(result.getFiles().get(0).packageName, equalTo("org.example.empty"));
 
     TypeSpec typeSpec = result.getFiles().get(0).typeSpec;
-    assertThat(typeSpec.name, equalTo("TC_empty__empty"));
+    assertThat(typeSpec.name, equalTo("TC_empty"));
 
     TypeName superclass = ClassName.get(AbstractJUnit4TestRule.class);
     assertThat(typeSpec.superclass, equalTo(superclass));
@@ -97,9 +99,10 @@ public class GeneratorTest {
   public void testIncomplete() {
     generator.generateTestCases(ctx, result, bpmnFile);
     assertThat(result.getFiles(), hasSize(1));
+    assertThat(result.getFiles().get(0).packageName, equalTo("org.example.incomplete"));
 
     TypeSpec typeSpec = result.getFiles().get(0).typeSpec;
-    assertThat(typeSpec.name, equalTo("TC_incomplete__incomplete"));
+    assertThat(typeSpec.name, equalTo("TC_incomplete"));
 
     TypeName superclass = ClassName.get(AbstractJUnit4TestRule.class);
     assertThat(typeSpec.superclass, equalTo(superclass));
@@ -121,9 +124,10 @@ public class GeneratorTest {
   public void testInvalid() {
     generator.generateTestCases(ctx, result, bpmnFile);
     assertThat(result.getFiles(), hasSize(1));
+    assertThat(result.getFiles().get(0).packageName, equalTo("org.example.invalid"));
 
     TypeSpec typeSpec = result.getFiles().get(0).typeSpec;
-    assertThat(typeSpec.name, equalTo("TC_invalid__startEvent__endEvent"));
+    assertThat(typeSpec.name, equalTo("TC_startEvent__endEvent"));
 
     TypeName superclass = ClassName.get(AbstractJUnit4TestRule.class);
     assertThat(typeSpec.superclass, equalTo(superclass));
@@ -151,9 +155,10 @@ public class GeneratorTest {
   public void testHappyPath() {
     generator.generateTestCases(ctx, result, bpmnFile);
     assertThat(result.getFiles(), hasSize(1));
+    assertThat(result.getFiles().get(0).packageName, equalTo("org.example.happy_path"));
 
     TypeSpec typeSpec = result.getFiles().get(0).typeSpec;
-    assertThat(typeSpec.name, equalTo("TC_happy_path__Happy_Path"));
+    assertThat(typeSpec.name, equalTo("TC_Happy_Path"));
   }
 
   @Test
@@ -174,14 +179,14 @@ public class GeneratorTest {
     };
     
     // test cases
-    assertThat(isFile.test("org/example/TC_duplicateTestCaseNames__startEvent__endEvent.java"), is(true));
-    assertThat(isFile.test("org/example/TC_empty__empty.java"), is(true));
-    assertThat(isFile.test("org/example/TC_happy_path__Happy_Path.java"), is(true));
-    assertThat(isFile.test("org/example/TC_incomplete__incomplete.java"), is(true));
-    assertThat(isFile.test("org/example/TC_invalid__startEvent__endEvent.java"), is(true));
+    assertThat(isFile.test("org/example/duplicate_test_case_names/TC_startEvent__endEvent.java"), is(true));
+    assertThat(isFile.test("org/example/empty/TC_empty.java"), is(true));
+    assertThat(isFile.test("org/example/happy_path/TC_Happy_Path.java"), is(true));
+    assertThat(isFile.test("org/example/incomplete/TC_incomplete.java"), is(true));
+    assertThat(isFile.test("org/example/invalid/TC_startEvent__endEvent.java"), is(true));
 
     // should not exist, since the BPMN process provides no test cases
-    assertThat(isFile.test("org/example/TC_noTestCases__startEvent__endEvent.java"), is(false));
+    assertThat(isFile.test("org/example/no_test_cases/TC_startEvent__endEvent.java"), is(false));
 
     // API classes
     assertThat(isFile.test("org/camunda/community/bpmndt/api/AbstractJUnit4TestRule.java"), is(true));
@@ -212,14 +217,14 @@ public class GeneratorTest {
     };
 
     // test cases
-    assertThat(isFile.test("org/example/TC_duplicateTestCaseNames__startEvent__endEvent.java"), is(true));
-    assertThat(isFile.test("org/example/TC_empty__empty.java"), is(true));
-    assertThat(isFile.test("org/example/TC_happy_path__Happy_Path.java"), is(true));
-    assertThat(isFile.test("org/example/TC_incomplete__incomplete.java"), is(true));
-    assertThat(isFile.test("org/example/TC_invalid__startEvent__endEvent.java"), is(true));
+    assertThat(isFile.test("org/example/duplicate_test_case_names/TC_startEvent__endEvent.java"), is(true));
+    assertThat(isFile.test("org/example/empty/TC_empty.java"), is(true));
+    assertThat(isFile.test("org/example/happy_path/TC_Happy_Path.java"), is(true));
+    assertThat(isFile.test("org/example/incomplete/TC_incomplete.java"), is(true));
+    assertThat(isFile.test("org/example/invalid/TC_startEvent__endEvent.java"), is(true));
 
     // should not exist, since the BPMN process provides no test cases
-    assertThat(isFile.test("org/example/TC_noTestCases__startEvent__endEvent.java"), is(false));
+    assertThat(isFile.test("org/example/no_test_cases/TC_startEvent__endEvent.java"), is(false));
 
     // Spring configuration
     assertThat(isFile.test("org/example/BpmndtConfiguration.java"), is(true));

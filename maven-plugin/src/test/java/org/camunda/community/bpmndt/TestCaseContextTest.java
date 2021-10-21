@@ -44,26 +44,33 @@ public class TestCaseContextTest {
   public void testGetClassName() {
     bpmnSupport = BpmnSupport.of(simple);
     ctx = new TestCaseContext(bpmnSupport, bpmnSupport.getTestCases().get(0));
-
-    assertThat(ctx.getClassName(), equalTo("TC_simple__startEvent__endEvent"));
+    assertThat(ctx.getClassName(), equalTo("TC_startEvent__endEvent"));
 
     bpmnSupport = BpmnSupport.of(resources.resolve("happyPath.bpmn"));
     ctx = new TestCaseContext(bpmnSupport, bpmnSupport.getTestCases().get(0));
-
-    assertThat(ctx.getClassName(), equalTo("TC_happy_path__Happy_Path"));
+    assertThat(ctx.getClassName(), equalTo("TC_Happy_Path"));
   }
 
   @Test
   public void testGetName() {
     bpmnSupport = BpmnSupport.of(simple);
     ctx = new TestCaseContext(bpmnSupport, bpmnSupport.getTestCases().get(0));
-
     assertThat(ctx.getName(), equalTo("startEvent__endEvent"));
 
     bpmnSupport = BpmnSupport.of(resources.resolve("happyPath.bpmn"));
     ctx = new TestCaseContext(bpmnSupport, bpmnSupport.getTestCases().get(0));
-
     assertThat(ctx.getName(), equalTo("Happy_Path"));
+  }
+
+  @Test
+  public void testGetPackageName() {
+    bpmnSupport = BpmnSupport.of(simple);
+    ctx = new TestCaseContext(bpmnSupport, bpmnSupport.getTestCases().get(0));
+    assertThat(ctx.getPackageName(), equalTo("simple"));
+
+    bpmnSupport = BpmnSupport.of(resources.resolve("happyPath.bpmn"));
+    ctx = new TestCaseContext(bpmnSupport, bpmnSupport.getTestCases().get(0));
+    assertThat(ctx.getPackageName(), equalTo("happy_path"));
   }
 
   @Test

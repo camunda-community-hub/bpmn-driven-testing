@@ -7,7 +7,7 @@ Camunda extension, which is able to generate test code based on an extended BPMN
 The extension lets the developer focus on testing the business logic, rather than writing boilerplate code.
 The generated test code handles process instance start at any selected flow node and advances a process instance in case of wait states.
 Since the test code is generated, there is no need to deal with process definition keys and flow node IDs.
-If the BPMN model changes, any breaking changes (e.g. a service task becomes an external task) in the BPMN process will result in test compile errors.
+If the BPMN model changes, any breaking changes (e.g. a user task becomes an external task) in the BPMN process will result in test compile errors.
 
 The extension consists of:
 
@@ -54,14 +54,14 @@ When the BPMN model is saved, the selected test cases are attached to the BPMN p
 ### Generate test cases
 To generate the code for the selected test cases, a developer must run the **generator** goal of the [bpmn-driven-testing-maven-plugin](maven-plugin) - in Eclipse select the project and press **ALT+F5** to update.
 The goal finds all *.bpmn files under `src/main/resources` and looks for BPMN processes with a `bpmndt:testCases` extension element.
-Each test case will result in a [JUnit test rule](https://github.com/junit-team/junit4/wiki/Rules) - in this example: `generated.TC_order_fulfillment__Happy_Path`.
+Each test case will result in a [JUnit test rule](https://github.com/junit-team/junit4/wiki/Rules) - in this example: `generated.order_fulfillment.TC_Happy_Path`.
 
 ### Implement tests
-In this example, `TC_order_fulfillment__Happy_Path` must be imported and used as a JUnit test rule (a `public` field, which is annotated with `@Rule`):
+In this example, `TC_Happy_Path` must be imported and used as a JUnit test rule (a `public` field, which is annotated with `@Rule`):
 
 ```java
 @Rule
-public TC_order_fulfillment__Happy_Path tc = new TC_order_fulfillment__Happy_Path();
+public TC_Happy_Path tc = new TC_Happy_Path();
 ```
 
 Calling `createExecutor()` on the test rule, provides a fluent API,
@@ -75,12 +75,12 @@ For each applicable flow node a "handle*" method is generated - for example: `ha
 import org.junit.Rule;
 import org.junit.Test;
 
-import generated.TC_order_fulfillment__Happy_Path;
+import generated.order_fulfillment.TC_Happy_Path;
 
 public class OrderFulfillmentTest {
 
   @Rule
-  public TC_order_fulfillment__Happy_Path tc = new TC_order_fulfillment__Happy_Path();
+  public TC_Happy_Path tc = new TC_Happy_Path();
 
   @Test
   public void testItemsAvailable() {
