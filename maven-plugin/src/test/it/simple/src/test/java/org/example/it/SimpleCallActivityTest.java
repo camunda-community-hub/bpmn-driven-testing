@@ -7,12 +7,12 @@ import org.camunda.bpm.engine.variable.VariableMap;
 import org.junit.Rule;
 import org.junit.Test;
 
-import generated.TC_simpleCallActivity__startEvent__endEvent;
+import generated.simplecallactivity.TC_startEvent__endEvent;
 
 public class SimpleCallActivityTest {
 
   @Rule
-  public TC_simpleCallActivity__startEvent__endEvent tc = new TC_simpleCallActivity__startEvent__endEvent();
+  public TC_startEvent__endEvent tc = new TC_startEvent__endEvent();
 
   @Test
   public void testExecute() {

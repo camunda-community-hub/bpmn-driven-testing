@@ -21,7 +21,7 @@ public class TestCaseActivity {
   public TestCaseActivity(FlowNode flowNode) {
     this.flowNode = flowNode;
 
-    literal = BpmnSupport.toJavaLiteral(flowNode.getId());
+    literal = BpmnSupport.toLiteral(flowNode.getId());
 
     // initially OTHER, until it is set differently
     type = TestCaseActivityType.OTHER;

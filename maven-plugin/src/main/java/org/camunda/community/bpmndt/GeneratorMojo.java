@@ -45,10 +45,9 @@ public class GeneratorMojo extends AbstractMojo {
     GeneratorContext ctx = new GeneratorContext();
     ctx.setBasePath(project.getBasedir().toPath());
     ctx.setMainResourcePath(Paths.get(project.getBuild().getResources().get(0).getDirectory()));
-    ctx.setTestSourcePath(testSourcePath);
-
     ctx.setPackageName(packageName);
     ctx.setSpringEnabled(springEnabled);
+    ctx.setTestSourcePath(testSourcePath);
 
     // generate test code
     try {

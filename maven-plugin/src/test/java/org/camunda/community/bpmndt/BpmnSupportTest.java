@@ -32,11 +32,21 @@ public class BpmnSupportTest {
 
   @Test
   public void testToJavaLiteral() {
-    assertThat(BpmnSupport.toJavaLiteral("Happy Path"), equalTo("Happy_Path"));
-    assertThat(BpmnSupport.toJavaLiteral("Happy-Path"), equalTo("Happy_Path"));
-    assertThat(BpmnSupport.toJavaLiteral("Happy Path!"), equalTo("Happy_Path_"));
-    assertThat(BpmnSupport.toJavaLiteral("startEvent__endEvent"), equalTo("startEvent__endEvent"));
-    assertThat(BpmnSupport.toJavaLiteral("123\nABC"), equalTo("123_ABC"));
+    assertThat(BpmnSupport.toJavaLiteral("Happy Path"), equalTo("happy_path"));
+    assertThat(BpmnSupport.toJavaLiteral("Happy-Path"), equalTo("happy_path"));
+    assertThat(BpmnSupport.toJavaLiteral("Happy Path!"), equalTo("happy_path_"));
+    assertThat(BpmnSupport.toJavaLiteral("startEvent__endEvent"), equalTo("startevent__endevent"));
+    assertThat(BpmnSupport.toJavaLiteral("123\nABC"), equalTo("_123_abc"));
+    assertThat(BpmnSupport.toJavaLiteral("New"), equalTo("_new"));
+  }
+
+  @Test
+  public void testToLiteral() {
+    assertThat(BpmnSupport.toLiteral("Happy Path"), equalTo("Happy_Path"));
+    assertThat(BpmnSupport.toLiteral("Happy-Path"), equalTo("Happy_Path"));
+    assertThat(BpmnSupport.toLiteral("Happy Path!"), equalTo("Happy_Path_"));
+    assertThat(BpmnSupport.toLiteral("startEvent__endEvent"), equalTo("startEvent__endEvent"));
+    assertThat(BpmnSupport.toLiteral("123\nABC"), equalTo("123_ABC"));
   }
 
   @Test

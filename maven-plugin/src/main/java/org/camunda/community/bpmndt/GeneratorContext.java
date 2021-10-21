@@ -6,10 +6,9 @@ public class GeneratorContext {
 
   private Path basePath;
   private Path mainResourcePath;
-  private Path testSourcePath;
-
   private String packageName;
   private boolean springEnabled;
+  private Path testSourcePath;
 
   public Path getBasePath() {
     return basePath;
@@ -19,6 +18,11 @@ public class GeneratorContext {
     return mainResourcePath;
   }
 
+  /**
+   * Gets the configured base package name or the default value.
+   * 
+   * @return The base package name.
+   */
   public String getPackageName() {
     return packageName;
   }

@@ -66,7 +66,9 @@ public class GenerateJUnit4TestRule implements BiConsumer<GeneratorContext, Test
 
     addHandlerMethods(ctx, classBuilder);
 
-    JavaFile javaFile = JavaFile.builder(gCtx.getPackageName(), classBuilder.build())
+    String packageName = String.format("%s.%s", gCtx.getPackageName(), ctx.getPackageName());
+
+    JavaFile javaFile = JavaFile.builder(packageName, classBuilder.build())
         .addStaticImport(ProcessEngineTests.class, "assertThat")
         .skipJavaLangImports(true)
         .build();

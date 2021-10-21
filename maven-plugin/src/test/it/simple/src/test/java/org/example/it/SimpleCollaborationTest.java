@@ -3,12 +3,12 @@ package org.example.it;
 import org.junit.Rule;
 import org.junit.Test;
 
-import generated.TC_simpleCollaboration__startEvent__endEvent;
+import generated.simplecollaboration.TC_startEvent__endEvent;
 
 public class SimpleCollaborationTest {
 
   @Rule
-  public TC_simpleCollaboration__startEvent__endEvent tc = new TC_simpleCollaboration__startEvent__endEvent();
+  public TC_startEvent__endEvent tc = new TC_startEvent__endEvent();
 
   @Test
   public void testExecute() {

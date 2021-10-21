@@ -4,6 +4,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 
 import org.camunda.community.bpmndt.model.TestCase;
 
@@ -28,12 +29,12 @@ public class TestCaseContext {
 
     // build test case name
     if (testCase.getName() != null) {
-      testCaseName = BpmnSupport.toJavaLiteral(testCase.getName());
+      testCaseName = BpmnSupport.toLiteral(testCase.getName());
     } else if (testCase.getPath().length() >= 2) {
       List<String> flowNodeIds = testCase.getPath().getFlowNodeIds();
 
-      String a = BpmnSupport.toJavaLiteral(flowNodeIds.get(0));
-      String b = BpmnSupport.toJavaLiteral(flowNodeIds.get(flowNodeIds.size() - 1));
+      String a = BpmnSupport.toLiteral(flowNodeIds.get(0));
+      String b = BpmnSupport.toLiteral(flowNodeIds.get(flowNodeIds.size() - 1));
 
       testCaseName = String.format("%s__%s", a, b);
     } else {
@@ -60,8 +61,13 @@ public class TestCaseContext {
     return activities;
   }
 
+  /**
+   * Gets the name of the test case's class.
+   * 
+   * @return The class name.
+   */
   public String getClassName() {
-    return String.format("TC_%s__%s", BpmnSupport.toJavaLiteral(processId), getName());
+    return String.format("TC_%s", getName());
   }
 
   public String getDescription() {
@@ -82,6 +88,15 @@ public class TestCaseContext {
 
   public String getName() {
     return testCaseName;
+  }
+
+  /**
+   * Gets the name of the test case's package.
+   * 
+   * @return The package name.
+   */
+  public String getPackageName() {
+    return BpmnSupport.toJavaLiteral(getProcessId().toLowerCase(Locale.ENGLISH));
   }
 
   public String getProcessId() {

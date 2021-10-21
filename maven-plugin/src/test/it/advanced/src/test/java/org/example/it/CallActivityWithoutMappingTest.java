@@ -9,12 +9,12 @@ import org.camunda.bpm.engine.impl.core.model.BaseCallableElement.CallableElemen
 import org.junit.Rule;
 import org.junit.Test;
 
-import generated.TC_callActivityWithoutMapping__startEvent__endEvent;
+import generated.callactivitywithoutmapping.TC_startEvent__endEvent;
 
 public class CallActivityWithoutMappingTest {
 
   @Rule
-  public TC_callActivityWithoutMapping__startEvent__endEvent tc = new TC_callActivityWithoutMapping__startEvent__endEvent();
+  public TC_startEvent__endEvent tc = new TC_startEvent__endEvent();
 
   @Test
   public void testExecute() {

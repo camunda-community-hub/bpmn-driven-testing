@@ -19,8 +19,8 @@ import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.community.bpmndt.api.AbstractJUnit4SpringBasedTestRule;
 import org.camunda.community.bpmndt.api.AbstractJUnit4TestRule;
 import org.camunda.community.bpmndt.api.CallActivityHandler;
-import org.camunda.community.bpmndt.api.ExternalTaskHandler;
 import org.camunda.community.bpmndt.api.EventHandler;
+import org.camunda.community.bpmndt.api.ExternalTaskHandler;
 import org.camunda.community.bpmndt.api.JobHandler;
 import org.camunda.community.bpmndt.api.UserTaskHandler;
 import org.camunda.spin.plugin.impl.SpinProcessEnginePlugin;
@@ -79,12 +79,12 @@ public class GeneratorSimpleTest {
     assertThat(result.getFiles(), hasSize(1));
 
     JavaFile javaFile = result.getFiles().get(0);
-    assertThat(javaFile.packageName, equalTo(ctx.getPackageName()));
+    assertThat(javaFile.packageName, equalTo("org.example.simple"));
     assertThat(javaFile.skipJavaLangImports, is(true));
     assertThat(javaFile.typeSpec, notNullValue());
 
     TypeSpec typeSpec = javaFile.typeSpec;
-    assertThat(typeSpec.name, equalTo("TC_simple__startEvent__endEvent"));
+    assertThat(typeSpec.name, equalTo("TC_startEvent__endEvent"));
 
     TypeName superclass = ClassName.get(AbstractJUnit4TestRule.class);
     assertThat(typeSpec.superclass, equalTo(superclass));
@@ -124,12 +124,12 @@ public class GeneratorSimpleTest {
     assertThat(result.getFiles(), hasSize(1));
 
     JavaFile javaFile = result.getFiles().get(0);
-    assertThat(javaFile.packageName, equalTo(ctx.getPackageName()));
+    assertThat(javaFile.packageName, equalTo("org.example.simple"));
     assertThat(javaFile.skipJavaLangImports, is(true));
     assertThat(javaFile.typeSpec, notNullValue());
 
     TypeSpec typeSpec = javaFile.typeSpec;
-    assertThat(typeSpec.name, equalTo("TC_simple__startEvent__endEvent"));
+    assertThat(typeSpec.name, equalTo("TC_startEvent__endEvent"));
 
     TypeName superclass = ClassName.get(AbstractJUnit4SpringBasedTestRule.class);
     assertThat(typeSpec.superclass, equalTo(superclass));
@@ -383,17 +383,17 @@ public class GeneratorSimpleTest {
     };
     
     // test cases
-    assertThat(isFile.test("org/example/TC_simple__startEvent__endEvent.java"), is(true));
-    assertThat(isFile.test("org/example/TC_simpleAsync__startEvent__endEvent.java"), is(true));
-    assertThat(isFile.test("org/example/TC_simpleCallActivity__startEvent__endEvent.java"), is(true));
-    assertThat(isFile.test("org/example/TC_simpleCollaboration__startEvent__endEvent.java"), is(true));
-    assertThat(isFile.test("org/example/TC_simpleConditionalCatchEvent__startEvent__endEvent.java"), is(true));
-    assertThat(isFile.test("org/example/TC_simpleExternalTask__startEvent__endEvent.java"), is(true));
-    assertThat(isFile.test("org/example/TC_simpleMessageCatchEvent__startEvent__endEvent.java"), is(true));
-    assertThat(isFile.test("org/example/TC_simpleReceiveTask__startEvent__endEvent.java"), is(true));
-    assertThat(isFile.test("org/example/TC_simpleSignalCatchEvent__startEvent__endEvent.java"), is(true));
-    assertThat(isFile.test("org/example/TC_simpleSubProcess__startEvent__endEvent.java"), is(true));
-    assertThat(isFile.test("org/example/TC_simpleTimerCatchEvent__startEvent__endEvent.java"), is(true));
-    assertThat(isFile.test("org/example/TC_simpleUserTask__startEvent__endEvent.java"), is(true));
+    assertThat(isFile.test("org/example/simple/TC_startEvent__endEvent.java"), is(true));
+    assertThat(isFile.test("org/example/simpleasync/TC_startEvent__endEvent.java"), is(true));
+    assertThat(isFile.test("org/example/simplecallactivity/TC_startEvent__endEvent.java"), is(true));
+    assertThat(isFile.test("org/example/simplecollaboration/TC_startEvent__endEvent.java"), is(true));
+    assertThat(isFile.test("org/example/simpleconditionalcatchevent/TC_startEvent__endEvent.java"), is(true));
+    assertThat(isFile.test("org/example/simpleexternaltask/TC_startEvent__endEvent.java"), is(true));
+    assertThat(isFile.test("org/example/simplemessagecatchevent/TC_startEvent__endEvent.java"), is(true));
+    assertThat(isFile.test("org/example/simplereceivetask/TC_startEvent__endEvent.java"), is(true));
+    assertThat(isFile.test("org/example/simplesignalcatchevent/TC_startEvent__endEvent.java"), is(true));
+    assertThat(isFile.test("org/example/simplesubprocess/TC_startEvent__endEvent.java"), is(true));
+    assertThat(isFile.test("org/example/simpletimercatchevent/TC_startEvent__endEvent.java"), is(true));
+    assertThat(isFile.test("org/example/simpleusertask/TC_startEvent__endEvent.java"), is(true));
   }
 }

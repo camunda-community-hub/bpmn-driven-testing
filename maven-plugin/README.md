@@ -48,6 +48,16 @@ Add dependencies, which are required to execute the generated test code:
 </dependency>
 ```
 
+Recommended versions:
+
+| Dependency         | Version |
+|:-------------------|:--------|
+| Maven plugin       | see [Maven Central](https://search.maven.org/artifact/org.camunda.community/bpmn-driven-testing-maven-plugin) |
+| Camunda BPM        | 7.15.0+ |
+| Camunda BPM Assert | 10.0.0  |
+| JUnit 4            | 4.13.2  |
+| Assertj            | 3.18.1  |
+
 ## Configuration
 Available parameters for the plugin's `generator` goal:
 
@@ -57,10 +67,12 @@ Available parameters for the plugin's `generator` goal:
 | springEnabled       | Boolean | Enables Spring based testing                                               | false         |
 | testSourceDirectory | String  | Name of the directory under `target/`, used for the generated test sources | bpmndt        |
 
+## Recommended versions
+
 ## Testing
 Beside unit tests, a set of integration tests exist under [src/test/it](src/test/it).
 These tests verify that the Maven plugin works correctly when executed within a Maven build.
-The integration tests are implemented using the [Robot Framework](https://robotframework.org/).
+The integration tests are implemented using the [Robot Framework](https://robotframework.org/) (Java implementation).
 
 To execute unit and integration tests, run:
 
