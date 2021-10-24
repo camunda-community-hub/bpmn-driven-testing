@@ -126,7 +126,7 @@ A developer can solely focus on the actual implementation!
   - Automatic handling of wait states
   - Call activity stubbing for isolated testing - see [CallActivityTest](maven-plugin/src/test/it/advanced/src/test/java/org/example/it/CallActivityWithMappingTest.java)
   - Fluent API to override default behavior
-- Spring test support - see [AdvancedSpringTest](maven-plugin/src/test/it/advanced-spring/src/test/java/org/example/it/AdvancedSpringTest.java)
+- Spring test support - see [AdvancedTest](maven-plugin/src/test/it/advanced-spring/src/test/java/org/example/it/AdvancedTest.java)
 - Testing of arbitrary paths through a BPMN process
 - Test case validation and migration, when a BPMN process was changed - see [docs](docs/test-case-validation-and-migration.md)
 
