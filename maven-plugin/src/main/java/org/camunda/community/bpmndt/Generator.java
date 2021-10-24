@@ -19,7 +19,7 @@ import org.camunda.community.bpmndt.api.JobHandler;
 import org.camunda.community.bpmndt.api.TestCaseExecutor;
 import org.camunda.community.bpmndt.api.TestCaseInstance;
 import org.camunda.community.bpmndt.api.UserTaskHandler;
-import org.camunda.community.bpmndt.api.cfg.AbstractConfiguration;
+import org.camunda.community.bpmndt.api.cfg.SpringConfiguration;
 import org.camunda.community.bpmndt.api.cfg.BpmndtCallActivityBehavior;
 import org.camunda.community.bpmndt.api.cfg.BpmndtParseListener;
 import org.camunda.community.bpmndt.api.cfg.BpmndtProcessEnginePlugin;
@@ -106,7 +106,7 @@ public class Generator {
 
     if (ctx.isSpringEnabled()) {
       apiClasses.add(AbstractJUnit4SpringBasedTestRule.class);
-      apiClasses.add(AbstractConfiguration.class);
+      apiClasses.add(SpringConfiguration.class);
     }
 
     WriteJavaType writeType = new WriteJavaType(log, ctx);

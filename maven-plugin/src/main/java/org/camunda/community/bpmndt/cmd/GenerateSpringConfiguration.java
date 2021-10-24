@@ -6,7 +6,7 @@ import javax.lang.model.element.Modifier;
 
 import org.camunda.community.bpmndt.GeneratorContext;
 import org.camunda.community.bpmndt.GeneratorResult;
-import org.camunda.community.bpmndt.api.cfg.AbstractConfiguration;
+import org.camunda.community.bpmndt.api.cfg.SpringConfiguration;
 import org.camunda.community.bpmndt.cmd.generation.GetProcessEnginePlugins;
 import org.springframework.context.annotation.Configuration;
 
@@ -16,7 +16,7 @@ import com.squareup.javapoet.TypeSpec;
 /**
  * Generates a Spring test configuration, which is required for Spring based test code.
  * 
- * @see AbstractConfiguration
+ * @see SpringConfiguration
  */
 public class GenerateSpringConfiguration implements Consumer<GeneratorContext> {
 
@@ -29,7 +29,7 @@ public class GenerateSpringConfiguration implements Consumer<GeneratorContext> {
   @Override
   public void accept(GeneratorContext ctx) {
     TypeSpec typeSpec = TypeSpec.classBuilder("BpmndtConfiguration")
-        .superclass(AbstractConfiguration.class)
+        .superclass(SpringConfiguration.class)
         .addAnnotation(Configuration.class)
         .addModifiers(Modifier.PUBLIC)
         .addMethod(new GetProcessEnginePlugins().apply(ctx))

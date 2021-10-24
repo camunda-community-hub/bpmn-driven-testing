@@ -83,6 +83,12 @@
       <version>${junit.version}</version>
     </dependency>
     <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest-core</artifactId>
+      <version>2.2</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>com.h2database</groupId>
       <artifactId>h2</artifactId>
       <version>1.4.197</version>
@@ -133,6 +139,9 @@
           </execution>
         </executions>
         <configuration>
+          <processEnginePlugins>
+            <processEnginePlugin>org.camunda.spin.plugin.impl.SpinProcessEnginePlugin</processEnginePlugin>
+          </processEnginePlugins>
           <springEnabled>true</springEnabled>
         </configuration>
       </plugin>

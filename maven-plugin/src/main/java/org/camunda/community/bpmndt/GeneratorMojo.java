@@ -2,6 +2,7 @@ package org.camunda.community.bpmndt;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -24,7 +25,11 @@ public class GeneratorMojo extends AbstractMojo {
   @Parameter(defaultValue = "generated", required = true)
   protected String packageName;
 
-  /** Enables Spring based testing. */
+  /** List of process engine plugins to register at the process engine. */
+  @Parameter
+  protected List<String> processEnginePlugins;
+
+  /** Determines if Spring based testing is enabled or not. */
   @Parameter(defaultValue = "false", required = true)
   protected boolean springEnabled;
 
@@ -46,6 +51,7 @@ public class GeneratorMojo extends AbstractMojo {
     ctx.setBasePath(project.getBasedir().toPath());
     ctx.setMainResourcePath(Paths.get(project.getBuild().getResources().get(0).getDirectory()));
     ctx.setPackageName(packageName);
+    ctx.setProcessEnginePluginNames(processEnginePlugins);
     ctx.setSpringEnabled(springEnabled);
     ctx.setTestSourcePath(testSourcePath);
 

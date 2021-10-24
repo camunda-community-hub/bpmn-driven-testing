@@ -3,6 +3,7 @@ package org.camunda.community.bpmndt;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 
@@ -10,11 +11,14 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.function.Predicate;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugin.logging.Log;
 import org.camunda.community.bpmndt.api.AbstractJUnit4TestRule;
+import org.camunda.community.bpmndt.api.cfg.SpringConfiguration;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -23,6 +27,7 @@ import org.junit.rules.TestName;
 import org.mockito.Mockito;
 
 import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
@@ -168,10 +173,10 @@ public class GeneratorTest {
   }
 
   /**
-   * Tests the complete task execution.
+   * Tests the complete generation.
    */
   @Test
-  public void testExecute() {
+  public void testGenerate() {
     generator.generate(ctx);
     
     Predicate<String> isFile = (className) -> {
@@ -204,10 +209,10 @@ public class GeneratorTest {
   }
 
   /**
-   * Tests the complete task execution with Spring enabled.
+   * Tests the complete generation with Spring enabled.
    */
   @Test
-  public void testExecuteSpringEnabled() {
+  public void testGenerateSpringEnabled() {
     ctx.setSpringEnabled(true);
 
     generator.generate(ctx);
@@ -240,9 +245,46 @@ public class GeneratorTest {
     assertThat(isFile.test("org/camunda/community/bpmndt/api/TestCaseInstance.java"), is(true));
     assertThat(isFile.test("org/camunda/community/bpmndt/api/TestCaseExecutor.java"), is(true));
     assertThat(isFile.test("org/camunda/community/bpmndt/api/UserTaskHandler.java"), is(true));
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/cfg/AbstractConfiguration.java"), is(true));
     assertThat(isFile.test("org/camunda/community/bpmndt/api/cfg/BpmndtCallActivityBehavior.java"), is(true));
     assertThat(isFile.test("org/camunda/community/bpmndt/api/cfg/BpmndtParseListener.java"), is(true));
     assertThat(isFile.test("org/camunda/community/bpmndt/api/cfg/BpmndtProcessEnginePlugin.java"), is(true));
+    assertThat(isFile.test("org/camunda/community/bpmndt/api/cfg/SpringConfiguration.java"), is(true));
+  }
+
+  @Test
+  public void testGenerateSpringConfiguration() {
+    List<String> processEnginePluginNames = new LinkedList<>();
+    processEnginePluginNames.add("org.example.Abc");
+    processEnginePluginNames.add("ExamplePlugin");
+    processEnginePluginNames.add("org.camunda.Xzy");
+    ctx.setProcessEnginePluginNames(processEnginePluginNames);
+
+    generator.generateSpringConfiguration(ctx, result);
+    assertThat(result.getAdditionalFiles(), hasSize(1));
+    assertThat(result.getAdditionalFiles().get(0).packageName, equalTo("org.example"));
+
+    TypeSpec typeSpec = result.getAdditionalFiles().get(0).typeSpec;
+    assertThat(typeSpec.name, equalTo("BpmndtConfiguration"));
+    assertThat(typeSpec.superclass, equalTo(ClassName.get(SpringConfiguration.class)));
+    assertThat(typeSpec.methodSpecs, hasSize(1));
+
+    MethodSpec methodSpec = typeSpec.methodSpecs.get(0);
+    assertThat(methodSpec.name, equalTo("getProcessEnginePlugins"));
+
+    String code = methodSpec.code.toString();
+    assertThat(code, containsString(
+        "java.util.List<org.camunda.bpm.engine.impl.cfg.ProcessEnginePlugin> processEnginePlugins = new java.util.LinkedList<>()"));
+    assertThat(code, containsString("processEnginePlugins.add(new org.example.Abc())"));
+    assertThat(code, not(containsString("processEnginePlugins.add(new ExamplePlugin())")));
+    assertThat(code, containsString("processEnginePlugins.add(new org.camunda.Xzy())"));
+    assertThat(code, containsString("return processEnginePlugins"));
+  }
+
+  @Test
+  public void testGenerateSpringConfigurationEmptyProcessEnginePlugins() {
+    generator.generateSpringConfiguration(ctx, result);
+
+    String code = result.getAdditionalFiles().get(0).typeSpec.methodSpecs.get(0).code.toString();
+    assertThat(code, containsString("return java.util.Collections.emptyList()"));
   }
 }
