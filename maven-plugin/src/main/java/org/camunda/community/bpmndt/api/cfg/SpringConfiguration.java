@@ -2,8 +2,10 @@ package org.camunda.community.bpmndt.api.cfg;
 
 import static org.camunda.community.bpmndt.api.TestCaseInstance.PROCESS_ENGINE_NAME;
 
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.UUID;
 
 import javax.sql.DataSource;
 
@@ -21,19 +23,26 @@ import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
 
 /**
- * Abstract Spring test configuration, used as superclass for the generated configuration.
+ * Spring test configuration, used as superclass for the generated configuration.<br>
+ * If data source and/or transaction manager are not provided by the application context, this
+ * configuration will initialize and provide them to the process engine configuration.<br>
+ * Moreover, if the application context provides a list of process engine plugins, this list will be
+ * preferred in favor of the process engine plugins that are configured on the Maven plugin
+ * execution - see parameter {@code processEnginePlugins}.
  */
 @Configuration
-public abstract class AbstractConfiguration implements InitializingBean {
+public class SpringConfiguration implements InitializingBean {
 
   @Autowired
   private ApplicationContext applicationContext;
 
   @Autowired(required = false)
   private DataSource dataSource;
-
   @Autowired(required = false)
   private PlatformTransactionManager transactionManager;
+
+  @Autowired(required = false)
+  private List<ProcessEnginePlugin> processEnginePlugins;
 
   private ProcessEngine processEngine;
 
@@ -42,9 +51,7 @@ public abstract class AbstractConfiguration implements InitializingBean {
     DataSource dataSource = initDataSource();
     PlatformTransactionManager transactionManager = initTransactionManager(dataSource);
 
-    List<ProcessEnginePlugin> processEnginePlugins = new LinkedList<>();
-    processEnginePlugins.addAll(getProcessEnginePlugins());
-
+    List<ProcessEnginePlugin> processEnginePlugins = initProcessEnginePlugins();
     // BPMN Driven Testing plugin must be added last
     processEnginePlugins.add(new BpmndtProcessEnginePlugin());
 
@@ -65,22 +72,37 @@ public abstract class AbstractConfiguration implements InitializingBean {
   }
 
   /**
-   * Returns a list of process engine plugins that are registered at the process engine.
+   * Returns a list of process engine plugins that are registered at the process engine. The list may
+   * be empty, if there are no plugins to register. This method should be overridden by subclasses.
    * 
    * @return A list of process engine plugins.
    */
-  protected abstract List<ProcessEnginePlugin> getProcessEnginePlugins();
+  protected List<ProcessEnginePlugin> getProcessEnginePlugins() {
+    return Collections.emptyList();
+  }
 
   protected DataSource initDataSource() {
     if (this.dataSource != null) {
       return this.dataSource;
     }
-    
+
+    // use random database name to avoid error during schema create/drop
+    String url = String.format("jdbc:h2:mem:bpmndt-%s;DB_CLOSE_ON_EXIT=FALSE", UUID.randomUUID().toString());
+
     BasicDataSource dataSource = new BasicDataSource();
     dataSource.setDriverClassName("org.h2.Driver");
-    dataSource.setUrl("jdbc:h2:mem:bpmndt;DB_CLOSE_ON_EXIT=FALSE");
+    dataSource.setUrl(url);
 
     return dataSource;
+  }
+
+  protected List<ProcessEnginePlugin> initProcessEnginePlugins() {
+    // must be added to a new list, since the provided list may not allow modifications
+    if (this.processEnginePlugins != null) {
+      return new LinkedList<>(this.processEnginePlugins);
+    } else {
+      return new LinkedList<>(getProcessEnginePlugins());
+    }
   }
 
   protected PlatformTransactionManager initTransactionManager(DataSource dataSource) {

@@ -18,10 +18,10 @@ mvn clean test
 
   # Spring specific API classes written
   Should contain  ${result.stdout}  Writing file: target/bpmndt/org/camunda/community/bpmndt/api/AbstractJUnit4SpringBasedTestRule.java
-  Should contain  ${result.stdout}  Writing file: target/bpmndt/org/camunda/community/bpmndt/api/cfg/AbstractConfiguration.java
+  Should contain  ${result.stdout}  Writing file: target/bpmndt/org/camunda/community/bpmndt/api/cfg/SpringConfiguration.java
 
   File should exist  ${testSources}/org/camunda/community/bpmndt/api/AbstractJUnit4SpringBasedTestRule.java
-  File should exist  ${testSources}/org/camunda/community/bpmndt/api/cfg/AbstractConfiguration.java
+  File should exist  ${testSources}/org/camunda/community/bpmndt/api/cfg/SpringConfiguration.java
 
   # Spring configuration generated and written
   Should contain  ${result.stdout}  Generating Spring configuration
@@ -31,7 +31,9 @@ mvn clean test
   File should exist  ${testSources}/generated/BpmndtConfiguration.java
 
   # tests executed
-  Should contain  ${result.stdout}  Running org.example.it.AdvancedSpringTest
+  Should contain  ${result.stdout}  Running org.example.it.AdvancedTest
+  Should contain  ${result.stdout}  Running org.example.it.CustomProcessEnginePluginTest
+
   # tests executed successfully
   Should contain  ${result.stdout}  Failures: 0, Errors: 0, Skipped: 0
 

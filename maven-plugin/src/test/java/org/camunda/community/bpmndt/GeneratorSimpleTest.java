@@ -23,7 +23,6 @@ import org.camunda.community.bpmndt.api.EventHandler;
 import org.camunda.community.bpmndt.api.ExternalTaskHandler;
 import org.camunda.community.bpmndt.api.JobHandler;
 import org.camunda.community.bpmndt.api.UserTaskHandler;
-import org.camunda.spin.plugin.impl.SpinProcessEnginePlugin;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -105,7 +104,7 @@ public class GeneratorSimpleTest {
     assertThat(typeSpec.methodSpecs.get(4).name, equalTo("getProcessDefinitionKey"));
     assertThat(typeSpec.methodSpecs.get(4).code.toString(), containsString("\"simple\""));
     assertThat(typeSpec.methodSpecs.get(5).name, equalTo("getProcessEnginePlugins"));
-    assertThat(typeSpec.methodSpecs.get(5).code.toString(), containsString(SpinProcessEnginePlugin.class.getName()));
+    assertThat(typeSpec.methodSpecs.get(5).code.toString(), containsString("return java.util.Collections.emptyList()"));
     assertThat(typeSpec.methodSpecs.get(6).name, equalTo("getStart"));
     assertThat(typeSpec.methodSpecs.get(6).code.toString(), containsString("\"startEvent\""));
   }
@@ -117,7 +116,7 @@ public class GeneratorSimpleTest {
   public void testSimpleSpringEnabled() {
     ctx.setSpringEnabled(true);
 
-    // overwrite auto built BPMN file path
+    // overridde auto built BPMN file path
     bpmnFile = ctx.getMainResourcePath().resolve("simple.bpmn");
 
     generator.generateTestCases(ctx, result, bpmnFile);
@@ -150,7 +149,7 @@ public class GeneratorSimpleTest {
     assertThat(typeSpec.methodSpecs.get(4).name, equalTo("getProcessDefinitionKey"));
     assertThat(typeSpec.methodSpecs.get(4).code.toString(), containsString("\"simple\""));
     assertThat(typeSpec.methodSpecs.get(5).name, equalTo("getProcessEnginePlugins"));
-    assertThat(typeSpec.methodSpecs.get(5).code.toString(), containsString(SpinProcessEnginePlugin.class.getName()));
+    assertThat(typeSpec.methodSpecs.get(5).code.toString(), containsString("return java.util.Collections.emptyList()"));
     assertThat(typeSpec.methodSpecs.get(6).name, equalTo("getStart"));
     assertThat(typeSpec.methodSpecs.get(6).code.toString(), containsString("\"startEvent\""));
   }
@@ -372,10 +371,10 @@ public class GeneratorSimpleTest {
   }
 
   /**
-   * Tests the complete task execution.
+   * Tests the complete generation.
    */
   @Test
-  public void testExecute() {
+  public void testGenerate() {
     generator.generate(ctx);
     
     Predicate<String> isFile = (className) -> {

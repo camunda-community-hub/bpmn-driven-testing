@@ -5,5 +5,5 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @ComponentScan(basePackages = "org.example.delegate")
-public class TestConfiguration {
+public class AdvancedTestConfiguration {
 }

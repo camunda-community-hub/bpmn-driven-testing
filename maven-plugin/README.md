@@ -61,13 +61,12 @@ Recommended versions:
 ## Configuration
 Available parameters for the plugin's `generator` goal:
 
-| Parameter           | Type    | Description                                                                | Default value |
-|:--------------------|:--------|:---------------------------------------------------------------------------|:--------------|
-| packageName         | String  | Package name, used for the generated test sources                          | generated     |
-| springEnabled       | Boolean | Enables Spring based testing                                               | false         |
-| testSourceDirectory | String  | Name of the directory under `target/`, used for the generated test sources | bpmndt        |
-
-## Recommended versions
+| Parameter            | Type         | Description                                                                | Default value |
+|:---------------------|:-------------|:---------------------------------------------------------------------------|:--------------|
+| packageName          | String       | Package name, used for the generated test sources                          | generated     |
+| processEnginePlugins | List<String> | List of process engine plugins to register at the process engine           | -             |
+| springEnabled        | Boolean      | Enables Spring based testing                                               | false         |
+| testSourceDirectory  | String       | Name of the directory under `target/`, used for the generated test sources | bpmndt        |
 
 ## Testing
 Beside unit tests, a set of integration tests exist under [src/test/it](src/test/it).

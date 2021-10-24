@@ -86,9 +86,8 @@ public abstract class AbstractJUnit4TestRule extends TestWatcher {
    * @return The built process engine.
    */
   protected ProcessEngine buildProcessEngine() {
-    List<ProcessEnginePlugin> processEnginePlugins = new LinkedList<>();
-    processEnginePlugins.addAll(getProcessEnginePlugins());
-
+    // must be added to a new list, since the provided list may not allow modifications
+    List<ProcessEnginePlugin> processEnginePlugins = new LinkedList<>(getProcessEnginePlugins());
     // BPMN Driven Testing plugin must be added last
     processEnginePlugins.add(new BpmndtProcessEnginePlugin());
 
@@ -119,7 +118,7 @@ public abstract class AbstractJUnit4TestRule extends TestWatcher {
 
   /**
    * Returns an input stream that provides the BPMN resource with the process definition to be tested
-   * - either this method or {@link #getBpmnResourceName()} must be overriden!
+   * - either this method or {@link #getBpmnResourceName()} must be overridden!
    * 
    * @return The BPMN resource as stream.
    */
@@ -129,7 +128,7 @@ public abstract class AbstractJUnit4TestRule extends TestWatcher {
 
   /**
    * Returns the name of the BPMN resource, that provides the process definition to be tested - either
-   * this method or {@link #getBpmnResource()} must be overriden!
+   * this method or {@link #getBpmnResource()} must be overridden!
    * 
    * @return The BPMN resource name, within {@code src/main/resources}.
    */
@@ -162,7 +161,7 @@ public abstract class AbstractJUnit4TestRule extends TestWatcher {
   
   /**
    * Provides custom {@link ProcessEnginePlugin}s to be registered when the process engine is built.
-   * By default, this method return an empty list. It can be overriden by any extending class.
+   * By default, this method return an empty list. It can be overridden by any extending class.
    * 
    * @return A list of process engine plugins to register.
    * 
