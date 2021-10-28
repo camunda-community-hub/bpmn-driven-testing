@@ -2,7 +2,7 @@
 [![](https://img.shields.io/badge/Community%20Extension-An%20open%20source%20community%20maintained%20project-FF4700)](https://github.com/camunda-community-hub/community)
 [![](https://img.shields.io/badge/Lifecycle-Incubating-blue)](https://github.com/Camunda-Community-Hub/community/blob/main/extension-lifecycle.md#incubating-)
 
-Camunda extension, which is able to generate test code based on an extended BPMN model.
+[Camunda Platform](https://docs.camunda.org/manual/latest/) extension, which is able to generate test code based on an extended BPMN model.
 
 The extension lets the developer focus on testing the business logic, rather than writing boilerplate code.
 The generated test code handles process instance start at any selected flow node and advances a process instance in case of wait states.
