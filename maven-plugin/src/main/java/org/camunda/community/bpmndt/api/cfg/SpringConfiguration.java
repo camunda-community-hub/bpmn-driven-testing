@@ -9,7 +9,6 @@ import java.util.UUID;
 
 import javax.sql.DataSource;
 
-import org.apache.commons.dbcp.BasicDataSource;
 import org.camunda.bpm.engine.ProcessEngine;
 import org.camunda.bpm.engine.impl.cfg.ProcessEnginePlugin;
 import org.camunda.bpm.engine.spring.SpringExpressionManager;
@@ -20,6 +19,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.transaction.PlatformTransactionManager;
 
 /**
@@ -86,10 +86,10 @@ public class SpringConfiguration implements InitializingBean {
       return this.dataSource;
     }
 
-    // use random database name to avoid error during schema create/drop
-    String url = String.format("jdbc:h2:mem:bpmndt-%s;DB_CLOSE_ON_EXIT=FALSE", UUID.randomUUID().toString());
+    // use random database name to avoid SQL errors during schema create/drop
+    String url = String.format("jdbc:h2:mem:bpmndt-%s;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE", UUID.randomUUID().toString());
 
-    BasicDataSource dataSource = new BasicDataSource();
+    DriverManagerDataSource dataSource = new DriverManagerDataSource();
     dataSource.setDriverClassName("org.h2.Driver");
     dataSource.setUrl(url);
 
