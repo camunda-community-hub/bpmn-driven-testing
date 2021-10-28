@@ -1,6 +1,7 @@
 # Maven Plugin
-The plugin's `generator` goal runs within Maven's default lifecycle in phase `generate-test-sources` (run `mvn test-compile` to see the generator's log).
-It generates the test code under `target/bpmndt` and adds this directory as test source directory.
+The plugin's `generator` goal runs within Maven's default lifecycle in phase `generate-test-sources` (run `mvn generate-test-sources` to see the generator's log).
+It generates the test code under `target/bpmndt` and adds this directory as test source directory, which is automatically compiled during the `test-compile` phase.
+The compilation results (test cases and [API classes](src/main/java/org/camunda/community/bpmndt/api)) will be available in the test classpath afterwards.
 
 ## Usage
 
@@ -19,6 +20,19 @@ It generates the test code under `target/bpmndt` and adds this directory as test
 </plugin>
 ```
 
+Please see [Maven Central](https://search.maven.org/artifact/org.camunda.community/bpmn-driven-testing-maven-plugin) to get the latest version.
+
+## Configuration
+Available parameters for the plugin's `generator` goal:
+
+| Parameter            | Type         | Description                                                                | Default value |
+|:---------------------|:-------------|:---------------------------------------------------------------------------|:--------------|
+| packageName          | String       | Package name, used for the generated test sources                          | generated     |
+| processEnginePlugins | List<String> | List of process engine plugins to register at the process engine           | -             |
+| springEnabled        | Boolean      | Enables Spring based testing                                               | false         |
+| testSourceDirectory  | String       | Name of the directory under `target/`, used for the generated test sources | bpmndt        |
+
+## Dependencies
 Add dependencies, which are required to execute the generated test code:
 
 ```xml
@@ -48,25 +62,47 @@ Add dependencies, which are required to execute the generated test code:
 </dependency>
 ```
 
+For **Spring** based testing, additional dependencies are required:
+
+```xml
+<dependency>
+  <groupId>org.camunda.bpm</groupId>
+  <artifactId>camunda-engine-spring</artifactId>
+</dependency>
+
+<dependency>
+  <groupId>org.springframework</groupId>
+  <artifactId>spring-beans</artifactId>
+  <version>${spring.version}</version>
+</dependency>
+<dependency>
+  <groupId>org.springframework</groupId>
+  <artifactId>spring-jdbc</artifactId>
+  <version>${spring.version}</version>
+</dependency>
+<dependency>
+  <groupId>org.springframework</groupId>
+  <artifactId>spring-context</artifactId>
+  <version>${spring.version}</version>
+</dependency>
+
+<dependency>
+  <groupId>org.springframework</groupId>
+  <artifactId>spring-test</artifactId>
+  <version>${spring.version}</version>
+  <scope>test</scope>
+</dependency>
+```
+
 Recommended versions:
 
 | Dependency         | Version |
 |:-------------------|:--------|
-| Maven plugin       | see [Maven Central](https://search.maven.org/artifact/org.camunda.community/bpmn-driven-testing-maven-plugin) |
 | Camunda BPM        | 7.15.0+ |
 | Camunda BPM Assert | 10.0.0  |
 | JUnit 4            | 4.13.2  |
 | Assertj            | 3.18.1  |
-
-## Configuration
-Available parameters for the plugin's `generator` goal:
-
-| Parameter            | Type         | Description                                                                | Default value |
-|:---------------------|:-------------|:---------------------------------------------------------------------------|:--------------|
-| packageName          | String       | Package name, used for the generated test sources                          | generated     |
-| processEnginePlugins | List<String> | List of process engine plugins to register at the process engine           | -             |
-| springEnabled        | Boolean      | Enables Spring based testing                                               | false         |
-| testSourceDirectory  | String       | Name of the directory under `target/`, used for the generated test sources | bpmndt        |
+| Spring Framework   | 5.2.8.RELEASE+ |
 
 ## Testing
 Beside unit tests, a set of integration tests exist under [src/test/it](src/test/it).
