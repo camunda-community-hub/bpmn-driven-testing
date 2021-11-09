@@ -2,6 +2,7 @@ package org.camunda.community.bpmndt.api;
 
 import java.util.function.Consumer;
 
+import org.camunda.bpm.engine.ProcessEngineException;
 import org.camunda.bpm.engine.RuntimeService;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.test.assertions.ProcessEngineTests;
@@ -61,7 +62,17 @@ public class TestCaseExecutor {
     // announce process instance
     instance.setProcessInstance(pi);
 
-    executor.accept(pi);
+    try {
+      executor.accept(pi);
+    } catch (ProcessEngineException e) {
+      if (e.getCause() instanceof AssertionError) {
+        // in case of call activities, unwrap AssertionError
+        // otherwise the test will be marked as an error, instead of a failure
+        throw (AssertionError) e.getCause();
+      } else {
+        throw e;
+      }
+    }
 
     if (verifier != null) {
       verifier.accept(ProcessEngineTests.assertThat(pi));

@@ -28,14 +28,16 @@ public class GenerateSpringConfiguration implements Consumer<GeneratorContext> {
 
   @Override
   public void accept(GeneratorContext ctx) {
-    TypeSpec typeSpec = TypeSpec.classBuilder("BpmndtConfiguration")
+    TypeSpec.Builder builder = TypeSpec.classBuilder("BpmndtConfiguration")
         .superclass(SpringConfiguration.class)
         .addAnnotation(Configuration.class)
-        .addModifiers(Modifier.PUBLIC)
-        .addMethod(new GetProcessEnginePlugins().apply(ctx))
-        .build();
+        .addModifiers(Modifier.PUBLIC);
 
-    JavaFile javaFile = JavaFile.builder(ctx.getPackageName(), typeSpec)
+    if (!ctx.getProcessEnginePluginNames().isEmpty()) {
+      builder.addMethod(new GetProcessEnginePlugins().apply(ctx));
+    }
+
+    JavaFile javaFile = JavaFile.builder(ctx.getPackageName(), builder.build())
         .skipJavaLangImports(true)
         .build();
 

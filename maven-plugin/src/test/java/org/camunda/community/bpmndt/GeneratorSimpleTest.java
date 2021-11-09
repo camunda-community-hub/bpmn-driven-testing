@@ -1,5 +1,6 @@
 package org.camunda.community.bpmndt;
 
+import static org.camunda.community.bpmndt.test.ContainsCode.containsCode;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -38,11 +39,11 @@ import com.squareup.javapoet.TypeSpec;
 
 public class GeneratorSimpleTest {
 
-  private static final TypeName CALL_ACTIVITY_HANDLER = ClassName.get(CallActivityHandler.class);
-  private static final TypeName EXTERNAL_TASK_HANDLER = ClassName.get(ExternalTaskHandler.class);
-  private static final TypeName INTERMEDIATE_CATCH_EVENT_HANDLER = ClassName.get(EventHandler.class);
-  private static final TypeName JOB_HANDLER = ClassName.get(JobHandler.class);
-  private static final TypeName USER_TASK_HANDLER = ClassName.get(UserTaskHandler.class);
+  private static final TypeName CALL_ACTIVITY_HANDLER = TypeName.get(CallActivityHandler.class);
+  private static final TypeName EVENT_HANDLER = TypeName.get(EventHandler.class);
+  private static final TypeName EXTERNAL_TASK_HANDLER = TypeName.get(ExternalTaskHandler.class);
+  private static final TypeName JOB_HANDLER = TypeName.get(JobHandler.class);
+  private static final TypeName USER_TASK_HANDLER = TypeName.get(UserTaskHandler.class);
 
   @Rule
   public TestName testName = new TestName();
@@ -66,7 +67,7 @@ public class GeneratorSimpleTest {
 
     ctx.setPackageName("org.example");
 
-    result = new GeneratorResult();
+    result = generator.getResult();
 
     String fileName = testName.getMethodName().replace("test", "") + ".bpmn";
     bpmnFile = ctx.getMainResourcePath().resolve(StringUtils.uncapitalize(fileName));
@@ -74,7 +75,7 @@ public class GeneratorSimpleTest {
 
   @Test
   public void testSimple() {
-    generator.generateTestCases(ctx, result, bpmnFile);
+    generator.generateTestCases(ctx, bpmnFile);
     assertThat(result.getFiles(), hasSize(1));
 
     JavaFile javaFile = result.getFiles().get(0);
@@ -88,7 +89,7 @@ public class GeneratorSimpleTest {
     TypeName superclass = ClassName.get(AbstractJUnit4TestRule.class);
     assertThat(typeSpec.superclass, equalTo(superclass));
     assertThat(typeSpec.fieldSpecs, hasSize(0));
-    assertThat(typeSpec.methodSpecs, hasSize(7));
+    assertThat(typeSpec.methodSpecs, hasSize(6));
     assertThat(typeSpec.methodSpecs.get(0).name, equalTo("starting"));
     assertThat(typeSpec.methodSpecs.get(0).parameters, hasSize(1));
     assertThat(typeSpec.methodSpecs.get(0).parameters.get(0).name, equalTo("description"));
@@ -103,10 +104,8 @@ public class GeneratorSimpleTest {
     assertThat(typeSpec.methodSpecs.get(3).code.toString(), containsString("\"endEvent\""));
     assertThat(typeSpec.methodSpecs.get(4).name, equalTo("getProcessDefinitionKey"));
     assertThat(typeSpec.methodSpecs.get(4).code.toString(), containsString("\"simple\""));
-    assertThat(typeSpec.methodSpecs.get(5).name, equalTo("getProcessEnginePlugins"));
-    assertThat(typeSpec.methodSpecs.get(5).code.toString(), containsString("return java.util.Collections.emptyList()"));
-    assertThat(typeSpec.methodSpecs.get(6).name, equalTo("getStart"));
-    assertThat(typeSpec.methodSpecs.get(6).code.toString(), containsString("\"startEvent\""));
+    assertThat(typeSpec.methodSpecs.get(5).name, equalTo("getStart"));
+    assertThat(typeSpec.methodSpecs.get(5).code.toString(), containsString("\"startEvent\""));
   }
 
   /**
@@ -119,7 +118,7 @@ public class GeneratorSimpleTest {
     // overridde auto built BPMN file path
     bpmnFile = ctx.getMainResourcePath().resolve("simple.bpmn");
 
-    generator.generateTestCases(ctx, result, bpmnFile);
+    generator.generateTestCases(ctx, bpmnFile);
     assertThat(result.getFiles(), hasSize(1));
 
     JavaFile javaFile = result.getFiles().get(0);
@@ -133,7 +132,7 @@ public class GeneratorSimpleTest {
     TypeName superclass = ClassName.get(AbstractJUnit4SpringBasedTestRule.class);
     assertThat(typeSpec.superclass, equalTo(superclass));
     assertThat(typeSpec.fieldSpecs, hasSize(0));
-    assertThat(typeSpec.methodSpecs, hasSize(7));
+    assertThat(typeSpec.methodSpecs, hasSize(6));
     assertThat(typeSpec.methodSpecs.get(0).name, equalTo("starting"));
     assertThat(typeSpec.methodSpecs.get(0).parameters, hasSize(1));
     assertThat(typeSpec.methodSpecs.get(0).parameters.get(0).name, equalTo("description"));
@@ -148,15 +147,13 @@ public class GeneratorSimpleTest {
     assertThat(typeSpec.methodSpecs.get(3).code.toString(), containsString("\"endEvent\""));
     assertThat(typeSpec.methodSpecs.get(4).name, equalTo("getProcessDefinitionKey"));
     assertThat(typeSpec.methodSpecs.get(4).code.toString(), containsString("\"simple\""));
-    assertThat(typeSpec.methodSpecs.get(5).name, equalTo("getProcessEnginePlugins"));
-    assertThat(typeSpec.methodSpecs.get(5).code.toString(), containsString("return java.util.Collections.emptyList()"));
-    assertThat(typeSpec.methodSpecs.get(6).name, equalTo("getStart"));
-    assertThat(typeSpec.methodSpecs.get(6).code.toString(), containsString("\"startEvent\""));
+    assertThat(typeSpec.methodSpecs.get(5).name, equalTo("getStart"));
+    assertThat(typeSpec.methodSpecs.get(5).code.toString(), containsString("\"startEvent\""));
   }
 
   @Test
   public void testSimpleAsync() {
-    generator.generateTestCases(ctx, result, bpmnFile);
+    generator.generateTestCases(ctx, bpmnFile);
     assertThat(result.getFiles(), hasSize(1));
 
     TypeSpec typeSpec = result.getFiles().get(0).typeSpec;
@@ -165,209 +162,183 @@ public class GeneratorSimpleTest {
     assertThat(typeSpec.fieldSpecs.get(0).type, equalTo(JOB_HANDLER));
     assertThat(typeSpec.fieldSpecs.get(1).name, equalTo("endEventBefore"));
     assertThat(typeSpec.fieldSpecs.get(1).type, equalTo(JOB_HANDLER));
-    assertThat(typeSpec.methodSpecs, hasSize(9));
-    assertThat(typeSpec.methodSpecs.get(7).name, equalTo("handleStartEventAfter"));
+    assertThat(typeSpec.methodSpecs, hasSize(8));
+    assertThat(typeSpec.methodSpecs.get(6).name, equalTo("handleStartEventAfter"));
+    assertThat(typeSpec.methodSpecs.get(6).returnType, equalTo(JOB_HANDLER));
+    assertThat(typeSpec.methodSpecs.get(7).name, equalTo("handleEndEventBefore"));
     assertThat(typeSpec.methodSpecs.get(7).returnType, equalTo(JOB_HANDLER));
-    assertThat(typeSpec.methodSpecs.get(8).name, equalTo("handleEndEventBefore"));
-    assertThat(typeSpec.methodSpecs.get(8).returnType, equalTo(JOB_HANDLER));
 
-    String expected;
+    containsCode(typeSpec.methodSpecs.get(0))
+        .contains(String.format("startEventAfter = new %s(getProcessEngine(), \"startEvent\");", JOB_HANDLER))
+        .contains(String.format("endEventBefore = new %s(getProcessEngine(), \"endEvent\");", JOB_HANDLER));
 
-    String startingCode = typeSpec.methodSpecs.get(0).code.toString();
-    expected = String.format("startEventAfter = new %s(getProcessEngine(), \"startEvent\");", JOB_HANDLER);
-    assertThat(startingCode, containsString(expected));
-    expected = String.format("endEventBefore = new %s(getProcessEngine(), \"endEvent\");", JOB_HANDLER);
-    assertThat(startingCode, containsString(expected));
-
-    String executeCode = typeSpec.methodSpecs.get(1).code.toString();
-    assertThat(executeCode, containsString("instance.apply(startEventAfter);"));
-    assertThat(executeCode, containsString("instance.apply(endEventBefore);"));
+    containsCode(typeSpec.methodSpecs.get(1))
+        .contains("instance.apply(startEventAfter);")
+        .contains("instance.apply(endEventBefore);");
   }
 
   @Test
   public void testSimpleCallActivity() {
-    generator.generateTestCases(ctx, result, bpmnFile);
-    assertThat(result.getFiles(), hasSize(1));
-
-    TypeSpec typeSpec = result.getFiles().get(0).typeSpec;
-    assertThat(typeSpec.methodSpecs, hasSize(8));
-    assertThat(typeSpec.methodSpecs.get(7).name, equalTo("handleCallActivity"));
-    assertThat(typeSpec.methodSpecs.get(7).returnType, equalTo(CALL_ACTIVITY_HANDLER));
-
-    String startingCode = typeSpec.methodSpecs.get(0).code.toString();
-    String expected = String.format("callActivity = new %s(instance, \"callActivity\");", CALL_ACTIVITY_HANDLER);
-    assertThat(startingCode, containsString(expected));
-  }
-
-  @Test
-  public void testSimpleCollaboration() {
-    generator.generateTestCases(ctx, result, bpmnFile);
+    generator.generateTestCases(ctx, bpmnFile);
     assertThat(result.getFiles(), hasSize(1));
 
     TypeSpec typeSpec = result.getFiles().get(0).typeSpec;
     assertThat(typeSpec.methodSpecs, hasSize(7));
+    assertThat(typeSpec.methodSpecs.get(6).name, equalTo("handleCallActivity"));
+    assertThat(typeSpec.methodSpecs.get(6).returnType, equalTo(CALL_ACTIVITY_HANDLER));
+
+    String expected = "callActivity = new %s(instance, \"callActivity\");";
+    containsCode(typeSpec.methodSpecs.get(0)).contains(String.format(expected, CALL_ACTIVITY_HANDLER));
+  }
+
+  @Test
+  public void testSimpleCollaboration() {
+    generator.generateTestCases(ctx, bpmnFile);
+    assertThat(result.getFiles(), hasSize(1));
+
+    TypeSpec typeSpec = result.getFiles().get(0).typeSpec;
+    assertThat(typeSpec.methodSpecs, hasSize(6));
   }
 
   @Test
   public void testSimpleConditionalCatchEvent() {
-    generator.generateTestCases(ctx, result, bpmnFile);
+    generator.generateTestCases(ctx, bpmnFile);
     assertThat(result.getFiles(), hasSize(1));
 
     TypeSpec typeSpec = result.getFiles().get(0).typeSpec;
     assertThat(typeSpec.fieldSpecs, hasSize(1));
     assertThat(typeSpec.fieldSpecs.get(0).name, equalTo("conditionalCatchEvent"));
-    assertThat(typeSpec.fieldSpecs.get(0).type, equalTo(INTERMEDIATE_CATCH_EVENT_HANDLER));
-    assertThat(typeSpec.methodSpecs, hasSize(8));
-    assertThat(typeSpec.methodSpecs.get(7).name, equalTo("handleConditionalCatchEvent"));
-    assertThat(typeSpec.methodSpecs.get(7).returnType, equalTo(INTERMEDIATE_CATCH_EVENT_HANDLER));
+    assertThat(typeSpec.fieldSpecs.get(0).type, equalTo(EVENT_HANDLER));
+    assertThat(typeSpec.methodSpecs, hasSize(7));
+    assertThat(typeSpec.methodSpecs.get(6).name, equalTo("handleConditionalCatchEvent"));
+    assertThat(typeSpec.methodSpecs.get(6).returnType, equalTo(EVENT_HANDLER));
 
-    String startingCode = typeSpec.methodSpecs.get(0).code.toString();
     String expected = "conditionalCatchEvent = new %s(getProcessEngine(), \"conditionalCatchEvent\", null);";
-    assertThat(startingCode, containsString(String.format(expected, INTERMEDIATE_CATCH_EVENT_HANDLER)));
-
-    String executeCode = typeSpec.methodSpecs.get(1).code.toString();
-    assertThat(executeCode, containsString("instance.apply(conditionalCatchEvent);"));
+    containsCode(typeSpec.methodSpecs.get(0)).contains(String.format(expected, EVENT_HANDLER));
+    containsCode(typeSpec.methodSpecs.get(1)).contains("instance.apply(conditionalCatchEvent);");
   }
 
   @Test
   public void testSimpleExternalTask() {
-    generator.generateTestCases(ctx, result, bpmnFile);
+    generator.generateTestCases(ctx, bpmnFile);
     assertThat(result.getFiles(), hasSize(1));
 
     TypeSpec typeSpec = result.getFiles().get(0).typeSpec;
     assertThat(typeSpec.fieldSpecs, hasSize(1));
     assertThat(typeSpec.fieldSpecs.get(0).name, equalTo("externalTask"));
     assertThat(typeSpec.fieldSpecs.get(0).type, equalTo(EXTERNAL_TASK_HANDLER));
-    assertThat(typeSpec.methodSpecs, hasSize(8));
-    assertThat(typeSpec.methodSpecs.get(7).name, equalTo("handleExternalTask"));
-    assertThat(typeSpec.methodSpecs.get(7).returnType, equalTo(EXTERNAL_TASK_HANDLER));
+    assertThat(typeSpec.methodSpecs, hasSize(7));
+    assertThat(typeSpec.methodSpecs.get(6).name, equalTo("handleExternalTask"));
+    assertThat(typeSpec.methodSpecs.get(6).returnType, equalTo(EXTERNAL_TASK_HANDLER));
 
-    String startingCode = typeSpec.methodSpecs.get(0).code.toString();
-    String expected = String.format("externalTask = new %s(getProcessEngine(), \"externalTask\", \"test-topic\");", EXTERNAL_TASK_HANDLER);
-    assertThat(startingCode, containsString(expected));
-
-    String executeCode = typeSpec.methodSpecs.get(1).code.toString();
-    assertThat(executeCode, containsString("instance.apply(externalTask);"));
+    String expected = "externalTask = new %s(getProcessEngine(), \"externalTask\", \"test-topic\");";
+    containsCode(typeSpec.methodSpecs.get(0)).contains(String.format(expected, EXTERNAL_TASK_HANDLER));
+    containsCode(typeSpec.methodSpecs.get(1)).contains("instance.apply(externalTask);");
   }
 
   @Test
   public void testSimpleMessageCatchEvent() {
-    generator.generateTestCases(ctx, result, bpmnFile);
+    generator.generateTestCases(ctx, bpmnFile);
     assertThat(result.getFiles(), hasSize(1));
 
     TypeSpec typeSpec = result.getFiles().get(0).typeSpec;
     assertThat(typeSpec.fieldSpecs, hasSize(1));
     assertThat(typeSpec.fieldSpecs.get(0).name, equalTo("messageCatchEvent"));
-    assertThat(typeSpec.fieldSpecs.get(0).type, equalTo(INTERMEDIATE_CATCH_EVENT_HANDLER));
-    assertThat(typeSpec.methodSpecs, hasSize(8));
-    assertThat(typeSpec.methodSpecs.get(7).name, equalTo("handleMessageCatchEvent"));
-    assertThat(typeSpec.methodSpecs.get(7).returnType, equalTo(INTERMEDIATE_CATCH_EVENT_HANDLER));
+    assertThat(typeSpec.fieldSpecs.get(0).type, equalTo(EVENT_HANDLER));
+    assertThat(typeSpec.methodSpecs, hasSize(7));
+    assertThat(typeSpec.methodSpecs.get(6).name, equalTo("handleMessageCatchEvent"));
+    assertThat(typeSpec.methodSpecs.get(6).returnType, equalTo(EVENT_HANDLER));
 
-    String startingCode = typeSpec.methodSpecs.get(0).code.toString();
     String expected = "messageCatchEvent = new %s(getProcessEngine(), \"messageCatchEvent\", \"simpleMessage\");";
-    assertThat(startingCode, containsString(String.format(expected, INTERMEDIATE_CATCH_EVENT_HANDLER)));
-
-    String executeCode = typeSpec.methodSpecs.get(1).code.toString();
-    assertThat(executeCode, containsString("instance.apply(messageCatchEvent);"));
+    containsCode(typeSpec.methodSpecs.get(0)).contains(String.format(expected, EVENT_HANDLER));
+    containsCode(typeSpec.methodSpecs.get(1)).contains("instance.apply(messageCatchEvent);");
   }
 
   @Test
   public void testSimpleReceiveTask() {
-    generator.generateTestCases(ctx, result, bpmnFile);
+    generator.generateTestCases(ctx, bpmnFile);
     assertThat(result.getFiles(), hasSize(1));
 
     TypeSpec typeSpec = result.getFiles().get(0).typeSpec;
     assertThat(typeSpec.fieldSpecs, hasSize(1));
     assertThat(typeSpec.fieldSpecs.get(0).name, equalTo("receiveTask"));
-    assertThat(typeSpec.fieldSpecs.get(0).type, equalTo(INTERMEDIATE_CATCH_EVENT_HANDLER));
-    assertThat(typeSpec.methodSpecs, hasSize(8));
-    assertThat(typeSpec.methodSpecs.get(7).name, equalTo("handleReceiveTask"));
-    assertThat(typeSpec.methodSpecs.get(7).returnType, equalTo(INTERMEDIATE_CATCH_EVENT_HANDLER));
+    assertThat(typeSpec.fieldSpecs.get(0).type, equalTo(EVENT_HANDLER));
+    assertThat(typeSpec.methodSpecs, hasSize(7));
+    assertThat(typeSpec.methodSpecs.get(6).name, equalTo("handleReceiveTask"));
+    assertThat(typeSpec.methodSpecs.get(6).returnType, equalTo(EVENT_HANDLER));
 
-    String startingCode = typeSpec.methodSpecs.get(0).code.toString();
     String expected = "receiveTask = new %s(getProcessEngine(), \"receiveTask\", \"simpleMessage\");";
-    assertThat(startingCode, containsString(String.format(expected, INTERMEDIATE_CATCH_EVENT_HANDLER)));
-
-    String executeCode = typeSpec.methodSpecs.get(1).code.toString();
-    assertThat(executeCode, containsString("instance.apply(receiveTask);"));
+    containsCode(typeSpec.methodSpecs.get(0)).contains(String.format(expected, EVENT_HANDLER));
+    containsCode(typeSpec.methodSpecs.get(1)).contains("instance.apply(receiveTask);");
   }
 
   @Test
   public void testSimpleSignalCatchEvent() {
-    generator.generateTestCases(ctx, result, bpmnFile);
+    generator.generateTestCases(ctx, bpmnFile);
     assertThat(result.getFiles(), hasSize(1));
 
     TypeSpec typeSpec = result.getFiles().get(0).typeSpec;
     assertThat(typeSpec.fieldSpecs, hasSize(1));
     assertThat(typeSpec.fieldSpecs.get(0).name, equalTo("signalCatchEvent"));
     assertThat(typeSpec.fieldSpecs.get(0).type, equalTo(ClassName.get(EventHandler.class)));
-    assertThat(typeSpec.methodSpecs, hasSize(8));
-    assertThat(typeSpec.methodSpecs.get(7).name, equalTo("handleSignalCatchEvent"));
-    assertThat(typeSpec.methodSpecs.get(7).returnType, equalTo(ClassName.get(EventHandler.class)));
+    assertThat(typeSpec.methodSpecs, hasSize(7));
+    assertThat(typeSpec.methodSpecs.get(6).name, equalTo("handleSignalCatchEvent"));
+    assertThat(typeSpec.methodSpecs.get(6).returnType, equalTo(ClassName.get(EventHandler.class)));
 
-    String startingCode = typeSpec.methodSpecs.get(0).code.toString();
     String expected = "signalCatchEvent = new %s(getProcessEngine(), \"signalCatchEvent\", \"simpleSignal\");";
-    assertThat(startingCode, containsString(String.format(expected, INTERMEDIATE_CATCH_EVENT_HANDLER)));
-
-    String executeCode = typeSpec.methodSpecs.get(1).code.toString();
-    assertThat(executeCode, containsString("instance.apply(signalCatchEvent);"));
+    containsCode(typeSpec.methodSpecs.get(0)).contains(String.format(expected, EVENT_HANDLER));
+    containsCode(typeSpec.methodSpecs.get(1)).contains("instance.apply(signalCatchEvent);");
   }
 
   @Test
   public void testSimpleSubProcess() {
-    generator.generateTestCases(ctx, result, bpmnFile);
+    generator.generateTestCases(ctx, bpmnFile);
     assertThat(result.getFiles(), hasSize(1));
 
     TypeSpec typeSpec = result.getFiles().get(0).typeSpec;
-    assertThat(typeSpec.methodSpecs, hasSize(7));
+    assertThat(typeSpec.methodSpecs, hasSize(6));
 
-    String executeCode = typeSpec.methodSpecs.get(1).code.toString();
-    assertThat(executeCode, containsString("// startEvent: subProcessStartEvent"));
-    assertThat(executeCode, containsString("assertThat(pi).hasPassed(\"subProcessStartEvent\");"));
-    assertThat(executeCode, containsString("// endEvent: subProcessEndEvent"));
-    assertThat(executeCode, containsString("assertThat(pi).hasPassed(\"subProcessEndEvent\");"));
+    containsCode(typeSpec.methodSpecs.get(1))
+        .contains("// startEvent: subProcessStartEvent")
+        .contains("assertThat(pi).hasPassed(\"subProcessStartEvent\");")
+        .contains("// endEvent: subProcessEndEvent")
+        .contains("assertThat(pi).hasPassed(\"subProcessEndEvent\");");
   }
 
   @Test
   public void testSimpleTimerCatchEvent() {
-    generator.generateTestCases(ctx, result, bpmnFile);
+    generator.generateTestCases(ctx, bpmnFile);
     assertThat(result.getFiles(), hasSize(1));
 
     TypeSpec typeSpec = result.getFiles().get(0).typeSpec;
     assertThat(typeSpec.fieldSpecs, hasSize(1));
     assertThat(typeSpec.fieldSpecs.get(0).name, equalTo("timerCatchEvent"));
     assertThat(typeSpec.fieldSpecs.get(0).type, equalTo(JOB_HANDLER));
-    assertThat(typeSpec.methodSpecs, hasSize(8));
-    assertThat(typeSpec.methodSpecs.get(7).name, equalTo("handleTimerCatchEvent"));
-    assertThat(typeSpec.methodSpecs.get(7).returnType, equalTo(JOB_HANDLER));
+    assertThat(typeSpec.methodSpecs, hasSize(7));
+    assertThat(typeSpec.methodSpecs.get(6).name, equalTo("handleTimerCatchEvent"));
+    assertThat(typeSpec.methodSpecs.get(6).returnType, equalTo(JOB_HANDLER));
 
-    String startingCode = typeSpec.methodSpecs.get(0).code.toString();
-    String expected = String.format("timerCatchEvent = new %s(getProcessEngine(), \"timerCatchEvent\");", JOB_HANDLER);
-    assertThat(startingCode, containsString(expected));
-
-    String executeCode = typeSpec.methodSpecs.get(1).code.toString();
-    assertThat(executeCode, containsString("instance.apply(timerCatchEvent);"));
+    String expected = "timerCatchEvent = new %s(getProcessEngine(), \"timerCatchEvent\");";
+    containsCode(typeSpec.methodSpecs.get(0)).contains(String.format(expected, JOB_HANDLER));
+    containsCode(typeSpec.methodSpecs.get(1)).contains("instance.apply(timerCatchEvent);");
   }
 
   @Test
   public void testSimpleUserTask() {
-    generator.generateTestCases(ctx, result, bpmnFile);
+    generator.generateTestCases(ctx, bpmnFile);
     assertThat(result.getFiles(), hasSize(1));
 
     TypeSpec typeSpec = result.getFiles().get(0).typeSpec;
     assertThat(typeSpec.fieldSpecs, hasSize(1));
     assertThat(typeSpec.fieldSpecs.get(0).name, equalTo("userTask"));
     assertThat(typeSpec.fieldSpecs.get(0).type, equalTo(USER_TASK_HANDLER));
-    assertThat(typeSpec.methodSpecs, hasSize(8));
-    assertThat(typeSpec.methodSpecs.get(7).name, equalTo("handleUserTask"));
-    assertThat(typeSpec.methodSpecs.get(7).returnType, equalTo(USER_TASK_HANDLER));
+    assertThat(typeSpec.methodSpecs, hasSize(7));
+    assertThat(typeSpec.methodSpecs.get(6).name, equalTo("handleUserTask"));
+    assertThat(typeSpec.methodSpecs.get(6).returnType, equalTo(USER_TASK_HANDLER));
 
-    String startingCode = typeSpec.methodSpecs.get(0).code.toString();
-    String expected = String.format("userTask = new %s(getProcessEngine(), \"userTask\");", USER_TASK_HANDLER);
-    assertThat(startingCode, containsString(expected));
-
-    String executeCode = typeSpec.methodSpecs.get(1).code.toString();
-    assertThat(executeCode, containsString("instance.apply(userTask);"));
+    String expected = "userTask = new %s(getProcessEngine(), \"userTask\");";
+    containsCode(typeSpec.methodSpecs.get(0)).contains(String.format(expected, USER_TASK_HANDLER));
+    containsCode(typeSpec.methodSpecs.get(1)).contains("instance.apply(userTask);");
   }
 
   /**

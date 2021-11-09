@@ -54,7 +54,7 @@ public class EventHandler {
 
     EventSubscription eventSubscription = eventSubscriptionQuery.singleResult();
     if (eventSubscription == null) {
-      throw new RuntimeException(String.format("No event subscription found for activity '%s'", activityId));
+      throw new AssertionError(String.format("No event subscription found for activity '%s'", activityId));
     }
 
     if (verifier != null) {

@@ -5,9 +5,16 @@ import java.util.function.Consumer;
 
 import org.camunda.bpm.engine.delegate.DelegateVariableMapping;
 import org.camunda.bpm.engine.delegate.VariableScope;
+import org.camunda.bpm.engine.impl.bpmn.behavior.CallActivityBehavior;
+import org.camunda.bpm.engine.impl.bpmn.helper.BpmnExceptionHandler;
+import org.camunda.bpm.engine.impl.bpmn.helper.EscalationHandler;
+import org.camunda.bpm.engine.impl.core.model.CallableElement;
+import org.camunda.bpm.engine.impl.pvm.delegate.ActivityExecution;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.test.assertions.ProcessEngineTests;
 import org.camunda.bpm.engine.test.assertions.bpmn.ProcessInstanceAssert;
+import org.camunda.bpm.engine.variable.VariableMap;
+import org.camunda.bpm.engine.variable.Variables;
 
 /**
  * Fluent API to handle call activities.
@@ -25,30 +32,61 @@ public class CallActivityHandler {
   private boolean waitForBoundaryEvent;
 
   public CallActivityHandler(TestCaseInstance instance, String activityId) {
-    instance.addCallActivityHandler(activityId, this);
+    instance.registerCallActivityHandler(activityId, this);
   }
 
-  protected String getErrorCode() {
-    return errorCode;
+  protected boolean execute(ProcessInstance pi, ActivityExecution execution, CallActivityBehavior behavior) throws Exception {
+    CallableElement callableElement = behavior.getCallableElement();
+
+    CallActivityDefinition callActivityDefinition = new CallActivityDefinition();
+    callActivityDefinition.setBinding(callableElement.getBinding());
+    callActivityDefinition.setBusinessKey(callableElement.getBusinessKey(execution));
+    callActivityDefinition.setDefinitionKey(callableElement.getDefinitionKey(execution));
+    callActivityDefinition.setDefinitionTenantId(callableElement.getDefinitionTenantId(execution));
+    callActivityDefinition.setVersion(callableElement.getVersion(execution));
+    callActivityDefinition.setVersionTag(callableElement.getVersionTag(execution));
+
+    verify(pi, callActivityDefinition);
+
+    VariableMap subVariables = Variables.createVariables();
+
+    DelegateVariableMapping variableMapping = (DelegateVariableMapping) behavior.resolveDelegateClass(execution);
+    if (variableMapping != null) {
+      variableMapping.mapInputVariables(execution, subVariables);
+    }
+
+    ActivityExecution subInstance = execution.createExecution();
+    subInstance.setVariables(subVariables);
+
+    verifyInput(subInstance);
+
+    if (variableMapping != null) {
+      variableMapping.mapOutputVariables(execution, subInstance);
+    }
+
+    verifyOutput(execution);
+
+    if (errorCode != null) {
+      BpmnExceptionHandler.propagateError(errorCode, errorMessage, null, subInstance);
+      return false;
+    }
+
+    if (escalationCode != null) {
+      EscalationHandler.propagateEscalation(subInstance, escalationCode);
+      return false;
+    }
+
+    subInstance.remove();
+
+    return !waitForBoundaryEvent;
   }
 
-  protected String getErrorMessage() {
-    return errorMessage;
-  }
-
-  protected String getEscalationCode() {
-    return escalationCode;
-  }
-
-  protected boolean isErrorEnd() {
-    return errorCode != null;
-  }
-
-  protected boolean isEscalationEnd() {
-    return escalationCode != null;
-  }
-
-  protected boolean shouldWaitForBoundaryEvent() {
+  /**
+   * Determines if the call activity is waiting for a boundary message, signal or timer event.
+   * 
+   * @return {@code true}, if it is waiting for a boundary event. {@code false}, if not.
+   */
+  public boolean isWaitingForBoundaryEvent() {
     return waitForBoundaryEvent;
   }
 

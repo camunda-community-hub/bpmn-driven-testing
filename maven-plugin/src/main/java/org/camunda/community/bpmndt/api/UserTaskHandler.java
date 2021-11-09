@@ -48,7 +48,9 @@ public class UserTaskHandler {
       verifier.accept(ProcessEngineTests.assertThat(pi), ProcessEngineTests.assertThat(task));
     }
 
-    action.accept(task);
+    if (action != null) {
+      action.accept(task);
+    }
   }
 
   /**
@@ -113,6 +115,15 @@ public class UserTaskHandler {
   }
 
   /**
+   * Determines if the user task is waiting for a boundary message, signal or timer event.
+   * 
+   * @return {@code true}, if it is waiting for a boundary event. {@code false}, if not.
+   */
+  public boolean isWaitingForBoundaryEvent() {
+    return action == null;
+  }
+
+  /**
    * Verifies the user task's waiting state.
    * 
    * @param verifier Verifier that accepts an {@link ProcessInstanceAssert} and an {@link TaskAssert}
@@ -123,6 +134,15 @@ public class UserTaskHandler {
   public UserTaskHandler verify(BiConsumer<ProcessInstanceAssert, TaskAssert> verifier) {
     this.verifier = verifier;
     return this;
+  }
+
+  /**
+   * Applies no action at the user task's wait state. This is required to wait for events (e.g.
+   * message, signal or timer events) that are attached as boundary events on the activity itself or
+   * on the surrounding scope (e.g. embedded subprocess).
+   */
+  public void waitForBoundaryEvent() {
+    action = null;
   }
 
   /**
