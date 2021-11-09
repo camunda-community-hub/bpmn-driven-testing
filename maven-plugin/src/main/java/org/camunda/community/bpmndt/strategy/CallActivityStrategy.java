@@ -1,23 +1,23 @@
 package org.camunda.community.bpmndt.strategy;
 
-import java.lang.reflect.Type;
-
 import org.camunda.community.bpmndt.TestCaseActivity;
-import org.camunda.community.bpmndt.api.CallActivityHandler;
 
+import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.TypeName;
 
 public class CallActivityStrategy extends DefaultHandlerStrategy {
 
   @Override
-  public Type getHandlerType() {
-    return CallActivityHandler.class;
+  public TypeName getHandlerType() {
+    return CALL_ACTIVITY;
   }
 
   @Override
   public void initHandler(MethodSpec.Builder methodBuilder) {
     methodBuilder.addCode("\n// $L: $L\n", activity.getTypeName(), activity.getId());
-    methodBuilder.addStatement("$L = new $T(instance, $S)", activity.getLiteral(), getHandlerType(), activity.getId());
+    methodBuilder.addCode("$L = ", activity.getLiteral());
+    methodBuilder.addStatement(initHandlerStatement());
 
     if (!activity.hasNext()) {
       return;
@@ -40,5 +40,10 @@ public class CallActivityStrategy extends DefaultHandlerStrategy {
         methodBuilder.addStatement("$L.waitForBoundaryEvent()", activity.getLiteral());
         break;
     }
+  }
+
+  @Override
+  public CodeBlock initHandlerStatement() {
+    return CodeBlock.of("new $T(instance, $S)", getHandlerType(), activity.getId());
   }
 }

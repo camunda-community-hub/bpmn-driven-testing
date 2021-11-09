@@ -3,7 +3,7 @@ package org.camunda.community.bpmndt.cmd;
 import java.lang.reflect.Type;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import javax.lang.model.element.Modifier;
 
@@ -31,16 +31,18 @@ import com.squareup.javapoet.TypeSpec;
  * @see AbstractJUnit4TestRule
  * @see AbstractJUnit4SpringBasedTestRule
  */
-public class GenerateJUnit4TestRule implements BiConsumer<GeneratorContext, TestCaseContext> {
+public class GenerateJUnit4TestRule implements Consumer<TestCaseContext> {
 
+  private final GeneratorContext gCtx;
   private final GeneratorResult result;
 
-  public GenerateJUnit4TestRule(GeneratorResult result) {
+  public GenerateJUnit4TestRule(GeneratorContext gCtx, GeneratorResult result) {
+    this.gCtx = gCtx;
     this.result = result;
   }
 
   @Override
-  public void accept(GeneratorContext gCtx, TestCaseContext ctx) {
+  public void accept(TestCaseContext ctx) {
     Type superClass;
     if (gCtx.isSpringEnabled()) {
       superClass = AbstractJUnit4SpringBasedTestRule.class;
@@ -61,7 +63,11 @@ public class GenerateJUnit4TestRule implements BiConsumer<GeneratorContext, Test
     classBuilder.addMethod(buildGetBpmnResourceName(gCtx, ctx));
     classBuilder.addMethod(buildGetEnd(ctx));
     classBuilder.addMethod(buildGetProcessDefinitionKey(ctx));
-    classBuilder.addMethod(new GetProcessEnginePlugins().apply(gCtx));
+
+    if (!gCtx.getProcessEnginePluginNames().isEmpty()) {
+      classBuilder.addMethod(new GetProcessEnginePlugins().apply(gCtx));
+    }
+
     classBuilder.addMethod(buildGetStart(ctx));
 
     addHandlerMethods(ctx, classBuilder);

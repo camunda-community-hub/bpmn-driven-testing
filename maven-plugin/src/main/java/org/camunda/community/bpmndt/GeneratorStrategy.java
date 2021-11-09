@@ -1,8 +1,8 @@
 package org.camunda.community.bpmndt;
 
-import java.lang.reflect.Type;
-
+import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
 /**
@@ -28,11 +28,13 @@ public interface GeneratorStrategy {
 
   void applyHandlerBefore(MethodSpec.Builder methodBuilder);
 
-  Type getHandlerType();
+  TypeName getHandlerType();
 
   void initHandler(MethodSpec.Builder methodBuilder);
 
   void initHandlerAfter(MethodSpec.Builder methodBuilder);
 
   void initHandlerBefore(MethodSpec.Builder methodBuilder);
+
+  CodeBlock initHandlerStatement();
 }

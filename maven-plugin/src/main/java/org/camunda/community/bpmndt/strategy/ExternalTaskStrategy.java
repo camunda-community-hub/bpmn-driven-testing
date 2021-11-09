@@ -1,30 +1,25 @@
 package org.camunda.community.bpmndt.strategy;
 
-import java.lang.reflect.Type;
-
 import org.camunda.bpm.model.bpmn.instance.ServiceTask;
 import org.camunda.community.bpmndt.TestCaseActivity;
 import org.camunda.community.bpmndt.TestCaseActivityType;
-import org.camunda.community.bpmndt.api.ExternalTaskHandler;
 
+import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.TypeName;
 
 public class ExternalTaskStrategy extends DefaultHandlerStrategy {
 
   @Override
-  public Type getHandlerType() {
-    return ExternalTaskHandler.class;
+  public TypeName getHandlerType() {
+    return EXTERNAL_TASK;
   }
 
   @Override
   public void initHandler(MethodSpec.Builder methodBuilder) {
-    Object[] args;
-
-    ServiceTask serviceTask = activity.as(ServiceTask.class);
-
     methodBuilder.addCode("\n// $L: $L\n", activity.getTypeName(), activity.getId());
-    args = new Object[] {activity.getLiteral(), getHandlerType(), activity.getId(), serviceTask.getCamundaTopic()};
-    methodBuilder.addStatement("$L = new $T(getProcessEngine(), $S, $S)", args);
+    methodBuilder.addCode("$L = ", activity.getLiteral());
+    methodBuilder.addStatement(initHandlerStatement());
 
     if (!activity.hasNext()) {
       return;
@@ -39,7 +34,15 @@ public class ExternalTaskStrategy extends DefaultHandlerStrategy {
     if (next.getType() == TestCaseActivityType.ERROR_BOUNDARY) {
       methodBuilder.addStatement("$L.handleBpmnError($S, null)", activity.getLiteral(), next.getEventCode());
     } else {
-      methodBuilder.addStatement("$L.execute(topicName -> {})", activity.getLiteral());
+      methodBuilder.addStatement("$L.waitForBoundaryEvent()", activity.getLiteral());
     }
+  }
+
+  @Override
+  public CodeBlock initHandlerStatement() {
+    ServiceTask serviceTask = activity.as(ServiceTask.class);
+
+    Object[] args = {getHandlerType(), activity.getId(), serviceTask.getCamundaTopic()};
+    return CodeBlock.of("new $T(getProcessEngine(), $S, $S)", args);
   }
 }

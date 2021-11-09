@@ -22,11 +22,13 @@ public class BpmnSupportTest {
   private BpmnSupport bpmnSupport;
 
   private java.nio.file.Path advanced;
+  private java.nio.file.Path advancedMultiInstance;
   private java.nio.file.Path simple;
 
   @Before
   public void setUp() {
     advanced = Paths.get("./src/test/it/advanced/src/main/resources");
+    advancedMultiInstance = Paths.get("./src/test/it/advanced-multi-instance/src/main/resources");
     simple = Paths.get("./src/test/it/simple/src/main/resources");
   }
 
@@ -72,6 +74,12 @@ public class BpmnSupportTest {
   }
 
   @Test
+  public void testGetMultiInstance() {
+    bpmnSupport = BpmnSupport.of(advancedMultiInstance.resolve("sequential.bpmn"));
+    assertThat(bpmnSupport.getMultiInstance("multiInstanceManualTask"), notNullValue());
+  }
+
+  @Test
   public void testGetTestCases() {
     List<TestCase> testCases;
 
@@ -100,7 +108,7 @@ public class BpmnSupportTest {
   }
 
   @Test
-  public void testGetNoTestCases() {
+  public void testGetTestCasesWhenNotDefined() {
     bpmnSupport = BpmnSupport.of(simple.resolve("noTestCases.bpmn"));
 
     List<TestCase> testCases = bpmnSupport.getTestCases();

@@ -1,16 +1,20 @@
 package org.camunda.community.bpmndt.strategy;
 
-import java.lang.reflect.Type;
-
 import javax.lang.model.element.Modifier;
 
 import org.apache.commons.lang3.StringUtils;
 import org.camunda.community.bpmndt.GeneratorStrategy;
 import org.camunda.community.bpmndt.TestCaseActivity;
 import org.camunda.community.bpmndt.TestCaseActivityType;
+import org.camunda.community.bpmndt.api.CallActivityHandler;
+import org.camunda.community.bpmndt.api.EventHandler;
+import org.camunda.community.bpmndt.api.ExternalTaskHandler;
 import org.camunda.community.bpmndt.api.JobHandler;
+import org.camunda.community.bpmndt.api.UserTaskHandler;
 
+import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
 /**
@@ -18,6 +22,13 @@ import com.squareup.javapoet.TypeSpec;
  * {@link TestCaseActivityType#OTHER}).
  */
 public class DefaultStrategy implements GeneratorStrategy {
+
+  protected static TypeName CALL_ACTIVITY = TypeName.get(CallActivityHandler.class);
+  protected static TypeName EVENT = TypeName.get(EventHandler.class);
+  protected static TypeName EXTERNAL_TASK = TypeName.get(ExternalTaskHandler.class);
+  protected static TypeName JOB = TypeName.get(JobHandler.class);
+  protected static TypeName OTHER = TypeName.get(Void.class);
+  protected static TypeName USER_TASK = TypeName.get(UserTaskHandler.class);
 
   protected TestCaseActivity activity;
 
@@ -95,8 +106,8 @@ public class DefaultStrategy implements GeneratorStrategy {
   }
 
   @Override
-  public Type getHandlerType() {
-    return null;
+  public TypeName getHandlerType() {
+    return OTHER;
   }
 
   protected String getLiteralAfter() {
@@ -122,6 +133,11 @@ public class DefaultStrategy implements GeneratorStrategy {
   public void initHandlerBefore(MethodSpec.Builder methodBuilder) {
     methodBuilder.addCode("\n// $L: $L\n", activity.getTypeName(), activity.getId());
     methodBuilder.addStatement("$L = new $T(getProcessEngine(), $S)", getLiteralBefore(), JobHandler.class, activity.getId());
+  }
+
+  @Override
+  public CodeBlock initHandlerStatement() {
+    return null;
   }
 
   public void setActivity(TestCaseActivity activity) {

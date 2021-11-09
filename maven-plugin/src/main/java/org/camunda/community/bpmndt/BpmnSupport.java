@@ -21,7 +21,9 @@ import javax.lang.model.SourceVersion;
 
 import org.camunda.bpm.model.bpmn.Bpmn;
 import org.camunda.bpm.model.bpmn.BpmnModelInstance;
+import org.camunda.bpm.model.bpmn.instance.Activity;
 import org.camunda.bpm.model.bpmn.instance.FlowNode;
+import org.camunda.bpm.model.bpmn.instance.MultiInstanceLoopCharacteristics;
 import org.camunda.bpm.model.bpmn.instance.Process;
 import org.camunda.bpm.model.bpmn.instance.ServiceTask;
 import org.camunda.community.bpmndt.cmd.CollectBpmnFlowNodes;
@@ -132,6 +134,36 @@ public class BpmnSupport {
 
   public Path getFile() {
     return file;
+  }
+
+  /**
+   * Gets the multi instance loop characteristics from the flow node with the given ID.
+   * 
+   * @param flowNodeId A specific flow node ID.
+   * 
+   * @return The characteristics or {@code null}, if the flow node does not exist or does not have
+   *         such loop characteristics.
+   */
+  public MultiInstanceLoopCharacteristics getMultiInstance(String flowNodeId) {
+    if (!has(flowNodeId)) {
+      return null;
+    }
+
+    FlowNode flowNode = flowNodes.get(flowNodeId);
+    if (!(flowNode instanceof Activity)) {
+      return null;
+    }
+
+    Activity activity = (Activity) flowNode;
+    if (activity.getLoopCharacteristics() == null) {
+      return null;
+    }
+
+    if (!(activity.getLoopCharacteristics() instanceof MultiInstanceLoopCharacteristics)) {
+      return null;
+    }
+
+    return (MultiInstanceLoopCharacteristics) activity.getLoopCharacteristics();
   }
 
   public String getProcessId() {
