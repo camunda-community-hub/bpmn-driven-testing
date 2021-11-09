@@ -52,7 +52,9 @@ public class ExternalTaskHandler {
       verifier.accept(ProcessEngineTests.assertThat(pi), topicName);
     }
 
-    action.accept(topicName);
+    if (action != null) {
+      action.accept(topicName);
+    }
   }
 
   /**
@@ -87,12 +89,12 @@ public class ExternalTaskHandler {
         .execute();
 
     if (externalTasks.isEmpty()) {
-      throw new RuntimeException(String.format("Expected to fetch at least one external task for topic '%s'", topicName));
+      throw new AssertionError(String.format("Expected to fetch at least one external task for topic '%s'", topicName));
     }
 
     LockedExternalTask externalTask = externalTasks.get(0);
     if (!externalTask.getActivityId().equals(activityId)) {
-      throw new RuntimeException(String.format("Expected to fetch at least one external task for activity '%s'", activityId));
+      throw new AssertionError(String.format("Expected to fetch at least one external task for activity '%s'", activityId));
     }
 
     return externalTask;
@@ -121,6 +123,15 @@ public class ExternalTaskHandler {
   }
 
   /**
+   * Determines if the external task is waiting for a boundary message, signal or timer event.
+   * 
+   * @return {@code true}, if it is waiting for a boundary event. {@code false}, if not.
+   */
+  public boolean isWaitingForBoundaryEvent() {
+    return action == null;
+  }
+
+  /**
    * Verifies the external task's waiting state.
    * 
    * @param verifier Verifier that accepts an {@link ProcessInstanceAssert} instance and the related
@@ -131,6 +142,15 @@ public class ExternalTaskHandler {
   public ExternalTaskHandler verify(BiConsumer<ProcessInstanceAssert, String> verifier) {
     this.verifier = verifier;
     return this;
+  }
+
+  /**
+   * Applies no action at the external task's wait state. This is required to wait for events (e.g.
+   * message, signal or timer events) that are attached as boundary events on the activity itself or
+   * on the surrounding scope (e.g. embedded subprocess).
+   */
+  public void waitForBoundaryEvent() {
+    action = null;
   }
 
   /**

@@ -7,17 +7,11 @@ import java.util.Optional;
 
 import org.camunda.bpm.engine.ProcessEngine;
 import org.camunda.bpm.engine.RepositoryService;
-import org.camunda.bpm.engine.delegate.DelegateVariableMapping;
 import org.camunda.bpm.engine.impl.bpmn.behavior.CallActivityBehavior;
-import org.camunda.bpm.engine.impl.bpmn.helper.BpmnExceptionHandler;
-import org.camunda.bpm.engine.impl.bpmn.helper.EscalationHandler;
 import org.camunda.bpm.engine.impl.cfg.ProcessEngineConfigurationImpl;
-import org.camunda.bpm.engine.impl.core.model.CallableElement;
 import org.camunda.bpm.engine.impl.pvm.delegate.ActivityExecution;
 import org.camunda.bpm.engine.repository.Deployment;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
-import org.camunda.bpm.engine.variable.VariableMap;
-import org.camunda.bpm.engine.variable.Variables;
 import org.camunda.community.bpmndt.api.cfg.BpmndtParseListener;
 
 public class TestCaseInstance {
@@ -48,10 +42,6 @@ public class TestCaseInstance {
     findParseListener(processEngine).ifPresent((parseListener) -> parseListener.setInstance(this));
   }
 
-  protected void addCallActivityHandler(String activityId, CallActivityHandler handler) {
-    callActivityHandlerMap.put(activityId, handler);
-  }
-
   public void apply(EventHandler handler) {
     handler.apply(pi);
   }
@@ -64,61 +54,12 @@ public class TestCaseInstance {
     handler.apply(pi);
   }
 
-  public void apply(UserTaskHandler handler) {
+  public void apply(MultiInstanceHandler<?, ?> handler) {
     handler.apply(pi);
   }
 
-  public boolean execute(ActivityExecution execution, CallActivityBehavior behavior) throws Exception {
-    CallableElement callableElement = behavior.getCallableElement();
-
-    CallActivityDefinition callActivityDefinition = new CallActivityDefinition();
-    callActivityDefinition.setBinding(callableElement.getBinding());
-    callActivityDefinition.setBusinessKey(callableElement.getBusinessKey(execution));
-    callActivityDefinition.setDefinitionKey(callableElement.getDefinitionKey(execution));
-    callActivityDefinition.setDefinitionTenantId(callableElement.getDefinitionTenantId(execution));
-    callActivityDefinition.setVersion(callableElement.getVersion(execution));
-    callActivityDefinition.setVersionTag(callableElement.getVersionTag(execution));
-
-    String activityId = execution.getCurrentActivityId();
-
-    CallActivityHandler handler = callActivityHandlerMap.get(activityId);
-    if (handler == null) {
-      return true;
-    }
-
-    handler.verify(pi, callActivityDefinition);
-
-    VariableMap subVariables = Variables.createVariables();
-
-    DelegateVariableMapping variableMapping = (DelegateVariableMapping) behavior.resolveDelegateClass(execution);
-    if (variableMapping != null) {
-      variableMapping.mapInputVariables(execution, subVariables);
-    }
-
-    ActivityExecution subInstance = execution.createExecution();
-    subInstance.setVariables(subVariables);
-
-    handler.verifyInput(subInstance);
-
-    if (variableMapping != null) {
-      variableMapping.mapOutputVariables(execution, subInstance);
-    }
-
-    handler.verifyOutput(execution);
-
-    if (handler.isErrorEnd()) {
-      BpmnExceptionHandler.propagateError(handler.getErrorCode(), handler.getErrorMessage(), null, subInstance);
-      return false;
-    }
-
-    if (handler.isEscalationEnd()) {
-      EscalationHandler.propagateEscalation(subInstance, handler.getEscalationCode());
-      return false;
-    }
-
-    subInstance.remove();
-
-    return handler.shouldWaitForBoundaryEvent() ? false : true;
+  public void apply(UserTaskHandler handler) {
+    handler.apply(pi);
   }
 
   protected void clear() {
@@ -149,6 +90,17 @@ public class TestCaseInstance {
     return deployment.getId();
   }
 
+  public boolean execute(ActivityExecution execution, CallActivityBehavior behavior) throws Exception {
+    String activityId = execution.getCurrentActivityId();
+
+    CallActivityHandler handler = callActivityHandlerMap.get(activityId);
+    if (handler == null) {
+      return true;
+    } else {
+      return handler.execute(pi, execution, behavior);
+    }
+  }
+
   protected Optional<BpmndtParseListener> findParseListener(ProcessEngine processEngine) {
     ProcessEngineConfigurationImpl processEngineConfiguration =
         (ProcessEngineConfigurationImpl) processEngine.getProcessEngineConfiguration();
@@ -173,6 +125,10 @@ public class TestCaseInstance {
 
   public String getStart() {
     return start;
+  }
+
+  protected void registerCallActivityHandler(String activityId, CallActivityHandler handler) {
+    callActivityHandlerMap.put(activityId, handler);
   }
 
   protected void setProcessInstance(ProcessInstance pi) {

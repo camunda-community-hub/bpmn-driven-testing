@@ -38,27 +38,27 @@ public class CallActivityDefinition {
     return versionTag;
   }
 
-  public void setBinding(CallableElementBinding binding) {
+  protected void setBinding(CallableElementBinding binding) {
     this.binding = binding;
   }
 
-  public void setBusinessKey(String businessKey) {
+  protected void setBusinessKey(String businessKey) {
     this.businessKey = businessKey;
   }
 
-  public void setDefinitionKey(String definitionKey) {
+  protected void setDefinitionKey(String definitionKey) {
     this.definitionKey = definitionKey;
   }
 
-  public void setDefinitionTenantId(String definitionTenantId) {
+  protected void setDefinitionTenantId(String definitionTenantId) {
     this.definitionTenantId = definitionTenantId;
   }
 
-  public void setVersion(Integer version) {
+  protected void setVersion(Integer version) {
     this.version = version;
   }
 
-  public void setVersionTag(String versionTag) {
+  protected void setVersionTag(String versionTag) {
     this.versionTag = versionTag;
   }
 }

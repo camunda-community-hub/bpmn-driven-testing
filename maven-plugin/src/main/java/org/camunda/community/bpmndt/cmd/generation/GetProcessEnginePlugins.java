@@ -1,6 +1,5 @@
 package org.camunda.community.bpmndt.cmd.generation;
 
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -32,10 +31,6 @@ public class GetProcessEnginePlugins implements Function<GeneratorContext, Metho
         .map(this::buildClassName)
         .filter(Objects::nonNull)
         .collect(Collectors.toList());
-
-    if (classNames.isEmpty()) {
-      return builder.addStatement("return $T.emptyList()", Collections.class).build();
-    }
 
     builder.addStatement("$T processEnginePlugins = new $T<>()", returnType, LinkedList.class);
 
