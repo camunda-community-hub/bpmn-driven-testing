@@ -33,8 +33,8 @@ public class TestCaseContextTest {
     assertThat(ctx.getStartActivity(), nullValue());
     assertThat(ctx.getEndActivity(), nullValue());
 
-    ctx.addActivity(new TestCaseActivity(bpmnSupport.get("startEvent")));
-    ctx.addActivity(new TestCaseActivity(bpmnSupport.get("endEvent")));
+    ctx.addActivity(new TestCaseActivity(bpmnSupport.get("startEvent"), null));
+    ctx.addActivity(new TestCaseActivity(bpmnSupport.get("endEvent"), null));
 
     assertThat(ctx.getStartActivity(), is(ctx.getActivities().get(0)));
     assertThat(ctx.getEndActivity(), is(ctx.getActivities().get(1)));

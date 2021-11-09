@@ -1,9 +1,8 @@
 package org.camunda.community.bpmndt;
 
-import static org.hamcrest.CoreMatchers.containsString;
+import static org.camunda.community.bpmndt.test.ContainsCode.containsCode;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 
@@ -17,6 +16,7 @@ import java.util.function.Predicate;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugin.logging.Log;
+import org.camunda.bpm.engine.impl.cfg.ProcessEnginePlugin;
 import org.camunda.community.bpmndt.api.AbstractJUnit4TestRule;
 import org.camunda.community.bpmndt.api.cfg.SpringConfiguration;
 import org.junit.Before;
@@ -55,7 +55,7 @@ public class GeneratorTest {
 
     ctx.setPackageName("org.example");
 
-    result = new GeneratorResult();
+    result = generator.getResult();
 
     String fileName = testName.getMethodName().replace("test", "") + ".bpmn";
     bpmnFile = ctx.getMainResourcePath().resolve("bpmn").resolve(StringUtils.uncapitalize(fileName));
@@ -67,7 +67,7 @@ public class GeneratorTest {
    */
   @Test
   public void testDuplicateTestCaseNames() {
-    generator.generateTestCases(ctx, result, bpmnFile);
+    generator.generateTestCases(ctx, bpmnFile);
     assertThat(result.getFiles(), hasSize(1));
     assertThat(result.getFiles().get(0).packageName, equalTo("org.example.duplicate_test_case_names"));
 
@@ -77,7 +77,7 @@ public class GeneratorTest {
 
   @Test
   public void testEmpty() {
-    generator.generateTestCases(ctx, result, bpmnFile);
+    generator.generateTestCases(ctx, bpmnFile);
     assertThat(result.getFiles(), hasSize(1));
     assertThat(result.getFiles().get(0).packageName, equalTo("org.example.empty"));
 
@@ -87,22 +87,17 @@ public class GeneratorTest {
     TypeName superclass = ClassName.get(AbstractJUnit4TestRule.class);
     assertThat(typeSpec.superclass, equalTo(superclass));
     assertThat(typeSpec.fieldSpecs, hasSize(0));
-    assertThat(typeSpec.methodSpecs, hasSize(7));
+    assertThat(typeSpec.methodSpecs, hasSize(6));
     assertThat(typeSpec.methodSpecs.get(0).name, equalTo("starting"));
     assertThat(typeSpec.methodSpecs.get(1).name, equalTo("execute"));
 
-    String code;
-
-    code = typeSpec.methodSpecs.get(0).code.toString();
-    assertThat(code, containsString("throw new java.lang.RuntimeException(\"Path is empty\");"));
-
-    code = typeSpec.methodSpecs.get(1).code.toString();
-    assertThat(code, containsString("throw new java.lang.RuntimeException(\"Path is empty\");"));
+    containsCode(typeSpec.methodSpecs.get(0)).contains("throw new java.lang.RuntimeException(\"Path is empty\");");
+    containsCode(typeSpec.methodSpecs.get(1)).contains("throw new java.lang.RuntimeException(\"Path is empty\");");
   }
   
   @Test
   public void testIncomplete() {
-    generator.generateTestCases(ctx, result, bpmnFile);
+    generator.generateTestCases(ctx, bpmnFile);
     assertThat(result.getFiles(), hasSize(1));
     assertThat(result.getFiles().get(0).packageName, equalTo("org.example.incomplete"));
 
@@ -112,22 +107,17 @@ public class GeneratorTest {
     TypeName superclass = ClassName.get(AbstractJUnit4TestRule.class);
     assertThat(typeSpec.superclass, equalTo(superclass));
     assertThat(typeSpec.fieldSpecs, hasSize(0));
-    assertThat(typeSpec.methodSpecs, hasSize(7));
+    assertThat(typeSpec.methodSpecs, hasSize(6));
     assertThat(typeSpec.methodSpecs.get(0).name, equalTo("starting"));
     assertThat(typeSpec.methodSpecs.get(1).name, equalTo("execute"));
     
-    String code;
-    
-    code = typeSpec.methodSpecs.get(0).code.toString();
-    assertThat(code, containsString("throw new java.lang.RuntimeException(\"Path is incomplete\");"));
-
-    code = typeSpec.methodSpecs.get(1).code.toString();
-    assertThat(code, containsString("throw new java.lang.RuntimeException(\"Path is incomplete\");"));
+    containsCode(typeSpec.methodSpecs.get(0)).contains("throw new java.lang.RuntimeException(\"Path is incomplete\");");
+    containsCode(typeSpec.methodSpecs.get(1)).contains("throw new java.lang.RuntimeException(\"Path is incomplete\");");
   }
 
   @Test
   public void testInvalid() {
-    generator.generateTestCases(ctx, result, bpmnFile);
+    generator.generateTestCases(ctx, bpmnFile);
     assertThat(result.getFiles(), hasSize(1));
     assertThat(result.getFiles().get(0).packageName, equalTo("org.example.invalid"));
 
@@ -137,28 +127,24 @@ public class GeneratorTest {
     TypeName superclass = ClassName.get(AbstractJUnit4TestRule.class);
     assertThat(typeSpec.superclass, equalTo(superclass));
     assertThat(typeSpec.fieldSpecs, hasSize(0));
-    assertThat(typeSpec.methodSpecs, hasSize(7));
+    assertThat(typeSpec.methodSpecs, hasSize(6));
     assertThat(typeSpec.methodSpecs.get(0).name, equalTo("starting"));
     assertThat(typeSpec.methodSpecs.get(1).name, equalTo("execute"));
 
-    String code;
+    containsCode(typeSpec.methodSpecs.get(0)).contains("// Not existing flow nodes");
+    containsCode(typeSpec.methodSpecs.get(0)).contains("// a");
+    containsCode(typeSpec.methodSpecs.get(0)).contains("// b");
+    containsCode(typeSpec.methodSpecs.get(0)).contains("throw new java.lang.RuntimeException(\"Path is invalid\");");
 
-    code = typeSpec.methodSpecs.get(0).code.toString();
-    assertThat(code, containsString("// Not existing flow nodes"));
-    assertThat(code, containsString("// a"));
-    assertThat(code, containsString("// b"));
-    assertThat(code, containsString("throw new java.lang.RuntimeException(\"Path is invalid\");"));
-
-    code = typeSpec.methodSpecs.get(1).code.toString();
-    assertThat(code, containsString("// Not existing flow nodes"));
-    assertThat(code, containsString("// a"));
-    assertThat(code, containsString("// b"));
-    assertThat(code, containsString("throw new java.lang.RuntimeException(\"Path is invalid\");"));
+    containsCode(typeSpec.methodSpecs.get(1)).contains("// Not existing flow nodes");
+    containsCode(typeSpec.methodSpecs.get(1)).contains("// a");
+    containsCode(typeSpec.methodSpecs.get(1)).contains("// b");
+    containsCode(typeSpec.methodSpecs.get(1)).contains("throw new java.lang.RuntimeException(\"Path is invalid\");");
   }
 
   @Test
   public void testHappyPath() {
-    generator.generateTestCases(ctx, result, bpmnFile);
+    generator.generateTestCases(ctx, bpmnFile);
     assertThat(result.getFiles(), hasSize(1));
     assertThat(result.getFiles().get(0).packageName, equalTo("org.example.happy_path"));
 
@@ -168,7 +154,7 @@ public class GeneratorTest {
 
   @Test
   public void testNoTestCases() {
-    generator.generateTestCases(ctx, result, bpmnFile);
+    generator.generateTestCases(ctx, bpmnFile);
     assertThat(result.getFiles(), hasSize(0));
   }
 
@@ -200,6 +186,7 @@ public class GeneratorTest {
     assertThat(isFile.test("org/camunda/community/bpmndt/api/EventHandler.java"), is(true));
     assertThat(isFile.test("org/camunda/community/bpmndt/api/ExternalTaskHandler.java"), is(true));
     assertThat(isFile.test("org/camunda/community/bpmndt/api/JobHandler.java"), is(true));
+    assertThat(isFile.test("org/camunda/community/bpmndt/api/MultiInstanceHandler.java"), is(true));
     assertThat(isFile.test("org/camunda/community/bpmndt/api/TestCaseInstance.java"), is(true));
     assertThat(isFile.test("org/camunda/community/bpmndt/api/TestCaseExecutor.java"), is(true));
     assertThat(isFile.test("org/camunda/community/bpmndt/api/UserTaskHandler.java"), is(true));
@@ -242,6 +229,7 @@ public class GeneratorTest {
     assertThat(isFile.test("org/camunda/community/bpmndt/api/EventHandler.java"), is(true));
     assertThat(isFile.test("org/camunda/community/bpmndt/api/ExternalTaskHandler.java"), is(true));
     assertThat(isFile.test("org/camunda/community/bpmndt/api/JobHandler.java"), is(true));
+    assertThat(isFile.test("org/camunda/community/bpmndt/api/MultiInstanceHandler.java"), is(true));
     assertThat(isFile.test("org/camunda/community/bpmndt/api/TestCaseInstance.java"), is(true));
     assertThat(isFile.test("org/camunda/community/bpmndt/api/TestCaseExecutor.java"), is(true));
     assertThat(isFile.test("org/camunda/community/bpmndt/api/UserTaskHandler.java"), is(true));
@@ -259,7 +247,7 @@ public class GeneratorTest {
     processEnginePluginNames.add("org.camunda.Xzy");
     ctx.setProcessEnginePluginNames(processEnginePluginNames);
 
-    generator.generateSpringConfiguration(ctx, result);
+    generator.generateSpringConfiguration(ctx);
     assertThat(result.getAdditionalFiles(), hasSize(1));
     assertThat(result.getAdditionalFiles().get(0).packageName, equalTo("org.example"));
 
@@ -271,20 +259,22 @@ public class GeneratorTest {
     MethodSpec methodSpec = typeSpec.methodSpecs.get(0);
     assertThat(methodSpec.name, equalTo("getProcessEnginePlugins"));
 
-    String code = methodSpec.code.toString();
-    assertThat(code, containsString(
-        "java.util.List<org.camunda.bpm.engine.impl.cfg.ProcessEnginePlugin> processEnginePlugins = new java.util.LinkedList<>()"));
-    assertThat(code, containsString("processEnginePlugins.add(new org.example.Abc())"));
-    assertThat(code, not(containsString("processEnginePlugins.add(new ExamplePlugin())")));
-    assertThat(code, containsString("processEnginePlugins.add(new org.camunda.Xzy())"));
-    assertThat(code, containsString("return processEnginePlugins"));
+    String expected = "java.util.List<%s> processEnginePlugins = new java.util.LinkedList<>()";
+    containsCode(methodSpec).contains(String.format(expected, ClassName.get(ProcessEnginePlugin.class)));
+    containsCode(methodSpec).contains("processEnginePlugins.add(new org.example.Abc())");
+    containsCode(methodSpec).notContains("processEnginePlugins.add(new ExamplePlugin())");
+    containsCode(methodSpec).contains("processEnginePlugins.add(new org.camunda.Xzy())");
+    containsCode(methodSpec).contains("return processEnginePlugins");
   }
 
   @Test
   public void testGenerateSpringConfigurationEmptyProcessEnginePlugins() {
-    generator.generateSpringConfiguration(ctx, result);
+    generator.generateSpringConfiguration(ctx);
+    assertThat(result.getAdditionalFiles(), hasSize(1));
 
-    String code = result.getAdditionalFiles().get(0).typeSpec.methodSpecs.get(0).code.toString();
-    assertThat(code, containsString("return java.util.Collections.emptyList()"));
+    TypeSpec typeSpec = result.getAdditionalFiles().get(0).typeSpec;
+    assertThat(typeSpec.name, equalTo("BpmndtConfiguration"));
+    assertThat(typeSpec.superclass, equalTo(ClassName.get(SpringConfiguration.class)));
+    assertThat(typeSpec.methodSpecs, hasSize(0));
   }
 }

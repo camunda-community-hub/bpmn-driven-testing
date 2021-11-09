@@ -6,27 +6,29 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import org.apache.maven.plugin.logging.Log;
 import org.camunda.community.bpmndt.api.AbstractJUnit4SpringBasedTestRule;
 import org.camunda.community.bpmndt.api.AbstractJUnit4TestRule;
 import org.camunda.community.bpmndt.api.CallActivityDefinition;
 import org.camunda.community.bpmndt.api.CallActivityHandler;
-import org.camunda.community.bpmndt.api.ExternalTaskHandler;
 import org.camunda.community.bpmndt.api.EventHandler;
+import org.camunda.community.bpmndt.api.ExternalTaskHandler;
 import org.camunda.community.bpmndt.api.JobHandler;
+import org.camunda.community.bpmndt.api.MultiInstanceHandler;
 import org.camunda.community.bpmndt.api.TestCaseExecutor;
 import org.camunda.community.bpmndt.api.TestCaseInstance;
 import org.camunda.community.bpmndt.api.UserTaskHandler;
-import org.camunda.community.bpmndt.api.cfg.SpringConfiguration;
 import org.camunda.community.bpmndt.api.cfg.BpmndtCallActivityBehavior;
 import org.camunda.community.bpmndt.api.cfg.BpmndtParseListener;
 import org.camunda.community.bpmndt.api.cfg.BpmndtProcessEnginePlugin;
+import org.camunda.community.bpmndt.api.cfg.SpringConfiguration;
 import org.camunda.community.bpmndt.cmd.BuildTestCaseContext;
 import org.camunda.community.bpmndt.cmd.CollectBpmnFiles;
 import org.camunda.community.bpmndt.cmd.DeleteTestSources;
 import org.camunda.community.bpmndt.cmd.GenerateJUnit4TestRule;
+import org.camunda.community.bpmndt.cmd.GenerateMultiInstanceHandler;
 import org.camunda.community.bpmndt.cmd.GenerateSpringConfiguration;
 import org.camunda.community.bpmndt.cmd.WriteJavaFile;
 import org.camunda.community.bpmndt.cmd.WriteJavaType;
@@ -40,11 +42,17 @@ public class Generator {
 
   private final Log log;
 
+  private final GeneratorResult result;
+
   public Generator(Log log) {
     this.log = log;
+
+    result = new GeneratorResult();
   }
 
   public void generate(GeneratorContext ctx) {
+    result.clear();
+
     // delete previously generated source files
     new DeleteTestSources().apply(ctx);
 
@@ -55,20 +63,18 @@ public class Generator {
       log.info(String.format("Found BPMN file: %s", relativePath));
     }
 
-    GeneratorResult result = new GeneratorResult();
-
     // generate test cases for each BPMN file
     for (Path bpmnFile : bpmnFiles) {
       log.info("");
 
-      generateTestCases(ctx, result, bpmnFile);
+      generateTestCases(ctx, bpmnFile);
     }
 
     // generate Spring configuration
     if (ctx.isSpringEnabled()) {
       log.info("");
 
-      generateSpringConfiguration(ctx, result);
+      generateSpringConfiguration(ctx);
     }
 
     log.info("");
@@ -96,6 +102,7 @@ public class Generator {
     apiClasses.add(ExternalTaskHandler.class);
     apiClasses.add(EventHandler.class);
     apiClasses.add(JobHandler.class);
+    apiClasses.add(MultiInstanceHandler.class);
     apiClasses.add(TestCaseInstance.class);
     apiClasses.add(TestCaseExecutor.class);
     apiClasses.add(UserTaskHandler.class);
@@ -116,12 +123,18 @@ public class Generator {
     apiClasses.forEach(writeType);
   }
 
-  protected void generateSpringConfiguration(GeneratorContext ctx, GeneratorResult result) {
+  protected void generateSpringConfiguration(GeneratorContext ctx) {
     log.info("Generating Spring configuration");
     new GenerateSpringConfiguration(result).accept(ctx);
   }
 
-  protected void generateTestCases(GeneratorContext ctx, GeneratorResult result, Path bpmnFile) {
+  protected void generateMultiInstanceHandlers(GeneratorContext gCtx, TestCaseContext ctx) {
+    Consumer<TestCaseActivity> generate = new GenerateMultiInstanceHandler(gCtx, result, ctx);
+
+    ctx.getActivities().stream().filter(TestCaseActivity::isMultiInstance).forEach(generate::accept);
+  }
+
+  protected void generateTestCases(GeneratorContext gCtx, Path bpmnFile) {
     BpmnSupport bpmnSupport = BpmnSupport.of(bpmnFile);
     log.info(String.format("Process: %s", bpmnSupport.getProcessId()));
 
@@ -132,22 +145,27 @@ public class Generator {
       return;
     }
 
-    BiConsumer<GeneratorContext, TestCaseContext> generate = new GenerateJUnit4TestRule(result);
+    Consumer<TestCaseContext> generate = new GenerateJUnit4TestRule(gCtx, result);
 
-    BuildTestCaseContext ctxBuilder = new BuildTestCaseContext(bpmnSupport);
+    BuildTestCaseContext ctxBuilder = new BuildTestCaseContext(gCtx, bpmnSupport);
     for (TestCase testCase : bpmnSupport.getTestCases()) {
-      TestCaseContext testCaseContext = ctxBuilder.apply(testCase);
+      TestCaseContext ctx = ctxBuilder.apply(testCase);
 
-      String testCaseName = testCaseContext.getName();
+      String testCaseName = ctx.getName();
 
       // check for duplicate test case names
-      if (testCaseContext.hasDuplicateName()) {
+      if (ctx.hasDuplicateName()) {
         log.warn(String.format("Skipping test case '%s': Name must be unique", testCaseName));
         continue;
       }
 
       log.info(String.format("Generating test case '%s'", testCaseName));
-      generate.accept(ctx, testCaseContext);
+      generate.accept(ctx);
+      generateMultiInstanceHandlers(gCtx, ctx);
     }
+  }
+
+  public GeneratorResult getResult() {
+    return result;
   }
 }

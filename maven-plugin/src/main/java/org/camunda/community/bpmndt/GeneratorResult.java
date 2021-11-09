@@ -26,6 +26,11 @@ public class GeneratorResult {
     files.add(javaFile);
   }
 
+  public void clear() {
+    additionalFiles.clear();
+    files.clear();
+  }
+
   public List<JavaFile> getAdditionalFiles() {
     return additionalFiles;
   }

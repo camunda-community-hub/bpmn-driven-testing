@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:bpmndt="http://camunda.org/schema/extension/bpmn-driven-testing" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" id="Definitions_1iba35a" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.4.0">
+  <bpmn:process id="callActivityTimer" isExecutable="true">
+    <bpmn:extensionElements>
+      <bpmndt:testCases>
+        <bpmndt:testCase>
+          <bpmndt:path>
+            <bpmndt:node>startEvent</bpmndt:node>
+            <bpmndt:node>multiInstanceCallActivity</bpmndt:node>
+            <bpmndt:node>timerBoundaryEvent</bpmndt:node>
+            <bpmndt:node>endEvent</bpmndt:node>
+          </bpmndt:path>
+        </bpmndt:testCase>
+      </bpmndt:testCases>
+    </bpmn:extensionElements>
+    <bpmn:startEvent id="startEvent">
+      <bpmn:outgoing>Flow_12ns8fk</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_12ns8fk" sourceRef="startEvent" targetRef="multiInstanceCallActivity" />
+    <bpmn:endEvent id="Event_1cxp3jm">
+      <bpmn:incoming>Flow_0lq6y0i</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_0lq6y0i" sourceRef="multiInstanceCallActivity" targetRef="Event_1cxp3jm" />
+    <bpmn:callActivity id="multiInstanceCallActivity" calledElement="advanced" camunda:variableMappingDelegateExpression="${multiInstanceCallActivityMapping}">
+      <bpmn:incoming>Flow_12ns8fk</bpmn:incoming>
+      <bpmn:outgoing>Flow_0lq6y0i</bpmn:outgoing>
+      <bpmn:multiInstanceLoopCharacteristics isSequential="true">
+        <bpmn:loopCardinality xsi:type="bpmn:tFormalExpression">3</bpmn:loopCardinality>
+      </bpmn:multiInstanceLoopCharacteristics>
+    </bpmn:callActivity>
+    <bpmn:endEvent id="endEvent">
+      <bpmn:incoming>Flow_1mlhb6o</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_1mlhb6o" sourceRef="timerBoundaryEvent" targetRef="endEvent" />
+    <bpmn:boundaryEvent id="timerBoundaryEvent" attachedToRef="multiInstanceCallActivity">
+      <bpmn:outgoing>Flow_1mlhb6o</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerEventDefinition_18sqzzi">
+        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">P1D</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:boundaryEvent>
+  </bpmn:process>
+  <bpmn:error id="Error_15nfw2k" name="Error_3657ji4" errorCode="callActivityError" />
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="callActivityTimer">
+      <bpmndi:BPMNEdge id="Flow_1mlhb6o_di" bpmnElement="Flow_1mlhb6o">
+        <di:waypoint x="350" y="175" />
+        <di:waypoint x="350" y="240" />
+        <di:waypoint x="432" y="240" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0lq6y0i_di" bpmnElement="Flow_0lq6y0i">
+        <di:waypoint x="370" y="117" />
+        <di:waypoint x="432" y="117" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_12ns8fk_di" bpmnElement="Flow_12ns8fk">
+        <di:waypoint x="215" y="117" />
+        <di:waypoint x="270" y="117" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="startEvent">
+        <dc:Bounds x="179" y="99" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0ivhy93_di" bpmnElement="Event_1cxp3jm">
+        <dc:Bounds x="432" y="99" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1jyabhs_di" bpmnElement="multiInstanceCallActivity">
+        <dc:Bounds x="270" y="77" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1cxp3jm_di" bpmnElement="endEvent">
+        <dc:Bounds x="432" y="222" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1yzde1n_di" bpmnElement="timerBoundaryEvent">
+        <dc:Bounds x="332" y="139" width="36" height="36" />
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

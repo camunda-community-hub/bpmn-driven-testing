@@ -1,17 +1,15 @@
 package org.camunda.community.bpmndt.strategy;
 
-import java.lang.reflect.Type;
-
 import org.camunda.community.bpmndt.TestCaseActivity;
-import org.camunda.community.bpmndt.api.UserTaskHandler;
 
 import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.TypeName;
 
 public class UserTaskStrategy extends DefaultHandlerStrategy {
 
   @Override
-  public Type getHandlerType() {
-    return UserTaskHandler.class;
+  public TypeName getHandlerType() {
+    return USER_TASK;
   }
 
   @Override
@@ -36,7 +34,7 @@ public class UserTaskStrategy extends DefaultHandlerStrategy {
         methodBuilder.addStatement("$L.handleEscalation($S)", activity.getLiteral(), next.getEventCode());
         break;
       default:
-        methodBuilder.addStatement("$L.execute(task -> {})", activity.getLiteral());
+        methodBuilder.addStatement("$L.waitForBoundaryEvent()", activity.getLiteral());
         break;
     }
   }

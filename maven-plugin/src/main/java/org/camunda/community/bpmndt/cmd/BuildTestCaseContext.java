@@ -13,6 +13,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 
+import org.apache.commons.lang3.StringUtils;
 import org.camunda.bpm.model.bpmn.instance.BoundaryEvent;
 import org.camunda.bpm.model.bpmn.instance.Error;
 import org.camunda.bpm.model.bpmn.instance.ErrorEventDefinition;
@@ -26,6 +27,7 @@ import org.camunda.bpm.model.bpmn.instance.ReceiveTask;
 import org.camunda.bpm.model.bpmn.instance.Signal;
 import org.camunda.bpm.model.bpmn.instance.SignalEventDefinition;
 import org.camunda.community.bpmndt.BpmnSupport;
+import org.camunda.community.bpmndt.GeneratorContext;
 import org.camunda.community.bpmndt.TestCaseActivity;
 import org.camunda.community.bpmndt.TestCaseActivityType;
 import org.camunda.community.bpmndt.TestCaseContext;
@@ -37,18 +39,23 @@ import org.camunda.community.bpmndt.strategy.DefaultStrategy;
 import org.camunda.community.bpmndt.strategy.EventStrategy;
 import org.camunda.community.bpmndt.strategy.ExternalTaskStrategy;
 import org.camunda.community.bpmndt.strategy.JobStrategy;
+import org.camunda.community.bpmndt.strategy.MultiInstanceStrategy;
 import org.camunda.community.bpmndt.strategy.UserTaskStrategy;
+
+import com.squareup.javapoet.ClassName;
 
 /**
  * Builds a new test case context, used for code generation.
  */
 public class BuildTestCaseContext implements Function<TestCase, TestCaseContext> {
 
+  private final GeneratorContext gCtx;
   private final BpmnSupport bpmnSupport;
 
   private final Set<String> testCaseNames;
 
-  public BuildTestCaseContext(BpmnSupport bpmnSupport) {
+  public BuildTestCaseContext(GeneratorContext gCtx, BpmnSupport bpmnSupport) {
+    this.gCtx = gCtx;
     this.bpmnSupport = bpmnSupport;
 
     testCaseNames = new HashSet<>();
@@ -73,7 +80,7 @@ public class BuildTestCaseContext implements Function<TestCase, TestCaseContext>
         continue;
       }
 
-      TestCaseActivity activity = new TestCaseActivity(bpmnSupport.get(flowNodeId));
+      TestCaseActivity activity = new TestCaseActivity(bpmnSupport.get(flowNodeId), bpmnSupport.getMultiInstance(flowNodeId));
 
       if (bpmnSupport.isCallActivity(flowNodeId)) {
         activity.setType(TestCaseActivityType.CALL_ACTIVITY);
@@ -97,6 +104,9 @@ public class BuildTestCaseContext implements Function<TestCase, TestCaseContext>
       if (strategy != null) {
         strategy.setActivity(activity);
         activity.setStrategy(strategy);
+      }
+      if (strategy != null && activity.isMultiInstance()) {
+        handleMultiInstance(ctx, activity);
       }
 
       ctx.addActivity(activity);
@@ -186,6 +196,15 @@ public class BuildTestCaseContext implements Function<TestCase, TestCaseContext>
     } else if (is(eventDefinition, BPMN_ELEMENT_TIMER_EVENT_DEFINITION)) {
       activity.setType(TestCaseActivityType.TIMER_CATCH);
     }
+  }
+
+  protected void handleMultiInstance(TestCaseContext ctx, TestCaseActivity activity) {
+    String packageName = String.format("%s.%s", gCtx.getPackageName(), ctx.getPackageName());
+    String name = String.format("%sHandler", StringUtils.capitalize(activity.getLiteral()));
+
+    MultiInstanceStrategy multiInstanceStrategy = new MultiInstanceStrategy(activity.getStrategy(), ClassName.get(packageName, name));
+    multiInstanceStrategy.setActivity(activity);
+    activity.setStrategy(multiInstanceStrategy);
   }
 
   private boolean is(Optional<EventDefinition> eventDefinition, String typeName) {

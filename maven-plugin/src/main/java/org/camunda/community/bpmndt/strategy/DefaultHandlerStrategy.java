@@ -23,7 +23,7 @@ public class DefaultHandlerStrategy extends DefaultStrategy {
     MethodSpec method = MethodSpec.methodBuilder(buildHandlerMethodName(activity.getLiteral()))
         .addJavadoc(buildHandlerMethodJavadoc())
         .addModifiers(Modifier.PUBLIC)
-        .returns(activity.getStrategy().getHandlerType())
+        .returns(getHandlerType())
         .addStatement("return $L", activity.getLiteral())
         .build();
 
@@ -66,6 +66,12 @@ public class DefaultHandlerStrategy extends DefaultStrategy {
   @Override
   public void initHandler(MethodSpec.Builder methodBuilder) {
     methodBuilder.addCode("\n// $L: $L\n", activity.getTypeName(), activity.getId());
-    methodBuilder.addStatement("$L = new $T(getProcessEngine(), $S)", activity.getLiteral(), getHandlerType(), activity.getId());
+    methodBuilder.addCode("$L = ", activity.getLiteral());
+    methodBuilder.addStatement(initHandlerStatement());
+  }
+
+  @Override
+  public CodeBlock initHandlerStatement() {
+    return CodeBlock.of("new $T(getProcessEngine(), $S)", getHandlerType(), activity.getId());
   }
 }

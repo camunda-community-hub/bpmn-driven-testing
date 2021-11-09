@@ -1,14 +1,15 @@
 package org.camunda.community.bpmndt;
 
 import org.camunda.bpm.model.bpmn.instance.FlowNode;
+import org.camunda.bpm.model.bpmn.instance.MultiInstanceLoopCharacteristics;
 
 public class TestCaseActivity {
 
   private final FlowNode flowNode;
   private final String literal;
+  private final MultiInstanceLoopCharacteristics multiInstance;
 
   private TestCaseActivityType type;
-
   private TestCaseActivity prev;
   private TestCaseActivity next;
 
@@ -18,8 +19,9 @@ public class TestCaseActivity {
   private String eventCode;
   private String eventName;
 
-  public TestCaseActivity(FlowNode flowNode) {
+  public TestCaseActivity(FlowNode flowNode, MultiInstanceLoopCharacteristics multiInstance) {
     this.flowNode = flowNode;
+    this.multiInstance = multiInstance;
 
     literal = BpmnSupport.toLiteral(flowNode.getId());
 
@@ -71,6 +73,10 @@ public class TestCaseActivity {
     return literal;
   }
 
+  public MultiInstanceLoopCharacteristics getMultiInstance() {
+    return multiInstance;
+  }
+
   /**
    * Returns the next test activity.
    * 
@@ -119,6 +125,10 @@ public class TestCaseActivity {
 
   public boolean isAttachedTo(TestCaseActivity activity) {
     return activity.getId().equals(attachedTo);
+  }
+
+  public boolean isMultiInstance() {
+    return multiInstance != null;
   }
 
   public void setAttachedTo(String attachedTo) {

@@ -4,6 +4,7 @@ import java.util.function.Function;
 
 import javax.lang.model.element.Modifier;
 
+import org.camunda.bpm.engine.ActivityTypes;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.community.bpmndt.GeneratorStrategy;
 import org.camunda.community.bpmndt.TestCaseActivity;
@@ -29,10 +30,15 @@ public class Execute implements Function<TestCaseContext, MethodSpec> {
       return builder.build();
     }
 
-    for (TestCaseActivity activity : ctx.getActivities()) {
+    for (int i = 0; i < ctx.getActivities().size(); i++) {
+      TestCaseActivity activity = ctx.getActivities().get(i);
       GeneratorStrategy strategy = activity.getStrategy();
 
-      builder.addCode("\n// $L: $L\n", activity.getTypeName(), activity.getId());
+      if (i != 0) {
+        builder.addCode("\n");
+      }
+
+      builder.addCode("// $L: $L\n", activity.getTypeName(), activity.getId());
 
       if (activity.isAsyncBefore()) {
         strategy.applyHandlerBefore(builder);
@@ -44,9 +50,17 @@ public class Execute implements Function<TestCaseContext, MethodSpec> {
         strategy.applyHandlerAfter(builder);
       }
 
-      builder.addStatement("assertThat(pi).hasPassed($S)", activity.getId());
+      builder.addStatement("assertThat(pi).hasPassed($S)", getPassed(activity));
     }
 
     return builder.build();
+  }
+
+  protected String getPassed(TestCaseActivity activity) {
+    if (activity.isMultiInstance()) {
+      return String.format("%s#%s", activity.getId(), ActivityTypes.MULTI_INSTANCE_BODY);
+    } else {
+      return activity.getId();
+    }
   }
 }

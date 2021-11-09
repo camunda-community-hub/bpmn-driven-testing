@@ -1,5 +1,6 @@
 package org.camunda.community.bpmndt.api;
 
+import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -19,19 +20,47 @@ public class JobHandler {
   private final ProcessEngine processEngine;
   private final String activityId;
 
+  private final Cardinality cardinality;
+
   private BiConsumer<ProcessInstanceAssert, JobAssert> verifier;
 
   private Consumer<Job> action;
 
   public JobHandler(ProcessEngine processEngine, String activityId) {
+    this(processEngine, activityId, Cardinality.ONE);
+  }
+
+  /**
+   * Creates a new job handler. This constructor is used in the context of multi instance activities.
+   * 
+   * @param processEngine The used process engine.
+   * 
+   * @param activityId The ID of the related activity.
+   * 
+   * @param cardinality Expected job cardinality.
+   */
+  public JobHandler(ProcessEngine processEngine, String activityId, Cardinality cardinality) {
     this.processEngine = processEngine;
     this.activityId = activityId;
+    this.cardinality = cardinality;
 
     action = this::execute;
   }
 
   protected void apply(ProcessInstance pi) {
-    Job job = ProcessEngineTests.job(activityId, pi);
+    List<Job> jobs = ProcessEngineTests.jobQuery().processInstanceId(pi.getId()).activityId(activityId).list();
+
+    if (cardinality == Cardinality.ONE && jobs.size() != 1) {
+      throw new AssertionError(String.format("Expected exactly one job for activity '%s'", activityId));
+    } else if (cardinality == Cardinality.ONE_TO_N && jobs.isEmpty()) {
+      throw new AssertionError(String.format("Expected at least one job for activity '%s'", activityId));
+    } else if (cardinality == Cardinality.ZERO_TO_ONE && jobs.size() > 1) {
+      throw new AssertionError(String.format("Expected at most one job for activity '%s'", activityId));
+    } else if ((cardinality == Cardinality.ZERO_TO_ONE || cardinality == Cardinality.ZERO_TO_N) && jobs.isEmpty()) {
+      return;
+    }
+    
+    Job job = jobs.get(0);
 
     if (verifier != null) {
       verifier.accept(ProcessEngineTests.assertThat(pi), ProcessEngineTests.assertThat(job));
@@ -73,5 +102,20 @@ public class JobHandler {
   public JobHandler verify(BiConsumer<ProcessInstanceAssert, JobAssert> verifier) {
     this.verifier = verifier;
     return this;
+  }
+
+  /**
+   * Possible job cardinalities.
+   */
+  public static enum Cardinality {
+
+    /** 1..n - parallel multi instance async before. */
+    ONE_TO_N,
+    /** Default cardinality. */
+    ONE,
+    /** 0..n - parallel multi instance async after. */
+    ZERO_TO_N,
+    /** 0..1 - sequential multi instance async after. */
+    ZERO_TO_ONE,
   }
 }
