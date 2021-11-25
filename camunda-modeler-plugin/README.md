@@ -1,5 +1,7 @@
 # Camunda Modeler Plugin
 
+## Installation
+
 1. Ensure that Camunda Modeler 4.4.0 or higher is installed
 2. [Download](https://github.com/camunda-community-hub/bpmn-driven-testing/releases/latest/download/bpmn-driven-testing-plugin.zip) latest Camunda Modeler plugin release
 3. Unpackage downloaded ZIP file to the `resources/plugins/` directory of the Camunda Modeler installation
@@ -7,35 +9,39 @@
 5. Verify that the plugin is available within the **Plugins** menu as `BPMN Driven Testing` > `Show / Hide` (shortcut CTRL+T).
 
 ## Development
-For the plugin development `npm` (a Node.js installation) is required.
+This and the subsequent sections are only important for plugin development!
 
-1. (Only once) Link the camunda-modeler-plugin directory of the GIT repository as "bpmn-driven-testing" modeler plugin
+For the plugin development a [NodeJS 14.x](https://nodejs.org/download/release/latest-v14.x/) installation is required.
 
-Under Windows, run as administrator
+1. Link the `camunda-modeler-plugin/` directory as Camunda Modeler plugin
 
-```
-cd <camunda-modeler-installation>
-mklink /d resources\plugins\bpmn-driven-testing <repository>\camunda-modeler-plugin
-```
-
-If you want to remove the link:
-
-Under Windows, run as administrator
+Under Windows, run as administrator:
 
 ```
-cd <camunda-modeler-installation>
-rd resources\plugins\bpmn-driven-testing
+mklink /d <camunda-modeler>\resources\plugins\bpmn-driven-testing <repository>\camunda-modeler-plugin
 ```
 
-2. Start the Camunda Modeler
-3. Press **F12** to show developer tools
-4. Run webpack to build `dist/client.js` on the fly, when saving changes
+Under Unix:
+
+```
+ln -s <repository>/camunda-modeler-plugin <camunda-modeler>/resources/plugins/bpmn-driven-testing
+```
+
+2. Install dependencies
+
+```
+npm install
+```
+
+3. Run webpack to build the plugin on the fly, when code changes are saved to file
 
 ```
 npm run dev
 ```
 
-5. To reload the plugin within the Camunda Modeler, press **CTRL+R** in developer tools
+4. Start the Camunda Modeler
+5. In Camunda Modeler, press **F12** to show developer tools
+6. After code changes, press **CTRL+R** in developer tools to reload the plugin within the Camunda Modeler
 
 ## Testing
 Tests are performed using [mocha](https://mochajs.org/) and [chai](https://www.chaijs.com/).

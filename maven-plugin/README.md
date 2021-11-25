@@ -3,6 +3,9 @@ The plugin's `generator` goal runs within Maven's default lifecycle in phase `ge
 It generates the test code under `target/bpmndt` and adds this directory as test source directory, which is automatically compiled during the `test-compile` phase.
 The compilation results (test cases and [API classes](src/main/java/org/camunda/community/bpmndt/api)) will be available in the test classpath afterwards.
 
+:warning: With **IntelliJ IDEA**, you may need to [add the additional test source directory manually](https://www.jetbrains.com/help/idea/testing.html#add-test-root).
+Right click on `target/bpmndt` > `Mark Directory as` > `Test Sources Root`
+
 ## Usage
 
 ```xml
@@ -37,9 +40,21 @@ Add dependencies, which are required to execute the generated test code:
 
 ```xml
 <dependency>
+  <groupId>org.camunda.bpm</groupId>
+  <artifactId>camunda-engine</artifactId>
+</dependency>
+
+<!-- Required for plugin version 0.3.0 and lower -->
+<dependency>
+  <groupId>org.camunda.bpm</groupId>
+  <artifactId>camunda-engine-plugin-spin</artifactId>
+</dependency>
+
+<dependency>
   <groupId>junit</groupId>
   <artifactId>junit</artifactId>
   <version>${junit.version}</version>
+  <scope>test</scope>
 </dependency>
 <dependency>
   <groupId>com.h2database</groupId>
@@ -105,6 +120,8 @@ Recommended versions:
 | Spring Framework   | 5.2.8.RELEASE+ |
 
 ## Testing
+This section is only important for plugin development!
+
 Beside unit tests, a set of integration tests exist under [src/test/it](src/test/it).
 These tests verify that the Maven plugin works correctly when executed within a Maven build.
 The integration tests are implemented using the [Robot Framework](https://robotframework.org/) (Java implementation).
