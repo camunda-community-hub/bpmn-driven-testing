@@ -14,6 +14,22 @@ The extension consists of:
 - [Camunda Modeler plugin](camunda-modeler-plugin) for a visual selection and the management of test cases
 - [Maven plugin](maven-plugin) for generation of JUnit based test code
 
+## Features
+- Visual test case selection
+- Automatic path finding with
+  - Support for embedded sub processes
+  - Support for boundary events
+  - BPMN collaborations with one expanded participant
+  - Loop detection
+- Generated test cases provide
+  - Automatic handling of wait states
+  - Call activity stubbing for isolated testing - see [CallActivityTest](maven-plugin/src/test/it/advanced/src/test/java/org/example/it/CallActivityWithMappingTest.java)
+  - Fluent API to override default behavior
+  - Multi instance activity support - see [tests](maven-plugin/src/test/it/advanced-multi-instance/src/test/java/org/example/it)
+- Spring test support - see [AdvancedTest](maven-plugin/src/test/it/advanced-spring/src/test/java/org/example/it/AdvancedTest.java)
+- Testing of arbitrary paths through a BPMN process
+- Test case validation and migration, when a BPMN process was changed - see [docs](docs/test-case-validation-and-migration.md)
+
 ## How does it work?
 
 ### Select test cases
@@ -52,7 +68,7 @@ When the BPMN model is saved, the selected test cases are attached to the BPMN p
 ```
 
 ### Generate test cases
-To generate the code for the selected test cases, a developer must run the **generator** goal of the [bpmn-driven-testing-maven-plugin](maven-plugin) - in Eclipse select the project and press **ALT+F5** to update.
+To generate the code for the selected test cases, a developer must run the **generator** goal of the [bpmn-driven-testing-maven-plugin](maven-plugin) - in **Eclipse** select the project and press **ALT+F5** to update.
 The goal finds all *.bpmn files under `src/main/resources` and looks for BPMN processes with a `bpmndt:testCases` extension element.
 Each test case will result in a [JUnit test rule](https://github.com/junit-team/junit4/wiki/Rules) - in this example: `generated.order_fulfillment.TC_Happy_Path`.
 
@@ -97,9 +113,9 @@ public class OrderFulfillmentTest {
 
     // enrich and execute test case
     tc.createExecutor()
-      .withBusinessKey("order-123-456")
+      .withBusinessKey("order-20210623-0001")
       .withVariable("customerId", 123)
-      .withVariable("items", "[{\"id\": 1, \"quantity\": 3},{\"id\": 7, \"quantity\": 1}]")
+      .withVariable("customerType", "NEW")
       .withBean("approveOrder", new ApproveOrderDelegate())
       .verify(pi -> {
         // verify state after execution
@@ -114,22 +130,6 @@ When a test is started, the generated test rule handles the creation of the proc
 On the other hand, the test case execution handles the process instance start, applies the specified behavior and verifies that the process instance has passed the correct activities.
 
 A developer can solely focus on the actual implementation!
-
-## Features
-- Visual test case selection
-- Automatic path finding with
-  - Support for embedded sub processes
-  - Support for boundary events
-  - BPMN collaborations with one expanded participant
-  - Loop detection
-- Generated test cases provide
-  - Automatic handling of wait states
-  - Call activity stubbing for isolated testing - see [CallActivityTest](maven-plugin/src/test/it/advanced/src/test/java/org/example/it/CallActivityWithMappingTest.java)
-  - Fluent API to override default behavior
-  - Multi instance activity support - see [tests](maven-plugin/src/test/it/advanced-multi-instance/src/test/java/org/example/it)
-- Spring test support - see [AdvancedTest](maven-plugin/src/test/it/advanced-spring/src/test/java/org/example/it/AdvancedTest.java)
-- Testing of arbitrary paths through a BPMN process
-- Test case validation and migration, when a BPMN process was changed - see [docs](docs/test-case-validation-and-migration.md)
 
 ## More screenshots
 
