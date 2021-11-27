@@ -12,6 +12,7 @@ import org.camunda.bpm.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.camunda.bpm.engine.impl.pvm.delegate.ActivityExecution;
 import org.camunda.bpm.engine.repository.Deployment;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
+import org.camunda.community.bpmndt.api.cfg.BpmndtCallActivityBehavior;
 import org.camunda.community.bpmndt.api.cfg.BpmndtParseListener;
 
 public class TestCaseInstance {
@@ -90,6 +91,23 @@ public class TestCaseInstance {
     return deployment.getId();
   }
 
+  /**
+   * Executes a stubbed call activity using a {@link CallActivityHandler} that was registered for the
+   * given activity.
+   * 
+   * @param execution The current execution.
+   * 
+   * @param behavior The custom behavior to apply.
+   * 
+   * @return {@code true}, if the execution should leave the call activity. {@code false}, if the
+   *         execution should wait at the call activity.
+   * 
+   * @throws Exception If the occurrence of an error end event is simulated and the error propagation
+   *         fails.
+   * 
+   * @see BpmndtCallActivityBehavior
+   * @see CallActivityHandler#simulateBpmnError(String, String)
+   */
   public boolean execute(ActivityExecution execution, CallActivityBehavior behavior) throws Exception {
     String activityId = execution.getCurrentActivityId();
 

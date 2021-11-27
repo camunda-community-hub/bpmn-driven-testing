@@ -13,6 +13,9 @@ import com.squareup.javapoet.MethodSpec.Builder;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
+/**
+ * Special strategy for activities that are enclosed by the multi instance scope.
+ */
 public class MultiInstanceStrategy extends DefaultStrategy {
 
   private final GeneratorStrategy strategy;

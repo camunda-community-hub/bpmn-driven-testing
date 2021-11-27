@@ -22,6 +22,11 @@ import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
+/**
+ * Generates the handler for a given multi instance activity.
+ * 
+ * @see MultiInstanceHandler
+ */
 public class GenerateMultiInstanceHandler implements Consumer<TestCaseActivity> {
 
   private final GeneratorContext gCtx;
@@ -39,6 +44,7 @@ public class GenerateMultiInstanceHandler implements Consumer<TestCaseActivity> 
   public void accept(TestCaseActivity activity) {
     ClassName className = (ClassName) activity.getStrategy().getHandlerType();
 
+    // e.g. MyUserTaskHandler extends MultiInstanceHandler<MyUserTaskHandler, UserTaskHandler>
     TypeSpec.Builder classBuilder = TypeSpec.classBuilder(className)
         .addJavadoc("Multi instance handler for $L: $L", activity.getTypeName(), activity.getId())
         .superclass(getSuperClass(activity))
@@ -48,7 +54,7 @@ public class GenerateMultiInstanceHandler implements Consumer<TestCaseActivity> 
       classBuilder.addField(activity.getNext().getStrategy().getHandlerType(), "boundaryEventHandler", Modifier.PRIVATE);
     }
 
-    classBuilder.addMethod(build(activity));
+    classBuilder.addMethod(buildConstructor(activity));
 
     if (activity.getType() != TestCaseActivityType.OTHER) {
       classBuilder.addMethod(buildApply(activity));
@@ -71,23 +77,6 @@ public class GenerateMultiInstanceHandler implements Consumer<TestCaseActivity> 
         .build();
 
     result.addFile(javaFile);
-  }
-
-  protected MethodSpec build(TestCaseActivity activity) {
-    MethodSpec.Builder builder = MethodSpec.constructorBuilder()
-        .addModifiers(Modifier.PUBLIC)
-        .addParameter(TestCaseInstance.class, "instance")
-        .addParameter(String.class, "activityId")
-        .addStatement("super(instance, activityId)");
-
-    if (hasSupportedBoundaryEventAttached(activity)) {
-      TestCaseActivity next = activity.getNext();
-
-      builder.addCode("\n// $L: $L\n", next.getTypeName(), next.getId());
-      builder.addStatement("boundaryEventHandler = $L", next.getStrategy().initHandlerStatement());
-    }
-
-    return builder.build();
   }
 
   protected MethodSpec buildApply(TestCaseActivity activity) {
@@ -132,6 +121,23 @@ public class GenerateMultiInstanceHandler implements Consumer<TestCaseActivity> 
     return builder.build();
   }
 
+  protected MethodSpec buildConstructor(TestCaseActivity activity) {
+    MethodSpec.Builder builder = MethodSpec.constructorBuilder()
+        .addModifiers(Modifier.PUBLIC)
+        .addParameter(TestCaseInstance.class, "instance")
+        .addParameter(String.class, "activityId")
+        .addStatement("super(instance, activityId)");
+
+    if (hasSupportedBoundaryEventAttached(activity)) {
+      TestCaseActivity next = activity.getNext();
+
+      builder.addCode("\n// $L: $L\n", next.getTypeName(), next.getId());
+      builder.addStatement("boundaryEventHandler = $L", next.getStrategy().initHandlerStatement());
+    }
+
+    return builder.build();
+  }
+
   protected MethodSpec buildCreateHandler(TestCaseActivity activity) {
     GeneratorStrategy strategy = getEnclosedStrategy(activity);
 
@@ -172,11 +178,12 @@ public class GenerateMultiInstanceHandler implements Consumer<TestCaseActivity> 
     TypeName multiInstanceType = activity.getStrategy().getHandlerType();
     TypeName enclosedType = getEnclosedStrategy(activity).getHandlerType();
 
+    // e.g. MultiInstanceHandler<MyUserTaskHandler, UserTaskHandler>
     return ParameterizedTypeName.get(ClassName.get(MultiInstanceHandler.class), multiInstanceType, enclosedType);
   }
 
   protected boolean hasSupportedBoundaryEventAttached(TestCaseActivity activity) {
-    if (activity.getNext() == null || !activity.getNext().getType().isBoundaryEvent()) {
+    if (!activity.hasNext() || !activity.getNext().getType().isBoundaryEvent()) {
       return false;
     }
 

@@ -55,7 +55,11 @@ public class SpringBasedTest {
     assertThat(configuration.getProcessEnginePlugins().get(1), instanceOf(BpmndtProcessEnginePlugin.class));
   }
 
-  private class TestCase extends AbstractJUnit4SpringBasedTestRule {
+  private class TestCase extends AbstractJUnit4TestCase {
+
+    public TestCase() {
+      super(true);
+    }
 
     @Override
     protected void execute(ProcessInstance pi) {

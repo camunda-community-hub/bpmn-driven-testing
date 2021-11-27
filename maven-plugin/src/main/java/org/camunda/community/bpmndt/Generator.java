@@ -9,8 +9,7 @@ import java.util.TreeSet;
 import java.util.function.Consumer;
 
 import org.apache.maven.plugin.logging.Log;
-import org.camunda.community.bpmndt.api.AbstractJUnit4SpringBasedTestRule;
-import org.camunda.community.bpmndt.api.AbstractJUnit4TestRule;
+import org.camunda.community.bpmndt.api.AbstractJUnit4TestCase;
 import org.camunda.community.bpmndt.api.CallActivityDefinition;
 import org.camunda.community.bpmndt.api.CallActivityHandler;
 import org.camunda.community.bpmndt.api.EventHandler;
@@ -27,7 +26,7 @@ import org.camunda.community.bpmndt.api.cfg.SpringConfiguration;
 import org.camunda.community.bpmndt.cmd.BuildTestCaseContext;
 import org.camunda.community.bpmndt.cmd.CollectBpmnFiles;
 import org.camunda.community.bpmndt.cmd.DeleteTestSources;
-import org.camunda.community.bpmndt.cmd.GenerateJUnit4TestRule;
+import org.camunda.community.bpmndt.cmd.GenerateJUnit4TestCase;
 import org.camunda.community.bpmndt.cmd.GenerateMultiInstanceHandler;
 import org.camunda.community.bpmndt.cmd.GenerateSpringConfiguration;
 import org.camunda.community.bpmndt.cmd.WriteJavaFile;
@@ -96,7 +95,7 @@ public class Generator {
     log.info("");
 
     Set<Class<?>> apiClasses = new TreeSet<>(Comparator.comparing(Class::getName));
-    apiClasses.add(AbstractJUnit4TestRule.class);
+    apiClasses.add(AbstractJUnit4TestCase.class);
     apiClasses.add(CallActivityDefinition.class);
     apiClasses.add(CallActivityHandler.class);
     apiClasses.add(ExternalTaskHandler.class);
@@ -112,7 +111,6 @@ public class Generator {
     apiClasses.add(BpmndtProcessEnginePlugin.class);
 
     if (ctx.isSpringEnabled()) {
-      apiClasses.add(AbstractJUnit4SpringBasedTestRule.class);
       apiClasses.add(SpringConfiguration.class);
     }
 
@@ -145,7 +143,7 @@ public class Generator {
       return;
     }
 
-    Consumer<TestCaseContext> generate = new GenerateJUnit4TestRule(gCtx, result);
+    Consumer<TestCaseContext> generate = new GenerateJUnit4TestCase(gCtx, result);
 
     BuildTestCaseContext ctxBuilder = new BuildTestCaseContext(gCtx, bpmnSupport);
     for (TestCase testCase : bpmnSupport.getTestCases()) {

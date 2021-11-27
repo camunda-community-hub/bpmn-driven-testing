@@ -3,6 +3,7 @@ package org.camunda.community.bpmndt;
 import static org.camunda.community.bpmndt.test.ContainsCode.containsCode;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -14,11 +15,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.function.Predicate;
 
+import javax.lang.model.element.Modifier;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugin.logging.Log;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
-import org.camunda.community.bpmndt.api.AbstractJUnit4SpringBasedTestRule;
-import org.camunda.community.bpmndt.api.AbstractJUnit4TestRule;
+import org.camunda.community.bpmndt.api.AbstractJUnit4TestCase;
 import org.camunda.community.bpmndt.api.CallActivityHandler;
 import org.camunda.community.bpmndt.api.EventHandler;
 import org.camunda.community.bpmndt.api.ExternalTaskHandler;
@@ -86,7 +88,7 @@ public class GeneratorSimpleTest {
     TypeSpec typeSpec = javaFile.typeSpec;
     assertThat(typeSpec.name, equalTo("TC_startEvent__endEvent"));
 
-    TypeName superclass = ClassName.get(AbstractJUnit4TestRule.class);
+    TypeName superclass = ClassName.get(AbstractJUnit4TestCase.class);
     assertThat(typeSpec.superclass, equalTo(superclass));
     assertThat(typeSpec.fieldSpecs, hasSize(0));
     assertThat(typeSpec.methodSpecs, hasSize(6));
@@ -129,26 +131,27 @@ public class GeneratorSimpleTest {
     TypeSpec typeSpec = javaFile.typeSpec;
     assertThat(typeSpec.name, equalTo("TC_startEvent__endEvent"));
 
-    TypeName superclass = ClassName.get(AbstractJUnit4SpringBasedTestRule.class);
-    assertThat(typeSpec.superclass, equalTo(superclass));
+    assertThat(typeSpec.superclass, equalTo(ClassName.get(AbstractJUnit4TestCase.class)));
     assertThat(typeSpec.fieldSpecs, hasSize(0));
-    assertThat(typeSpec.methodSpecs, hasSize(6));
-    assertThat(typeSpec.methodSpecs.get(0).name, equalTo("starting"));
-    assertThat(typeSpec.methodSpecs.get(0).parameters, hasSize(1));
-    assertThat(typeSpec.methodSpecs.get(0).parameters.get(0).name, equalTo("description"));
-    assertThat(typeSpec.methodSpecs.get(0).parameters.get(0).type, equalTo(ClassName.get(Description.class)));
-    assertThat(typeSpec.methodSpecs.get(1).name, equalTo("execute"));
+    assertThat(typeSpec.methodSpecs, hasSize(7));
+    assertThat(typeSpec.methodSpecs.get(0).isConstructor(), is(true));
+    assertThat(typeSpec.methodSpecs.get(0).modifiers, hasItem(Modifier.PUBLIC));
+    assertThat(typeSpec.methodSpecs.get(1).name, equalTo("starting"));
     assertThat(typeSpec.methodSpecs.get(1).parameters, hasSize(1));
-    assertThat(typeSpec.methodSpecs.get(1).parameters.get(0).name, equalTo("pi"));
-    assertThat(typeSpec.methodSpecs.get(1).parameters.get(0).type, equalTo(ClassName.get(ProcessInstance.class)));
-    assertThat(typeSpec.methodSpecs.get(2).name, equalTo("getBpmnResourceName"));
-    assertThat(typeSpec.methodSpecs.get(2).code.toString(), containsString("\"simple.bpmn\""));
-    assertThat(typeSpec.methodSpecs.get(3).name, equalTo("getEnd"));
-    assertThat(typeSpec.methodSpecs.get(3).code.toString(), containsString("\"endEvent\""));
-    assertThat(typeSpec.methodSpecs.get(4).name, equalTo("getProcessDefinitionKey"));
-    assertThat(typeSpec.methodSpecs.get(4).code.toString(), containsString("\"simple\""));
-    assertThat(typeSpec.methodSpecs.get(5).name, equalTo("getStart"));
-    assertThat(typeSpec.methodSpecs.get(5).code.toString(), containsString("\"startEvent\""));
+    assertThat(typeSpec.methodSpecs.get(1).parameters.get(0).name, equalTo("description"));
+    assertThat(typeSpec.methodSpecs.get(1).parameters.get(0).type, equalTo(ClassName.get(Description.class)));
+    assertThat(typeSpec.methodSpecs.get(2).name, equalTo("execute"));
+    assertThat(typeSpec.methodSpecs.get(2).parameters, hasSize(1));
+    assertThat(typeSpec.methodSpecs.get(2).parameters.get(0).name, equalTo("pi"));
+    assertThat(typeSpec.methodSpecs.get(2).parameters.get(0).type, equalTo(ClassName.get(ProcessInstance.class)));
+    assertThat(typeSpec.methodSpecs.get(3).name, equalTo("getBpmnResourceName"));
+    assertThat(typeSpec.methodSpecs.get(3).code.toString(), containsString("\"simple.bpmn\""));
+    assertThat(typeSpec.methodSpecs.get(4).name, equalTo("getEnd"));
+    assertThat(typeSpec.methodSpecs.get(4).code.toString(), containsString("\"endEvent\""));
+    assertThat(typeSpec.methodSpecs.get(5).name, equalTo("getProcessDefinitionKey"));
+    assertThat(typeSpec.methodSpecs.get(5).code.toString(), containsString("\"simple\""));
+    assertThat(typeSpec.methodSpecs.get(6).name, equalTo("getStart"));
+    assertThat(typeSpec.methodSpecs.get(6).code.toString(), containsString("\"startEvent\""));
   }
 
   @Test
