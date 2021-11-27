@@ -17,10 +17,10 @@ mvn clean test
   ${testSources}  Set variable  ${CURDIR}/advanced-spring/target/bpmndt
 
   # Spring specific API classes written
-  Should contain  ${result.stdout}  Writing file: target/bpmndt/org/camunda/community/bpmndt/api/AbstractJUnit4SpringBasedTestRule.java
+  Should contain  ${result.stdout}  Writing file: target/bpmndt/org/camunda/community/bpmndt/api/AbstractJUnit4TestCase.java
   Should contain  ${result.stdout}  Writing file: target/bpmndt/org/camunda/community/bpmndt/api/cfg/SpringConfiguration.java
 
-  File should exist  ${testSources}/org/camunda/community/bpmndt/api/AbstractJUnit4SpringBasedTestRule.java
+  File should exist  ${testSources}/org/camunda/community/bpmndt/api/AbstractJUnit4TestCase.java
   File should exist  ${testSources}/org/camunda/community/bpmndt/api/cfg/SpringConfiguration.java
 
   # Spring configuration generated and written

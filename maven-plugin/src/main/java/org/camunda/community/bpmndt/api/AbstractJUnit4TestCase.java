@@ -25,18 +25,34 @@ import org.junit.runner.Description;
  * Abstract superclass for JUnit 4 based test cases. When a test is started, this class builds the
  * process engine, creates the test case instance and deploys the related BPMN resource.
  */
-public abstract class AbstractJUnit4TestRule extends TestWatcher {
+public abstract class AbstractJUnit4TestCase extends TestWatcher {
 
   protected TestCaseInstance instance;
+
+  /** Determines if Spring based testing is enabled or not. */
+  private final boolean springEnabled;
 
   /** ID of the BPMN resource deployment. */
   private String deploymentId;
   /** ID of optional annotation based deployment. */
   private String annotationDeploymentId;
 
+  public AbstractJUnit4TestCase() {
+    this(false);
+  }
+
+  public AbstractJUnit4TestCase(boolean springEnabled) {
+    this.springEnabled = springEnabled;
+  }
+
   @Override
   protected void starting(Description description) {
     ProcessEngine processEngine = ProcessEngines.getProcessEngine(PROCESS_ENGINE_NAME);
+
+    if (processEngine == null && springEnabled) {
+      String message = String.format("Spring application context must provide a process engine with name '%s'", PROCESS_ENGINE_NAME);
+      throw new IllegalStateException(message);
+    }
     if (processEngine == null) {
       processEngine = buildProcessEngine();
     }
@@ -64,12 +80,16 @@ public abstract class AbstractJUnit4TestRule extends TestWatcher {
   protected void finished(Description description) {
     Mocks.reset();
 
-    if (instance != null) {
-      instance.clear();
-
-      // undeploy BPMN resource
-      instance.undeploy(deploymentId);
+    if (instance == null) {
+      // skip undeployment, if process engine was not built
+      // or Spring application context did not provide the desired process engine
+      return;
     }
+
+    instance.clear();
+
+    // undeploy BPMN resource
+    instance.undeploy(deploymentId);
 
     // undeploy optional annotation based deployment
     Class<?> testClass = description.getTestClass();

@@ -17,7 +17,7 @@ import java.util.function.Predicate;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugin.logging.Log;
 import org.camunda.bpm.engine.impl.cfg.ProcessEnginePlugin;
-import org.camunda.community.bpmndt.api.AbstractJUnit4TestRule;
+import org.camunda.community.bpmndt.api.AbstractJUnit4TestCase;
 import org.camunda.community.bpmndt.api.cfg.SpringConfiguration;
 import org.junit.Before;
 import org.junit.Rule;
@@ -84,7 +84,7 @@ public class GeneratorTest {
     TypeSpec typeSpec = result.getFiles().get(0).typeSpec;
     assertThat(typeSpec.name, equalTo("TC_empty"));
 
-    TypeName superclass = ClassName.get(AbstractJUnit4TestRule.class);
+    TypeName superclass = ClassName.get(AbstractJUnit4TestCase.class);
     assertThat(typeSpec.superclass, equalTo(superclass));
     assertThat(typeSpec.fieldSpecs, hasSize(0));
     assertThat(typeSpec.methodSpecs, hasSize(6));
@@ -104,7 +104,7 @@ public class GeneratorTest {
     TypeSpec typeSpec = result.getFiles().get(0).typeSpec;
     assertThat(typeSpec.name, equalTo("TC_incomplete"));
 
-    TypeName superclass = ClassName.get(AbstractJUnit4TestRule.class);
+    TypeName superclass = ClassName.get(AbstractJUnit4TestCase.class);
     assertThat(typeSpec.superclass, equalTo(superclass));
     assertThat(typeSpec.fieldSpecs, hasSize(0));
     assertThat(typeSpec.methodSpecs, hasSize(6));
@@ -124,7 +124,7 @@ public class GeneratorTest {
     TypeSpec typeSpec = result.getFiles().get(0).typeSpec;
     assertThat(typeSpec.name, equalTo("TC_startEvent__endEvent"));
 
-    TypeName superclass = ClassName.get(AbstractJUnit4TestRule.class);
+    TypeName superclass = ClassName.get(AbstractJUnit4TestCase.class);
     assertThat(typeSpec.superclass, equalTo(superclass));
     assertThat(typeSpec.fieldSpecs, hasSize(0));
     assertThat(typeSpec.methodSpecs, hasSize(6));
@@ -180,7 +180,7 @@ public class GeneratorTest {
     assertThat(isFile.test("org/example/no_test_cases/TC_startEvent__endEvent.java"), is(false));
 
     // API classes
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/AbstractJUnit4TestRule.java"), is(true));
+    assertThat(isFile.test("org/camunda/community/bpmndt/api/AbstractJUnit4TestCase.java"), is(true));
     assertThat(isFile.test("org/camunda/community/bpmndt/api/CallActivityDefinition.java"), is(true));
     assertThat(isFile.test("org/camunda/community/bpmndt/api/CallActivityHandler.java"), is(true));
     assertThat(isFile.test("org/camunda/community/bpmndt/api/EventHandler.java"), is(true));
@@ -222,8 +222,7 @@ public class GeneratorTest {
     assertThat(isFile.test("org/example/BpmndtConfiguration.java"), is(true));
 
     // API classes
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/AbstractJUnit4SpringBasedTestRule.java"), is(true));
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/AbstractJUnit4TestRule.java"), is(true));
+    assertThat(isFile.test("org/camunda/community/bpmndt/api/AbstractJUnit4TestCase.java"), is(true));
     assertThat(isFile.test("org/camunda/community/bpmndt/api/CallActivityDefinition.java"), is(true));
     assertThat(isFile.test("org/camunda/community/bpmndt/api/CallActivityHandler.java"), is(true));
     assertThat(isFile.test("org/camunda/community/bpmndt/api/EventHandler.java"), is(true));

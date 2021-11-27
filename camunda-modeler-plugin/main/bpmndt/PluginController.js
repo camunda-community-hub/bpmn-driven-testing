@@ -118,7 +118,7 @@ export default class PluginController {
   handleToggleMode(modeId) {
     const { mode, testCases } = this;
 
-    if (mode.id === MODE_SELECT && modeId == MODE_MIGRATE) {
+    if (mode.id === MODE_SELECT && modeId === MODE_MIGRATE) {
       // special case
       this.setMode(MODE_VIEW, this);
     } else if (mode.id !== modeId) {
@@ -199,21 +199,22 @@ export default class PluginController {
 
   _computeState() {
     const { mode } = this;
+    const { id, state } = mode;
 
-    const isMigration = mode.id === MODE_SELECT && mode.isMigration();
+    const isMigration = id === MODE_SELECT && mode.isMigration();
 
     const activeModes = {};
-    activeModes[MODE_EDIT] = mode.id === MODE_EDIT;
-    activeModes[MODE_SELECT] = mode.id === MODE_SELECT;
-    activeModes[MODE_SHOW_COVERAGE] = mode.id === MODE_SHOW_COVERAGE;
+    activeModes[MODE_EDIT] = id === MODE_EDIT;
+    activeModes[MODE_SELECT] = id === MODE_SELECT;
+    activeModes[MODE_SHOW_COVERAGE] = id === MODE_SHOW_COVERAGE;
 
     // special case
-    activeModes[MODE_MIGRATE] = mode.id === MODE_MIGRATE || isMigration;
+    activeModes[MODE_MIGRATE] = id === MODE_MIGRATE || isMigration;
 
     // hide view to make diagram completely clickable
-    let hideView = mode.id === MODE_SHOW_COVERAGE;
-    hideView = hideView || (mode.id === MODE_SELECT && mode.state.paths.length === 0);
-    hideView = hideView || (mode.id == MODE_VIEW && mode.state.testCases.length === 0);
+    let hideView = id === MODE_SHOW_COVERAGE;
+    hideView = hideView || (id === MODE_SELECT && state.paths.length === 0);
+    hideView = hideView || (id === MODE_VIEW && state.testCases.length === 0);
 
     return {
       activeModes: activeModes,

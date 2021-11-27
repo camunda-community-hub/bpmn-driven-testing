@@ -49,13 +49,13 @@ export default class PathValidator {
       }
     }
 
-    if (a !== undefined && b !== undefined && a == b) {
+    if (a !== undefined && b !== undefined && a === b) {
       // only one flow node exists, which neither the start nor the end flow node
       problems.push({type: PROBLEM_START, end: path[a], missing: start});
       problems.push({type: PROBLEM_END, start: path[b], missing: end});
     } else if (a !== undefined && b !== undefined) {
       const paths = pathFinder.find(path[a], path[b]);
-      if (paths.length == 0) {
+      if (paths.length === 0) {
         // no path between a and b found
         problems.push({type: PROBLEM_UNRESOLVABLE});
       }
@@ -73,7 +73,7 @@ export default class PathValidator {
       if (paths.length > 1) {
         // multiple paths
         problems.push({type: PROBLEM_PATH, start: path[a], end: path[b], paths: paths});
-      } else if (paths.length == 1 && paths[0].length > 2) {
+      } else if (paths.length === 1 && paths[0].length > 2) {
         // only one possible path between a and b found
         problems.push({type: PROBLEM_PATH, start: path[a], end: path[b], paths: paths, autoResolvable: true});
       }

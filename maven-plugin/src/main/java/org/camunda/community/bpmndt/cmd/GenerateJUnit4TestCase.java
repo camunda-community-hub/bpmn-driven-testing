@@ -1,6 +1,5 @@
 package org.camunda.community.bpmndt.cmd;
 
-import java.lang.reflect.Type;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -13,8 +12,7 @@ import org.camunda.community.bpmndt.GeneratorResult;
 import org.camunda.community.bpmndt.GeneratorStrategy;
 import org.camunda.community.bpmndt.TestCaseActivity;
 import org.camunda.community.bpmndt.TestCaseContext;
-import org.camunda.community.bpmndt.api.AbstractJUnit4SpringBasedTestRule;
-import org.camunda.community.bpmndt.api.AbstractJUnit4TestRule;
+import org.camunda.community.bpmndt.api.AbstractJUnit4TestCase;
 import org.camunda.community.bpmndt.cmd.generation.Execute;
 import org.camunda.community.bpmndt.cmd.generation.GetProcessEnginePlugins;
 import org.camunda.community.bpmndt.cmd.generation.Starting;
@@ -28,32 +26,28 @@ import com.squareup.javapoet.TypeSpec;
 /**
  * Generates a JUnit 4 based test case in form of a JUnit {@link TestRule} implementation.
  * 
- * @see AbstractJUnit4TestRule
- * @see AbstractJUnit4SpringBasedTestRule
+ * @see AbstractJUnit4TestCase
  */
-public class GenerateJUnit4TestRule implements Consumer<TestCaseContext> {
+public class GenerateJUnit4TestCase implements Consumer<TestCaseContext> {
 
   private final GeneratorContext gCtx;
   private final GeneratorResult result;
 
-  public GenerateJUnit4TestRule(GeneratorContext gCtx, GeneratorResult result) {
+  public GenerateJUnit4TestCase(GeneratorContext gCtx, GeneratorResult result) {
     this.gCtx = gCtx;
     this.result = result;
   }
 
   @Override
   public void accept(TestCaseContext ctx) {
-    Type superClass;
-    if (gCtx.isSpringEnabled()) {
-      superClass = AbstractJUnit4SpringBasedTestRule.class;
-    } else {
-      superClass = AbstractJUnit4TestRule.class;
-    }
-
     TypeSpec.Builder classBuilder = TypeSpec.classBuilder(ctx.getClassName())
         .addJavadoc(buildJavadoc(ctx))
-        .superclass(superClass)
+        .superclass(AbstractJUnit4TestCase.class)
         .addModifiers(Modifier.PUBLIC);
+
+    if (gCtx.isSpringEnabled()) {
+      classBuilder.addMethod(buildConstructor());
+    }
 
     addHandlerFields(ctx, classBuilder);
 
@@ -120,6 +114,10 @@ public class GenerateJUnit4TestRule implements Consumer<TestCaseContext> {
         strategy.addHandlerMethodAfter(classBuilder);
       }
     }
+  }
+
+  protected MethodSpec buildConstructor() {
+    return MethodSpec.constructorBuilder().addModifiers(Modifier.PUBLIC).addStatement("super(true)").build();
   }
 
   protected MethodSpec buildGetBpmnResourceName(GeneratorContext ctx, TestCaseContext testCaseContext) {

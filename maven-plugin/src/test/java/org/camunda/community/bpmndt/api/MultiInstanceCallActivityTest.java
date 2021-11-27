@@ -1,14 +1,19 @@
 package org.camunda.community.bpmndt.api;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertThrows;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.LogManager;
 import org.camunda.bpm.engine.delegate.DelegateExecution;
 import org.camunda.bpm.engine.delegate.DelegateVariableMapping;
 import org.camunda.bpm.engine.delegate.VariableScope;
@@ -72,7 +77,31 @@ public class MultiInstanceCallActivityTest {
     tc.createExecutor().withBean("multiInstanceCallActivityMapping", new MultiInstanceCallActivityMapping()).execute();
   }
 
-  private class TestCase extends AbstractJUnit4TestRule {
+  /**
+   * Tests that an {@link AssertionError} is correctly unwrapped and rethrown.
+   */
+  @Test
+  public void testVerifyWithAssertionError() {
+    handler.handle(0).verify((pi, callActivity) -> {
+      assertThat(callActivity.getDefinitionKey(), equalTo("not-equal"));
+    });
+
+    AssertionError e = assertThrows(AssertionError.class, () -> {
+      try {
+        // disable logger temporary to avoid stacktrace in log output
+        LogManager.getLogger("org.camunda").setLevel(Level.OFF);
+
+        tc.createExecutor().withBean("multiInstanceCallActivityMapping", new MultiInstanceCallActivityMapping()).execute();
+      } finally {
+        LogManager.getLogger("org.camunda").setLevel(Level.WARN);
+      }
+    });
+
+    assertThat(e.getMessage(), containsString("Expected: \"not-equal\""));
+    assertThat(e.getMessage(), containsString("but: was \"advanced\""));
+  }
+
+  private class TestCase extends AbstractJUnit4TestCase {
 
     @Override
     protected void execute(ProcessInstance pi) {

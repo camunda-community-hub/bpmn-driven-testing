@@ -8,30 +8,34 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+import org.camunda.bpm.engine.RepositoryService;
+import org.camunda.bpm.engine.repository.ProcessDefinition;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
+import org.camunda.bpm.engine.test.Deployment;
 import org.camunda.bpm.engine.test.assertions.ProcessEngineTests;
 import org.camunda.bpm.engine.test.assertions.bpmn.ProcessInstanceAssert;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-public class CallActivityErrorTest {
+public class AbstractJUnit4TestCaseTest {
 
   @Rule
   public TestCase tc = new TestCase();
 
-  private CallActivityHandler handler;
-
-  @Before
-  public void setUp() {
-    handler = new CallActivityHandler(tc.instance, "callActivity");
-  }
-
+  /**
+   * Tests if the {@code Deployment} annotation works the same as when it is used with the
+   * {@code ProcessEngineRule} class.
+   */
   @Test
-  public void testExecute() {
-    handler.simulateBpmnError("callActivityError", "callActivityErrorMessage");
+  @Deployment(resources = "bpmn/noTestCases.bpmn")
+  public void testDeploymentAnnotation() {
+    RepositoryService repositoryService = tc.getProcessEngine().getRepositoryService();
 
-    tc.createExecutor().execute();
+    ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery()
+        .processDefinitionKey("no-test-cases")
+        .singleResult();
+
+    assertThat(processDefinition, notNullValue());
   }
 
   private class TestCase extends AbstractJUnit4TestCase {
@@ -42,13 +46,13 @@ public class CallActivityErrorTest {
 
       ProcessInstanceAssert piAssert = ProcessEngineTests.assertThat(pi);
 
-      piAssert.hasPassed("startEvent", "callActivity", "errorBoundaryEvent", "endEvent").isEnded();
+      piAssert.hasPassed("startEvent", "endEvent").isEnded();
     }
 
     @Override
     protected InputStream getBpmnResource() {
       try {
-        return Files.newInputStream(Paths.get("./src/test/it/advanced/src/main/resources/callActivityError.bpmn"));
+        return Files.newInputStream(Paths.get("./src/test/it/simple/src/main/resources/simple.bpmn"));
       } catch (IOException e) {
         return null;
       }
@@ -56,7 +60,7 @@ public class CallActivityErrorTest {
 
     @Override
     public String getProcessDefinitionKey() {
-      return "callActivityError";
+      return "simple";
     }
 
     @Override

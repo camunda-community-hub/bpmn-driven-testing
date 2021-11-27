@@ -185,18 +185,17 @@
   </dependencies>
 
   <build>
-	<resources>
-	  <resource>
-	    <directory>${project.basedir}/src/main/resources</directory>
-	  </resource>
+    <resources>
+      <resource>
+        <directory>${project.basedir}/src/main/resources</directory>
+      </resource>
 
-	  <!-- Since API types are needed to run generated test code -->
-	  <!-- add those Java files as resources to the classpath    -->
-	  <resource>
-	    <directory>${project.basedir}/src/main/java/org/camunda/community/bpmndt/api</directory>
-	    <targetPath>${project.build.outputDirectory}/org/camunda/community/bpmndt/api</targetPath>
-	  </resource>
-	</resources>
+      <!-- Add API classes as resources, since types are needed to run generated test code -->
+      <resource>
+        <directory>${project.basedir}/src/main/java/org/camunda/community/bpmndt/api</directory>
+        <targetPath>${project.build.outputDirectory}/org/camunda/community/bpmndt/api</targetPath>
+      </resource>
+    </resources>
 
     <plugins>
       <plugin>

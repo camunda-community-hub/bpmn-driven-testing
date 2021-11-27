@@ -53,7 +53,7 @@ public class SignalCatchEventTest {
     }).execute();
   }
 
-  private class TestCase extends AbstractJUnit4TestRule {
+  private class TestCase extends AbstractJUnit4TestCase {
 
     @Override
     protected void execute(ProcessInstance pi) {

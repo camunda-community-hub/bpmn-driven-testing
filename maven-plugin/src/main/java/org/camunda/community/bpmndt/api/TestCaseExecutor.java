@@ -65,13 +65,7 @@ public class TestCaseExecutor {
     try {
       executor.accept(pi);
     } catch (ProcessEngineException e) {
-      if (e.getCause() instanceof AssertionError) {
-        // in case of call activities, unwrap AssertionError
-        // otherwise the test will be marked as an error, instead of a failure
-        throw (AssertionError) e.getCause();
-      } else {
-        throw e;
-      }
+      throw unwrapAssertionError(e);
     }
 
     if (verifier != null) {
@@ -89,6 +83,24 @@ public class TestCaseExecutor {
     RuntimeService runtimeService = instance.getProcessEngine().getRuntimeService();
 
     execute(runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult());
+  }
+
+  /**
+   * Unwraps and throws a possible {@link AssertionError} in case of a failed assertion within a
+   * {@link CallActivityHandler}'s verifier. If not unwrapped, a test will be marked as an error,
+   * instead of a failure!
+   * 
+   * @param e An exception that has been catched during process instance execution.
+   * 
+   * @return The original exception, if the cause of the given exception is {@code null} or not an
+   *         assertion error.
+   */
+  protected ProcessEngineException unwrapAssertionError(ProcessEngineException e) {
+    if (e.getCause() instanceof AssertionError) {
+      throw (AssertionError) e.getCause();
+    }
+
+    return e;
   }
 
   /**
