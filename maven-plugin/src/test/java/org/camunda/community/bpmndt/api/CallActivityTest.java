@@ -1,10 +1,12 @@
 package org.camunda.community.bpmndt.api;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertThrows;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,14 +32,21 @@ public class CallActivityTest {
 
   private CallActivityHandler handler;
 
+  private TestCaseExecutor executor;
+
   @Before
   public void setUp() {
     handler = new CallActivityHandler(tc.instance, "callActivity");
+
+    executor = tc.createExecutor()
+        .withBusinessKey("simpleKey")
+        .withVariable("super", true)
+        .withBean("callActivityMapping", new CallActivityMapping());
   }
 
   @Test
   public void testExecute() {
-    tc.createExecutor().withBean("callActivityMapping", new CallActivityMapping()).execute();
+    executor.execute();
   }
 
   @Test
@@ -58,7 +67,24 @@ public class CallActivityTest {
       assertThat(variables.getVariable("x"), equalTo("b"));
     });
 
-    tc.createExecutor().withBusinessKey("simpleKey").withBean("callActivityMapping", new CallActivityMapping()).execute();
+    executor.execute();
+  }
+
+  /**
+   * Tests that the call activity is not ended, when it should wait for a boundary event.
+   */
+  @Test
+  public void testWaitForBoundaryEvent() {
+    assertThat(handler.isWaitingForBoundaryEvent(), is(false));
+    handler.waitForBoundaryEvent();
+    assertThat(handler.isWaitingForBoundaryEvent(), is(true));
+
+    AssertionError e = assertThrows(AssertionError.class, () -> {
+      executor.execute();
+    });
+
+    // has passed start event, but not call activity
+    assertThat(e.getMessage(), containsString("it passed [startEvent]"));
   }
 
   private class TestCase extends AbstractJUnit4TestCase {
@@ -101,12 +127,18 @@ public class CallActivityTest {
 
     @Override
     public void mapInputVariables(DelegateExecution superExecution, VariableMap subVariables) {
+      assertThat(superExecution.hasVariable("super"), is(true));
+      assertThat(subVariables.isEmpty(), is(true));
+
       subVariables.put("a", "b");
       subVariables.put("x", "y");
     }
 
     @Override
     public void mapOutputVariables(DelegateExecution superExecution, VariableScope subInstance) {
+      assertThat(superExecution.hasVariable("super"), is(true));
+      assertThat(subInstance.hasVariable("super"), is(false));
+
       Object a = subInstance.getVariable("a");
       Object x = subInstance.getVariable("x");
 

@@ -2,6 +2,7 @@ package org.camunda.community.bpmndt.api.cfg;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.UUID;
 
 import org.camunda.bpm.engine.impl.bpmn.parser.BpmnParseListener;
 import org.camunda.bpm.engine.impl.cfg.AbstractProcessEnginePlugin;
@@ -44,9 +45,12 @@ public class BpmndtProcessEnginePlugin extends AbstractProcessEnginePlugin {
     processEngineConfiguration.setMetricsEnabled(false);
 
     if (!springEnabled) {
+      // use random database name to avoid SQL errors during schema create/drop
+      String url = String.format("jdbc:h2:mem:bpmndt-%s", UUID.randomUUID().toString());
+
       // if Spring is not enabled, a custom JDBC url is set
       // otherwise a data source is used
-      processEngineConfiguration.setJdbcUrl("jdbc:h2:mem:bpmndt");
+      processEngineConfiguration.setJdbcUrl(url);
     }
   }
 }

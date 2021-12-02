@@ -19,7 +19,6 @@ import org.camunda.community.bpmndt.api.MultiInstanceHandler;
 import org.camunda.community.bpmndt.api.TestCaseExecutor;
 import org.camunda.community.bpmndt.api.TestCaseInstance;
 import org.camunda.community.bpmndt.api.UserTaskHandler;
-import org.camunda.community.bpmndt.api.cfg.BpmndtCallActivityBehavior;
 import org.camunda.community.bpmndt.api.cfg.BpmndtParseListener;
 import org.camunda.community.bpmndt.api.cfg.BpmndtProcessEnginePlugin;
 import org.camunda.community.bpmndt.api.cfg.SpringConfiguration;
@@ -106,7 +105,6 @@ public class Generator {
     apiClasses.add(TestCaseExecutor.class);
     apiClasses.add(UserTaskHandler.class);
 
-    apiClasses.add(BpmndtCallActivityBehavior.class);
     apiClasses.add(BpmndtParseListener.class);
     apiClasses.add(BpmndtProcessEnginePlugin.class);
 

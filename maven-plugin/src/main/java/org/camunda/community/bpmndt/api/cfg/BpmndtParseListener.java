@@ -3,23 +3,23 @@ package org.camunda.community.bpmndt.api.cfg;
 import org.camunda.bpm.engine.ActivityTypes;
 import org.camunda.bpm.engine.impl.bpmn.behavior.CallActivityBehavior;
 import org.camunda.bpm.engine.impl.bpmn.parser.AbstractBpmnParseListener;
+import org.camunda.bpm.engine.impl.pvm.delegate.ActivityExecution;
 import org.camunda.bpm.engine.impl.pvm.process.ActivityImpl;
 import org.camunda.bpm.engine.impl.pvm.process.ScopeImpl;
 import org.camunda.bpm.engine.impl.util.xml.Element;
 import org.camunda.community.bpmndt.api.TestCaseInstance;
 
 /**
- * Custom post BPMN parse listener that overrides {@link CallActivityBehavior}s to make test cases
- * independent of sub processes and enables asynchronous continuation for multi instance activities.
+ * Custom BPMN parse listener that:
+ * 
+ * 1. Overrides {@link CallActivityBehavior}s to make test cases independent of sub processes.
+ * 
+ * 2. Enables asynchronous continuation for multi instance activities.
  */
 public class BpmndtParseListener extends AbstractBpmnParseListener {
 
   /** Activity ID suffix of multi instance scopes. */
-  private final String multiInstanceScopeSuffix;
-
-  public BpmndtParseListener() {
-    multiInstanceScopeSuffix = "#" + ActivityTypes.MULTI_INSTANCE_BODY;
-  }
+  private static final String MULTI_INSTANCE_SCOPE_SUFFIX = "#" + ActivityTypes.MULTI_INSTANCE_BODY;
 
   /** The current test case instance. */
   private TestCaseInstance instance;
@@ -32,8 +32,13 @@ public class BpmndtParseListener extends AbstractBpmnParseListener {
 
     CallActivityBehavior behavior = (CallActivityBehavior) activity.getActivityBehavior();
 
-    activity.setActivityBehavior(new BpmndtCallActivityBehavior(instance, behavior));
+    activity.setActivityBehavior(new CustomCallActivityBehavior(instance, behavior));
 
+    setMultiInstanceAsync(scope, activity);
+  }
+
+  @Override
+  public void parseBusinessRuleTask(Element businessRuleTaskElement, ScopeImpl scope, ActivityImpl activity) {
     setMultiInstanceAsync(scope, activity);
   }
 
@@ -85,9 +90,35 @@ public class BpmndtParseListener extends AbstractBpmnParseListener {
    * @param activity The current activity.
    */
   protected void setMultiInstanceAsync(ScopeImpl scope, ActivityImpl activity) {
-    if (!scope.isSubProcessScope() && scope.getId().endsWith(multiInstanceScopeSuffix)) {
+    if (!scope.isSubProcessScope() && scope.getId().endsWith(MULTI_INSTANCE_SCOPE_SUFFIX)) {
       activity.setAsyncBefore(true);
       activity.setAsyncAfter(true);
+    }
+  }
+
+  /**
+   * Custom behavior to stub call activities for isolated testing.
+   */
+  private static class CustomCallActivityBehavior extends CallActivityBehavior {
+
+    /** The related test case instance. */
+    private final TestCaseInstance instance;
+
+    /** The activity's original behavior. */
+    private final CallActivityBehavior behavior;
+
+    private CustomCallActivityBehavior(TestCaseInstance instance, CallActivityBehavior behavior) {
+      this.instance = instance;
+      this.behavior = behavior;
+    }
+
+    @Override
+    public void execute(ActivityExecution execution) throws Exception {
+      boolean shouldLeave = instance.execute(execution, behavior);
+
+      if (shouldLeave) {
+        leave(execution);
+      }
     }
   }
 }
