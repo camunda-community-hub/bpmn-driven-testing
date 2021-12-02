@@ -10,7 +10,6 @@ import org.camunda.bpm.engine.ProcessEngine;
 import org.camunda.bpm.engine.history.HistoricActivityInstance;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.community.bpmndt.api.JobHandler.Cardinality;
-import org.camunda.community.bpmndt.api.cfg.BpmndtCallActivityBehavior;
 
 /**
  * Fluent API for multi instance activites (call activities or tasks). This class does not support
@@ -250,7 +249,7 @@ public class MultiInstanceHandler<T extends MultiInstanceHandler<?, ?>, U> {
 
   /**
    * Registers the given call activity handler at the test case instance, so that it will be executed
-   * when the {@link BpmndtCallActivityBehavior} is applied.<br>
+   * when the custom call activity behavior is applied.<br>
    * Since there can be multiple handlers (one for each loop index), it is necessary to register the
    * correct one before the next multi instance loop is executed.
    * 

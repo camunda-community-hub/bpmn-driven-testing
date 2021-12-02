@@ -1,7 +1,10 @@
 package org.camunda.community.bpmndt.api;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertThrows;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -85,6 +88,23 @@ public class UserTaskTest {
       pi.variables().containsEntry("a", "b");
       pi.variables().containsEntry("x", "y");
     }).execute();
+  }
+
+  /**
+   * Tests that the user task is not completed, when it should wait for a boundary event.
+   */
+  @Test
+  public void testWaitForBoundaryEvent() {
+    assertThat(handler.isWaitingForBoundaryEvent(), is(false));
+    handler.waitForBoundaryEvent();
+    assertThat(handler.isWaitingForBoundaryEvent(), is(true));
+
+    AssertionError e = assertThrows(AssertionError.class, () -> {
+      tc.createExecutor().execute();
+    });
+
+    // has not passed
+    assertThat(e.getMessage(), containsString("to have passed activities [userTask, endEvent]"));
   }
 
   private class TestCase extends AbstractJUnit4TestCase {

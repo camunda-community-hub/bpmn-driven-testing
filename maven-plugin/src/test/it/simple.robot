@@ -80,7 +80,6 @@ mvn clean test
   Should contain  ${result.stdout}  Writing file: target/bpmndt/org/camunda/community/bpmndt/api/TestCaseInstance.java
   Should contain  ${result.stdout}  Writing file: target/bpmndt/org/camunda/community/bpmndt/api/TestCaseExecutor.java
   Should contain  ${result.stdout}  Writing file: target/bpmndt/org/camunda/community/bpmndt/api/UserTaskHandler.java
-  Should contain  ${result.stdout}  Writing file: target/bpmndt/org/camunda/community/bpmndt/api/cfg/BpmndtCallActivityBehavior.java
   Should contain  ${result.stdout}  Writing file: target/bpmndt/org/camunda/community/bpmndt/api/cfg/BpmndtParseListener.java
   Should contain  ${result.stdout}  Writing file: target/bpmndt/org/camunda/community/bpmndt/api/cfg/BpmndtProcessEnginePlugin.java
 
@@ -94,7 +93,6 @@ mvn clean test
   File should exist  ${testSources}/org/camunda/community/bpmndt/api/TestCaseInstance.java
   File should exist  ${testSources}/org/camunda/community/bpmndt/api/TestCaseExecutor.java
   File should exist  ${testSources}/org/camunda/community/bpmndt/api/UserTaskHandler.java
-  File should exist  ${testSources}/org/camunda/community/bpmndt/api/cfg/BpmndtCallActivityBehavior.java
   File should exist  ${testSources}/org/camunda/community/bpmndt/api/cfg/BpmndtParseListener.java
   File should exist  ${testSources}/org/camunda/community/bpmndt/api/cfg/BpmndtProcessEnginePlugin.java
 
