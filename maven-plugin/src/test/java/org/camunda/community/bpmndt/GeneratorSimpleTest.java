@@ -258,6 +258,24 @@ public class GeneratorSimpleTest {
   }
 
   @Test
+  public void testSimpleMessageThrowEvent() {
+    generator.generateTestCases(ctx, bpmnFile);
+    assertThat(result.getFiles(), hasSize(1));
+
+    TypeSpec typeSpec = result.getFiles().get(0).typeSpec;
+    assertThat(typeSpec.fieldSpecs, hasSize(1));
+    assertThat(typeSpec.fieldSpecs.get(0).name, equalTo("messageThrowEvent"));
+    assertThat(typeSpec.fieldSpecs.get(0).type, equalTo(EXTERNAL_TASK_HANDLER));
+    assertThat(typeSpec.methodSpecs, hasSize(7));
+    assertThat(typeSpec.methodSpecs.get(6).name, equalTo("handleMessageThrowEvent"));
+    assertThat(typeSpec.methodSpecs.get(6).returnType, equalTo(EXTERNAL_TASK_HANDLER));
+
+    String expected = "messageThrowEvent = new %s(getProcessEngine(), \"messageThrowEvent\", \"test-message\");";
+    containsCode(typeSpec.methodSpecs.get(0)).contains(String.format(expected, EXTERNAL_TASK_HANDLER));
+    containsCode(typeSpec.methodSpecs.get(1)).contains("instance.apply(messageThrowEvent);");
+  }
+
+  @Test
   public void testSimpleReceiveTask() {
     generator.generateTestCases(ctx, bpmnFile);
     assertThat(result.getFiles(), hasSize(1));

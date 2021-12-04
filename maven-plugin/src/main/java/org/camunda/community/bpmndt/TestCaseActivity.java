@@ -18,6 +18,7 @@ public class TestCaseActivity {
   private String attachedTo;
   private String eventCode;
   private String eventName;
+  private String topicName;
 
   public TestCaseActivity(FlowNode flowNode, MultiInstanceLoopCharacteristics multiInstance) {
     this.flowNode = flowNode;
@@ -99,6 +100,10 @@ public class TestCaseActivity {
     return strategy;
   }
 
+  public String getTopicName() {
+    return topicName;
+  }
+
   public TestCaseActivityType getType() {
     return type;
   }
@@ -153,6 +158,10 @@ public class TestCaseActivity {
 
   public void setStrategy(GeneratorStrategy strategy) {
     this.strategy = strategy;
+  }
+
+  public void setTopicName(String topicName) {
+    this.topicName = topicName;
   }
 
   public void setType(TestCaseActivityType type) {
