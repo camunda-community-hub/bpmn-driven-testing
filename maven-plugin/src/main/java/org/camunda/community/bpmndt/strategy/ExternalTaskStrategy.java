@@ -1,6 +1,5 @@
 package org.camunda.community.bpmndt.strategy;
 
-import org.camunda.bpm.model.bpmn.instance.ServiceTask;
 import org.camunda.community.bpmndt.TestCaseActivity;
 import org.camunda.community.bpmndt.TestCaseActivityType;
 
@@ -40,9 +39,7 @@ public class ExternalTaskStrategy extends DefaultHandlerStrategy {
 
   @Override
   public CodeBlock initHandlerStatement() {
-    ServiceTask serviceTask = activity.as(ServiceTask.class);
-
-    Object[] args = {getHandlerType(), activity.getId(), serviceTask.getCamundaTopic()};
+    Object[] args = {getHandlerType(), activity.getId(), activity.getTopicName()};
     return CodeBlock.of("new $T(getProcessEngine(), $S, $S)", args);
   }
 }

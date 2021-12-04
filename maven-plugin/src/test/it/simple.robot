@@ -25,6 +25,7 @@ mvn clean test
   Should contain  ${result.stdout}  Found BPMN file: simpleConditionalCatchEvent.bpmn
   Should contain  ${result.stdout}  Found BPMN file: simpleExternalTask.bpmn
   Should contain  ${result.stdout}  Found BPMN file: simpleMessageCatchEvent.bpmn
+  Should contain  ${result.stdout}  Found BPMN file: simpleMessageThrowEvent.bpmn
   Should contain  ${result.stdout}  Found BPMN file: simpleReceiveTask.bpmn
   Should contain  ${result.stdout}  Found BPMN file: simpleSignalCatchEvent.bpmn
   Should contain  ${result.stdout}  Found BPMN file: simpleSubProcess.bpmn
@@ -49,6 +50,7 @@ mvn clean test
   Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/simpleconditionalcatchevent/TC_startEvent__endEvent.java
   Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/simpleexternaltask/TC_startEvent__endEvent.java
   Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/simplemessagecatchevent/TC_startEvent__endEvent.java
+  Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/simplemessagethrowevent/TC_startEvent__endEvent.java
   Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/simplereceivetask/TC_startEvent__endEvent.java
   Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/simplesignalcatchevent/TC_startEvent__endEvent.java
   Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/simplesubprocess/TC_startEvent__endEvent.java
@@ -62,6 +64,7 @@ mvn clean test
   File should exist  ${testSources}/generated/simpleconditionalcatchevent/TC_startEvent__endEvent.java
   File should exist  ${testSources}/generated/simpleexternaltask/TC_startEvent__endEvent.java
   File should exist  ${testSources}/generated/simplemessagecatchevent/TC_startEvent__endEvent.java
+  File should exist  ${testSources}/generated/simplemessagethrowevent/TC_startEvent__endEvent.java
   File should exist  ${testSources}/generated/simplereceivetask/TC_startEvent__endEvent.java
   File should exist  ${testSources}/generated/simplesignalcatchevent/TC_startEvent__endEvent.java
   File should exist  ${testSources}/generated/simplesubprocess/TC_startEvent__endEvent.java
@@ -104,6 +107,7 @@ mvn clean test
   Should contain  ${result.stdout}  Running org.example.it.SimpleConditionalCatchEventTest
   Should contain  ${result.stdout}  Running org.example.it.SimpleExternalTaskTest
   Should contain  ${result.stdout}  Running org.example.it.SimpleMessageCatchEventTest
+  Should contain  ${result.stdout}  Running org.example.it.SimpleMessageThrowEventTest
   Should contain  ${result.stdout}  Running org.example.it.SimpleReceiveTaskTest
   Should contain  ${result.stdout}  Running org.example.it.SimpleSignalCatchEventTest
   Should contain  ${result.stdout}  Running org.example.it.SimpleSubProcessTest
