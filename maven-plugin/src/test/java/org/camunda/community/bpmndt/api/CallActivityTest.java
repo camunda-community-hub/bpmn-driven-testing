@@ -52,6 +52,10 @@ public class CallActivityTest {
   @Test
   public void testVerify() {
     handler.verify((pi, callActivity) -> {
+      assertThat(pi, notNullValue());
+      pi.isNotEnded();
+      pi.variables().containsEntry("super", true);
+
       assertThat(callActivity.getBinding(), is(CallableElementBinding.DEPLOYMENT));
       assertThat(callActivity.getBusinessKey(), equalTo("simpleKey"));
       assertThat(callActivity.getDefinitionKey(), equalTo("simple"));
@@ -95,7 +99,11 @@ public class CallActivityTest {
 
       ProcessInstanceAssert piAssert = ProcessEngineTests.assertThat(pi);
 
-      piAssert.hasPassed("startEvent", "callActivity", "endEvent").isEnded();
+      piAssert.hasPassed("startEvent").isWaitingAt("callActivity");
+
+      ProcessEngineTests.execute(ProcessEngineTests.job());
+
+      piAssert.hasPassed("callActivity", "endEvent").isEnded();
     }
 
     @Override

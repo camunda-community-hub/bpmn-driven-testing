@@ -11,6 +11,7 @@ import org.camunda.community.bpmndt.GeneratorContext;
 import org.camunda.community.bpmndt.GeneratorResult;
 import org.camunda.community.bpmndt.GeneratorStrategy;
 import org.camunda.community.bpmndt.TestCaseActivity;
+import org.camunda.community.bpmndt.TestCaseActivityType;
 import org.camunda.community.bpmndt.TestCaseContext;
 import org.camunda.community.bpmndt.api.AbstractJUnit4TestCase;
 import org.camunda.community.bpmndt.cmd.generation.Execute;
@@ -84,7 +85,9 @@ public class GenerateJUnit4TestCase implements Consumer<TestCaseContext> {
     for (TestCaseActivity activity : ctx.getActivities()) {
       GeneratorStrategy strategy = activity.getStrategy();
 
-      if (activity.isAsyncBefore()) {
+      if (activity.isAsyncBefore() || (activity.getType() == TestCaseActivityType.CALL_ACTIVITY && !activity.isMultiInstance())) {
+        // call activities have asyncBefore enabled by default
+        // see BpmndtParseListener#parseCallActivity
         strategy.addHandlerFieldBefore(classBuilder);
       }
 

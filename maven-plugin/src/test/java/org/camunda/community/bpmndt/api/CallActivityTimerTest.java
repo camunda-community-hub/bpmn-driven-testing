@@ -46,6 +46,11 @@ public class CallActivityTimerTest {
 
       piAssert.hasPassed("startEvent").isWaitingAt("callActivity");
 
+      // async before
+      ProcessEngineTests.execute(ProcessEngineTests.job());
+
+      piAssert.isWaitingAt("callActivity");
+
       ManagementService managementService = tc.getProcessEngine().getManagementService();
 
       Job job = managementService.createJobQuery().processInstanceId(pi.getId()).singleResult();

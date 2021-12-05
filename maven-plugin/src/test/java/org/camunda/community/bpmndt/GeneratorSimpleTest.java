@@ -186,6 +186,11 @@ public class GeneratorSimpleTest {
     assertThat(result.getFiles(), hasSize(1));
 
     TypeSpec typeSpec = result.getFiles().get(0).typeSpec;
+    assertThat(typeSpec.fieldSpecs, hasSize(2));
+    assertThat(typeSpec.fieldSpecs.get(0).name, equalTo("callActivityBefore"));
+    assertThat(typeSpec.fieldSpecs.get(0).type, equalTo(JOB_HANDLER));
+    assertThat(typeSpec.fieldSpecs.get(1).name, equalTo("callActivity"));
+    assertThat(typeSpec.fieldSpecs.get(1).type, equalTo(CALL_ACTIVITY_HANDLER));
     assertThat(typeSpec.methodSpecs, hasSize(7));
     assertThat(typeSpec.methodSpecs.get(6).name, equalTo("handleCallActivity"));
     assertThat(typeSpec.methodSpecs.get(6).returnType, equalTo(CALL_ACTIVITY_HANDLER));

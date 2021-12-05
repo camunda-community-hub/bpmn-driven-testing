@@ -46,6 +46,11 @@ public class CallActivitySignalTest {
 
       piAssert.hasPassed("startEvent").isWaitingAt("callActivity");
 
+      // async before
+      ProcessEngineTests.execute(ProcessEngineTests.job());
+
+      piAssert.isWaitingAt("callActivity");
+
       RuntimeService runtimeService = tc.getProcessEngine().getRuntimeService();
 
       EventSubscription eventSubscription = runtimeService.createEventSubscriptionQuery().singleResult();

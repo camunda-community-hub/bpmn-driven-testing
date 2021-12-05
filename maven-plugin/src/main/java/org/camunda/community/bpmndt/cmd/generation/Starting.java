@@ -6,6 +6,7 @@ import javax.lang.model.element.Modifier;
 
 import org.camunda.community.bpmndt.GeneratorStrategy;
 import org.camunda.community.bpmndt.TestCaseActivity;
+import org.camunda.community.bpmndt.TestCaseActivityType;
 import org.camunda.community.bpmndt.TestCaseContext;
 import org.junit.runner.Description;
 
@@ -32,7 +33,9 @@ public class Starting implements Function<TestCaseContext, MethodSpec> {
     for (TestCaseActivity activity : ctx.getActivities()) {
       GeneratorStrategy strategy = activity.getStrategy();
 
-      if (activity.isAsyncBefore()) {
+      if (activity.isAsyncBefore() || (activity.getType() == TestCaseActivityType.CALL_ACTIVITY && !activity.isMultiInstance())) {
+        // call activities have asyncBefore enabled by default
+        // see BpmndtParseListener#parseCallActivity
         strategy.initHandlerBefore(builder);
       }
 
