@@ -1,5 +1,7 @@
 package org.camunda.community.bpmndt.api;
 
+import static org.camunda.bpm.engine.impl.test.TestHelper.annotationDeploymentSetUp;
+import static org.camunda.bpm.engine.impl.test.TestHelper.annotationDeploymentTearDown;
 import static org.camunda.community.bpmndt.api.TestCaseInstance.PROCESS_ENGINE_NAME;
 
 import java.io.InputStream;
@@ -12,9 +14,9 @@ import org.camunda.bpm.engine.ProcessEngines;
 import org.camunda.bpm.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.camunda.bpm.engine.impl.cfg.ProcessEnginePlugin;
 import org.camunda.bpm.engine.impl.cfg.StandaloneInMemProcessEngineConfiguration;
-import org.camunda.bpm.engine.impl.test.TestHelper;
+import org.camunda.bpm.engine.impl.util.ClassNameUtil;
+import org.camunda.bpm.engine.repository.Deployment;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
-import org.camunda.bpm.engine.test.Deployment;
 import org.camunda.bpm.engine.test.assertions.ProcessEngineTests;
 import org.camunda.bpm.engine.test.mock.Mocks;
 import org.camunda.community.bpmndt.api.cfg.BpmndtProcessEnginePlugin;
@@ -32,7 +34,7 @@ public abstract class AbstractJUnit4TestCase extends TestWatcher {
   /** Determines if Spring based testing is enabled or not. */
   private final boolean springEnabled;
 
-  /** ID of the BPMN resource deployment. */
+  /** ID of BPMN resource deployment. */
   private String deploymentId;
   /** ID of optional annotation based deployment. */
   private String annotationDeploymentId;
@@ -43,6 +45,8 @@ public abstract class AbstractJUnit4TestCase extends TestWatcher {
 
   public AbstractJUnit4TestCase(boolean springEnabled) {
     this.springEnabled = springEnabled;
+
+    annotationDeploymentId = null;
   }
 
   @Override
@@ -61,19 +65,28 @@ public abstract class AbstractJUnit4TestCase extends TestWatcher {
 
     instance = new TestCaseInstance(processEngine, getProcessDefinitionKey(), getStart(), getEnd());
 
+    String deploymentName = ClassNameUtil.getClassNameWithoutPackage(description.getTestClass());
+
     // deploy BPMN resource
     if (getBpmnResourceName() != null) {
-      deploymentId = instance.deploy(getClass().getName(), getBpmnResourceName());
+      deploymentId = instance.deploy(deploymentName, getBpmnResourceName());
     } else {
-      deploymentId = instance.deploy(getClass().getName(), getBpmnResource());
+      deploymentId = instance.deploy(deploymentName, getBpmnResource());
     }
 
-    // perform optional annotation based deployment (via @Deployment) for DMN files
-    Class<?> testClass = description.getTestClass();
-    String methodName = description.getMethodName();
-    Deployment deployment = description.getAnnotation(Deployment.class);
+    String annotationDeploymentName = String.format("%s.%s", deploymentName, description.getMethodName());
 
-    annotationDeploymentId = TestHelper.annotationDeploymentSetUp(processEngine, testClass, methodName, deployment);
+    Deployment annotationDeployment = processEngine.getRepositoryService().createDeploymentQuery()
+        .deploymentName(annotationDeploymentName)
+        .singleResult();
+
+    if (annotationDeployment != null) {
+      // already deployed by another test case
+      return;
+    }
+
+    // perform optional annotation based deployment (via @Deployment) for DMN files and other resources
+    annotationDeploymentId = annotationDeploymentSetUp(processEngine, description.getTestClass(), description.getMethodName());
   }
 
   @Override
@@ -86,16 +99,15 @@ public abstract class AbstractJUnit4TestCase extends TestWatcher {
       return;
     }
 
-    instance.clear();
-
     // undeploy BPMN resource
     instance.undeploy(deploymentId);
 
-    // undeploy optional annotation based deployment
-    Class<?> testClass = description.getTestClass();
-    String methodName = description.getMethodName();
+    if (annotationDeploymentId == null) {
+      return;
+    }
 
-    TestHelper.annotationDeploymentTearDown(getProcessEngine(), annotationDeploymentId, testClass, methodName);
+    // undeploy annotation based deployment
+    annotationDeploymentTearDown(getProcessEngine(), annotationDeploymentId, description.getTestClass(), description.getMethodName());
   }
 
   /**
@@ -108,7 +120,7 @@ public abstract class AbstractJUnit4TestCase extends TestWatcher {
   protected ProcessEngine buildProcessEngine() {
     // must be added to a new list, since the provided list may not allow modifications
     List<ProcessEnginePlugin> processEnginePlugins = new LinkedList<>(getProcessEnginePlugins());
-    // BPMN Driven Testing plugin must be added last
+    // BPMN Driven Testing plugin must be added at last
     processEnginePlugins.add(new BpmndtProcessEnginePlugin());
 
     ProcessEngineConfigurationImpl processEngineConfiguration = new StandaloneInMemProcessEngineConfiguration();

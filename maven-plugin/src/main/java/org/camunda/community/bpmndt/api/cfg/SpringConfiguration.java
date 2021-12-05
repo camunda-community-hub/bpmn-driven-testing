@@ -52,7 +52,7 @@ public class SpringConfiguration implements InitializingBean {
     PlatformTransactionManager transactionManager = initTransactionManager(dataSource);
 
     List<ProcessEnginePlugin> processEnginePlugins = initProcessEnginePlugins();
-    // BPMN Driven Testing plugin must be added last
+    // BPMN Driven Testing plugin must be added at last
     processEnginePlugins.add(new BpmndtProcessEnginePlugin());
 
     SpringProcessEngineConfiguration processEngineConfiguration = new SpringProcessEngineConfiguration();

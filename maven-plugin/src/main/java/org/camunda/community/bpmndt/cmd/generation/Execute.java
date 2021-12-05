@@ -8,6 +8,7 @@ import org.camunda.bpm.engine.ActivityTypes;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.community.bpmndt.GeneratorStrategy;
 import org.camunda.community.bpmndt.TestCaseActivity;
+import org.camunda.community.bpmndt.TestCaseActivityType;
 import org.camunda.community.bpmndt.TestCaseContext;
 
 import com.squareup.javapoet.MethodSpec;
@@ -40,7 +41,9 @@ public class Execute implements Function<TestCaseContext, MethodSpec> {
 
       builder.addCode("// $L: $L\n", activity.getTypeName(), activity.getId());
 
-      if (activity.isAsyncBefore()) {
+      if (activity.isAsyncBefore() || (activity.getType() == TestCaseActivityType.CALL_ACTIVITY && !activity.isMultiInstance())) {
+        // call activities have asyncBefore enabled by default
+        // see BpmndtParseListener#parseCallActivity
         strategy.applyHandlerBefore(builder);
       }
 

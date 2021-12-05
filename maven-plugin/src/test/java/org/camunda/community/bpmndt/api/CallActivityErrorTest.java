@@ -42,7 +42,12 @@ public class CallActivityErrorTest {
 
       ProcessInstanceAssert piAssert = ProcessEngineTests.assertThat(pi);
 
-      piAssert.hasPassed("startEvent", "callActivity", "errorBoundaryEvent", "endEvent").isEnded();
+      piAssert.hasPassed("startEvent").isWaitingAt("callActivity");
+
+      // async before
+      ProcessEngineTests.execute(ProcessEngineTests.job());
+
+      piAssert.hasPassed("callActivity", "errorBoundaryEvent", "endEvent").isEnded();
     }
 
     @Override

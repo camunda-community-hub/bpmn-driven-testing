@@ -42,7 +42,11 @@ public class CallActivityEscalationTest {
 
       ProcessInstanceAssert piAssert = ProcessEngineTests.assertThat(pi);
 
-      piAssert.hasPassed("startEvent", "callActivity", "escalationBoundaryEvent", "endEvent").isEnded();
+      piAssert.hasPassed("startEvent").isWaitingAt("callActivity");
+
+      ProcessEngineTests.execute(ProcessEngineTests.job());
+
+      piAssert.hasPassed("callActivity", "escalationBoundaryEvent", "endEvent").isEnded();
     }
 
     @Override

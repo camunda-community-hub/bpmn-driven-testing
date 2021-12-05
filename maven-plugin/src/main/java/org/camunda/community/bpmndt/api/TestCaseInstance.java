@@ -3,16 +3,13 @@ package org.camunda.community.bpmndt.api;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 import org.camunda.bpm.engine.ProcessEngine;
 import org.camunda.bpm.engine.RepositoryService;
 import org.camunda.bpm.engine.impl.bpmn.behavior.CallActivityBehavior;
-import org.camunda.bpm.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.camunda.bpm.engine.impl.pvm.delegate.ActivityExecution;
 import org.camunda.bpm.engine.repository.Deployment;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
-import org.camunda.community.bpmndt.api.cfg.BpmndtParseListener;
 
 public class TestCaseInstance {
 
@@ -38,8 +35,6 @@ public class TestCaseInstance {
     this.end = end;
 
     callActivityHandlerMap = new HashMap<>(4);
-
-    findParseListener(processEngine).ifPresent((parseListener) -> parseListener.setInstance(this));
   }
 
   public void apply(EventHandler handler) {
@@ -62,18 +57,12 @@ public class TestCaseInstance {
     handler.apply(pi);
   }
 
-  protected void clear() {
-    findParseListener(processEngine).ifPresent((parseListener) -> parseListener.setInstance(null));
-
-    callActivityHandlerMap.clear();
-  }
-
   protected String deploy(String deploymentName, InputStream bpmnResource) {
     RepositoryService repositoryService = processEngine.getRepositoryService();
 
     Deployment deployment = repositoryService.createDeployment()
         .name(deploymentName)
-        .addInputStream("test.bpmn", bpmnResource)
+        .addInputStream(String.format("%s.bpmn", getProcessDefinitionKey()), bpmnResource)
         .deploy();
 
     return deployment.getId();
@@ -117,16 +106,6 @@ public class TestCaseInstance {
     }
   }
 
-  protected Optional<BpmndtParseListener> findParseListener(ProcessEngine processEngine) {
-    ProcessEngineConfigurationImpl processEngineConfiguration =
-        (ProcessEngineConfigurationImpl) processEngine.getProcessEngineConfiguration();
-
-    return processEngineConfiguration.getCustomPostBPMNParseListeners().stream()
-        .filter((parseListener) -> (parseListener instanceof BpmndtParseListener))
-        .map(BpmndtParseListener.class::cast)
-        .findFirst();
-  }
-
   public String getEnd() {
     return end;
   }
@@ -152,6 +131,8 @@ public class TestCaseInstance {
   }
 
   protected void undeploy(String deploymentId) {
+    callActivityHandlerMap.clear();
+
     if (deploymentId == null) {
       return;
     }

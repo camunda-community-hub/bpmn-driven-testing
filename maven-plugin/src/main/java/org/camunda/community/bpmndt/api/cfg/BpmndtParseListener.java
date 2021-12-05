@@ -1,5 +1,7 @@
 package org.camunda.community.bpmndt.api.cfg;
 
+import java.util.function.Supplier;
+
 import org.camunda.bpm.engine.ActivityTypes;
 import org.camunda.bpm.engine.impl.bpmn.behavior.CallActivityBehavior;
 import org.camunda.bpm.engine.impl.bpmn.parser.AbstractBpmnParseListener;
@@ -24,15 +26,18 @@ public class BpmndtParseListener extends AbstractBpmnParseListener {
   /** The current test case instance. */
   private TestCaseInstance instance;
 
+  protected TestCaseInstance getInstance() {
+    return instance;
+  }
+
   @Override
   public void parseCallActivity(Element callActivityElement, ScopeImpl scope, ActivityImpl activity) {
-    if (instance == null) {
-      return;
-    }
-
     CallActivityBehavior behavior = (CallActivityBehavior) activity.getActivityBehavior();
 
-    activity.setActivityBehavior(new CustomCallActivityBehavior(instance, behavior));
+    activity.setActivityBehavior(new CustomCallActivityBehavior(this::getInstance, behavior));
+
+    // needed to verify the state before the call activity is executed
+    activity.setAsyncBefore(true);
 
     setMultiInstanceAsync(scope, activity);
   }
@@ -101,20 +106,22 @@ public class BpmndtParseListener extends AbstractBpmnParseListener {
    */
   private static class CustomCallActivityBehavior extends CallActivityBehavior {
 
-    /** The related test case instance. */
-    private final TestCaseInstance instance;
+    /** Current test case instance supplier. */
+    private final Supplier<TestCaseInstance> instanceSupplier;
 
     /** The activity's original behavior. */
     private final CallActivityBehavior behavior;
 
-    private CustomCallActivityBehavior(TestCaseInstance instance, CallActivityBehavior behavior) {
-      this.instance = instance;
+    private CustomCallActivityBehavior(Supplier<TestCaseInstance> instanceSupplier, CallActivityBehavior behavior) {
+      this.instanceSupplier = instanceSupplier;
       this.behavior = behavior;
     }
 
     @Override
     public void execute(ActivityExecution execution) throws Exception {
-      boolean shouldLeave = instance.execute(execution, behavior);
+      TestCaseInstance instance = instanceSupplier.get();
+
+      boolean shouldLeave = instance != null ? instance.execute(execution, behavior) : true;
 
       if (shouldLeave) {
         leave(execution);
