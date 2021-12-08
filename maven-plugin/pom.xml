@@ -343,20 +343,6 @@
     <tag>HEAD</tag>
   </scm>
 
-  <distributionManagement>
-    <repository>
-      <id>camunda-nexus</id>
-      <name>camunda bpm community extensions</name>
-      <url>https://app.camunda.com/nexus/content/repositories/camunda-bpm-community-extensions</url>
-    </repository>
-    <snapshotRepository>
-      <id>camunda-nexus</id>
-      <name>camunda bpm community extensions snapshots</name>
-      <url>https://app.camunda.com/nexus/content/repositories/camunda-bpm-community-extensions-snapshots</url>
-      <uniqueVersion>true</uniqueVersion>
-    </snapshotRepository>
-  </distributionManagement>
-
   <issueManagement>
     <system>GitHub Issues</system>
     <url>https://github.com/camunda-community-hub/bpmn-driven-testing/issues</url>
