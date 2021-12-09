@@ -9,7 +9,7 @@
 5. Verify that the plugin is available within the **Plugins** menu as `BPMN Driven Testing` > `Show / Hide` (shortcut CTRL+T).
 
 ## Development
-This and the subsequent sections are only important for plugin development!
+:warning: This and the subsequent sections are only important for plugin development!
 
 For the plugin development a [NodeJS 14.x](https://nodejs.org/download/release/latest-v14.x/) installation is required.
 

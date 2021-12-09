@@ -24,7 +24,7 @@ The extension consists of:
 - Generated test cases provide
   - Automatic handling of wait states
   - Call activity stubbing for isolated testing - see [CallActivityTest](maven-plugin/src/test/it/advanced/src/test/java/org/example/it/CallActivityWithMappingTest.java)
-  - Fluent API to override default behavior
+  - [Fluent API](maven-plugin/src/main/java/org/camunda/community/bpmndt/api) to override default behavior
   - Multi instance activity support - see [tests](maven-plugin/src/test/it/advanced-multi-instance/src/test/java/org/example/it)
 - Spring test support - see [AdvancedTest](maven-plugin/src/test/it/advanced-spring/src/test/java/org/example/it/AdvancedTest.java)
 - Testing of arbitrary paths through a BPMN process
