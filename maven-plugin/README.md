@@ -12,7 +12,7 @@ Right click on `target/bpmndt` > `Mark Directory as` > `Test Sources Root`
 <plugin>
   <groupId>org.camunda.community</groupId>
   <artifactId>bpmn-driven-testing-maven-plugin</artifactId>
-  <version>${plugin.version}</version>
+  <version>0.4.1</version>
   <executions>
     <execution>
       <goals>
@@ -23,7 +23,7 @@ Right click on `target/bpmndt` > `Mark Directory as` > `Test Sources Root`
 </plugin>
 ```
 
-Please see [Maven Central](https://search.maven.org/artifact/org.camunda.community/bpmn-driven-testing-maven-plugin) to get the latest version.
+Please see [Maven Central](https://search.maven.org/artifact/org.camunda.community/bpmn-driven-testing-maven-plugin) to get a specific version.
 
 ## Configuration
 Available parameters for the plugin's `generator` goal:
@@ -120,7 +120,7 @@ Recommended versions:
 | Spring Framework   | 5.2.8.RELEASE+ |
 
 ## Testing
-This section is only important for plugin development!
+:warning: This section is only important for plugin development!
 
 Beside unit tests, a set of integration tests exist under [src/test/it](src/test/it).
 These tests verify that the Maven plugin works correctly when executed within a Maven build.
