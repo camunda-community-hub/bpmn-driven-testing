@@ -1,6 +1,5 @@
 package org.camunda.community.bpmndt.cmd;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -8,18 +7,13 @@ import java.util.function.Function;
 
 import org.apache.commons.lang3.StringUtils;
 import org.camunda.bpm.model.bpmn.instance.BoundaryEvent;
-import org.camunda.bpm.model.bpmn.instance.ConditionalEventDefinition;
 import org.camunda.bpm.model.bpmn.instance.Error;
-import org.camunda.bpm.model.bpmn.instance.ErrorEventDefinition;
 import org.camunda.bpm.model.bpmn.instance.Escalation;
-import org.camunda.bpm.model.bpmn.instance.EscalationEventDefinition;
-import org.camunda.bpm.model.bpmn.instance.EventDefinition;
 import org.camunda.bpm.model.bpmn.instance.IntermediateCatchEvent;
 import org.camunda.bpm.model.bpmn.instance.Message;
-import org.camunda.bpm.model.bpmn.instance.MessageEventDefinition;
 import org.camunda.bpm.model.bpmn.instance.ReceiveTask;
 import org.camunda.bpm.model.bpmn.instance.Signal;
-import org.camunda.bpm.model.bpmn.instance.SignalEventDefinition;
+import org.camunda.community.bpmndt.BpmnEventSupport;
 import org.camunda.community.bpmndt.BpmnSupport;
 import org.camunda.community.bpmndt.GeneratorContext;
 import org.camunda.community.bpmndt.TestCaseActivity;
@@ -144,51 +138,31 @@ public class BuildTestCaseContext implements Function<TestCase, TestCaseContext>
 
     activity.setAttachedTo(event.getAttachedTo().getId());
 
-    Collection<EventDefinition> eventDefinitions = event.getEventDefinitions();
+    BpmnEventSupport eventSupport = new BpmnEventSupport(event);
 
-    ConditionalEventDefinition conditionalEventDefinition = bpmnSupport.getConditionalEventDefinition(eventDefinitions);
-    if (conditionalEventDefinition != null) {
+    if (eventSupport.isConditional()) {
       activity.setType(TestCaseActivityType.CONDITIONAL_BOUNDARY);
-      return;
-    }
-
-    ErrorEventDefinition errorEventDefinition = bpmnSupport.getErrorEventDefinition(eventDefinitions);
-    if (errorEventDefinition != null) {
-      Error error = errorEventDefinition.getError();
+    } else if (eventSupport.isError()) {
+      Error error = eventSupport.getError();
 
       activity.setType(TestCaseActivityType.ERROR_BOUNDARY);
       activity.setEventCode(error != null ? error.getErrorCode() : null);
-      return;
-    }
-
-    EscalationEventDefinition escalationEventDefinition = bpmnSupport.getEscalationEventDefinition(eventDefinitions);
-    if (escalationEventDefinition != null) {
-      Escalation escalation = escalationEventDefinition.getEscalation();
+    } else if (eventSupport.isEscalation()) {
+      Escalation escalation = eventSupport.getEscalation();
 
       activity.setType(TestCaseActivityType.ESCALATION_BOUNDARY);
       activity.setEventCode(escalation != null ? escalation.getEscalationCode() : null);
-      return;
-    }
-
-    MessageEventDefinition messageEventDefinition = bpmnSupport.getMessageEventDefinition(eventDefinitions);
-    if (messageEventDefinition != null) {
-      Message message = messageEventDefinition.getMessage();
+    } else if (eventSupport.isMessage()) {
+      Message message = eventSupport.getMessage();
 
       activity.setType(TestCaseActivityType.MESSAGE_BOUNDARY);
       activity.setEventName(message != null ? message.getName() : null);
-      return;
-    }
-
-    SignalEventDefinition signalEventDefinition = bpmnSupport.getSignalEventDefinition(eventDefinitions);
-    if (signalEventDefinition != null) {
-      Signal signal = signalEventDefinition.getSignal();
+    } else if (eventSupport.isSignal()) {
+      Signal signal = eventSupport.getSignal();
 
       activity.setType(TestCaseActivityType.SIGNAL_BOUNDARY);
       activity.setEventName(signal != null ? signal.getName() : null);
-      return;
-    }
-
-    if (bpmnSupport.getTimerEventDefinition(eventDefinitions) != null) {
+    } else if (eventSupport.isTimer()) {
       activity.setType(TestCaseActivityType.TIMER_BOUNDARY);
     }
   }
@@ -196,33 +170,21 @@ public class BuildTestCaseContext implements Function<TestCase, TestCaseContext>
   protected void handleIntermediateCatchEvent(TestCaseActivity activity, String flowNodeId) {
     IntermediateCatchEvent event = activity.as(IntermediateCatchEvent.class);
 
-    Collection<EventDefinition> eventDefinitions = event.getEventDefinitions();
+    BpmnEventSupport eventSupport = new BpmnEventSupport(event);
 
-    ConditionalEventDefinition conditionalEventDefinition = bpmnSupport.getConditionalEventDefinition(eventDefinitions);
-    if (conditionalEventDefinition != null) {
+    if (eventSupport.isConditional()) {
       activity.setType(TestCaseActivityType.CONDITIONAL_CATCH);
-      return;
-    }
-
-    MessageEventDefinition messageEventDefinition = bpmnSupport.getMessageEventDefinition(eventDefinitions);
-    if (messageEventDefinition != null) {
-      Message message = messageEventDefinition.getMessage();
+    } else if (eventSupport.isMessage()) {
+      Message message = eventSupport.getMessage();
 
       activity.setType(TestCaseActivityType.MESSAGE_CATCH);
       activity.setEventName(message != null ? message.getName() : null);
-      return;
-    }
-
-    SignalEventDefinition signalEventDefinition = bpmnSupport.getSignalEventDefinition(eventDefinitions);
-    if (signalEventDefinition != null) {
-      Signal signal = signalEventDefinition.getSignal();
+    } else if (eventSupport.isSignal()) {
+      Signal signal = eventSupport.getSignal();
 
       activity.setType(TestCaseActivityType.SIGNAL_CATCH);
       activity.setEventName(signal != null ? signal.getName() : null);
-      return;
-    }
-
-    if (bpmnSupport.getTimerEventDefinition(eventDefinitions) != null) {
+    } else if (eventSupport.isTimer()) {
       activity.setType(TestCaseActivityType.TIMER_CATCH);
     }
   }
