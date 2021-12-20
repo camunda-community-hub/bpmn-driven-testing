@@ -8,7 +8,6 @@ import org.camunda.bpm.engine.ActivityTypes;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.community.bpmndt.GeneratorStrategy;
 import org.camunda.community.bpmndt.TestCaseActivity;
-import org.camunda.community.bpmndt.TestCaseActivityType;
 import org.camunda.community.bpmndt.TestCaseContext;
 
 import com.squareup.javapoet.MethodSpec;
@@ -33,7 +32,6 @@ public class Execute implements Function<TestCaseContext, MethodSpec> {
 
     for (int i = 0; i < ctx.getActivities().size(); i++) {
       TestCaseActivity activity = ctx.getActivities().get(i);
-      GeneratorStrategy strategy = activity.getStrategy();
 
       if (i != 0) {
         builder.addCode("\n");
@@ -41,19 +39,24 @@ public class Execute implements Function<TestCaseContext, MethodSpec> {
 
       builder.addCode("// $L: $L\n", activity.getTypeName(), activity.getId());
 
-      if (activity.isAsyncBefore() || (activity.getType() == TestCaseActivityType.CALL_ACTIVITY && !activity.isMultiInstance())) {
-        // call activities have asyncBefore enabled by default
-        // see BpmndtParseListener#parseCallActivity
+      GeneratorStrategy strategy = activity.getStrategy();
+
+      if (strategy.shouldHandleBefore()) {
         strategy.applyHandlerBefore(builder);
       }
 
       strategy.applyHandler(builder);
 
-      if (activity.isAsyncAfter()) {
+      if (strategy.shouldHandleAfter()) {
         strategy.applyHandlerAfter(builder);
       }
 
-      builder.addStatement("assertThat(pi).hasPassed($S)", getPassed(activity));
+      String passed = getPassed(activity);
+      if (activity.hasNext() || activity.isProcessEnd()) {
+        builder.addStatement("assertThat(pi).hasPassed($S)", passed);
+      } else {
+        builder.addStatement("assertThat(pi).isWaitingAt($S)", passed);
+      }
     }
 
     return builder.build();

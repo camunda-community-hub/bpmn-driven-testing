@@ -107,7 +107,7 @@ public class MultiInstanceCallActivityTest {
     protected void execute(ProcessInstance pi) {
       assertThat(pi, notNullValue());
 
-      handler.apply(pi);
+      instance.apply(handler);
 
       ProcessInstanceAssert piAssert = ProcessEngineTests.assertThat(pi);
 

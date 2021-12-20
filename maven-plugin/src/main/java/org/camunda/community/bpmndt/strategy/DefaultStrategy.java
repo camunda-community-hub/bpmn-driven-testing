@@ -11,6 +11,7 @@ import org.camunda.community.bpmndt.api.EventHandler;
 import org.camunda.community.bpmndt.api.ExternalTaskHandler;
 import org.camunda.community.bpmndt.api.JobHandler;
 import org.camunda.community.bpmndt.api.UserTaskHandler;
+import org.camunda.community.bpmndt.api.cfg.BpmndtParseListener;
 
 import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.MethodSpec;
@@ -142,5 +143,28 @@ public class DefaultStrategy implements GeneratorStrategy {
 
   public void setActivity(TestCaseActivity activity) {
     this.activity = activity;
+  }
+
+  /**
+   * If the activity has the {@code asyncAfter} flag set, it must be handled. If it is the last
+   * activity and it does not end the process, the asynchronous continuation after should not be
+   * handled - the execution must wait!
+   */
+  @Override
+  public boolean shouldHandleAfter() {
+    return activity.isAsyncAfter() && (activity.hasNext() || activity.isProcessEnd());
+  }
+
+  /**
+   * If the activity has the {@code asyncBefore} flag set, or it is a call activity but not a multi
+   * instance.
+   * 
+   * @see BpmndtParseListener#parseCallActivity(org.camunda.bpm.engine.impl.util.xml.Element,
+   *      org.camunda.bpm.engine.impl.pvm.process.ScopeImpl,
+   *      org.camunda.bpm.engine.impl.pvm.process.ActivityImpl)
+   */
+  @Override
+  public boolean shouldHandleBefore() {
+    return activity.isAsyncBefore() || (activity.getType() == TestCaseActivityType.CALL_ACTIVITY && !activity.isMultiInstance());
   }
 }

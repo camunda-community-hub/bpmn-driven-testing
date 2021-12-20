@@ -155,6 +155,15 @@ public class BpmnSupportTest {
   }
 
   @Test
+  public void testIsProcessEnd() {
+    bpmnSupport = BpmnSupport.of(simple.resolve("simpleSubProcess.bpmn"));
+    assertThat(bpmnSupport.isProcessEnd("startEvent"), is(false));
+    assertThat(bpmnSupport.isProcessEnd("subProcessStartEvent"), is(false));
+    assertThat(bpmnSupport.isProcessEnd("subProcessEndEvent"), is(false));
+    assertThat(bpmnSupport.isProcessEnd("endEvent"), is(true));
+  }
+
+  @Test
   public void testIsReceiveTask() {
     bpmnSupport = BpmnSupport.of(simple.resolve("simpleReceiveTask.bpmn"));
     assertThat(bpmnSupport.isReceiveTask("receiveTask"), is(true));

@@ -7,12 +7,15 @@ import org.camunda.bpm.engine.variable.VariableMap;
 import org.junit.Rule;
 import org.junit.Test;
 
+import generated.simplecallactivity.TC_startEvent__callActivity;
 import generated.simplecallactivity.TC_startEvent__endEvent;
 
 public class SimpleCallActivityTest {
 
   @Rule
   public TC_startEvent__endEvent tc = new TC_startEvent__endEvent();
+  @Rule
+  public TC_startEvent__callActivity tcWaitAfter = new TC_startEvent__callActivity();
 
   @Test
   public void testExecute() {
@@ -20,6 +23,16 @@ public class SimpleCallActivityTest {
       .withBean("callActivityMapping", new CallActivityMapping())
       .verify(pi -> {
         pi.isEnded();
+      })
+      .execute();
+  }
+
+  @Test
+  public void testExecuteAndWaitAfter() {
+    tcWaitAfter.createExecutor()
+      .withBean("callActivityMapping", new CallActivityMapping())
+      .verify(pi -> {
+        pi.isNotEnded();
       })
       .execute();
   }

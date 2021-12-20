@@ -1,11 +1,10 @@
 package org.camunda.community.bpmndt.api;
 
-import java.util.Optional;
 import java.util.function.Consumer;
 
 import org.camunda.bpm.engine.ProcessEngineException;
 import org.camunda.bpm.engine.RuntimeService;
-import org.camunda.bpm.engine.impl.cfg.ProcessEngineConfigurationImpl;
+import org.camunda.bpm.engine.repository.ProcessDefinition;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.test.assertions.ProcessEngineTests;
 import org.camunda.bpm.engine.test.assertions.bpmn.ProcessInstanceAssert;
@@ -13,7 +12,6 @@ import org.camunda.bpm.engine.test.mock.Mocks;
 import org.camunda.bpm.engine.variable.VariableMap;
 import org.camunda.bpm.engine.variable.Variables;
 import org.camunda.bpm.engine.variable.value.TypedValue;
-import org.camunda.community.bpmndt.api.cfg.BpmndtParseListener;
 
 /**
  * Fluent API to prepare and start the actual test case execution.
@@ -42,9 +40,14 @@ public class TestCaseExecutor {
    * @return The ID of the created process instance.
    */
   public String execute() {
-    RuntimeService runtimeService = instance.getProcessEngine().getRuntimeService();
+    // find process definition of related deployment
+    ProcessDefinition pd = instance.getProcessEngine().getRepositoryService()
+        .createProcessDefinitionQuery()
+        .deploymentId(instance.getDeploymentId())
+        .processDefinitionKey(instance.getProcessDefinitionKey())
+        .singleResult();
 
-    ProcessInstance pi = runtimeService.createProcessInstanceByKey(instance.getProcessDefinitionKey())
+    ProcessInstance pi = instance.getProcessEngine().getRuntimeService().createProcessInstanceById(pd.getId())
         .businessKey(businessKey)
         .setVariables(variables)
         .startBeforeActivity(instance.getStart())
@@ -65,9 +68,6 @@ public class TestCaseExecutor {
     if (pi == null) {
       throw new IllegalArgumentException("The given process instance is null");
     }
-
-    // announce test case instance for custom call activity behavior
-    findParseListener().ifPresent((parseListener) -> parseListener.setInstance(instance));
 
     // announce process instance
     instance.setProcessInstance(pi);
@@ -102,16 +102,6 @@ public class TestCaseExecutor {
     }
 
     execute(pi);
-  }
-
-  protected Optional<BpmndtParseListener> findParseListener() {
-    ProcessEngineConfigurationImpl processEngineConfiguration =
-        (ProcessEngineConfigurationImpl) instance.getProcessEngine().getProcessEngineConfiguration();
-
-    return processEngineConfiguration.getCustomPostBPMNParseListeners().stream()
-        .filter((parseListener) -> (parseListener instanceof BpmndtParseListener))
-        .map(BpmndtParseListener.class::cast)
-        .findFirst();
   }
 
   /**

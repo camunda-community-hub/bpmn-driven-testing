@@ -1,5 +1,7 @@
 package org.camunda.community.bpmndt.api;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -28,9 +30,9 @@ import org.junit.Test;
 public class MultiTestCaseTest {
 
   @Rule
-  public TestCase tc1 = new TestCase();
+  public TestCase1 tc1 = new TestCase1();
   @Rule
-  public TestCase tc2 = new TestCase();
+  public TestCase2 tc2 = new TestCase2();
 
   private CallActivityHandler handler1;
   private CallActivityHandler handler2;
@@ -39,6 +41,11 @@ public class MultiTestCaseTest {
   public void setUp() {
     handler1 = new CallActivityHandler(tc1.instance, "callActivity");
     handler2 = new CallActivityHandler(tc2.instance, "callActivity");
+  }
+
+  @Test
+  public void testDeployment() {
+    assertThat(tc1.getDeploymentId(), not(equalTo(tc2.getDeploymentId())));
   }
 
   @Test
@@ -68,7 +75,47 @@ public class MultiTestCaseTest {
     assertThat(ProcessEngineTests.processDefinition("no-test-cases"), notNullValue());
   }
 
-  private class TestCase extends AbstractJUnit4TestCase {
+  private class TestCase1 extends AbstractJUnit4TestCase {
+
+    @Override
+    protected void execute(ProcessInstance pi) {
+      assertThat(pi, notNullValue());
+
+      ProcessInstanceAssert piAssert = ProcessEngineTests.assertThat(pi);
+
+      piAssert.hasPassed("startEvent").isWaitingAt("callActivity");
+
+      ProcessEngineTests.execute(ProcessEngineTests.job());
+
+      piAssert.hasPassed("callActivity", "endEvent").isEnded();
+    }
+
+    @Override
+    protected InputStream getBpmnResource() {
+      try {
+        return Files.newInputStream(Paths.get("./src/test/it/simple/src/main/resources/simpleCallActivity.bpmn"));
+      } catch (IOException e) {
+        return null;
+      }
+    }
+
+    @Override
+    public String getProcessDefinitionKey() {
+      return "simpleCallActivity";
+    }
+
+    @Override
+    public String getStart() {
+      return "startEvent";
+    }
+
+    @Override
+    public String getEnd() {
+      return "endEvent";
+    }
+  }
+
+  private class TestCase2 extends AbstractJUnit4TestCase {
 
     @Override
     protected void execute(ProcessInstance pi) {

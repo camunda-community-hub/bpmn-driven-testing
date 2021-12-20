@@ -69,7 +69,13 @@ public class GeneratorMultiInstanceTest {
     TypeName multiInstanceHandlerType = ClassName.get("org.example.callactivity", "MultiInstanceCallActivityHandler");
 
     generator.generateTestCases(ctx, bpmnFile);
-    assertThat(result.getFiles(), hasSize(2));
+
+    // BPMN process contains 2 test cases
+    assertThat(result.getFiles(), hasSize(4));
+    assertThat(result.getFiles().get(0).typeSpec.name, equalTo("TC_startEvent__endEvent"));
+    assertThat(result.getFiles().get(1).typeSpec.name, equalTo("MultiInstanceCallActivityHandler"));
+    assertThat(result.getFiles().get(2).typeSpec.name, equalTo("TC_startEvent__multiInstanceCallActivity"));
+    assertThat(result.getFiles().get(3).typeSpec.name, equalTo("MultiInstanceCallActivityHandler"));
 
     TypeSpec typeSpec;
 

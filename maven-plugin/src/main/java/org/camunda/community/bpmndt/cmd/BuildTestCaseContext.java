@@ -62,7 +62,9 @@ public class BuildTestCaseContext implements Function<TestCase, TestCaseContext>
 
     List<String> flowNodeIds = testCase.getPath().getFlowNodeIds();
 
-    for (String flowNodeId : flowNodeIds) {
+    for (int i = 0; i < flowNodeIds.size(); i++) {
+      String flowNodeId = flowNodeIds.get(i);
+
       if (!bpmnSupport.has(flowNodeId)) {
         ctx.addInvalidFlowNodeId(flowNodeId);
         continue;
@@ -96,6 +98,10 @@ public class BuildTestCaseContext implements Function<TestCase, TestCaseContext>
       }
       if (strategy != null && activity.isMultiInstance()) {
         handleMultiInstance(ctx, activity);
+      }
+
+      if (i == flowNodeIds.size() - 1) {
+        activity.setProcessEnd(bpmnSupport.isProcessEnd(flowNodeId));
       }
 
       ctx.addActivity(activity);

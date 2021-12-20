@@ -10,18 +10,17 @@ import org.camunda.community.bpmndt.model.TestCase;
 
 public class TestCaseContext {
 
+  private final BpmnSupport bpmnSupport;
+
   private final List<TestCaseActivity> activities;
-  private final Path bpmnFile;
   private final List<String> invalidFlowNodeIds;
-  private final String processId;
   private final TestCase testCase;
   private final String testCaseName;
 
   private boolean duplicateName;
 
   public TestCaseContext(BpmnSupport bpmnSupport, TestCase testCase) {
-    this.bpmnFile = bpmnSupport.getFile();
-    this.processId = bpmnSupport.getProcessId();
+    this.bpmnSupport = bpmnSupport;
     this.testCase = testCase;
 
     activities = new ArrayList<>(testCase.getPath().length());
@@ -100,11 +99,11 @@ public class TestCaseContext {
   }
 
   public String getProcessId() {
-    return processId;
+    return bpmnSupport.getProcessId();
   }
 
   public String getResourceName(Path resourcePath) {
-    return resourcePath.relativize(bpmnFile).toString().replace('\\', '/');
+    return resourcePath.relativize(bpmnSupport.getFile()).toString().replace('\\', '/');
   }
 
   public TestCaseActivity getStartActivity() {

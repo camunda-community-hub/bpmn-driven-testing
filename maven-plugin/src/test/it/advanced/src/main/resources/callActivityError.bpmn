@@ -11,6 +11,19 @@
             <bpmndt:node>endEvent</bpmndt:node>
           </bpmndt:path>
         </bpmndt:testCase>
+        <bpmndt:testCase>
+          <bpmndt:path>
+            <bpmndt:node>startEvent</bpmndt:node>
+            <bpmndt:node>callActivity</bpmndt:node>
+          </bpmndt:path>
+        </bpmndt:testCase>
+        <bpmndt:testCase>
+          <bpmndt:path>
+            <bpmndt:node>startEvent</bpmndt:node>
+            <bpmndt:node>callActivity</bpmndt:node>
+            <bpmndt:node>errorBoundaryEvent</bpmndt:node>
+          </bpmndt:path>
+        </bpmndt:testCase>
       </bpmndt:testCases>
     </bpmn:extensionElements>
     <bpmn:startEvent id="startEvent">

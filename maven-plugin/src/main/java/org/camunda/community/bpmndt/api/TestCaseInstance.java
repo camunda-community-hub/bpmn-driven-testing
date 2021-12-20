@@ -3,38 +3,49 @@ package org.camunda.community.bpmndt.api;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import org.camunda.bpm.engine.ProcessEngine;
 import org.camunda.bpm.engine.RepositoryService;
 import org.camunda.bpm.engine.impl.bpmn.behavior.CallActivityBehavior;
+import org.camunda.bpm.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.camunda.bpm.engine.impl.pvm.delegate.ActivityExecution;
 import org.camunda.bpm.engine.repository.Deployment;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
+import org.camunda.community.bpmndt.api.cfg.BpmndtParseListener;
 
 public class TestCaseInstance {
 
   /** Name of the process engine to use. */
   public static final String PROCESS_ENGINE_NAME = "bpmndt";
 
-  private final ProcessEngine processEngine;
+  private final Map<String, CallActivityHandler> callActivityHandlerMap;
+
+  private ProcessEngine processEngine;
 
   /** Key of the test case related process definition. */
-  private final String processDefinitionKey;
+  private String processDefinitionKey;
 
-  private final String start;
-  private final String end;
+  private String start;
+  private String end;
 
-  private final Map<String, CallActivityHandler> callActivityHandlerMap;
+  private boolean processEnd;
+
+  /** ID of BPMN resource deployment. */
+  private String deploymentId;
 
   private ProcessInstance pi;
 
-  public TestCaseInstance(ProcessEngine processEngine, String processDefinitionKey, String start, String end) {
-    this.processEngine = processEngine;
-    this.processDefinitionKey = processDefinitionKey;
-    this.start = start;
-    this.end = end;
-
+  public TestCaseInstance() {
     callActivityHandlerMap = new HashMap<>(4);
+  }
+
+  /**
+   * Announces the test case instance by providing a reference to the {@link BpmndtParseListener} that
+   * is used during BPMN model parsing.
+   */
+  protected void announce() {
+    findParseListener().ifPresent((parseListener) -> parseListener.setInstance(this));
   }
 
   public void apply(EventHandler handler) {
@@ -57,26 +68,32 @@ public class TestCaseInstance {
     handler.apply(pi);
   }
 
-  protected String deploy(String deploymentName, InputStream bpmnResource) {
+  protected void deploy(String deploymentName, InputStream bpmnResource) {
+    this.announce();
+
     RepositoryService repositoryService = processEngine.getRepositoryService();
 
     Deployment deployment = repositoryService.createDeployment()
         .name(deploymentName)
         .addInputStream(String.format("%s.bpmn", getProcessDefinitionKey()), bpmnResource)
+        .enableDuplicateFiltering(false)
         .deploy();
 
-    return deployment.getId();
+    deploymentId = deployment.getId();
   }
 
-  protected String deploy(String deploymentName, String bpmnResourceName) {
+  protected void deploy(String deploymentName, String bpmnResourceName) {
+    this.announce();
+
     RepositoryService repositoryService = processEngine.getRepositoryService();
 
     Deployment deployment = repositoryService.createDeployment()
         .name(deploymentName)
         .addClasspathResource(bpmnResourceName)
+        .enableDuplicateFiltering(false)
         .deploy();
 
-    return deployment.getId();
+    deploymentId = deployment.getId();
   }
 
   /**
@@ -106,6 +123,20 @@ public class TestCaseInstance {
     }
   }
 
+  private Optional<BpmndtParseListener> findParseListener() {
+    ProcessEngineConfigurationImpl processEngineConfiguration =
+        (ProcessEngineConfigurationImpl) processEngine.getProcessEngineConfiguration();
+
+    return processEngineConfiguration.getCustomPostBPMNParseListeners().stream()
+        .filter((parseListener) -> (parseListener instanceof BpmndtParseListener))
+        .map(BpmndtParseListener.class::cast)
+        .findFirst();
+  }
+
+  public String getDeploymentId() {
+    return deploymentId;
+  }
+
   public String getEnd() {
     return end;
   }
@@ -122,15 +153,39 @@ public class TestCaseInstance {
     return start;
   }
 
+  public boolean isProcessEnd() {
+    return processEnd;
+  }
+
   protected void registerCallActivityHandler(String activityId, CallActivityHandler handler) {
     callActivityHandlerMap.put(activityId, handler);
+  }
+
+  protected void setEnd(String end) {
+    this.end = end;
+  }
+
+  protected void setProcessDefinitionKey(String processDefinitionKey) {
+    this.processDefinitionKey = processDefinitionKey;
+  }
+
+  protected void setProcessEnd(boolean processEnd) {
+    this.processEnd = processEnd;
+  }
+
+  protected void setProcessEngine(ProcessEngine processEngine) {
+    this.processEngine = processEngine;
   }
 
   protected void setProcessInstance(ProcessInstance pi) {
     this.pi = pi;
   }
 
-  protected void undeploy(String deploymentId) {
+  protected void setStart(String start) {
+    this.start = start;
+  }
+
+  protected void undeploy() {
     callActivityHandlerMap.clear();
 
     if (deploymentId == null) {
