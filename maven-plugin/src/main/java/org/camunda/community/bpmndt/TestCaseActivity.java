@@ -13,6 +13,8 @@ public class TestCaseActivity {
   private TestCaseActivity prev;
   private TestCaseActivity next;
 
+  private Boolean processEnd;
+
   private GeneratorStrategy strategy;
 
   private String attachedTo;
@@ -136,6 +138,14 @@ public class TestCaseActivity {
     return multiInstance != null;
   }
 
+  public Boolean isProcessEnd() {
+    if (hasNext()) {
+      return null;
+    } else {
+      return processEnd;
+    }
+  }
+
   public void setAttachedTo(String attachedTo) {
     this.attachedTo = attachedTo;
   }
@@ -154,6 +164,10 @@ public class TestCaseActivity {
 
   public void setPrev(TestCaseActivity prev) {
     this.prev = prev;
+  }
+
+  public void setProcessEnd(boolean processEnd) {
+    this.processEnd = processEnd;
   }
 
   public void setStrategy(GeneratorStrategy strategy) {

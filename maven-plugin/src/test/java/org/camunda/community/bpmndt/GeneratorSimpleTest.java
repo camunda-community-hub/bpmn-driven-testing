@@ -134,24 +134,25 @@ public class GeneratorSimpleTest {
     assertThat(typeSpec.superclass, equalTo(ClassName.get(AbstractJUnit4TestCase.class)));
     assertThat(typeSpec.fieldSpecs, hasSize(0));
     assertThat(typeSpec.methodSpecs, hasSize(7));
-    assertThat(typeSpec.methodSpecs.get(0).isConstructor(), is(true));
-    assertThat(typeSpec.methodSpecs.get(0).modifiers, hasItem(Modifier.PUBLIC));
-    assertThat(typeSpec.methodSpecs.get(1).name, equalTo("starting"));
+    assertThat(typeSpec.methodSpecs.get(0).name, equalTo("starting"));
+    assertThat(typeSpec.methodSpecs.get(0).parameters, hasSize(1));
+    assertThat(typeSpec.methodSpecs.get(0).parameters.get(0).name, equalTo("description"));
+    assertThat(typeSpec.methodSpecs.get(0).parameters.get(0).type, equalTo(ClassName.get(Description.class)));
+    assertThat(typeSpec.methodSpecs.get(1).name, equalTo("execute"));
     assertThat(typeSpec.methodSpecs.get(1).parameters, hasSize(1));
-    assertThat(typeSpec.methodSpecs.get(1).parameters.get(0).name, equalTo("description"));
-    assertThat(typeSpec.methodSpecs.get(1).parameters.get(0).type, equalTo(ClassName.get(Description.class)));
-    assertThat(typeSpec.methodSpecs.get(2).name, equalTo("execute"));
-    assertThat(typeSpec.methodSpecs.get(2).parameters, hasSize(1));
-    assertThat(typeSpec.methodSpecs.get(2).parameters.get(0).name, equalTo("pi"));
-    assertThat(typeSpec.methodSpecs.get(2).parameters.get(0).type, equalTo(ClassName.get(ProcessInstance.class)));
-    assertThat(typeSpec.methodSpecs.get(3).name, equalTo("getBpmnResourceName"));
-    assertThat(typeSpec.methodSpecs.get(3).code.toString(), containsString("\"simple.bpmn\""));
-    assertThat(typeSpec.methodSpecs.get(4).name, equalTo("getEnd"));
-    assertThat(typeSpec.methodSpecs.get(4).code.toString(), containsString("\"endEvent\""));
-    assertThat(typeSpec.methodSpecs.get(5).name, equalTo("getProcessDefinitionKey"));
-    assertThat(typeSpec.methodSpecs.get(5).code.toString(), containsString("\"simple\""));
-    assertThat(typeSpec.methodSpecs.get(6).name, equalTo("getStart"));
-    assertThat(typeSpec.methodSpecs.get(6).code.toString(), containsString("\"startEvent\""));
+    assertThat(typeSpec.methodSpecs.get(1).parameters.get(0).name, equalTo("pi"));
+    assertThat(typeSpec.methodSpecs.get(1).parameters.get(0).type, equalTo(ClassName.get(ProcessInstance.class)));
+    assertThat(typeSpec.methodSpecs.get(2).name, equalTo("getBpmnResourceName"));
+    assertThat(typeSpec.methodSpecs.get(2).code.toString(), containsString("\"simple.bpmn\""));
+    assertThat(typeSpec.methodSpecs.get(3).name, equalTo("getEnd"));
+    assertThat(typeSpec.methodSpecs.get(3).code.toString(), containsString("\"endEvent\""));
+    assertThat(typeSpec.methodSpecs.get(4).name, equalTo("getProcessDefinitionKey"));
+    assertThat(typeSpec.methodSpecs.get(4).code.toString(), containsString("\"simple\""));
+    assertThat(typeSpec.methodSpecs.get(5).name, equalTo("getStart"));
+    assertThat(typeSpec.methodSpecs.get(5).code.toString(), containsString("\"startEvent\""));
+    assertThat(typeSpec.methodSpecs.get(6).name, equalTo("isSpringEnabled"));
+    assertThat(typeSpec.methodSpecs.get(6).modifiers, hasItem(Modifier.PROTECTED));
+    assertThat(typeSpec.methodSpecs.get(6).code.toString(), containsString("return true"));
   }
 
   @Test
@@ -183,7 +184,11 @@ public class GeneratorSimpleTest {
   @Test
   public void testSimpleCallActivity() {
     generator.generateTestCases(ctx, bpmnFile);
-    assertThat(result.getFiles(), hasSize(1));
+
+    // BPMN process contains 2 test cases
+    assertThat(result.getFiles(), hasSize(2));
+    assertThat(result.getFiles().get(0).typeSpec.name, equalTo("TC_startEvent__endEvent"));
+    assertThat(result.getFiles().get(1).typeSpec.name, equalTo("TC_startEvent__callActivity"));
 
     TypeSpec typeSpec = result.getFiles().get(0).typeSpec;
     assertThat(typeSpec.fieldSpecs, hasSize(2));
@@ -319,7 +324,11 @@ public class GeneratorSimpleTest {
   @Test
   public void testSimpleSubProcess() {
     generator.generateTestCases(ctx, bpmnFile);
-    assertThat(result.getFiles(), hasSize(1));
+
+    // BPMN process contains 2 test cases
+    assertThat(result.getFiles(), hasSize(2));
+    assertThat(result.getFiles().get(0).typeSpec.name, equalTo("TC_startEvent__endEvent"));
+    assertThat(result.getFiles().get(1).typeSpec.name, equalTo("TC_startEvent__subProcessEndEvent"));
 
     TypeSpec typeSpec = result.getFiles().get(0).typeSpec;
     assertThat(typeSpec.methodSpecs, hasSize(6));

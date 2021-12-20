@@ -2,8 +2,10 @@ package org.camunda.community.bpmndt;
 
 import static org.camunda.bpm.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_BOUNDARY_EVENT;
 import static org.camunda.bpm.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_CALL_ACTIVITY;
+import static org.camunda.bpm.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_END_EVENT;
 import static org.camunda.bpm.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_INTERMEDIATE_CATCH_EVENT;
 import static org.camunda.bpm.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_INTERMEDIATE_THROW_EVENT;
+import static org.camunda.bpm.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_PROCESS;
 import static org.camunda.bpm.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_RECEIVE_TASK;
 import static org.camunda.bpm.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_SERVICE_TASK;
 import static org.camunda.bpm.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_USER_TASK;
@@ -17,20 +19,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
 
 import javax.lang.model.SourceVersion;
 
 import org.camunda.bpm.model.bpmn.Bpmn;
 import org.camunda.bpm.model.bpmn.BpmnModelInstance;
 import org.camunda.bpm.model.bpmn.instance.Activity;
-import org.camunda.bpm.model.bpmn.instance.EventDefinition;
 import org.camunda.bpm.model.bpmn.instance.FlowNode;
 import org.camunda.bpm.model.bpmn.instance.IntermediateThrowEvent;
 import org.camunda.bpm.model.bpmn.instance.MessageEventDefinition;
 import org.camunda.bpm.model.bpmn.instance.MultiInstanceLoopCharacteristics;
 import org.camunda.bpm.model.bpmn.instance.Process;
 import org.camunda.bpm.model.bpmn.instance.ServiceTask;
+import org.camunda.bpm.model.xml.instance.ModelElementInstance;
 import org.camunda.community.bpmndt.cmd.CollectBpmnFlowNodes;
 import org.camunda.community.bpmndt.model.TestCase;
 import org.camunda.community.bpmndt.model.TestCases;
@@ -212,14 +213,6 @@ public class BpmnSupport {
     return flowNodes.containsKey(flowNodeId);
   }
 
-  protected boolean is(Optional<EventDefinition> eventDefinition, String typeName) {
-    if (eventDefinition.isPresent()) {
-      return eventDefinition.get().getElementType().getTypeName().equals(typeName);
-    } else {
-      return false;
-    }
-  }
-
   protected boolean is(String flowNodeId, String typeName) {
     FlowNode flowNode = flowNodes.get(flowNodeId);
     return flowNode != null && flowNode.getElementType().getTypeName().equals(typeName);
@@ -251,6 +244,27 @@ public class BpmnSupport {
 
   public boolean isIntermediateCatchEvent(String flowNodeId) {
     return is(flowNodeId, BPMN_ELEMENT_INTERMEDIATE_CATCH_EVENT);
+  }
+
+  /**
+   * Determines if the flow node with the given ID ends the process or not. This is the case if it
+   * exists, if it is an end event and if the parent element is a process.
+   * 
+   * @param flowNodeId A specific flow node ID.
+   * 
+   * @return {@code true}, if the flow node ends the process. Otherwise {@code false}.
+   */
+  public boolean isProcessEnd(String flowNodeId) {
+    if (!is(flowNodeId, BPMN_ELEMENT_END_EVENT)) {
+      return false;
+    }
+
+    ModelElementInstance parent = flowNodes.get(flowNodeId).getParentElement();
+    if (parent == null) {
+      return false;
+    }
+
+    return parent.getElementType().getTypeName().equals(BPMN_ELEMENT_PROCESS);
   }
 
   public boolean isReceiveTask(String flowNodeId) {

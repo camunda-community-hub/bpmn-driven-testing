@@ -14,7 +14,6 @@ import org.camunda.bpm.engine.ProcessEngines;
 import org.camunda.bpm.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.camunda.bpm.engine.impl.cfg.ProcessEnginePlugin;
 import org.camunda.bpm.engine.impl.cfg.StandaloneInMemProcessEngineConfiguration;
-import org.camunda.bpm.engine.impl.util.ClassNameUtil;
 import org.camunda.bpm.engine.repository.Deployment;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.test.assertions.ProcessEngineTests;
@@ -31,29 +30,14 @@ public abstract class AbstractJUnit4TestCase extends TestWatcher {
 
   protected TestCaseInstance instance;
 
-  /** Determines if Spring based testing is enabled or not. */
-  private final boolean springEnabled;
-
-  /** ID of BPMN resource deployment. */
-  private String deploymentId;
   /** ID of optional annotation based deployment. */
   private String annotationDeploymentId;
-
-  public AbstractJUnit4TestCase() {
-    this(false);
-  }
-
-  public AbstractJUnit4TestCase(boolean springEnabled) {
-    this.springEnabled = springEnabled;
-
-    annotationDeploymentId = null;
-  }
 
   @Override
   protected void starting(Description description) {
     ProcessEngine processEngine = ProcessEngines.getProcessEngine(PROCESS_ENGINE_NAME);
 
-    if (processEngine == null && springEnabled) {
+    if (processEngine == null && isSpringEnabled()) {
       String message = String.format("Spring application context must provide a process engine with name '%s'", PROCESS_ENGINE_NAME);
       throw new IllegalStateException(message);
     }
@@ -63,18 +47,23 @@ public abstract class AbstractJUnit4TestCase extends TestWatcher {
 
     ProcessEngineTests.init(processEngine);
 
-    instance = new TestCaseInstance(processEngine, getProcessDefinitionKey(), getStart(), getEnd());
+    instance = new TestCaseInstance();
+    instance.setEnd(getEnd());
+    instance.setProcessDefinitionKey(getProcessDefinitionKey());
+    instance.setProcessEnd(isProcessEnd());
+    instance.setProcessEngine(processEngine);
+    instance.setStart(getStart());
 
-    String deploymentName = ClassNameUtil.getClassNameWithoutPackage(description.getTestClass());
+    String deploymentName = this.getClass().getSimpleName();
 
     // deploy BPMN resource
     if (getBpmnResourceName() != null) {
-      deploymentId = instance.deploy(deploymentName, getBpmnResourceName());
+      instance.deploy(deploymentName, getBpmnResourceName());
     } else {
-      deploymentId = instance.deploy(deploymentName, getBpmnResource());
+      instance.deploy(deploymentName, getBpmnResource());
     }
 
-    String annotationDeploymentName = String.format("%s.%s", deploymentName, description.getMethodName());
+    String annotationDeploymentName = String.format("%s.%s", description.getTestClass().getSimpleName(), description.getMethodName());
 
     Deployment annotationDeployment = processEngine.getRepositoryService().createDeploymentQuery()
         .deploymentName(annotationDeploymentName)
@@ -100,7 +89,7 @@ public abstract class AbstractJUnit4TestCase extends TestWatcher {
     }
 
     // undeploy BPMN resource
-    instance.undeploy(deploymentId);
+    instance.undeploy();
 
     if (annotationDeploymentId == null) {
       return;
@@ -169,6 +158,15 @@ public abstract class AbstractJUnit4TestCase extends TestWatcher {
   }
 
   /**
+   * Returns the ID of the process definition deployment.
+   * 
+   * @return The deployment ID.
+   */
+  public String getDeploymentId() {
+    return instance.getDeploymentId();
+  }
+
+  /**
    * Returns the ID of the test case's end activity.
    * 
    * @return The end activity ID.
@@ -190,7 +188,7 @@ public abstract class AbstractJUnit4TestCase extends TestWatcher {
   public ProcessEngine getProcessEngine() {
     return instance.getProcessEngine();
   }
-  
+
   /**
    * Provides custom {@link ProcessEnginePlugin}s to be registered when the process engine is built.
    * By default, this method return an empty list. It can be overridden by any extending class.
@@ -209,4 +207,25 @@ public abstract class AbstractJUnit4TestCase extends TestWatcher {
    * @return The start activity ID.
    */
   public abstract String getStart();
+
+  /**
+   * Determines if Spring based testing is enabled or not. By default this method returns
+   * {@code false}.
+   * 
+   * @return {@code true}, if the testing is Spring based. Otherwise {@code false}.
+   */
+  protected boolean isSpringEnabled() {
+    return false;
+  }
+
+  /**
+   * Determines if the test case's end activity ends the process or not. This is the case if the
+   * activity is an end event and if the activity's parent scope is the process. By default this
+   * method returns {@code true}.
+   * 
+   * @return {@code true}, if the test case's end activity ends the process. Otherwise {@code false}.
+   */
+  protected boolean isProcessEnd() {
+    return true;
+  }
 }

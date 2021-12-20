@@ -11,7 +11,6 @@ import org.camunda.community.bpmndt.GeneratorContext;
 import org.camunda.community.bpmndt.GeneratorResult;
 import org.camunda.community.bpmndt.GeneratorStrategy;
 import org.camunda.community.bpmndt.TestCaseActivity;
-import org.camunda.community.bpmndt.TestCaseActivityType;
 import org.camunda.community.bpmndt.TestCaseContext;
 import org.camunda.community.bpmndt.api.AbstractJUnit4TestCase;
 import org.camunda.community.bpmndt.cmd.generation.Execute;
@@ -22,6 +21,7 @@ import org.junit.rules.TestRule;
 import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
 /**
@@ -46,10 +46,6 @@ public class GenerateJUnit4TestCase implements Consumer<TestCaseContext> {
         .superclass(AbstractJUnit4TestCase.class)
         .addModifiers(Modifier.PUBLIC);
 
-    if (gCtx.isSpringEnabled()) {
-      classBuilder.addMethod(buildConstructor());
-    }
-
     addHandlerFields(ctx, classBuilder);
 
     classBuilder.addMethod(new Starting().apply(ctx));
@@ -64,6 +60,14 @@ public class GenerateJUnit4TestCase implements Consumer<TestCaseContext> {
     }
 
     classBuilder.addMethod(buildGetStart(ctx));
+
+    if (ctx.isValid() && !ctx.getEndActivity().isProcessEnd()) {
+      classBuilder.addMethod(buildIsProcessEnd());
+    }
+
+    if (gCtx.isSpringEnabled()) {
+      classBuilder.addMethod(buildIsSpringEnabled());
+    }
 
     addHandlerMethods(ctx, classBuilder);
 
@@ -85,15 +89,13 @@ public class GenerateJUnit4TestCase implements Consumer<TestCaseContext> {
     for (TestCaseActivity activity : ctx.getActivities()) {
       GeneratorStrategy strategy = activity.getStrategy();
 
-      if (activity.isAsyncBefore() || (activity.getType() == TestCaseActivityType.CALL_ACTIVITY && !activity.isMultiInstance())) {
-        // call activities have asyncBefore enabled by default
-        // see BpmndtParseListener#parseCallActivity
+      if (strategy.shouldHandleBefore()) {
         strategy.addHandlerFieldBefore(classBuilder);
       }
 
       strategy.addHandlerField(classBuilder);
 
-      if (activity.isAsyncAfter()) {
+      if (strategy.shouldHandleAfter()) {
         strategy.addHandlerFieldAfter(classBuilder);
       }
     }
@@ -113,14 +115,10 @@ public class GenerateJUnit4TestCase implements Consumer<TestCaseContext> {
 
       strategy.addHandlerMethod(classBuilder);
 
-      if (activity.isAsyncAfter()) {
+      if (strategy.shouldHandleAfter()) {
         strategy.addHandlerMethodAfter(classBuilder);
       }
     }
-  }
-
-  protected MethodSpec buildConstructor() {
-    return MethodSpec.constructorBuilder().addModifiers(Modifier.PUBLIC).addStatement("super(true)").build();
   }
 
   protected MethodSpec buildGetBpmnResourceName(GeneratorContext ctx, TestCaseContext testCaseContext) {
@@ -160,6 +158,24 @@ public class GenerateJUnit4TestCase implements Consumer<TestCaseContext> {
         .addModifiers(Modifier.PUBLIC)
         .returns(String.class)
         .addStatement("return $S", start != null ? start.getId() : null)
+        .build();
+  }
+
+  protected MethodSpec buildIsProcessEnd() {
+    return MethodSpec.methodBuilder("isProcessEnd")
+        .addAnnotation(Override.class)
+        .addModifiers(Modifier.PROTECTED)
+        .returns(TypeName.BOOLEAN)
+        .addStatement("return false")
+        .build();
+  }
+
+  protected MethodSpec buildIsSpringEnabled() {
+    return MethodSpec.methodBuilder("isSpringEnabled")
+        .addAnnotation(Override.class)
+        .addModifiers(Modifier.PROTECTED)
+        .returns(TypeName.BOOLEAN)
+        .addStatement("return true")
         .build();
   }
 

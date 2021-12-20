@@ -37,4 +37,18 @@ public interface GeneratorStrategy {
   void initHandlerBefore(MethodSpec.Builder methodBuilder);
 
   CodeBlock initHandlerStatement();
+
+  /**
+   * Determines if an asynchronous continuation after the activity should be handled or not.
+   * 
+   * @return {@code true}, if it should be handled. Otherwise {@code false}.
+   */
+  boolean shouldHandleAfter();
+
+  /**
+   * Determines if an asynchronous continuation before the activity should be handled or not.
+   * 
+   * @return {@code true}, if it should be handled. Otherwise {@code false}.
+   */
+  boolean shouldHandleBefore();
 }

@@ -57,10 +57,6 @@ public class SpringBasedTest {
 
   private class TestCase extends AbstractJUnit4TestCase {
 
-    public TestCase() {
-      super(true);
-    }
-
     @Override
     protected void execute(ProcessInstance pi) {
       assertThat(pi, notNullValue());
@@ -92,6 +88,11 @@ public class SpringBasedTest {
     @Override
     public String getEnd() {
       return "endEvent";
+    }
+
+    @Override
+    protected boolean isSpringEnabled() {
+      return true;
     }
   }
 
