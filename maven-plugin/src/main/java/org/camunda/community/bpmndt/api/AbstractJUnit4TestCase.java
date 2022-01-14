@@ -110,7 +110,7 @@ public abstract class AbstractJUnit4TestCase extends TestWatcher {
     // must be added to a new list, since the provided list may not allow modifications
     List<ProcessEnginePlugin> processEnginePlugins = new LinkedList<>(getProcessEnginePlugins());
     // BPMN Driven Testing plugin must be added at last
-    processEnginePlugins.add(new BpmndtProcessEnginePlugin());
+    processEnginePlugins.add(new BpmndtProcessEnginePlugin(false, isH2Version2()));
 
     ProcessEngineConfigurationImpl processEngineConfiguration = new StandaloneInMemProcessEngineConfiguration();
     processEngineConfiguration.setProcessEngineName(PROCESS_ENGINE_NAME);
@@ -209,8 +209,18 @@ public abstract class AbstractJUnit4TestCase extends TestWatcher {
   public abstract String getStart();
 
   /**
-   * Determines if Spring based testing is enabled or not. By default this method returns
-   * {@code false}.
+   * Determines if version 2 of the H2 in-memory database is used or not. This method returns
+   * {@code true}, if not overridden.
+   * 
+   * @return {@code true}, if the H2 version is greater than 2. Otherwise {@code false}.
+   */
+  protected boolean isH2Version2() {
+    return true;
+  }
+
+  /**
+   * Determines if Spring based testing is enabled or not. This method returns {@code false}, if not
+   * overridden.
    * 
    * @return {@code true}, if the testing is Spring based. Otherwise {@code false}.
    */
@@ -220,8 +230,8 @@ public abstract class AbstractJUnit4TestCase extends TestWatcher {
 
   /**
    * Determines if the test case's end activity ends the process or not. This is the case if the
-   * activity is an end event and if the activity's parent scope is the process. By default this
-   * method returns {@code true}.
+   * activity is an end event and if the activity's parent scope is the process. This method returns
+   * {@code true}, if not overridden.
    * 
    * @return {@code true}, if the test case's end activity ends the process. Otherwise {@code false}.
    */

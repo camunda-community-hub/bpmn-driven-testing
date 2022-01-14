@@ -7,6 +7,7 @@ import java.util.List;
 public class GeneratorContext {
 
   private Path basePath;
+  private boolean h2Version2;
   private Path mainResourcePath;
   private String packageName;
   private List<String> processEnginePluginNames;
@@ -44,12 +45,20 @@ public class GeneratorContext {
     return testSourcePath;
   }
 
+  public boolean isH2Version2() {
+    return h2Version2;
+  }
+
   public boolean isSpringEnabled() {
     return springEnabled;
   }
 
   public void setBasePath(Path basePath) {
     this.basePath = basePath;
+  }
+
+  public void setH2Version2(boolean h2Version2) {
+    this.h2Version2 = h2Version2;
   }
 
   public void setMainResourcePath(Path mainResourcePath) {

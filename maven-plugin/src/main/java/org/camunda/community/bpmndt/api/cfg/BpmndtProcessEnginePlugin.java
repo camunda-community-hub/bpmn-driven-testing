@@ -7,6 +7,7 @@ import java.util.UUID;
 import org.camunda.bpm.engine.impl.bpmn.parser.BpmnParseListener;
 import org.camunda.bpm.engine.impl.cfg.AbstractProcessEnginePlugin;
 import org.camunda.bpm.engine.impl.cfg.ProcessEngineConfigurationImpl;
+import org.camunda.bpm.engine.impl.db.sql.DbSqlSessionFactory;
 import org.camunda.bpm.engine.impl.history.HistoryLevel;
 
 /**
@@ -17,12 +18,11 @@ public class BpmndtProcessEnginePlugin extends AbstractProcessEnginePlugin {
 
   private final boolean springEnabled;
 
-  public BpmndtProcessEnginePlugin() {
-    this(false);
-  }
+  private final boolean h2Version2;
 
-  public BpmndtProcessEnginePlugin(boolean springEnabled) {
+  public BpmndtProcessEnginePlugin(boolean springEnabled, boolean h2Version2) {
     this.springEnabled = springEnabled;
+    this.h2Version2 = h2Version2;
   }
 
   @Override
@@ -51,6 +51,14 @@ public class BpmndtProcessEnginePlugin extends AbstractProcessEnginePlugin {
       // if Spring is not enabled, a custom JDBC url is set
       // otherwise a data source is used
       processEngineConfiguration.setJdbcUrl(url);
+    }
+
+    if (h2Version2) {
+      // ensure H2 version 2 compatibility
+      DbSqlSessionFactory.databaseSpecificTrueConstant.put("h2", "true");
+      DbSqlSessionFactory.databaseSpecificFalseConstant.put("h2", "false");
+      DbSqlSessionFactory.databaseSpecificBitAnd2.put("h2", ",CAST(");
+      DbSqlSessionFactory.databaseSpecificBitAnd3.put("h2", " AS BIGINT))");
     }
   }
 }

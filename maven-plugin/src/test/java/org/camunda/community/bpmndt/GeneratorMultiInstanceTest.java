@@ -49,6 +49,7 @@ public class GeneratorMultiInstanceTest {
 
     ctx = new GeneratorContext();
     ctx.setBasePath(Paths.get("."));
+    ctx.setH2Version2(true);
     ctx.setMainResourcePath(Paths.get("./src/test/it/advanced-multi-instance/src/main/resources"));
     ctx.setTestSourcePath(temporaryFolder.getRoot().toPath());
 

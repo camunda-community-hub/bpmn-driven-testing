@@ -53,7 +53,7 @@ public class SpringConfiguration implements InitializingBean {
 
     List<ProcessEnginePlugin> processEnginePlugins = initProcessEnginePlugins();
     // BPMN Driven Testing plugin must be added at last
-    processEnginePlugins.add(new BpmndtProcessEnginePlugin());
+    processEnginePlugins.add(new BpmndtProcessEnginePlugin(true, isH2Version2()));
 
     SpringProcessEngineConfiguration processEngineConfiguration = new SpringProcessEngineConfiguration();
     processEngineConfiguration.setApplicationContext(applicationContext);
@@ -111,5 +111,15 @@ public class SpringConfiguration implements InitializingBean {
     }
 
     return new DataSourceTransactionManager(dataSource);
+  }
+
+  /**
+   * Determines if version 2 of the H2 in-memory database is used or not. This method returns
+   * {@code true}, if not overridden.
+   * 
+   * @return {@code true}, if the H2 version is greater than 2. Otherwise {@code false}.
+   */
+  protected boolean isH2Version2() {
+    return true;
   }
 }

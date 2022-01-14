@@ -50,6 +50,7 @@ public class GeneratorTest {
 
     ctx = new GeneratorContext();
     ctx.setBasePath(Paths.get("."));
+    ctx.setH2Version2(true);
     ctx.setMainResourcePath(Paths.get("./src/test/resources"));
     ctx.setTestSourcePath(temporaryFolder.getRoot().toPath());
 
@@ -150,6 +151,26 @@ public class GeneratorTest {
 
     TypeSpec typeSpec = result.getFiles().get(0).typeSpec;
     assertThat(typeSpec.name, equalTo("TC_Happy_Path"));
+  }
+
+  @Test
+  public void testHappyPathWithH2Version1() {
+    ctx.setH2Version2(false);
+
+    // overridde auto built BPMN file path
+    bpmnFile = ctx.getMainResourcePath().resolve("bpmn").resolve("happyPath.bpmn");
+
+    generator.generateTestCases(ctx, bpmnFile);
+    assertThat(result.getFiles(), hasSize(1));
+    assertThat(result.getFiles().get(0).packageName, equalTo("org.example.happy_path"));
+
+    TypeSpec typeSpec = result.getFiles().get(0).typeSpec;
+    assertThat(typeSpec.name, equalTo("TC_Happy_Path"));
+    assertThat(typeSpec.fieldSpecs, hasSize(0));
+    assertThat(typeSpec.methodSpecs, hasSize(7));
+    assertThat(typeSpec.methodSpecs.get(6).name, equalTo("isH2Version2"));
+
+    containsCode(typeSpec.methodSpecs.get(6)).contains("return false");
   }
 
   @Test
