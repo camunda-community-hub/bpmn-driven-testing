@@ -6,7 +6,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.Collections;
 
-import org.apache.maven.artifact.Artifact;
+import org.apache.maven.model.Dependency;
 import org.apache.maven.project.MavenProject;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,35 +29,35 @@ public class GeneratorMojoTest {
 
   @Test
   public void testIsH2Version2_NoH2Dependency() {
-    Artifact h2 = Mockito.mock(Artifact.class);
-    when(h2.getGroupId()).thenReturn(GeneratorMojo.H2_GROUP_ID);
-    when(h2.getArtifactId()).thenReturn("no-h2");
+    Dependency dependency = new Dependency();
+    dependency.setGroupId(GeneratorMojo.H2_GROUP_ID);
+    dependency.setArtifactId("no-h2");
 
-    when(mojo.project.getDependencyArtifacts()).thenReturn(Collections.singleton(h2));
+    when(mojo.project.getDependencies()).thenReturn(Collections.singletonList(dependency));
 
     assertThat(mojo.isH2Version2(), is(false));
   }
 
   @Test
   public void testIsH2Version2_V1() {
-    Artifact h2 = Mockito.mock(Artifact.class);
-    when(h2.getGroupId()).thenReturn(GeneratorMojo.H2_GROUP_ID);
-    when(h2.getArtifactId()).thenReturn(GeneratorMojo.H2_ARTIFACT_ID);
-    when(h2.getVersion()).thenReturn("1.4.197");
+    Dependency dependency = new Dependency();
+    dependency.setGroupId(GeneratorMojo.H2_GROUP_ID);
+    dependency.setArtifactId(GeneratorMojo.H2_ARTIFACT_ID);
+    dependency.setVersion("1.4.197");
 
-    when(mojo.project.getDependencyArtifacts()).thenReturn(Collections.singleton(h2));
+    when(mojo.project.getDependencies()).thenReturn(Collections.singletonList(dependency));
 
     assertThat(mojo.isH2Version2(), is(false));
   }
 
   @Test
   public void testIsH2Version2_V2() {
-    Artifact h2 = Mockito.mock(Artifact.class);
-    when(h2.getGroupId()).thenReturn(GeneratorMojo.H2_GROUP_ID);
-    when(h2.getArtifactId()).thenReturn(GeneratorMojo.H2_ARTIFACT_ID);
-    when(h2.getVersion()).thenReturn("2.0.206");
+    Dependency dependency = new Dependency();
+    dependency.setGroupId(GeneratorMojo.H2_GROUP_ID);
+    dependency.setArtifactId(GeneratorMojo.H2_ARTIFACT_ID);
+    dependency.setVersion("2.0.206");
 
-    when(mojo.project.getDependencyArtifacts()).thenReturn(Collections.singleton(h2));
+    when(mojo.project.getDependencies()).thenReturn(Collections.singletonList(dependency));
 
     assertThat(mojo.isH2Version2(), is(true));
   }
