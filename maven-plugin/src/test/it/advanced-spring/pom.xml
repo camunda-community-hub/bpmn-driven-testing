@@ -10,11 +10,11 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <!-- Versions -->
-    <assertj.version>3.18.1</assertj.version>
-    <camunda.bpm.version>7.15.0</camunda.bpm.version>
-    <camunda.bpm.assert.version>10.0.0</camunda.bpm.assert.version>
+    <assertj.version>3.22.0</assertj.version>
+    <camunda.bpm.version>7.16.0</camunda.bpm.version>
+    <camunda.bpm.assert.version>13.0.0</camunda.bpm.assert.version>
     <junit.version>4.13.2</junit.version>
-    <spring.version>5.3.3</spring.version>
+    <spring.version>5.3.15</spring.version>
 
     <plugin.version>0.5.0-SNAPSHOT</plugin.version>
   </properties>
@@ -73,7 +73,7 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-log4j12</artifactId>
-      <version>1.7.25</version>
+      <version>1.7.32</version>
       <scope>test</scope>
     </dependency>
     

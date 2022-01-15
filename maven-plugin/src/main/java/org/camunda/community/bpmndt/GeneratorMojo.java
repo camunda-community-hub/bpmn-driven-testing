@@ -5,7 +5,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 
-import org.apache.maven.artifact.Artifact;
+import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -69,15 +69,15 @@ public class GeneratorMojo extends AbstractMojo {
     }
   }
 
-  private boolean isH2Artifact(Artifact artifact) {
-    return H2_GROUP_ID.equals(artifact.getGroupId()) && H2_ARTIFACT_ID.equals(artifact.getArtifactId());
+  private boolean isH2(Dependency dependency) {
+    return H2_GROUP_ID.equals(dependency.getGroupId()) && H2_ARTIFACT_ID.equals(dependency.getArtifactId());
   }
 
   protected boolean isH2Version2() {
-    // finds the version of the H2 artifact within the project's direct dependencies
-    Optional<String> h2Version = project.getDependencyArtifacts().stream()
-        .filter(this::isH2Artifact)
-        .map(Artifact::getVersion)
+    // finds the version of the H2 artifact within the project's dependencies
+    Optional<String> h2Version = project.getDependencies().stream()
+        .filter(this::isH2)
+        .map(Dependency::getVersion)
         .findFirst();
 
     if (!h2Version.isPresent()) {
