@@ -65,6 +65,25 @@ public class EventHandler {
   }
 
   /**
+   * Customizes the handler, using the given {@link Consumer} function. This method can be used to
+   * apply a common customization needed for different test cases.
+   * 
+   * <pre>
+   * tc.handleEvent().customize(this::prepareEvent);
+   * </pre>
+   * 
+   * @param customizer A function that accepts a {@link EventHandler}.
+   * 
+   * @return The handler.
+   */
+  public EventHandler customize(Consumer<EventHandler> customizer) {
+    if (customizer != null) {
+      customizer.accept(this);
+    }
+    return this;
+  }
+
+  /**
    * Executes a custom action that handles the intermediate catch event.
    * 
    * @param action A specific action that accepts an {@link EventSubscription}.

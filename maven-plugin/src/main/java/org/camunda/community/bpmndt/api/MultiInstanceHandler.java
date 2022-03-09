@@ -3,6 +3,7 @@ package org.camunda.community.bpmndt.api;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import org.camunda.bpm.engine.ActivityTypes;
 import org.camunda.bpm.engine.HistoryService;
@@ -121,6 +122,26 @@ public class MultiInstanceHandler<T extends MultiInstanceHandler<?, ?>, U> {
    */
   private JobHandler createJobHandlerBefore(int loopIndex) {
     return new JobHandler(getProcessEngine(), activityId, isSequential() ? Cardinality.ONE : Cardinality.ONE_TO_N);
+  }
+
+  /**
+   * Customizes the handler, using the given {@link Consumer} function. This method can be used to
+   * apply a common customization needed for different test cases.
+   * 
+   * <pre>
+   * tc.handleMultiInstance().customize(this::prepareMultiInstance);
+   * </pre>
+   * 
+   * @param customizer A function that accepts a suitable {@link MultiInstanceHandler}.
+   * 
+   * @return The handler.
+   */
+  @SuppressWarnings("unchecked")
+  public T customize(Consumer<MultiInstanceHandler<T, U>> customizer) {
+    if (customizer != null) {
+      customizer.accept(this);
+    }
+    return (T) this;
   }
 
   protected U getHandler(int loopIndex) {

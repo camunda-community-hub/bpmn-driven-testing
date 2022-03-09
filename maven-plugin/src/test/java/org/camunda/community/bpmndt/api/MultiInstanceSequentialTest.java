@@ -62,6 +62,19 @@ public class MultiInstanceSequentialTest {
     }
   }
 
+  @Test
+  public void testVerifyParallelCustomized() {
+    handler.customize(it -> {
+      it.verifyParallel();
+    });
+
+    try {
+      tc.createExecutor().execute();
+    } catch (AssertionError e) {
+      assertThat(e.getMessage(), containsString("to be parallel, but was sequential"));
+    }
+  }
+
   private class TestCase extends AbstractJUnit4TestCase {
 
     @Override

@@ -67,6 +67,25 @@ public class UserTaskHandler {
   }
 
   /**
+   * Customizes the handler, using the given {@link Consumer} function. This method can be used to
+   * apply a common customization needed for different test cases.
+   * 
+   * <pre>
+   * tc.handleUserTask().customize(this::prepareUserTask);
+   * </pre>
+   * 
+   * @param customizer A function that accepts a {@link UserTaskHandler}.
+   * 
+   * @return The handler.
+   */
+  public UserTaskHandler customize(Consumer<UserTaskHandler> customizer) {
+    if (customizer != null) {
+      customizer.accept(this);
+    }
+    return this;
+  }
+
+  /**
    * Executes a custom action that handles the user task.
    * 
    * @param action A specific action that accepts the related {@link Task}.
