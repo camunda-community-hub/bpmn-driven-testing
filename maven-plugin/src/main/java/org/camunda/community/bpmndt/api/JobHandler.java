@@ -70,6 +70,25 @@ public class JobHandler {
   }
 
   /**
+   * Customizes the handler, using the given {@link Consumer} function. This method can be used to
+   * apply a common customization needed for different test cases.
+   * 
+   * <pre>
+   * tc.handleJob().customize(this::prepareJob);
+   * </pre>
+   * 
+   * @param customizer A function that accepts a {@link JobHandler}.
+   * 
+   * @return The handler.
+   */
+  public JobHandler customize(Consumer<JobHandler> customizer) {
+    if (customizer != null) {
+      customizer.accept(this);
+    }
+    return this;
+  }
+
+  /**
    * Executes the job with an action that calls {@code executeJob}.
    * 
    * @see ManagementService#executeJob(String)

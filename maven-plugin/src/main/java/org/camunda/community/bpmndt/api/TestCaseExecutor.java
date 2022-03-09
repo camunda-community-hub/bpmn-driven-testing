@@ -35,11 +35,30 @@ public class TestCaseExecutor {
   }
 
   /**
+   * Customizes the executor, using the given {@link Consumer} function. This method can be used to
+   * apply a common customization needed for different test cases.
+   * 
+   * <pre>
+   * tc.createExecutor().customize(this::prepareVariables).execute();
+   * </pre>
+   * 
+   * @param customizer A function that accepts a {@link TestCaseExecutor}.
+   * 
+   * @return The executor.
+   */
+  public TestCaseExecutor customize(Consumer<TestCaseExecutor> customizer) {
+    if (customizer != null) {
+      customizer.accept(this);
+    }
+    return this;
+  }
+
+  /**
    * Create a new {@link ProcessInstance}, executes the actual test case and verifies the state after.
    * 
-   * @return The ID of the created process instance.
+   * @return The newly created process instance.
    */
-  public String execute() {
+  public ProcessInstance execute() {
     // find process definition of related deployment
     ProcessDefinition pd = instance.getProcessEngine().getRepositoryService()
         .createProcessDefinitionQuery()
@@ -55,7 +74,7 @@ public class TestCaseExecutor {
 
     execute(pi);
 
-    return pi.getId();
+    return pi;
   }
 
   /**
@@ -88,8 +107,10 @@ public class TestCaseExecutor {
    * identified by the given ID.
    * 
    * @param processInstanceId The ID of an existing process instance.
+   * 
+   * @return The identified process instance.
    */
-  public void execute(String processInstanceId) {
+  public ProcessInstance execute(String processInstanceId) {
     if (processInstanceId == null) {
       throw new IllegalArgumentException("The given process instance ID is null");
     }
@@ -102,6 +123,8 @@ public class TestCaseExecutor {
     }
 
     execute(pi);
+
+    return pi;
   }
 
   /**

@@ -41,6 +41,25 @@ public class CallActivityHandler {
   }
 
   /**
+   * Customizes the handler, using the given {@link Consumer} function. This method can be used to
+   * apply a common customization needed for different test cases.
+   * 
+   * <pre>
+   * tc.handleCallActivity().customize(this::prepareCallActivity);
+   * </pre>
+   * 
+   * @param customizer A function that accepts a {@link CallActivityHandler}.
+   * 
+   * @return The handler.
+   */
+  public CallActivityHandler customize(Consumer<CallActivityHandler> customizer) {
+    if (customizer != null) {
+      customizer.accept(this);
+    }
+    return this;
+  }
+
+  /**
    * Simulates the execution of a call activity.
    * 
    * 1. Gets the call activity definition and verifies it.

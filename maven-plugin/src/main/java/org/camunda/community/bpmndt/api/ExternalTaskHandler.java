@@ -73,6 +73,25 @@ public class ExternalTaskHandler {
   }
 
   /**
+   * Customizes the handler, using the given {@link Consumer} function. This method can be used to
+   * apply a common customization needed for different test cases.
+   * 
+   * <pre>
+   * tc.handleExternalTask().customize(this::prepareExternalTask);
+   * </pre>
+   * 
+   * @param customizer A function that accepts a {@link ExternalTaskHandler}.
+   * 
+   * @return The handler.
+   */
+  public ExternalTaskHandler customize(Consumer<ExternalTaskHandler> customizer) {
+    if (customizer != null) {
+      customizer.accept(this);
+    }
+    return this;
+  }
+
+  /**
    * Executes a custom action that handles the external task.
    * 
    * @param action A specific action that accepts the related topic name (String).

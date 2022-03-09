@@ -38,6 +38,19 @@ public class MultiInstanceUserTaskTest {
     tc.createExecutor().execute();
   }
 
+  @Test
+  public void testExecuteCustomized() {
+    handler.customize(it -> {
+      it.verifyLoopCount(3);
+
+      it.handleDefault().verify((pi, task) -> {
+        task.hasName("User task");
+      });
+    });
+
+    tc.createExecutor().execute();
+  }
+
   private class TestCase extends AbstractJUnit4TestCase {
 
     @Override
