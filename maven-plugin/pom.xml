@@ -22,7 +22,7 @@
     <javapoet.version>1.13.0</javapoet.version>
     <junit.version>4.13.2</junit.version>
     <maven.version>3.8.4</maven.version>
-    <maven.plugin.version>3.6.2</maven.plugin.version>
+    <maven.plugin.version>3.6.4</maven.plugin.version>
     <spring.version>5.3.18</spring.version>
   </properties>
 
