@@ -54,12 +54,31 @@ public class BpmndtParseListener extends AbstractBpmnParseListener {
   }
 
   /**
+   * Instruments the call activity by overriding it's behavior to allow isolated testing.
+   * 
+   * @param activity The current activity.
+   */
+  protected void instrumentCallActivity(ActivityImpl activity) {
+    if (instance == null) {
+      return;
+    }
+
+    CallActivityBehavior behavior = (CallActivityBehavior) activity.getActivityBehavior();
+
+    activity.setActivityBehavior(new CustomCallActivityBehavior(instance, behavior));
+
+    // needed to verify the state before the call activity is executed
+    // otherwise the process instance may not be available yet
+    activity.setAsyncBefore(true);
+  }
+
+  /**
    * Instruments the end activity, if it does not end the process.
    * 
    * @param activities A list of activities, which should also contain the end activity.
    */
   protected void instrumentEndActivity(List<ActivityImpl> activities) {
-    if (instance.isProcessEnd()) {
+    if (instance == null || instance.isProcessEnd()) {
       return;
     }
 
@@ -77,6 +96,10 @@ public class BpmndtParseListener extends AbstractBpmnParseListener {
    * @param activity The current activity.
    */
   protected void instrumentMultiInstanceActivity(ScopeImpl scope, ActivityImpl activity) {
+    if (instance == null) {
+      return;
+    }
+
     if (!scope.isSubProcessScope() && scope.getId().endsWith(MULTI_INSTANCE_SCOPE_SUFFIX)) {
       activity.setAsyncBefore(true);
       activity.setAsyncAfter(true);
@@ -85,14 +108,7 @@ public class BpmndtParseListener extends AbstractBpmnParseListener {
 
   @Override
   public void parseCallActivity(Element callActivityElement, ScopeImpl scope, ActivityImpl activity) {
-    CallActivityBehavior behavior = (CallActivityBehavior) activity.getActivityBehavior();
-
-    activity.setActivityBehavior(new CustomCallActivityBehavior(instance, behavior));
-
-    // needed to verify the state before the call activity is executed
-    // otherwise the process instance may not be available yet
-    activity.setAsyncBefore(true);
-
+    instrumentCallActivity(activity);
     instrumentMultiInstanceActivity(scope, activity);
   }
 
@@ -163,7 +179,7 @@ public class BpmndtParseListener extends AbstractBpmnParseListener {
 
     @Override
     public void execute(ActivityExecution execution) throws Exception {
-      boolean shouldLeave = instance != null ? instance.execute(execution, behavior) : true;
+      boolean shouldLeave = instance.execute(execution, behavior);
 
       if (shouldLeave) {
         leave(execution);

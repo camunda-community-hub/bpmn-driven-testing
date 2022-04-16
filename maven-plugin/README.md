@@ -31,8 +31,8 @@ Available parameters for the plugin's `generator` goal:
 | Parameter            | Type         | Description                                                                | Default value |
 |:---------------------|:-------------|:---------------------------------------------------------------------------|:--------------|
 | packageName          | String       | Package name, used for the generated test sources                          | generated     |
-| processEnginePlugins | List<String> | List of process engine plugins to register at the process engine           | -             |
-| springEnabled        | Boolean      | Enables Spring based testing                                               | false         |
+| processEnginePlugins | List<String> | List of process engine plugins to register at the process engine (not required for Spring Boot, since process engine plugins must be exposed as beans) | -             |
+| springEnabled        | Boolean      | Enables Spring based testing (not required for Spring Boot, since here only the [BpmndtProcessEnginePlugin](src/main/java/org/camunda/community/bpmndt/api/cfg/BpmndtProcessEnginePlugin.java) must be exposed as a bean) | false |
 | testSourceDirectory  | String       | Name of the directory under `target/`, used for the generated test sources | bpmndt        |
 
 ## Dependencies
@@ -42,12 +42,6 @@ Add dependencies, which are required to execute the generated test code:
 <dependency>
   <groupId>org.camunda.bpm</groupId>
   <artifactId>camunda-engine</artifactId>
-</dependency>
-
-<!-- Required for plugin version 0.3.0 and lower -->
-<dependency>
-  <groupId>org.camunda.bpm</groupId>
-  <artifactId>camunda-engine-plugin-spin</artifactId>
 </dependency>
 
 <dependency>
@@ -109,6 +103,34 @@ For **Spring** based testing, additional dependencies are required:
 </dependency>
 ```
 
+For **Spring Boot** based testing, additional dependencies are required:
+
+```xml
+<dependency>
+  <groupId>org.camunda.bpm.springboot</groupId>
+  <artifactId>camunda-bpm-spring-boot-starter</artifactId>
+</dependency>
+
+<dependency>
+  <groupId>org.springframework.boot</groupId>
+  <artifactId>spring-boot-starter-test</artifactId>
+  <scope>test</scope>
+</dependency>
+
+<!-- Allows usage of JUnit 4 -->
+<dependency>
+  <groupId>org.junit.vintage</groupId>
+  <artifactId>junit-vintage-engine</artifactId>
+  <scope>test</scope>
+  <exclusions>
+    <exclusion>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest-core</artifactId>
+    </exclusion>
+  </exclusions>
+</dependency>
+```
+
 Recommended versions:
 
 | Dependency         | Version |
@@ -117,7 +139,8 @@ Recommended versions:
 | Camunda BPM Assert | 13.0.0  |
 | JUnit 4            | 4.13.2  |
 | Assertj            | 3.22.0  |
-| Spring Framework   | 5.3.15 |
+| Spring Framework   | 5.3.18  |
+| Spring Boot        | 2.6.6   |
 
 ## Testing
 :warning: This section is only important for plugin development!

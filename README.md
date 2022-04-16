@@ -2,17 +2,17 @@
 [![](https://img.shields.io/badge/Community%20Extension-An%20open%20source%20community%20maintained%20project-FF4700)](https://github.com/camunda-community-hub/community)
 [![](https://img.shields.io/badge/Lifecycle-Incubating-blue)](https://github.com/Camunda-Community-Hub/community/blob/main/extension-lifecycle.md#incubating-)
 
-[Camunda Platform](https://docs.camunda.org/manual/latest/) extension, which is able to generate test code based on an extended BPMN model.
+[Camunda Platform 7](https://docs.camunda.org/manual/latest/) extension, which is able to generate test code based on an extended BPMN model.
 
 The extension lets the developer focus on testing the business logic, rather than writing boilerplate code.
 The generated test code handles process instance start at any selected flow node and advances a process instance in case of wait states.
 Since the test code is generated, there is no need to deal with process definition keys and flow node IDs.
-If the BPMN model changes, any breaking changes (e.g. a user task becomes an external task) in the BPMN process will result in test compile errors.
+Moreover any breaking changes (e.g. a user task becomes an external task) in the BPMN process will already be visible at design time as test compile errors.
 
 The extension consists of:
 
 - [Camunda Modeler plugin](camunda-modeler-plugin) for a visual selection and the management of test cases
-- [Maven plugin](maven-plugin) for generation of JUnit based test code
+- [Maven plugin](maven-plugin) for generation of JUnit 4 based test code
 
 ## Features
 - Visual test case selection
@@ -26,7 +26,8 @@ The extension consists of:
   - Call activity stubbing for isolated testing - see [CallActivityTest](maven-plugin/src/test/it/advanced/src/test/java/org/example/it/CallActivityWithMappingTest.java)
   - [Fluent API](maven-plugin/src/main/java/org/camunda/community/bpmndt/api) to override default behavior
   - Multi instance activity support - see [tests](maven-plugin/src/test/it/advanced-multi-instance/src/test/java/org/example/it)
-- Spring test support - see [AdvancedTest](maven-plugin/src/test/it/advanced-spring/src/test/java/org/example/it/AdvancedTest.java)
+- Spring test support - see [integration test](maven-plugin/src/test/it/advanced-spring/)
+- Spring Boot test support - see [integration test](maven-plugin/src/test/it/advanced-spring-boot/)
 - Testing of arbitrary paths through a BPMN process
 - Test case validation and migration, when a BPMN process was changed - see [docs](docs/test-case-validation-and-migration.md)
 
