@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:bpmndt="http://camunda.org/schema/extension/bpmn-driven-testing" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_014rcwu" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.4.0">
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:bpmndt="http://camunda.org/schema/extension/bpmn-driven-testing" id="Definitions_014rcwu" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.11.1">
   <bpmn:process id="callActivityWithMapping" isExecutable="true">
     <bpmn:extensionElements>
       <bpmndt:testCases>
@@ -20,7 +20,7 @@
       <bpmn:incoming>Flow_01pnx9v</bpmn:incoming>
     </bpmn:endEvent>
     <bpmn:sequenceFlow id="Flow_01pnx9v" sourceRef="callActivity" targetRef="endEvent" />
-    <bpmn:callActivity id="callActivity" calledElement="advanced" camunda:calledElementBinding="version" camunda:calledElementVersion="1" camunda:variableMappingDelegateExpression="${callActivityMapping}">
+    <bpmn:callActivity id="callActivity" calledElement="advanced" camunda:calledElementBinding="version" camunda:calledElementVersion="1" camunda:calledElementTenantId="tenant-1" camunda:variableMappingDelegateExpression="${callActivityMapping}">
       <bpmn:incoming>Flow_1mvwkq4</bpmn:incoming>
       <bpmn:outgoing>Flow_01pnx9v</bpmn:outgoing>
     </bpmn:callActivity>

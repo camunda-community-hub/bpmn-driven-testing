@@ -113,7 +113,7 @@ Recommended versions:
 
 | Dependency         | Version |
 |:-------------------|:--------|
-| Camunda BPM        | 7.16.0 |
+| Camunda BPM        | 7.17.0  |
 | Camunda BPM Assert | 13.0.0  |
 | JUnit 4            | 4.13.2  |
 | Assertj            | 3.22.0  |

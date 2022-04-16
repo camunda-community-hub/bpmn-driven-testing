@@ -33,6 +33,9 @@ public abstract class AbstractJUnit4TestCase extends TestWatcher {
   /** ID of optional annotation based deployment. */
   private String annotationDeploymentId;
 
+  /** ID of optional tenant that is used for the process definition deployment. */
+  private String tenantId;
+
   @Override
   protected void starting(Description description) {
     ProcessEngine processEngine = ProcessEngines.getProcessEngine(PROCESS_ENGINE_NAME);
@@ -53,6 +56,7 @@ public abstract class AbstractJUnit4TestCase extends TestWatcher {
     instance.setProcessEnd(isProcessEnd());
     instance.setProcessEngine(processEngine);
     instance.setStart(getStart());
+    instance.setTenantId(tenantId);
 
     String deploymentName = this.getClass().getSimpleName();
 
@@ -237,5 +241,17 @@ public abstract class AbstractJUnit4TestCase extends TestWatcher {
    */
   protected boolean isProcessEnd() {
     return true;
+  }
+
+  /**
+   * Sets the tenant ID to be used for the automatic process definition deployment.
+   * 
+   * @param tenantId A specific tenant ID.
+   * 
+   * @return The test case.
+   */
+  public AbstractJUnit4TestCase withTenantId(String tenantId) {
+    this.tenantId = tenantId;
+    return this;
   }
 }

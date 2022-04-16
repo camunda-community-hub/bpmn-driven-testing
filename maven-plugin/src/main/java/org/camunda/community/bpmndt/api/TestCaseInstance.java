@@ -34,6 +34,8 @@ public class TestCaseInstance {
   /** ID of BPMN resource deployment. */
   private String deploymentId;
 
+  private String tenantId;
+
   private ProcessInstance pi;
 
   public TestCaseInstance() {
@@ -77,6 +79,7 @@ public class TestCaseInstance {
         .name(deploymentName)
         .addInputStream(String.format("%s.bpmn", getProcessDefinitionKey()), bpmnResource)
         .enableDuplicateFiltering(false)
+        .tenantId(tenantId)
         .deploy();
 
     deploymentId = deployment.getId();
@@ -91,6 +94,7 @@ public class TestCaseInstance {
         .name(deploymentName)
         .addClasspathResource(bpmnResourceName)
         .enableDuplicateFiltering(false)
+        .tenantId(tenantId)
         .deploy();
 
     deploymentId = deployment.getId();
@@ -183,6 +187,10 @@ public class TestCaseInstance {
 
   protected void setStart(String start) {
     this.start = start;
+  }
+
+  protected void setTenantId(String tenantId) {
+    this.tenantId = tenantId;
   }
 
   protected void undeploy() {
