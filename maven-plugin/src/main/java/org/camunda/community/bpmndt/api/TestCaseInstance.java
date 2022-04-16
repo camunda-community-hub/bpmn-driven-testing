@@ -42,14 +42,6 @@ public class TestCaseInstance {
     callActivityHandlerMap = new HashMap<>(4);
   }
 
-  /**
-   * Announces the test case instance by providing a reference to the {@link BpmndtParseListener} that
-   * is used during BPMN model parsing.
-   */
-  protected void announce() {
-    findParseListener().ifPresent((parseListener) -> parseListener.setInstance(this));
-  }
-
   public void apply(EventHandler handler) {
     handler.apply(pi);
   }
@@ -71,7 +63,7 @@ public class TestCaseInstance {
   }
 
   protected void deploy(String deploymentName, InputStream bpmnResource) {
-    this.announce();
+    this.register();
 
     RepositoryService repositoryService = processEngine.getRepositoryService();
 
@@ -86,7 +78,7 @@ public class TestCaseInstance {
   }
 
   protected void deploy(String deploymentName, String bpmnResourceName) {
-    this.announce();
+    this.register();
 
     RepositoryService repositoryService = processEngine.getRepositoryService();
 
@@ -161,6 +153,14 @@ public class TestCaseInstance {
     return processEnd;
   }
 
+  /**
+   * Registers the test case instance by providing a reference to the {@link BpmndtParseListener} that
+   * is used during BPMN model parsing.
+   */
+  protected void register() {
+    findParseListener().ifPresent((parseListener) -> parseListener.setInstance(this));
+  }
+
   protected void registerCallActivityHandler(String activityId, CallActivityHandler handler) {
     callActivityHandlerMap.put(activityId, handler);
   }
@@ -194,6 +194,9 @@ public class TestCaseInstance {
   }
 
   protected void undeploy() {
+    // deregister instance
+    findParseListener().ifPresent((parseListener) -> parseListener.setInstance(null));
+
     callActivityHandlerMap.clear();
 
     if (deploymentId == null) {
