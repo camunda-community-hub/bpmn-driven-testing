@@ -1,11 +1,14 @@
 package org.camunda.community.bpmndt.api;
 
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import org.camunda.bpm.engine.delegate.DelegateVariableMapping;
 import org.camunda.bpm.engine.delegate.VariableScope;
@@ -87,7 +90,7 @@ public class CallActivityHandler {
     callActivityDefinition.setBinding(callableElement.getBinding());
     callActivityDefinition.setBusinessKey(callableElement.getBusinessKey(execution));
     callActivityDefinition.setDefinitionKey(callableElement.getDefinitionKey(execution));
-    callActivityDefinition.setDefinitionTenantId(callableElement.getDefinitionTenantId(execution));
+    callActivityDefinition.setDefinitionTenantId(getDefinitionTenantId(pi, execution, callableElement));
     callActivityDefinition.setVersion(callableElement.getVersion(execution));
     callActivityDefinition.setVersionTag(callableElement.getVersionTag(execution));
 
@@ -125,6 +128,32 @@ public class CallActivityHandler {
     subExecution.remove();
 
     return !waitForBoundaryEvent;
+  }
+
+  private String getDefinitionTenantId(ProcessInstance pi, ActivityExecution execution, CallableElement callableElement) {
+    final String methodName = "getDefinitionTenantId";
+
+    Optional<Method> foundMethod = Stream.of(CallableElement.class.getMethods())
+        .filter(method -> method.getName().equals(methodName))
+        .findFirst();
+
+    if (!foundMethod.isPresent()) {
+      throw new RuntimeException(String.format("Class '%s' misses required method '%s'", CallableElement.class.getName(), methodName));
+    }
+
+    Method method = foundMethod.get();
+
+    try {
+      if (method.getParameterCount() == 1) {
+        // Camunda BPM version <= 7.16.0
+        return (String) method.invoke(callableElement, execution);
+      } else {
+        // Camunda BPM version >= 7.17.0
+        return (String) method.invoke(callableElement, execution, pi.getTenantId());
+      }
+    } catch (Exception e) {
+      throw new RuntimeException(String.format("Method '%s' could not be invoked", methodName), e);
+    }
   }
 
   /**

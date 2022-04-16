@@ -28,7 +28,7 @@ import org.junit.Test;
 public class CallActivityTest {
 
   @Rule
-  public TestCase tc = new TestCase();
+  public AbstractJUnit4TestCase tc = new TestCase().withTenantId("tenant-x");
 
   private CallActivityHandler handler;
 
@@ -59,7 +59,7 @@ public class CallActivityTest {
       assertThat(callActivity.getBinding(), is(CallableElementBinding.DEPLOYMENT));
       assertThat(callActivity.getBusinessKey(), equalTo("simpleKey"));
       assertThat(callActivity.getDefinitionKey(), equalTo("simple"));
-      assertThat(callActivity.getDefinitionTenantId(), nullValue());
+      assertThat(callActivity.getDefinitionTenantId(), equalTo("tenant-x"));
       assertThat(callActivity.getVersion(), nullValue());
       assertThat(callActivity.getVersion(), nullValue());
       assertThat(callActivity.getVersionTag(), nullValue());

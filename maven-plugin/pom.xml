@@ -17,7 +17,7 @@
 
     <!-- Versions -->
     <assertj.version>3.22.0</assertj.version>
-    <camunda.bpm.version>7.16.0</camunda.bpm.version>
+    <camunda.bpm.version>7.17.0</camunda.bpm.version>
     <camunda.bpm.assert.version>13.0.0</camunda.bpm.assert.version>
     <javapoet.version>1.13.0</javapoet.version>
     <junit.version>4.13.2</junit.version>
@@ -40,8 +40,8 @@
         <groupId>org.camunda.bpm</groupId>
         <artifactId>camunda-bom</artifactId>
         <version>${camunda.bpm.version}</version>
-        <scope>import</scope>
         <type>pom</type>
+        <scope>import</scope>
       </dependency>
     </dependencies>
   </dependencyManagement>

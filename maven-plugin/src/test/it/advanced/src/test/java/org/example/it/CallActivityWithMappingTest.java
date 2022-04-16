@@ -26,7 +26,7 @@ public class CallActivityWithMappingTest {
       assertThat(callActivity.getBinding(), is(CallableElementBinding.VERSION));
       assertThat(callActivity.getBusinessKey(), nullValue());
       assertThat(callActivity.getDefinitionKey(), equalTo("advanced"));
-      assertThat(callActivity.getDefinitionTenantId(), nullValue());
+      assertThat(callActivity.getDefinitionTenantId(), equalTo("tenant-1"));
       assertThat(callActivity.getVersion(), is(1));
       assertThat(callActivity.getVersionTag(), nullValue());
     }).verifyInput(variables -> {
