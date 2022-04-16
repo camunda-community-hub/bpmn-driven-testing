@@ -15,7 +15,6 @@ import org.camunda.community.bpmndt.TestCaseContext;
 import org.camunda.community.bpmndt.api.AbstractJUnit4TestCase;
 import org.camunda.community.bpmndt.cmd.generation.Execute;
 import org.camunda.community.bpmndt.cmd.generation.GetProcessEnginePlugins;
-import org.camunda.community.bpmndt.cmd.generation.IsH2Version2;
 import org.camunda.community.bpmndt.cmd.generation.Starting;
 import org.junit.rules.TestRule;
 
@@ -64,10 +63,6 @@ public class GenerateJUnit4TestCase implements Consumer<TestCaseContext> {
 
     if (ctx.isValid() && !ctx.getEndActivity().isProcessEnd()) {
       classBuilder.addMethod(buildIsProcessEnd());
-    }
-
-    if (!gCtx.isH2Version2()) {
-      classBuilder.addMethod(new IsH2Version2().apply(gCtx));
     }
 
     if (gCtx.isSpringEnabled()) {

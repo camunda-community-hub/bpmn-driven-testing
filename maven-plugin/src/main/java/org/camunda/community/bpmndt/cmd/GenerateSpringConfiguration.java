@@ -8,7 +8,6 @@ import org.camunda.community.bpmndt.GeneratorContext;
 import org.camunda.community.bpmndt.GeneratorResult;
 import org.camunda.community.bpmndt.api.cfg.SpringConfiguration;
 import org.camunda.community.bpmndt.cmd.generation.GetProcessEnginePlugins;
-import org.camunda.community.bpmndt.cmd.generation.IsH2Version2;
 import org.springframework.context.annotation.Configuration;
 
 import com.squareup.javapoet.JavaFile;
@@ -36,10 +35,6 @@ public class GenerateSpringConfiguration implements Consumer<GeneratorContext> {
 
     if (!ctx.getProcessEnginePluginNames().isEmpty()) {
       builder.addMethod(new GetProcessEnginePlugins().apply(ctx));
-    }
-
-    if (!ctx.isH2Version2()) {
-      builder.addMethod(new IsH2Version2().apply(ctx));
     }
 
     JavaFile javaFile = JavaFile.builder(ctx.getPackageName(), builder.build())

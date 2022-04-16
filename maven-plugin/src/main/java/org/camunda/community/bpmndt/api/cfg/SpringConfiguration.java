@@ -1,7 +1,5 @@
 package org.camunda.community.bpmndt.api.cfg;
 
-import static org.camunda.community.bpmndt.api.TestCaseInstance.PROCESS_ENGINE_NAME;
-
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -49,19 +47,17 @@ public class SpringConfiguration implements InitializingBean {
   @Override
   public void afterPropertiesSet() throws Exception {
     DataSource dataSource = initDataSource();
-    PlatformTransactionManager transactionManager = initTransactionManager(dataSource);
 
     List<ProcessEnginePlugin> processEnginePlugins = initProcessEnginePlugins();
     // BPMN Driven Testing plugin must be added at last
-    processEnginePlugins.add(new BpmndtProcessEnginePlugin(true, isH2Version2()));
+    processEnginePlugins.add(new BpmndtProcessEnginePlugin());
 
     SpringProcessEngineConfiguration processEngineConfiguration = new SpringProcessEngineConfiguration();
     processEngineConfiguration.setApplicationContext(applicationContext);
     processEngineConfiguration.setDataSource(dataSource);
     processEngineConfiguration.setExpressionManager(new SpringExpressionManager(applicationContext, null));
-    processEngineConfiguration.setProcessEngineName(PROCESS_ENGINE_NAME);
     processEngineConfiguration.setProcessEnginePlugins(processEnginePlugins);
-    processEngineConfiguration.setTransactionManager(transactionManager);
+    processEngineConfiguration.setTransactionManager(initTransactionManager(dataSource));
 
     processEngine = processEngineConfiguration.buildProcessEngine();
   }
@@ -111,15 +107,5 @@ public class SpringConfiguration implements InitializingBean {
     }
 
     return new DataSourceTransactionManager(dataSource);
-  }
-
-  /**
-   * Determines if version 2 of the H2 in-memory database is used or not. This method returns
-   * {@code true}, if not overridden.
-   * 
-   * @return {@code true}, if the H2 version is greater than 2. Otherwise {@code false}.
-   */
-  protected boolean isH2Version2() {
-    return true;
   }
 }
