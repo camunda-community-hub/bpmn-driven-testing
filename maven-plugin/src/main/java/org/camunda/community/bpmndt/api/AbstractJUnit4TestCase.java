@@ -114,10 +114,9 @@ public abstract class AbstractJUnit4TestCase extends TestWatcher {
     // must be added to a new list, since the provided list may not allow modifications
     List<ProcessEnginePlugin> processEnginePlugins = new LinkedList<>(getProcessEnginePlugins());
     // BPMN Driven Testing plugin must be added at last
-    processEnginePlugins.add(new BpmndtProcessEnginePlugin(false, isH2Version2()));
+    processEnginePlugins.add(new BpmndtProcessEnginePlugin());
 
     ProcessEngineConfigurationImpl processEngineConfiguration = new StandaloneInMemProcessEngineConfiguration();
-    processEngineConfiguration.setProcessEngineName(PROCESS_ENGINE_NAME);
     processEngineConfiguration.setProcessEnginePlugins(processEnginePlugins);
 
     return processEngineConfiguration.buildProcessEngine();
@@ -211,16 +210,6 @@ public abstract class AbstractJUnit4TestCase extends TestWatcher {
    * @return The start activity ID.
    */
   public abstract String getStart();
-
-  /**
-   * Determines if version 2 of the H2 in-memory database is used or not. This method returns
-   * {@code true}, if not overridden.
-   * 
-   * @return {@code true}, if the H2 version is greater than 2. Otherwise {@code false}.
-   */
-  protected boolean isH2Version2() {
-    return true;
-  }
 
   /**
    * Determines if Spring based testing is enabled or not. This method returns {@code false}, if not
