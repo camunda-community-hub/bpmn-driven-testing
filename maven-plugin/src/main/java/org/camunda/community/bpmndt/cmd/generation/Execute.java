@@ -8,6 +8,7 @@ import org.camunda.bpm.engine.ActivityTypes;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.community.bpmndt.GeneratorStrategy;
 import org.camunda.community.bpmndt.TestCaseActivity;
+import org.camunda.community.bpmndt.TestCaseActivityType;
 import org.camunda.community.bpmndt.TestCaseContext;
 
 import com.squareup.javapoet.MethodSpec;
@@ -51,18 +52,24 @@ public class Execute implements Function<TestCaseContext, MethodSpec> {
         strategy.applyHandlerAfter(builder);
       }
 
-      String passed = getPassed(activity);
-      if (activity.hasNext() || activity.isProcessEnd()) {
-        builder.addStatement("assertThat(pi).hasPassed($S)", passed);
+      if (activity.hasPrev() && activity.getPrev().getType() == TestCaseActivityType.EVENT_BASED_GATEWAY) {
+        // ensure that event base gateway has been passed
+        builder.addStatement("assertThat(pi).hasPassed($S)", activity.getPrev().getId());
+      }
+
+      if (activity.getType() == TestCaseActivityType.EVENT_BASED_GATEWAY) {
+        builder.addStatement("assertThat(pi).isWaitingAt($S)", activity.getId());
+      } else if (activity.hasNext() || activity.isProcessEnd()) {
+        builder.addStatement("assertThat(pi).hasPassed($S)", getActivityId(activity));
       } else {
-        builder.addStatement("assertThat(pi).isWaitingAt($S)", passed);
+        builder.addStatement("assertThat(pi).isWaitingAt($S)", getActivityId(activity));
       }
     }
 
     return builder.build();
   }
 
-  protected String getPassed(TestCaseActivity activity) {
+  protected String getActivityId(TestCaseActivity activity) {
     if (activity.isMultiInstance()) {
       return String.format("%s#%s", activity.getId(), ActivityTypes.MULTI_INSTANCE_BODY);
     } else {

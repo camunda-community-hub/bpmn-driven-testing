@@ -137,6 +137,12 @@ public class BpmnSupportTest {
   }
 
   @Test
+  public void testIsEventBasedGateway() {
+    bpmnSupport = BpmnSupport.of(simple.resolve("simpleEventBasedGateway.bpmn"));
+    assertThat(bpmnSupport.isEventBasedGateway("eventBasedGateway"), is(true));
+  }
+
+  @Test
   public void testIsExternalTask() {
     bpmnSupport = BpmnSupport.of(simple.resolve("simpleExternalTask.bpmn"));
     assertThat(bpmnSupport.isExternalTask("externalTask"), is(true));

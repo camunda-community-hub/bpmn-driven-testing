@@ -3,6 +3,7 @@ package org.camunda.community.bpmndt.strategy;
 import javax.lang.model.element.Modifier;
 
 import org.camunda.community.bpmndt.TestCaseActivity;
+import org.camunda.community.bpmndt.TestCaseActivityType;
 
 import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.MethodSpec;
@@ -36,7 +37,11 @@ public class DefaultHandlerStrategy extends DefaultStrategy {
 
   @Override
   public void applyHandler(MethodSpec.Builder methodBuilder) {
-    if (activity.getType().isWaitState()) {
+    if (activity.hasPrev() && activity.getPrev().getType() == TestCaseActivityType.EVENT_BASED_GATEWAY) {
+      // if an event or job is part of an event based gateway
+      // the process instance is waiting at the gateway and not at the event or job
+      methodBuilder.addStatement("instance.apply($L)", activity.getLiteral());
+    } else if (activity.getType().isWaitState()) {
       methodBuilder.addStatement("assertThat(pi).isWaitingAt($S)", activity.getId());
       methodBuilder.addStatement("instance.apply($L)", activity.getLiteral());
     }
