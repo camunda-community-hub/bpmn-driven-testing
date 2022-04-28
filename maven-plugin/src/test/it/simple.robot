@@ -48,6 +48,9 @@ mvn clean test
   Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/simplecallactivity/TC_startEvent__endEvent.java
   Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/simplecollaboration/TC_startEvent__endEvent.java
   Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/simpleconditionalcatchevent/TC_startEvent__endEvent.java
+  Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/simpleeventbasedgateway/TC_Message.java
+  Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/simpleeventbasedgateway/TC_startEvent__eventBasedGateway.java
+  Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/simpleeventbasedgateway/TC_Timer.java
   Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/simpleexternaltask/TC_startEvent__endEvent.java
   Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/simplemessagecatchevent/TC_startEvent__endEvent.java
   Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/simplemessagethrowevent/TC_startEvent__endEvent.java
@@ -62,6 +65,9 @@ mvn clean test
   File should exist  ${testSources}/generated/simplecallactivity/TC_startEvent__endEvent.java
   File should exist  ${testSources}/generated/simplecollaboration/TC_startEvent__endEvent.java
   File should exist  ${testSources}/generated/simpleconditionalcatchevent/TC_startEvent__endEvent.java
+  File should exist  ${testSources}/generated/simpleeventbasedgateway/TC_Message.java
+  File should exist  ${testSources}/generated/simpleeventbasedgateway/TC_startEvent__eventBasedGateway.java
+  File should exist  ${testSources}/generated/simpleeventbasedgateway/TC_Timer.java
   File should exist  ${testSources}/generated/simpleexternaltask/TC_startEvent__endEvent.java
   File should exist  ${testSources}/generated/simplemessagecatchevent/TC_startEvent__endEvent.java
   File should exist  ${testSources}/generated/simplemessagethrowevent/TC_startEvent__endEvent.java
@@ -105,6 +111,7 @@ mvn clean test
   Should contain  ${result.stdout}  Running org.example.it.SimpleCallActivityTest
   Should contain  ${result.stdout}  Running org.example.it.SimpleCollaborationTest
   Should contain  ${result.stdout}  Running org.example.it.SimpleConditionalCatchEventTest
+  Should contain  ${result.stdout}  Running org.example.it.SimpleEventBasedGatewayTest
   Should contain  ${result.stdout}  Running org.example.it.SimpleExternalTaskTest
   Should contain  ${result.stdout}  Running org.example.it.SimpleMessageCatchEventTest
   Should contain  ${result.stdout}  Running org.example.it.SimpleMessageThrowEventTest

@@ -3,6 +3,7 @@ package org.camunda.community.bpmndt;
 import static org.camunda.bpm.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_BOUNDARY_EVENT;
 import static org.camunda.bpm.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_CALL_ACTIVITY;
 import static org.camunda.bpm.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_END_EVENT;
+import static org.camunda.bpm.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_EVENT_BASED_GATEWAY;
 import static org.camunda.bpm.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_INTERMEDIATE_CATCH_EVENT;
 import static org.camunda.bpm.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_INTERMEDIATE_THROW_EVENT;
 import static org.camunda.bpm.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_PROCESS;
@@ -224,6 +225,10 @@ public class BpmnSupport {
 
   public boolean isCallActivity(String flowNodeId) {
     return is(flowNodeId, BPMN_ELEMENT_CALL_ACTIVITY);
+  }
+
+  public boolean isEventBasedGateway(String flowNodeId) {
+    return is(flowNodeId, BPMN_ELEMENT_EVENT_BASED_GATEWAY);
   }
 
   public boolean isExternalTask(String flowNodeId) {

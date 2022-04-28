@@ -74,6 +74,8 @@ public class BuildTestCaseContext implements Function<TestCase, TestCaseContext>
 
       if (bpmnSupport.isCallActivity(flowNodeId)) {
         activity.setType(TestCaseActivityType.CALL_ACTIVITY);
+      } else if (bpmnSupport.isEventBasedGateway(flowNodeId)) {
+        activity.setType(TestCaseActivityType.EVENT_BASED_GATEWAY);
       } else if (bpmnSupport.isExternalTask(flowNodeId)) {
         activity.setType(TestCaseActivityType.EXTERNAL_TASK);
         activity.setTopicName(bpmnSupport.getTopicName(flowNodeId));

@@ -232,6 +232,39 @@ public class GeneratorSimpleTest {
   }
 
   @Test
+  public void testSimpleEventBasedGateway() {
+    generator.generateTestCases(ctx, bpmnFile);
+    assertThat(result.getFiles(), hasSize(3));
+    assertThat(result.getFiles().get(0).typeSpec.name, equalTo("TC_Message"));
+    assertThat(result.getFiles().get(1).typeSpec.name, equalTo("TC_Timer"));
+    assertThat(result.getFiles().get(2).typeSpec.name, equalTo("TC_startEvent__eventBasedGateway"));
+
+    TypeSpec typeSpec;
+
+    typeSpec = result.getFiles().get(0).typeSpec;
+    assertThat(typeSpec.fieldSpecs, hasSize(1));
+    assertThat(typeSpec.fieldSpecs.get(0).name, equalTo("messageCatchEvent"));
+    assertThat(typeSpec.fieldSpecs.get(0).type, equalTo(EVENT_HANDLER));
+    assertThat(typeSpec.methodSpecs, hasSize(7));
+    assertThat(typeSpec.methodSpecs.get(6).name, equalTo("handleMessageCatchEvent"));
+    assertThat(typeSpec.methodSpecs.get(6).returnType, equalTo(EVENT_HANDLER));
+
+    typeSpec = result.getFiles().get(1).typeSpec;
+    assertThat(typeSpec.fieldSpecs, hasSize(1));
+    assertThat(typeSpec.fieldSpecs.get(0).name, equalTo("timerCatchEvent"));
+    assertThat(typeSpec.fieldSpecs.get(0).type, equalTo(JOB_HANDLER));
+    assertThat(typeSpec.methodSpecs, hasSize(7));
+    assertThat(typeSpec.methodSpecs.get(6).name, equalTo("handleTimerCatchEvent"));
+    assertThat(typeSpec.methodSpecs.get(6).returnType, equalTo(JOB_HANDLER));
+
+    typeSpec = result.getFiles().get(2).typeSpec;
+    assertThat(typeSpec.fieldSpecs, hasSize(0));
+    assertThat(typeSpec.methodSpecs, hasSize(7));
+    assertThat(typeSpec.methodSpecs.get(6).name, equalTo("isProcessEnd"));
+    containsCode(typeSpec.methodSpecs.get(6)).contains("return false");
+  }
+
+  @Test
   public void testSimpleExternalTask() {
     generator.generateTestCases(ctx, bpmnFile);
     assertThat(result.getFiles(), hasSize(1));

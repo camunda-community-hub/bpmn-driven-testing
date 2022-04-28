@@ -123,7 +123,7 @@ public class TestCaseActivity {
   }
 
   public boolean isAsyncAfter() {
-    return flowNode.isCamundaAsyncAfter();
+    return type != TestCaseActivityType.EVENT_BASED_GATEWAY && flowNode.isCamundaAsyncAfter();
   }
 
   public boolean isAsyncBefore() {
