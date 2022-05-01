@@ -31,9 +31,10 @@ Available parameters for the plugin's `generator` goal:
 | Parameter            | Type         | Description                                                                | Default value |
 |:---------------------|:-------------|:---------------------------------------------------------------------------|:--------------|
 | jUnit5Enabled        | Boolean      | Enables JUnit 5 based test case generation | flase |
+| packageName          | String       | Package name, used for the generated test sources | generated     |
 | processEnginePlugins | List<String> | List of process engine plugins to register at the process engine (not required for Spring Boot, since process engine plugins must be exposed as beans) | -             |
 | springEnabled        | Boolean      | Enables Spring based testing (not required for Spring Boot, since here only the [BpmndtProcessEnginePlugin](src/main/java/org/camunda/community/bpmndt/api/cfg/BpmndtProcessEnginePlugin.java) must be exposed as a bean) | false |
-| testSourceDirectory  | String       | Name of the directory under `target/`, used for the generated test sources | bpmndt        |
+| testSourceDirectory  | String       | Name of the directory under `target/`, used for the generated test sources | bpmndt |
 
 ## Dependencies
 Add dependencies, which are required to execute the generated test code:
@@ -44,6 +45,7 @@ Add dependencies, which are required to execute the generated test code:
   <artifactId>camunda-engine</artifactId>
 </dependency>
 
+<!-- Test -->
 <dependency>
   <groupId>junit</groupId>
   <artifactId>junit</artifactId>
@@ -105,6 +107,7 @@ For **Spring** based testing, additional dependencies are required:
   <version>${spring.version}</version>
 </dependency>
 
+<!-- Test -->
 <dependency>
   <groupId>org.springframework</groupId>
   <artifactId>spring-test</artifactId>
@@ -121,6 +124,7 @@ For **Spring Boot** based testing, additional dependencies are required:
   <artifactId>camunda-bpm-spring-boot-starter</artifactId>
 </dependency>
 
+<!-- Test -->
 <dependency>
   <groupId>org.springframework.boot</groupId>
   <artifactId>spring-boot-starter-test</artifactId>

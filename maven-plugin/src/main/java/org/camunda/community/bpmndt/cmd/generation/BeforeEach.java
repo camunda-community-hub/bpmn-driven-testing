@@ -7,9 +7,14 @@ import javax.lang.model.element.Modifier;
 import org.camunda.community.bpmndt.GeneratorStrategy;
 import org.camunda.community.bpmndt.TestCaseActivity;
 import org.camunda.community.bpmndt.TestCaseContext;
+import org.camunda.community.bpmndt.api.AbstractTestCase;
 
 import com.squareup.javapoet.MethodSpec;
 
+/**
+ * Overrides the {@code beforeEach} method of the {@link AbstractTestCase} to initialize the
+ * activity handlers (e.g. {@code UserTaskHandler}) that are required for a given test case.
+ */
 public class BeforeEach implements Function<TestCaseContext, MethodSpec> {
 
   @Override

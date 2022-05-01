@@ -202,7 +202,7 @@
         <directory>${project.basedir}/src/main/resources</directory>
       </resource>
 
-      <!-- Add API classes as resources, since types are needed to run generated test code -->
+      <!-- Add API classes as resources, since those are needed to run generated test code -->
       <resource>
         <directory>${project.basedir}/src/main/java/org/camunda/community/bpmndt/api</directory>
         <targetPath>${project.build.outputDirectory}/org/camunda/community/bpmndt/api</targetPath>

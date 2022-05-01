@@ -53,7 +53,7 @@ public class Execute implements Function<TestCaseContext, MethodSpec> {
       }
 
       if (activity.hasPrev() && activity.getPrev().getType() == TestCaseActivityType.EVENT_BASED_GATEWAY) {
-        // ensure that event base gateway has been passed
+        // ensure that event based gateway has been passed
         builder.addStatement("assertThat(pi).hasPassed($S)", activity.getPrev().getId());
       }
 

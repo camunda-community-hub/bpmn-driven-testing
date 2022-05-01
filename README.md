@@ -23,7 +23,7 @@ The extension consists of:
   - Loop detection
 - Generated test cases provide
   - Automatic handling of wait states
-  - Call activity stubbing for isolated testing - see [CallActivityTest](maven-plugin/src/test/it/advanced/src/test/java/org/example/it/CallActivityWithMappingTest.java)
+  - Call activity stubbing for isolated testing - see [test](maven-plugin/src/test/it/advanced/src/test/java/org/example/it/CallActivityWithMappingTest.java)
   - [Fluent API](maven-plugin/src/main/java/org/camunda/community/bpmndt/api) to override default behavior
   - Multi instance activity support - see [tests](maven-plugin/src/test/it/advanced-multi-instance/src/test/java/org/example/it)
 - Spring test support - see [integration test](maven-plugin/src/test/it/advanced-spring/)
@@ -68,7 +68,7 @@ When the BPMN model is saved, the selected test cases are attached to the BPMN p
 </bpmn:process>
 ```
 
-### Generate test cases
+### Generate test code
 To generate the code for the selected test cases, a developer must run the **generator** goal of the [bpmn-driven-testing-maven-plugin](maven-plugin) - in **Eclipse** select the project and press **ALT+F5** to update.
 The goal finds all *.bpmn files under `src/main/resources` and looks for BPMN processes with a `bpmndt:testCases` extension element.
 Each test case will result in a [JUnit 4 test rule](https://github.com/junit-team/junit4/wiki/Rules) or [JUnit 5 extension](https://junit.org/junit5/docs/current/api/org.junit.jupiter.api/org/junit/jupiter/api/extension/Extension.html) - in this example: `generated.order_fulfillment.TC_Happy_Path`.
@@ -90,7 +90,7 @@ public TC_Happy_Path tc = new TC_Happy_Path();
 ```
 
 Calling `createExecutor()` on the test rule, provides a fluent API,
-which is used to specify variables, business key and/or [beans](https://docs.camunda.org/manual/7.15/user-guide/testing/#resolving-beans-without-spring-cdi) that are considered during test case execution.
+which is used to specify variables, business key and/or [beans](https://docs.camunda.org/manual/latest/user-guide/testing/#resolving-beans-without-spring-cdi) that are considered during test case execution.
 After the specification, `execute()` is called to create a new process instance and exeute the test case.
 
 Moreover the default behavior of wait states and call activities can be adjusted using fluent APIs.
@@ -135,7 +135,7 @@ public class OrderFulfillmentTest {
 }
 ```
 
-When a test is started, the generated test rule handles the creation of the process engine as well as the process definition deployment.
+When a test is started, the generated code handles the creation of the process engine as well as the process definition deployment.
 On the other hand, the test case execution handles the process instance start, applies the specified behavior and verifies that the process instance has passed the correct activities.
 
 A developer can solely focus on the actual implementation!

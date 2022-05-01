@@ -73,8 +73,8 @@ public class MultiInstanceHandler<T extends MultiInstanceHandler<?, ?>, U> {
 
   /**
    * Applies the multi instance loop for the given index. Please note: This method will be overriden
-   * by generated multi instance handler classes in case of call activities and or wait states
-   * (external or user tasks).
+   * by generated multi instance handler classes in case of call activities, external tasks and user
+   * tasks.
    * 
    * @param pi The process instance, used to execute the test case.
    * 
@@ -251,7 +251,7 @@ public class MultiInstanceHandler<T extends MultiInstanceHandler<?, ?>, U> {
     // when a BPMN error or escalation is simulated
     // or the call activity is waiting for a boundary event (e.g. a timer event)
     // then this execution will not be removed
-    // this causes an additional historic activity instance for the scope ID
+    // this causes an additional historic activity instance for the scope
     // just check the latest instance, both will have ended
     return historicActivityInstances.get(0).getEndTime() != null;
   }
