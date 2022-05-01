@@ -74,7 +74,7 @@ public class ExternalTaskTest {
     assertThat(e.getMessage(), containsString("to have passed activities [externalTask, endEvent]"));
   }
 
-  private class TestCase extends AbstractJUnit4TestCase {
+  private class TestCase extends AbstractJUnit4TestCase<TestCase> {
 
     @Override
     protected void execute(ProcessInstance pi) {

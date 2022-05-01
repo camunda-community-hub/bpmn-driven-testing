@@ -101,7 +101,7 @@ public class MultiInstanceCallActivityTest {
     assertThat(e.getMessage(), containsString("but: was \"advanced\""));
   }
 
-  private class TestCase extends AbstractJUnit4TestCase {
+  private class TestCase extends AbstractJUnit4TestCase<TestCase> {
 
     @Override
     protected void execute(ProcessInstance pi) {

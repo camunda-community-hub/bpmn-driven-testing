@@ -20,7 +20,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-public class AbstractJUnit4TestCaseTest {
+public class AbstractTestCaseTest {
 
   @Rule
   public TestCase tc = new TestCase();
@@ -73,10 +73,10 @@ public class AbstractJUnit4TestCaseTest {
         .singleResult();
 
     assertThat(deployment, notNullValue());
-    assertThat(deployment.getName(), equalTo("AbstractJUnit4TestCaseTest.testDeploymentAnnotation"));
+    assertThat(deployment.getName(), equalTo("AbstractTestCaseTest.testDeploymentAnnotation"));
   }
 
-  private class TestCase extends AbstractJUnit4TestCase {
+  private class TestCase extends AbstractJUnit4TestCase<TestCase> {
 
     @Override
     protected void execute(ProcessInstance pi) {

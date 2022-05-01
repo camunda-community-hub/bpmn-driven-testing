@@ -21,6 +21,7 @@
     <camunda.bpm.assert.version>13.0.0</camunda.bpm.assert.version>
     <javapoet.version>1.13.0</javapoet.version>
     <junit.version>4.13.2</junit.version>
+    <junit.jupiter.version>5.8.2</junit.jupiter.version>
     <maven.version>3.8.4</maven.version>
     <maven.plugin.version>3.5</maven.plugin.version>
     <spring.version>5.3.18</spring.version>
@@ -79,12 +80,6 @@
       <scope>provided</scope>
     </dependency>
 
-    <dependency>
-      <groupId>com.squareup</groupId>
-      <artifactId>javapoet</artifactId>
-      <version>${javapoet.version}</version>
-    </dependency>
-
     <!-- Camunda -->
     <dependency>
       <groupId>org.camunda.bpm.model</groupId>
@@ -101,6 +96,16 @@
     <dependency>
       <groupId>org.camunda.bpm</groupId>
       <artifactId>camunda-engine-spring</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.camunda.bpm.assert</groupId>
+      <artifactId>camunda-bpm-assert</artifactId>
+      <version>${camunda.bpm.assert.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <version>${assertj.version}</version>
     </dependency>
 
     <!-- Spring -->
@@ -126,19 +131,9 @@
     </dependency>
 
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>${junit.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.camunda.bpm.assert</groupId>
-      <artifactId>camunda-bpm-assert</artifactId>
-      <version>${camunda.bpm.assert.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.assertj</groupId>
-      <artifactId>assertj-core</artifactId>
-      <version>${assertj.version}</version>
+      <groupId>com.squareup</groupId>
+      <artifactId>javapoet</artifactId>
+      <version>${javapoet.version}</version>
     </dependency>
 
     <dependency>
@@ -150,6 +145,18 @@
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
       <version>3.12.0</version>
+    </dependency>
+
+    <!-- JUnit -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>${junit.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <version>${junit.jupiter.version}</version>
     </dependency>
 
     <dependency>

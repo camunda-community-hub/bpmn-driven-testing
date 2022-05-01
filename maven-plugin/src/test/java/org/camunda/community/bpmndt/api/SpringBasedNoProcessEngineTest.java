@@ -41,13 +41,17 @@ public class SpringBasedNoProcessEngineTest {
   @Test
   public void testException() {
     IllegalStateException e = assertThrows(IllegalStateException.class, () -> {
-      new TestCase().starting(null);
+      TestCase testCase = new TestCase();
+      testCase.testClass = this.getClass();
+      testCase.testMethodName = "testException";
+
+      testCase.beforeEach();
     });
 
     assertThat(e.getMessage(), containsString(PROCESS_ENGINE_NAME));
   }
 
-  private class TestCase extends AbstractJUnit4TestCase {
+  private class TestCase extends AbstractJUnit4TestCase<TestCase> {
 
     @Override
     protected void execute(ProcessInstance pi) {
