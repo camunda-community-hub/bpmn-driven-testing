@@ -12,7 +12,7 @@ Moreover any breaking changes (e.g. a user task becomes an external task) in the
 The extension consists of:
 
 - [Camunda Modeler plugin](camunda-modeler-plugin) for a visual selection and the management of test cases
-- [Maven plugin](maven-plugin) for generation of JUnit 4 based test code
+- [Maven plugin](maven-plugin) for generation of JUnit 4 or 5 based test code
 
 ## Features
 - Visual test case selection
@@ -71,13 +71,21 @@ When the BPMN model is saved, the selected test cases are attached to the BPMN p
 ### Generate test cases
 To generate the code for the selected test cases, a developer must run the **generator** goal of the [bpmn-driven-testing-maven-plugin](maven-plugin) - in **Eclipse** select the project and press **ALT+F5** to update.
 The goal finds all *.bpmn files under `src/main/resources` and looks for BPMN processes with a `bpmndt:testCases` extension element.
-Each test case will result in a [JUnit test rule](https://github.com/junit-team/junit4/wiki/Rules) - in this example: `generated.order_fulfillment.TC_Happy_Path`.
+Each test case will result in a [JUnit 4 test rule](https://github.com/junit-team/junit4/wiki/Rules) or [JUnit 5 extension](https://junit.org/junit5/docs/current/api/org.junit.jupiter.api/org/junit/jupiter/api/extension/Extension.html) - in this example: `generated.order_fulfillment.TC_Happy_Path`.
 
 ### Implement tests
-In this example, `TC_Happy_Path` must be imported and used as a JUnit test rule (a `public` field, which is annotated with `@Rule`):
+In this example, `TC_Happy_Path` must be imported and either used as a JUnit 4 test rule (a `public` field, which is annotated with `@Rule`)
 
 ```java
 @Rule
+public TC_Happy_Path tc = new TC_Happy_Path();
+```
+
+or as a JUnit 5 extension (a `public` field, which is annotated with `@RegisterExtension`),
+if `jUnit5Enabled` is set to `true` in the plugin's [configuration](maven-plugin#configuration)
+
+```java
+@RegisterExtension
 public TC_Happy_Path tc = new TC_Happy_Path();
 ```
 

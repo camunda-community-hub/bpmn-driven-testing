@@ -30,7 +30,7 @@ Available parameters for the plugin's `generator` goal:
 
 | Parameter            | Type         | Description                                                                | Default value |
 |:---------------------|:-------------|:---------------------------------------------------------------------------|:--------------|
-| packageName          | String       | Package name, used for the generated test sources                          | generated     |
+| jUnit5Enabled        | Boolean      | Enables JUnit 5 based test case generation | flase |
 | processEnginePlugins | List<String> | List of process engine plugins to register at the process engine (not required for Spring Boot, since process engine plugins must be exposed as beans) | -             |
 | springEnabled        | Boolean      | Enables Spring based testing (not required for Spring Boot, since here only the [BpmndtProcessEnginePlugin](src/main/java/org/camunda/community/bpmndt/api/cfg/BpmndtProcessEnginePlugin.java) must be exposed as a bean) | false |
 | testSourceDirectory  | String       | Name of the directory under `target/`, used for the generated test sources | bpmndt        |
@@ -68,6 +68,16 @@ Add dependencies, which are required to execute the generated test code:
   <artifactId>assertj-core</artifactId>
   <version>${assertj.version}</version>
   <scope>test</scope>
+</dependency>
+```
+
+For **JUnit 5** replace the `junit:junit` dependency with:
+
+```xml
+<dependency>
+  <groupId>org.junit.jupiter</groupId>
+  <artifactId>junit-jupiter-api</artifactId>
+  <version>${junit.jupiter.version}</version>
 </dependency>
 ```
 
@@ -138,6 +148,7 @@ Recommended versions:
 | Camunda BPM        | 7.17.0  |
 | Camunda BPM Assert | 13.0.0  |
 | JUnit 4            | 4.13.2  |
+| JUnit 5 (Jupiter)  | 5.8.2   |
 | Assertj            | 3.22.0  |
 | Spring Framework   | 5.3.18  |
 | Spring Boot        | 2.6.6   |

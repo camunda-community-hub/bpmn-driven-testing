@@ -24,6 +24,10 @@ public class GeneratorMojo extends AbstractMojo {
   @Parameter(defaultValue = "${project}", required = true, readonly = true)
   protected MavenProject project;
 
+  /** Determines if JUnit 5 based test case generation is enabled or not. */
+  @Parameter(defaultValue = "false", required = true)
+  protected boolean jUnit5Enabled;
+
   /** Package name of the generated Java test case files. */
   @Parameter(defaultValue = "generated", required = true)
   protected String packageName;
@@ -52,6 +56,7 @@ public class GeneratorMojo extends AbstractMojo {
 
     GeneratorContext ctx = new GeneratorContext();
     ctx.setBasePath(project.getBasedir().toPath());
+    ctx.setJUnit5Enabled(jUnit5Enabled);
     ctx.setMainResourcePath(Paths.get(project.getBuild().getResources().get(0).getDirectory()));
     ctx.setPackageName(packageName);
     ctx.setProcessEnginePluginNames(processEnginePlugins);

@@ -75,7 +75,7 @@ public class MultiInstanceSequentialTest {
     }
   }
 
-  private class TestCase extends AbstractJUnit4TestCase {
+  private class TestCase extends AbstractJUnit4TestCase<TestCase> {
 
     @Override
     protected void execute(ProcessInstance pi) {

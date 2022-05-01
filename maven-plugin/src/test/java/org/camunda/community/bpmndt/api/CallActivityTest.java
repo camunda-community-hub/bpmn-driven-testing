@@ -28,7 +28,7 @@ import org.junit.Test;
 public class CallActivityTest {
 
   @Rule
-  public AbstractJUnit4TestCase tc = new TestCase().withTenantId("tenant-x");
+  public TestCase tc = new TestCase().withTenantId("tenant-x");
 
   private CallActivityHandler handler;
 
@@ -91,7 +91,7 @@ public class CallActivityTest {
     assertThat(e.getMessage(), containsString("it passed [startEvent]"));
   }
 
-  private class TestCase extends AbstractJUnit4TestCase {
+  private class TestCase extends AbstractJUnit4TestCase<TestCase> {
 
     @Override
     protected void execute(ProcessInstance pi) {

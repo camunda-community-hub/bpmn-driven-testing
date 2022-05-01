@@ -48,7 +48,7 @@ public class EventBasedGatewayTest {
     tcTimer.createExecutor().execute();
   }
 
-  private class TestCase extends AbstractJUnit4TestCase {
+  private class TestCase extends AbstractJUnit4TestCase<TestCase> {
 
     @Override
     protected void execute(ProcessInstance pi) {
@@ -84,7 +84,7 @@ public class EventBasedGatewayTest {
     }
   }
 
-  private class MessageTestCase extends AbstractJUnit4TestCase {
+  private class MessageTestCase extends AbstractJUnit4TestCase<MessageTestCase> {
 
     @Override
     protected void execute(ProcessInstance pi) {
@@ -124,7 +124,7 @@ public class EventBasedGatewayTest {
     }
   }
 
-  private class TimerTestCase extends AbstractJUnit4TestCase {
+  private class TimerTestCase extends AbstractJUnit4TestCase<TimerTestCase> {
 
     @Override
     protected void execute(ProcessInstance pi) {

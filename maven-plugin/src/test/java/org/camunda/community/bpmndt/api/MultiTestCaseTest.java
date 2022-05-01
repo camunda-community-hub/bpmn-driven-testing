@@ -75,7 +75,7 @@ public class MultiTestCaseTest {
     assertThat(ProcessEngineTests.processDefinition("no-test-cases"), notNullValue());
   }
 
-  private class TestCase1 extends AbstractJUnit4TestCase {
+  private class TestCase1 extends AbstractJUnit4TestCase<TestCase1> {
 
     @Override
     protected void execute(ProcessInstance pi) {
@@ -115,7 +115,7 @@ public class MultiTestCaseTest {
     }
   }
 
-  private class TestCase2 extends AbstractJUnit4TestCase {
+  private class TestCase2 extends AbstractJUnit4TestCase<TestCase2> {
 
     @Override
     protected void execute(ProcessInstance pi) {

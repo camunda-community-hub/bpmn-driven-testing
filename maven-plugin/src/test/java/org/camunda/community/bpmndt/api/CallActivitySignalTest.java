@@ -36,7 +36,7 @@ public class CallActivitySignalTest {
     tc.createExecutor().execute();
   }
 
-  private class TestCase extends AbstractJUnit4TestCase {
+  private class TestCase extends AbstractJUnit4TestCase<TestCase> {
 
     @Override
     protected void execute(ProcessInstance pi) {

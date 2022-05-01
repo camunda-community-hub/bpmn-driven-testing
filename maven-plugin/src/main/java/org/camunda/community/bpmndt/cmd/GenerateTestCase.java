@@ -13,28 +13,31 @@ import org.camunda.community.bpmndt.GeneratorStrategy;
 import org.camunda.community.bpmndt.TestCaseActivity;
 import org.camunda.community.bpmndt.TestCaseContext;
 import org.camunda.community.bpmndt.api.AbstractJUnit4TestCase;
+import org.camunda.community.bpmndt.api.AbstractJUnit5TestCase;
 import org.camunda.community.bpmndt.cmd.generation.Execute;
 import org.camunda.community.bpmndt.cmd.generation.GetProcessEnginePlugins;
-import org.camunda.community.bpmndt.cmd.generation.Starting;
-import org.junit.rules.TestRule;
+import org.camunda.community.bpmndt.cmd.generation.BeforeEach;
 
+import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
 /**
- * Generates a JUnit 4 based test case in form of a JUnit {@link TestRule} implementation.
+ * Generates a test case, using a test framework (JUnit 4 or 5) specific superclass.
  * 
  * @see AbstractJUnit4TestCase
+ * @see AbstractJUnit5TestCase
  */
-public class GenerateJUnit4TestCase implements Consumer<TestCaseContext> {
+public class GenerateTestCase implements Consumer<TestCaseContext> {
 
   private final GeneratorContext gCtx;
   private final GeneratorResult result;
 
-  public GenerateJUnit4TestCase(GeneratorContext gCtx, GeneratorResult result) {
+  public GenerateTestCase(GeneratorContext gCtx, GeneratorResult result) {
     this.gCtx = gCtx;
     this.result = result;
   }
@@ -43,12 +46,12 @@ public class GenerateJUnit4TestCase implements Consumer<TestCaseContext> {
   public void accept(TestCaseContext ctx) {
     TypeSpec.Builder classBuilder = TypeSpec.classBuilder(ctx.getClassName())
         .addJavadoc(buildJavadoc(ctx))
-        .superclass(AbstractJUnit4TestCase.class)
+        .superclass(getSuperClass(ctx))
         .addModifiers(Modifier.PUBLIC);
 
     addHandlerFields(ctx, classBuilder);
 
-    classBuilder.addMethod(new Starting().apply(ctx));
+    classBuilder.addMethod(new BeforeEach().apply(ctx));
     classBuilder.addMethod(new Execute().apply(ctx));
 
     classBuilder.addMethod(buildGetBpmnResourceName(gCtx, ctx));
@@ -202,5 +205,17 @@ public class GenerateJUnit4TestCase implements Consumer<TestCaseContext> {
     }
 
     return builder.build();
+  }
+
+  protected TypeName getSuperClass(TestCaseContext ctx) {
+    ClassName rawType;
+    if (gCtx.isJUnit5Enabled()) {
+      rawType = ClassName.get(AbstractJUnit5TestCase.class);
+    } else {
+      rawType = ClassName.get(AbstractJUnit4TestCase.class);
+    }
+
+    // e.g. AbstractJUnit4TestCase<TC_startEvent__endEvent>
+    return ParameterizedTypeName.get(rawType, ClassName.bestGuess(ctx.getClassName()));
   }
 }

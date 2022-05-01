@@ -4,6 +4,7 @@ import static org.camunda.community.bpmndt.test.ContainsCode.containsCode;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -31,11 +32,11 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
-import org.junit.runner.Description;
 import org.mockito.Mockito;
 
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.JavaFile;
+import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
@@ -88,14 +89,17 @@ public class GeneratorSimpleTest {
     TypeSpec typeSpec = javaFile.typeSpec;
     assertThat(typeSpec.name, equalTo("TC_startEvent__endEvent"));
 
-    TypeName superclass = ClassName.get(AbstractJUnit4TestCase.class);
-    assertThat(typeSpec.superclass, equalTo(superclass));
+    ClassName rawType = ClassName.get(AbstractJUnit4TestCase.class);
+    ClassName typeArgument = ClassName.bestGuess(typeSpec.name);
+
+    assertThat(typeSpec.superclass, instanceOf(ParameterizedTypeName.class));
+    assertThat(((ParameterizedTypeName) typeSpec.superclass).rawType, equalTo(rawType));
+    assertThat(((ParameterizedTypeName) typeSpec.superclass).typeArguments.get(0), equalTo(typeArgument));
+
     assertThat(typeSpec.fieldSpecs, hasSize(0));
     assertThat(typeSpec.methodSpecs, hasSize(6));
-    assertThat(typeSpec.methodSpecs.get(0).name, equalTo("starting"));
-    assertThat(typeSpec.methodSpecs.get(0).parameters, hasSize(1));
-    assertThat(typeSpec.methodSpecs.get(0).parameters.get(0).name, equalTo("description"));
-    assertThat(typeSpec.methodSpecs.get(0).parameters.get(0).type, equalTo(ClassName.get(Description.class)));
+    assertThat(typeSpec.methodSpecs.get(0).name, equalTo("beforeEach"));
+    assertThat(typeSpec.methodSpecs.get(0).parameters, hasSize(0));
     assertThat(typeSpec.methodSpecs.get(1).name, equalTo("execute"));
     assertThat(typeSpec.methodSpecs.get(1).parameters, hasSize(1));
     assertThat(typeSpec.methodSpecs.get(1).parameters.get(0).name, equalTo("pi"));
@@ -131,13 +135,17 @@ public class GeneratorSimpleTest {
     TypeSpec typeSpec = javaFile.typeSpec;
     assertThat(typeSpec.name, equalTo("TC_startEvent__endEvent"));
 
-    assertThat(typeSpec.superclass, equalTo(ClassName.get(AbstractJUnit4TestCase.class)));
+    ClassName rawType = ClassName.get(AbstractJUnit4TestCase.class);
+    ClassName typeArgument = ClassName.bestGuess(typeSpec.name);
+
+    assertThat(typeSpec.superclass, instanceOf(ParameterizedTypeName.class));
+    assertThat(((ParameterizedTypeName) typeSpec.superclass).rawType, equalTo(rawType));
+    assertThat(((ParameterizedTypeName) typeSpec.superclass).typeArguments.get(0), equalTo(typeArgument));
+
     assertThat(typeSpec.fieldSpecs, hasSize(0));
     assertThat(typeSpec.methodSpecs, hasSize(7));
-    assertThat(typeSpec.methodSpecs.get(0).name, equalTo("starting"));
-    assertThat(typeSpec.methodSpecs.get(0).parameters, hasSize(1));
-    assertThat(typeSpec.methodSpecs.get(0).parameters.get(0).name, equalTo("description"));
-    assertThat(typeSpec.methodSpecs.get(0).parameters.get(0).type, equalTo(ClassName.get(Description.class)));
+    assertThat(typeSpec.methodSpecs.get(0).name, equalTo("beforeEach"));
+    assertThat(typeSpec.methodSpecs.get(0).parameters, hasSize(0));
     assertThat(typeSpec.methodSpecs.get(1).name, equalTo("execute"));
     assertThat(typeSpec.methodSpecs.get(1).parameters, hasSize(1));
     assertThat(typeSpec.methodSpecs.get(1).parameters.get(0).name, equalTo("pi"));
