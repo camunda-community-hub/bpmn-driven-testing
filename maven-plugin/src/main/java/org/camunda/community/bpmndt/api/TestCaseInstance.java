@@ -14,6 +14,11 @@ import org.camunda.bpm.engine.repository.Deployment;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.community.bpmndt.api.cfg.BpmndtParseListener;
 
+/**
+ * Link between test case and it's execution, utilizing a process instance that was instantiated by
+ * a {@link TestCaseExecutor} and handlers (e.g. {@code UserTaskHandler}) that are part of a test
+ * case.
+ */
 public class TestCaseInstance {
 
   /** Name of the process engine to use. */

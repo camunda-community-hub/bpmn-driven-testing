@@ -6,7 +6,7 @@ Library  Process
 mvn clean test
   [Tags]  xignore
   ${result}=  Run process
-  ...  mvn  -B  -f  ${CURDIR}/advanced-spring/pom.xml  clean  package  -Dplugin.version\=${VERSION}
+  ...  mvn  -B  -f  ${CURDIR}/advanced-spring/pom.xml  clean  test  -Dplugin.version\=${VERSION}
   ...  shell=True  stdout=${TEMP}/advanced-spring.out  stderr=STDOUT
 
   Log  ${result.stdout}
