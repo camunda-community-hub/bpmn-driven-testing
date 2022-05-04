@@ -12,7 +12,7 @@ Right click on `target/bpmndt` > `Mark Directory as` > `Test Sources Root`
 <plugin>
   <groupId>org.camunda.community</groupId>
   <artifactId>bpmn-driven-testing-maven-plugin</artifactId>
-  <version>0.4.1</version>
+  <version>0.5.0</version>
   <executions>
     <execution>
       <goals>
@@ -30,7 +30,7 @@ Available parameters for the plugin's `generator` goal:
 
 | Parameter            | Type         | Description                                                                | Default value |
 |:---------------------|:-------------|:---------------------------------------------------------------------------|:--------------|
-| jUnit5Enabled        | Boolean      | Enables JUnit 5 based test case generation | flase |
+| jUnit5Enabled        | Boolean      | Enables JUnit 5 based test case generation | false |
 | packageName          | String       | Package name, used for the generated test sources | generated     |
 | processEnginePlugins | List<String> | List of process engine plugins to register at the process engine (not required for Spring Boot, since process engine plugins must be exposed as beans) | -             |
 | springEnabled        | Boolean      | Enables Spring based testing (not required for Spring Boot, since here only the [BpmndtProcessEnginePlugin](src/main/java/org/camunda/community/bpmndt/api/cfg/BpmndtProcessEnginePlugin.java) must be exposed as a bean) | false |
