@@ -1,6 +1,7 @@
 # BPMN Driven Testing
 [![](https://img.shields.io/badge/Community%20Extension-An%20open%20source%20community%20maintained%20project-FF4700)](https://github.com/camunda-community-hub/community)
 [![](https://img.shields.io/badge/Lifecycle-Incubating-blue)](https://github.com/Camunda-Community-Hub/community/blob/main/extension-lifecycle.md#incubating-)
+[![Maven Central](https://img.shields.io/maven-central/v/org.camunda.community/bpmn-driven-testing-maven-plugin.svg?label=Maven%20Central)](https://search.maven.org/artifact/org.camunda.community/bpmn-driven-testing-maven-plugin)
 
 [Camunda Platform 7](https://docs.camunda.org/manual/latest/) extension, which is able to generate test code based on an extended BPMN model.
 
