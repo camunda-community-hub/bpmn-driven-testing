@@ -1,0 +1,51 @@
+plugins {
+    id 'java-gradle-plugin'
+    id 'groovy'
+}
+
+repositories {
+    mavenCentral()
+}
+
+def integrationTest = sourceSets.create("integrationTest")
+
+
+dependencies {
+    implementation gradleApi()
+    
+    integrationTestImplementation(project)
+
+    testImplementation platform("org.spockframework:spock-bom:2.1-groovy-3.0")
+    testImplementation 'org.spockframework:spock-core'
+
+    integrationTestImplementation platform("org.spockframework:spock-bom:2.1-groovy-3.0")
+    integrationTestImplementation 'org.spockframework:spock-core'
+
+    //functionalTestImplementation platform("org.spockframework:spock-bom:2.1-groovy-3.0")
+    //functionalTestImplementation 'org.spockframework:spock-core'
+}
+
+gradlePlugin {
+    plugins {
+        simplePlugin {
+            id = 'org.camunda.community.bpmndt'
+            implementationClass = 'org.camunda.community.bpmndt.GeneratorPlugin'
+        }
+    }
+}
+
+def integrationTestTask = tasks.register("integrationTest", Test) {
+    description = 'Runs the integration tests.'
+    group = "verification"
+    testClassesDirs = integrationTest.output.classesDirs
+    classpath = integrationTest.runtimeClasspath
+    mustRunAfter(tasks.named('test'))
+}
+tasks.named('check') {
+    dependsOn(integrationTestTask)
+}
+
+tasks.withType(Test).configureEach {
+    // Using JUnitPlatform for running tests
+    useJUnitPlatform()
+}
