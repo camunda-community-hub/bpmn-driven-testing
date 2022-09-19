@@ -1,6 +1,8 @@
 package org.camunda.community.bpmndt
 
 import org.gradle.testkit.runner.GradleRunner
+
+import spock.lang.Ignore
 import spock.lang.Specification
 import spock.lang.TempDir
 
@@ -21,6 +23,7 @@ class GeneratorPluginTest extends Specification {
     }
     
 
+	@Ignore
     def "can successfully configure URL through extension and verify it"() {
         buildFile << """
             verification {

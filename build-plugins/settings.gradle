@@ -1,4 +1,4 @@
 rootProject.name="build-plugins"
 
-include 'maven-plugin'
-include 'gradle-plugin'
+include 'bpmn-driven-testing-maven-plugin'
+include 'bpmn-driven-testing-gradle-plugin'

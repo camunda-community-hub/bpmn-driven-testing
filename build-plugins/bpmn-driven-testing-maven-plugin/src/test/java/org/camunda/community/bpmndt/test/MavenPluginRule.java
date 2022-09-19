@@ -109,7 +109,7 @@ public class MavenPluginRule extends TestWatcher {
     // find plugin JAR
     Optional<Path> pluginJar;
     try {
-      pluginJar = Files.list(Paths.get("./target"))
+      pluginJar = Files.list(Paths.get("./build/libs"))
           .filter(p -> p.getFileName().toString().endsWith(".jar"))
           .findFirst();
     } catch (IOException e) {

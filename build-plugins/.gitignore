@@ -1,1 +1,5 @@
-/.gradle/
+.gradle/
+bin/
+build/
+target/
+

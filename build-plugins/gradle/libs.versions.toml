@@ -1,34 +1,49 @@
 [versions]
-wavenet = "1.0.0-SNAPSHOT"
-args4j = "2.33"
-commonscli = "1.5.0"
-junit = "5.8.2"
-mockito = "1.9.5"
-slf4j = "1.7.22"
-logback = "1.1.2"
-rouge = "3.15.0"
-diagram = "2.2.2"
-spotbugs = "5.0.9"
+assertj = "3.22.0"
+camundaBpm = "7.17.0"
+camundaBpmAssert = "13.0.0"
+javapoet = "1.13.0"
+junit = "4.13.2"
+junitJupiter = "5.8.2"
+maven = "3.8.4"
+mavenPlugin = "3.5"
+spring = "5.3.18"
 
 [libraries]
-rouge = { module = "rubygems:rouge", version.ref = "rouge" }
-diagram = { module = "rubygems:asciidoctor-diagram", version.ref = "diagram" }
-slf4j = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
-logbackCore = { module = "ch.qos.logback:logback-core", version.ref = "logback" }
-logbackClassic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
-junit = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
-mockito = { module = "org.mockito:mockito-all", version.ref = "mockito" }
-neuralnet = { module = "de.thpeetz.neuralnet:neuralnet", version.ref = "wavenet" }
-wavelet = { module = "de.thpeetz.wavelet:wavelet", version.ref = "wavenet" }
-args4j = { module = "args4j:args4j", version.ref = "args4j" }
-commonscli = { module = "commons-cli:commons-cli", version.ref = "commonscli" }
+# Maven
+maven-artifact = { module = "org.apache.maven:maven-artifact", version.ref = "maven" }
+maven-core = { module = "org.apache.maven:maven-core", version.ref = "maven" }
+maven-model = { module = "org.apache.maven:maven-model", version.ref = "maven" }
+maven-plugin-api = { module = "org.apache.maven:maven-plugin-api", version.ref = "maven" }
+maven-plugin-annotations = { module = "org.apache.maven.plugin-tools:maven-plugin-annotations", version.ref = "mavenPlugin" }
+
+# Camunda
+camunda-bpm-assert = { module = "org.camunda.bpm.assert:camunda-bpm-assert", version.ref = "camundaBpmAssert" }
+assertj-core = { module = "org.assertj:assertj-core", version.ref = "assertj" }
+
+# Spring
+spring-beans = { module = "org.springframework:spring-beans", version.ref = "spring" }
+spring-context = { module = "org.springframework:spring-context", version.ref = "spring" }
+spring-jdbc = { module = "org.springframework:spring-jdbc", version.ref = "spring" }
+spring-test = { module = "org.springframework:spring-test", version.ref = "spring" }
+
+javapoet = { module = "com.squareup:javapoet", version.ref = "javapoet" }
+commons-io = { module = "commons-io:commons-io", version = "2.11.0" }
+commons-lang3 = { module = "org.apache.commons:commons-lang3", version = "3.12.0" }
+
+# Junit
+junit = { module = "junit:junit", version.ref = "junit" }
+junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junitJupiter" }
+
+h2 = { module = "com.h2database:h2", version = "2.1.210" }
+
+# Test
+slf4j-log4j12 = { module = "org.slf4j:slf4j-log4j12", version = "1.7.32" }
+hamcrest-core = { module = "org.hamcrest:hamcrest-core", version = "2.2" }
+mockito-core = { module = "org.mockito:mockito-core", version = "4.2.0" }
+robotframework = { module = "org.robotframework:robotframework", version = "4.1.2" }
 
 [bundles]
-logback = ["logbackCore", "logbackClassic"]
 
 [plugins]
-spotbugs = { id = "com.github.spotbugs",  version.ref = "spotbugs" }    
-sonarqube = { id = "org.sonarqube", version = "3.3" }
-asciidoctorPdf = { id = "org.asciidoctor.jvm.pdf", version = "3.3.2" }
-asciidoctorConvert = { id = "org.asciidoctor.jvm.convert", version = "3.3.2" }
-asciidoctorGems = { id = "org.asciidoctor.jvm.gems", version = "3.3.2" }
+mavenPlugin = { id = "de.benediktritter.maven-plugin-development", version = "0.4.0" }

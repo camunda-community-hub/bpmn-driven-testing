@@ -1,0 +1,77 @@
+plugins {
+	id 'java'
+	id 'maven-publish'
+	alias(libs.plugins.mavenPlugin)
+}
+
+repositories {
+	maven {
+		name "camunda-bpm-nexus"
+		url "https://artifacts.camunda.com/artifactory/public/"
+	}
+}
+
+dependencies {
+	compileOnly libs.maven.artifact
+	compileOnly libs.maven.core
+	compileOnly libs.maven.model
+	compileOnly libs.maven.plugin.api
+	compileOnly libs.maven.plugin.annotations
+	testImplementation libs.maven.plugin.api
+	
+	implementation(platform("org.camunda.bpm:camunda-bom:7.17.0"))
+	implementation("org.camunda.bpm.model:camunda-bpmn-model") 
+	implementation("org.camunda.bpm:camunda-engine")
+	implementation("org.camunda.bpm:camunda-engine-plugin-spin")
+	implementation("org.camunda.bpm:camunda-engine-spring")
+	implementation libs.camunda.bpm.assert
+	implementation libs.assertj.core
+	
+	implementation libs.spring.beans
+	implementation libs.spring.context
+	implementation libs.spring.jdbc
+	implementation libs.spring.test
+	
+	implementation libs.javapoet
+	implementation libs.commons.io
+	implementation libs.commons.lang3
+	
+	implementation libs.junit
+	implementation libs.junit.jupiter.api
+	
+	compileOnly libs.h2
+	testImplementation libs.h2
+	
+	testImplementation libs.slf4j.log4j12
+	testImplementation libs.hamcrest.core
+	testImplementation libs.mockito.core
+	testImplementation libs.robotframework
+}
+
+//name="BPMN Driven Testing Maven Plugin"
+description="Camunda extension, which is able to generate test code based on an extended BPMN model"
+//url="https://github.com/camunda-community-hub/bpmn-driven-testing"
+group="org.camunda.community"
+
+publishing {
+	publications {
+		plugin(MavenPublication) {
+			groupId = group
+			from components.java
+		}
+	}
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+}
+
+tasks.register('prepareTests', Copy) {
+	from(file('src/main/java/org/camunda/community/bpmndt/api'))
+	into(file('build/classes/java/main/org/camunda/community/bpmndt/api'))
+}
+test.dependsOn('prepareTests')
+
+mavenPlugin {
+	helpMojoPackage = 'org.camunda.community.bpmndt'
+}
