@@ -23,23 +23,21 @@ class GeneratorPluginTest extends Specification {
     }
     
 
-	@Ignore
-    def "can successfully configure URL through extension and verify it"() {
+    def "can successfully generate tests"() {
         buildFile << """
-            verification {
-                url = 'https://www.google.com/'
+            generate {
             }
         """
 
         when:
         def result = GradleRunner.create()
             .withProjectDir(testProjectDir)
-            .withArguments('verifyUrl')
+            .withArguments('generate')
             .withPluginClasspath()
             .build()
 
         then:
-        result.output.contains("Successfully resolved URL 'https://www.google.com/'")
-        result.task(":verifyUrl").outcome == SUCCESS
+        result.output.contains("generate test code.")
+        result.task(":generate").outcome == SUCCESS
     }
 }

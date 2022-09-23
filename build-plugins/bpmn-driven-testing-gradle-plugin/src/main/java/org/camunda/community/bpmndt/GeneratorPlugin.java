@@ -6,8 +6,9 @@ import org.gradle.api.Project;
 public class GeneratorPlugin implements Plugin<Project> {
 
     @Override
-    public void apply(Project arg0) {
+    public void apply(Project project) {
         // TODO Auto-generated method stub
+    	project.getTasks().register("generate", GeneratorTask.class);
         
     }
 
