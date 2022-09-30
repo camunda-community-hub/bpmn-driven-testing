@@ -12,6 +12,8 @@ repositories {
 }
 
 dependencies {
+	implementation project(":bpmn-driven-testing-generator")
+	
 	compileOnly libs.maven.artifact
 	compileOnly libs.maven.core
 	compileOnly libs.maven.model

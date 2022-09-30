@@ -11,6 +11,7 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.slf4j.Logger;
 
 /**
  * Maven plugin goal, which runs a {@link Generator}.
@@ -65,7 +66,7 @@ public class GeneratorMojo extends AbstractMojo {
 
     // generate test code
     try {
-      new Generator(getLog()).generate(ctx);
+      new Generator((Logger) getLog()).generate(ctx);
     } catch (RuntimeException e) {
       throw new MojoFailureException("Unexpected error occurred", e);
     }

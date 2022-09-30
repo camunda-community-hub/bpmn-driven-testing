@@ -7,19 +7,19 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.Consumer;
 
-import org.apache.maven.plugin.logging.Log;
 import org.camunda.community.bpmndt.Constants;
 import org.camunda.community.bpmndt.GeneratorContext;
+import org.slf4j.Logger;
 
 import com.squareup.javapoet.JavaFile;
 
 public class WriteJavaFile implements Consumer<JavaFile> {
 
-  private final Log log;
+  private final Logger log;
 
   private final GeneratorContext ctx;
 
-  public WriteJavaFile(Log log, GeneratorContext ctx) {
+  public WriteJavaFile(Logger log, GeneratorContext ctx) {
     this.log = log;
     this.ctx = ctx;
   }

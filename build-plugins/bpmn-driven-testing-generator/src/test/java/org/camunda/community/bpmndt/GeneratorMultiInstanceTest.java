@@ -13,7 +13,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.maven.plugin.logging.Log;
 import org.camunda.community.bpmndt.api.CallActivityHandler;
 import org.camunda.community.bpmndt.api.EventHandler;
 import org.camunda.community.bpmndt.api.JobHandler;
@@ -24,6 +23,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 import org.mockito.Mockito;
+import org.slf4j.Logger;
 
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.JavaFile;
@@ -32,20 +32,20 @@ import com.squareup.javapoet.TypeSpec;
 
 public class GeneratorMultiInstanceTest {
 
-  @Rule
-  public TestName testName = new TestName();
-  @Rule
-  public TemporaryFolder temporaryFolder = new TemporaryFolder(new File("./target"));
+	@Rule
+	public TestName testName = new TestName();
+	@Rule
+	public TemporaryFolder temporaryFolder = new TemporaryFolder(new File("./target"));
 
-  private GeneratorContext ctx;
-  private GeneratorResult result;
-  private Generator generator;
+	private GeneratorContext ctx;
+	private GeneratorResult result;
+	private Generator generator;
 
-  private Path bpmnFile;
+	private Path bpmnFile;
 
-  @Before
-  public void setUp() {
-    generator = new Generator(Mockito.mock(Log.class));
+	@Before
+	public void setUp() {
+		generator = new Generator(Mockito.mock(Logger.class));
 
     ctx = new GeneratorContext();
     ctx.setBasePath(Paths.get("."));

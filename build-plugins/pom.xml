@@ -1,0 +1,92 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.camunda.community</groupId>
+        <artifactId>community-hub-release-parent</artifactId>
+        <version>1.2.2</version>
+        <relativePath />
+    </parent>
+
+    <artifactId>bpmn-driven-testing-maven-parent</artifactId>
+    <version>0.6.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <properties>
+        <version.java>1.8</version.java>
+
+        <!-- Versions -->
+        <assertj.version>3.22.0</assertj.version>
+        <camunda.bpm.version>7.17.0</camunda.bpm.version>
+        <camunda.bpm.assert.version>13.0.0</camunda.bpm.assert.version>
+        <javapoet.version>1.13.0</javapoet.version>
+        <junit.version>4.13.2</junit.version>
+        <junit.jupiter.version>5.8.2</junit.jupiter.version>
+        <maven.version>3.8.4</maven.version>
+        <maven.plugin.version>3.5</maven.plugin.version>
+        <spring.version>5.3.18</spring.version>
+    </properties>
+
+    <repositories>
+        <repository>
+            <id>camunda-bpm-nexus</id>
+            <name>camunda-bpm-nexus</name>
+            <url>https://artifacts.camunda.com/artifactory/public/</url>
+        </repository>
+    </repositories>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.camunda.bpm</groupId>
+                <artifactId>camunda-bom</artifactId>
+                <version>${camunda.bpm.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <name>BPMN Driven Testing Maven Parent</name>
+    <description>Parent Maven project for Camunda extension, which is able to generate test code based on an extended BPMN model</description>
+    <url>https://github.com/camunda-community-hub/bpmn-driven-testing</url>
+
+	<modules>
+	   <module>bpmn-driven-testing-generator</module>
+       <module>bpmn-driven-testing-maven-plugin</module>
+    </modules>
+    
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>gclaussn</id>
+            <name>Gabor Claußnitzer</name>
+            <organization>cimt objects ag</organization>
+            <organizationUrl>https://www.cimt-ag.de/</organizationUrl>
+        </developer>
+        <developer>
+            <id>jwhoeche</id>
+            <name>John-Wieland Höche</name>
+            <organization>cimt objects ag</organization>
+            <organizationUrl>https://www.cimt-ag.de/</organizationUrl>
+        </developer>
+    </developers>
+
+    <scm>
+        <url>scm:git:git@github.com:camunda-community-hub/bpmn-driven-testing.git</url>
+        <connection>scm:git:git@github.com:camunda-community-hub/bpmn-driven-testing.git</connection>
+        <developerConnection>scm:git:git@github.com:camunda-community-hub/bpmn-driven-testing.git</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
+
+    <issueManagement>
+        <system>GitHub Issues</system>
+        <url>https://github.com/camunda-community-hub/bpmn-driven-testing/issues</url>
+    </issueManagement>
+</project>

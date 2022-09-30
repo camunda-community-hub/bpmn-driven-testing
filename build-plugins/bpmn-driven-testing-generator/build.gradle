@@ -1,0 +1,54 @@
+plugins {
+	id 'java-library'
+	id 'jvm-test-suite'
+}
+
+repositories {
+	mavenCentral()
+	maven {
+		name "camunda-bpm-nexus"
+		url "https://artifacts.camunda.com/artifactory/public/"
+	}
+}
+
+dependencies {
+	implementation(platform("org.camunda.bpm:camunda-bom:7.17.0"))
+	implementation("org.camunda.bpm.model:camunda-bpmn-model")
+	implementation("org.camunda.bpm:camunda-engine")
+	implementation("org.camunda.bpm:camunda-engine-plugin-spin")
+	implementation("org.camunda.bpm:camunda-engine-spring")
+	implementation libs.camunda.bpm.assert
+	implementation libs.assertj.core
+
+	implementation libs.spring.beans
+	implementation libs.spring.context
+	implementation libs.spring.jdbc
+	implementation libs.spring.test
+	
+	implementation libs.javapoet
+	implementation libs.commons.io
+	implementation libs.commons.lang3
+	
+	implementation libs.junit
+	implementation libs.junit.jupiter.api
+	
+	compileOnly libs.h2
+	testImplementation libs.h2
+
+	testImplementation libs.slf4j.log4j12
+	testImplementation libs.hamcrest.core
+	testImplementation libs.mockito.core
+	testImplementation libs.robotframework
+}
+
+java {
+	sourceCompatibility = JavaVersion.VERSION_1_8
+}
+
+testing {
+	suites {
+		test {
+			useJUnitJupiter()
+		}
+	}
+}

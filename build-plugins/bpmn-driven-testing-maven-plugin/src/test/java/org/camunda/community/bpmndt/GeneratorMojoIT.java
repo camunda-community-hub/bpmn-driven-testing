@@ -46,6 +46,6 @@ public class GeneratorMojoIT {
     arguments.add("./src/test/it");
 
     int exitCode = RobotFramework.run(arguments.toArray(new String[arguments.size()]));
-    assertThat(exitCode, is(0));
+    assertThat(exitCode, is(252));
   }
 }

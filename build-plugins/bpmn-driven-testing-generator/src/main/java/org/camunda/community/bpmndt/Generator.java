@@ -8,7 +8,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Consumer;
 
-import org.apache.maven.plugin.logging.Log;
 import org.camunda.community.bpmndt.api.AbstractJUnit4TestCase;
 import org.camunda.community.bpmndt.api.AbstractJUnit5TestCase;
 import org.camunda.community.bpmndt.api.AbstractTestCase;
@@ -33,6 +32,7 @@ import org.camunda.community.bpmndt.cmd.GenerateSpringConfiguration;
 import org.camunda.community.bpmndt.cmd.WriteJavaFile;
 import org.camunda.community.bpmndt.cmd.WriteJavaType;
 import org.camunda.community.bpmndt.model.TestCase;
+import org.slf4j.Logger;
 
 /**
  * Class that is responsible for generating test code and writing the generated files to the test
@@ -40,11 +40,11 @@ import org.camunda.community.bpmndt.model.TestCase;
  */
 public class Generator {
 
-  private final Log log;
+  private final Logger log;
 
   private final GeneratorResult result;
 
-  public Generator(Log log) {
+  public Generator(Logger log) {
     this.log = log;
 
     result = new GeneratorResult();

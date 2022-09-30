@@ -7,16 +7,16 @@ import java.nio.file.Path;
 import java.util.function.Consumer;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.maven.plugin.logging.Log;
 import org.camunda.community.bpmndt.GeneratorContext;
+import org.slf4j.Logger;
 
 public class WriteJavaType implements Consumer<Class<?>> {
 
-  private final Log log;
+  private final Logger log;
 
   private final GeneratorContext ctx;
 
-  public WriteJavaType(Log log, GeneratorContext ctx) {
+  public WriteJavaType(Logger log, GeneratorContext ctx) {
     this.log = log;
     this.ctx = ctx;
   }
