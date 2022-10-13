@@ -21,7 +21,6 @@ class GeneratorPluginTest extends Specification {
             }
         """
     }
-    
 
     def "can successfully generate tests"() {
         buildFile << """
