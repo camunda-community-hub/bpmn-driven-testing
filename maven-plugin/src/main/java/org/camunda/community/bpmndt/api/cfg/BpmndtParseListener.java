@@ -27,17 +27,16 @@ public class BpmndtParseListener extends AbstractBpmnParseListener {
   /** The current test case instance. */
   private TestCaseInstance instance;
 
-  protected String extractActivityId(String activityId) {
-    if (activityId.endsWith(MULTI_INSTANCE_SCOPE_SUFFIX)) {
-      return activityId.substring(0, activityId.length() - MULTI_INSTANCE_SCOPE_SUFFIX.length());
-    } else {
-      return activityId;
-    }
-  }
-
   private ActivityImpl findActivity(List<ActivityImpl> activities, String activityId) {
+    boolean isMultiInstanceScope = activityId.endsWith(MULTI_INSTANCE_SCOPE_SUFFIX);
+
     for (ActivityImpl activity : activities) {
-      String id = extractActivityId(activity.getId());
+      String id;
+      if (isMultiInstanceScope) {
+        id = activity.getId();
+    } else {
+        id = stripMultiInstanceScopeSuffix(activity.getId());
+    }
 
       if (id.equals(activityId)) {
         return activity;
@@ -159,6 +158,14 @@ public class BpmndtParseListener extends AbstractBpmnParseListener {
    */
   public void setInstance(TestCaseInstance instance) {
     this.instance = instance;
+  }
+
+  protected String stripMultiInstanceScopeSuffix(String activityId) {
+    if (activityId.endsWith(MULTI_INSTANCE_SCOPE_SUFFIX)) {
+      return activityId.substring(0, activityId.length() - MULTI_INSTANCE_SCOPE_SUFFIX.length());
+    } else {
+      return activityId;
+    }
   }
 
   /**

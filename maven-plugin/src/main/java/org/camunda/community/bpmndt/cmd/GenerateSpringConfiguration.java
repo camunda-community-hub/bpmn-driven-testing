@@ -7,7 +7,6 @@ import javax.lang.model.element.Modifier;
 import org.camunda.community.bpmndt.GeneratorContext;
 import org.camunda.community.bpmndt.GeneratorResult;
 import org.camunda.community.bpmndt.api.cfg.SpringConfiguration;
-import org.camunda.community.bpmndt.cmd.generation.GetProcessEnginePlugins;
 import org.springframework.context.annotation.Configuration;
 
 import com.squareup.javapoet.JavaFile;
@@ -34,7 +33,7 @@ public class GenerateSpringConfiguration implements Consumer<GeneratorContext> {
         .addModifiers(Modifier.PUBLIC);
 
     if (!ctx.getProcessEnginePluginNames().isEmpty()) {
-      builder.addMethod(new GetProcessEnginePlugins().apply(ctx));
+      builder.addMethod(new BuildGetProcessEnginePlugins().apply(ctx));
     }
 
     JavaFile javaFile = JavaFile.builder(ctx.getPackageName(), builder.build())

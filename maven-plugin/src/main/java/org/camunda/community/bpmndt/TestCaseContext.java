@@ -74,7 +74,7 @@ public class TestCaseContext {
   }
 
   public TestCaseActivity getEndActivity() {
-    if (activities.size() < 2) {
+    if (activities.isEmpty()) {
       return null;
     } else {
       return activities.get(activities.size() - 1);
@@ -107,7 +107,7 @@ public class TestCaseContext {
   }
 
   public TestCaseActivity getStartActivity() {
-    if (activities.size() < 2) {
+    if (activities.isEmpty()) {
       return null;
     } else {
       return activities.get(0);

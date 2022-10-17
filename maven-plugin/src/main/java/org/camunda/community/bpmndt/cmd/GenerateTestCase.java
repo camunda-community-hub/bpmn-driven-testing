@@ -6,6 +6,7 @@ import java.util.function.Consumer;
 
 import javax.lang.model.element.Modifier;
 
+import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.test.assertions.ProcessEngineTests;
 import org.camunda.community.bpmndt.GeneratorContext;
 import org.camunda.community.bpmndt.GeneratorResult;
@@ -14,9 +15,7 @@ import org.camunda.community.bpmndt.TestCaseActivity;
 import org.camunda.community.bpmndt.TestCaseContext;
 import org.camunda.community.bpmndt.api.AbstractJUnit4TestCase;
 import org.camunda.community.bpmndt.api.AbstractJUnit5TestCase;
-import org.camunda.community.bpmndt.cmd.generation.Execute;
-import org.camunda.community.bpmndt.cmd.generation.GetProcessEnginePlugins;
-import org.camunda.community.bpmndt.cmd.generation.BeforeEach;
+import org.camunda.community.bpmndt.api.AbstractTestCase;
 
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.CodeBlock;
@@ -51,15 +50,15 @@ public class GenerateTestCase implements Consumer<TestCaseContext> {
 
     addHandlerFields(ctx, classBuilder);
 
-    classBuilder.addMethod(new BeforeEach().apply(ctx));
-    classBuilder.addMethod(new Execute().apply(ctx));
+    classBuilder.addMethod(buildBeforeEach(ctx));
+    classBuilder.addMethod(buildExecute(ctx));
 
     classBuilder.addMethod(buildGetBpmnResourceName(gCtx, ctx));
     classBuilder.addMethod(buildGetEnd(ctx));
     classBuilder.addMethod(buildGetProcessDefinitionKey(ctx));
 
     if (!gCtx.getProcessEnginePluginNames().isEmpty()) {
-      classBuilder.addMethod(new GetProcessEnginePlugins().apply(gCtx));
+      classBuilder.addMethod(new BuildGetProcessEnginePlugins().apply(gCtx));
     }
 
     classBuilder.addMethod(buildGetStart(ctx));
@@ -122,6 +121,56 @@ public class GenerateTestCase implements Consumer<TestCaseContext> {
         strategy.addHandlerMethodAfter(classBuilder);
       }
     }
+  }
+
+  /**
+   * Overrides the {@code beforeEach} method of the {@link AbstractTestCase} to initialize the
+   * activity handlers (e.g. {@code UserTaskHandler}) that are required for a given test case.
+   * 
+   * @return The {@code beforeEach} method.
+   */
+  protected MethodSpec buildBeforeEach(TestCaseContext ctx) {
+    MethodSpec.Builder builder = MethodSpec.methodBuilder("beforeEach")
+        .addAnnotation(Override.class)
+        .addModifiers(Modifier.PROTECTED);
+
+    // call #beforeEach of superclass
+    builder.addStatement("super.$L()", "beforeEach");
+
+    // handle possible test case errors
+    if (!ctx.isValid()) {
+      handleTestCaseErrors(ctx, builder);
+      return builder.build();
+    }
+
+    for (TestCaseActivity activity : ctx.getActivities()) {
+      GeneratorStrategy strategy = activity.getStrategy();
+
+      if (strategy.shouldHandleBefore()) {
+        strategy.initHandlerBefore(builder);
+      }
+
+      strategy.initHandler(builder);
+
+      if (strategy.shouldHandleAfter()) {
+        strategy.initHandlerAfter(builder);
+      }
+    }
+
+    return builder.build();
+  }
+
+  protected MethodSpec buildExecute(TestCaseContext ctx) {
+    MethodSpec.Builder builder = MethodSpec.methodBuilder("execute")
+        .addAnnotation(Override.class)
+        .addModifiers(Modifier.PROTECTED)
+        .addParameter(ProcessInstance.class, "pi");
+
+    if (ctx.isValid()) {
+      new BuildTestCaseExecution().accept(ctx.getActivities(), builder);
+    }
+
+    return builder.build();
   }
 
   protected MethodSpec buildGetBpmnResourceName(GeneratorContext ctx, TestCaseContext testCaseContext) {
@@ -217,5 +266,21 @@ public class GenerateTestCase implements Consumer<TestCaseContext> {
 
     // e.g. AbstractJUnit4TestCase<TC_startEvent__endEvent>
     return ParameterizedTypeName.get(rawType, ClassName.bestGuess(ctx.getClassName()));
+  }
+
+  protected void handleTestCaseErrors(TestCaseContext ctx, MethodSpec.Builder builder) {
+    if (ctx.isPathEmpty()) {
+      builder.addStatement("throw new $T($S)", RuntimeException.class, "Path is empty").build();
+    } else if (ctx.isPathIncomplete()) {
+      builder.addStatement("throw new $T($S)", RuntimeException.class, "Path is incomplete").build();
+    } else if (ctx.isPathInvalid()) {
+      builder.addCode("\n// Not existing flow nodes:\n");
+
+      for (String flowNodeId : ctx.getInvalidFlowNodeIds()) {
+        builder.addCode("// $L\n", flowNodeId);
+      }
+
+      builder.addStatement("throw new $T($S)", RuntimeException.class, "Path is invalid").build();
+    }
   }
 }

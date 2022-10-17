@@ -31,7 +31,7 @@ public class MultiInstanceUserTaskTest {
   public void testExecute() {
     handler.verifyLoopCount(3);
 
-    handler.handleDefault().verify((pi, task) -> {
+    handler.handle().verify((pi, task) -> {
       task.hasName("User task");
     });
 
@@ -43,7 +43,7 @@ public class MultiInstanceUserTaskTest {
     handler.customize(it -> {
       it.verifyLoopCount(3);
 
-      it.handleDefault().verify((pi, task) -> {
+      it.handle().verify((pi, task) -> {
         task.hasName("User task");
       });
     });

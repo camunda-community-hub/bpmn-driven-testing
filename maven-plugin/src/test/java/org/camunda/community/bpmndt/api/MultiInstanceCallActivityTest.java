@@ -160,7 +160,7 @@ public class MultiInstanceCallActivityTest {
     }
   }
 
-  private class MultiInstanceCallActivityMapping implements DelegateVariableMapping {
+  private static class MultiInstanceCallActivityMapping implements DelegateVariableMapping {
 
     @Override
     public void mapInputVariables(DelegateExecution superExecution, VariableMap subVariables) {

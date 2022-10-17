@@ -1,4 +1,4 @@
-package org.camunda.community.bpmndt.cmd.generation;
+package org.camunda.community.bpmndt.cmd;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -8,17 +8,17 @@ import org.junit.Test;
 
 import com.squareup.javapoet.ClassName;
 
-public class GetProcessEnginePluginsTest {
+public class BuildGetProcessEnginePluginsTest {
 
   @Test
   public void testBuildClassName() {
-    ClassName className = new GetProcessEnginePlugins().buildClassName("org.example.CustomPlugin");
+    ClassName className = new BuildGetProcessEnginePlugins().buildClassName("org.example.CustomPlugin");
     assertThat(className.packageName(), equalTo("org.example"));
     assertThat(className.simpleName(), equalTo("CustomPlugin"));
   }
 
   @Test
   public void testBuildClassNameNull() {
-    assertThat(new GetProcessEnginePlugins().buildClassName("Xyz"), nullValue());
+    assertThat(new BuildGetProcessEnginePlugins().buildClassName("Xyz"), nullValue());
   }
 }

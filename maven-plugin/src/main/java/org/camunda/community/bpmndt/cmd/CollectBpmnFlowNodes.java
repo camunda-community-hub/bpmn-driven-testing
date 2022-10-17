@@ -16,26 +16,24 @@ import org.camunda.bpm.model.bpmn.instance.SubProcess;
  */
 public class CollectBpmnFlowNodes implements Function<Process, Collection<FlowNode>> {
 
-  private List<FlowNode> flowNodes;
-
   @Override
   public Collection<FlowNode> apply(Process process) {
-    flowNodes = new LinkedList<>();
+    List<FlowNode> flowNodes = new LinkedList<>();
 
-    collect(process.getFlowElements());
-    collectSubProcesses(process.getChildElementsByType(SubProcess.class));
+    collect(flowNodes, process.getFlowElements());
+    collectSubProcesses(flowNodes, process.getChildElementsByType(SubProcess.class));
 
     return flowNodes;
   }
 
-  protected void collect(Collection<FlowElement> elements) {
+  protected void collect(List<FlowNode> flowNodes, Collection<FlowElement> elements) {
     elements.stream().filter(this::isFlowNode).map(FlowNode.class::cast).forEach(flowNodes::add);
   }
 
-  protected void collectSubProcesses(Collection<SubProcess> subProcesses) {
+  protected void collectSubProcesses(List<FlowNode> flowNodes, Collection<SubProcess> subProcesses) {
     for (SubProcess subProcess : subProcesses) {
-      collect(subProcess.getFlowElements());
-      collectSubProcesses(subProcess.getChildElementsByType(SubProcess.class));
+      collect(flowNodes, subProcess.getFlowElements());
+      collectSubProcesses(flowNodes, subProcess.getChildElementsByType(SubProcess.class));
     }
   }
 

@@ -18,7 +18,7 @@ public class SequentialTest {
   public void testExecute() {
     assertThat(tc.handleMultiInstanceManualTask(), notNullValue());
     assertThat(tc.handleMultiInstanceManualTask().handle(0), nullValue());
-    assertThat(tc.handleMultiInstanceManualTask().handleDefault(), nullValue());
+    assertThat(tc.handleMultiInstanceManualTask().handle(), nullValue());
 
     tc.handleMultiInstanceManualTask().verifySequential();
 

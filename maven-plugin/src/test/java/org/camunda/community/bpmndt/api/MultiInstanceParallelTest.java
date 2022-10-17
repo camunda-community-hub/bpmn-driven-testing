@@ -89,7 +89,7 @@ public class MultiInstanceParallelTest {
     }
   }
 
-  private class MultiInstanceParallelHandler extends MultiInstanceHandler<MultiInstanceParallelHandler, Void> {
+  private static class MultiInstanceParallelHandler extends MultiInstanceHandler<MultiInstanceParallelHandler, Void> {
     public MultiInstanceParallelHandler(TestCaseInstance instance, String activityId) {
       super(instance, activityId);
     }

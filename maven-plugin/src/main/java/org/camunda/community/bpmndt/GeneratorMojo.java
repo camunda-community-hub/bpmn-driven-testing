@@ -18,9 +18,6 @@ import org.apache.maven.project.MavenProject;
 @Mojo(name = "generator", defaultPhase = LifecyclePhase.GENERATE_TEST_SOURCES, requiresProject = true)
 public class GeneratorMojo extends AbstractMojo {
 
-  protected static final String H2_GROUP_ID = "com.h2database";
-  protected static final String H2_ARTIFACT_ID = "h2";
-
   @Parameter(defaultValue = "${project}", required = true, readonly = true)
   protected MavenProject project;
 

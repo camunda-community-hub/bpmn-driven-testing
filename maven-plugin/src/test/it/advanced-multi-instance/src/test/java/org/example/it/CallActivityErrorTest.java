@@ -49,7 +49,7 @@ public class CallActivityErrorTest {
     tc.createExecutor().withBean("multiInstanceCallActivityMapping", new MultiInstanceCallActivityMapping()).execute();
   }
 
-  private class MultiInstanceCallActivityMapping implements DelegateVariableMapping {
+  private static class MultiInstanceCallActivityMapping implements DelegateVariableMapping {
 
     @Override
     public void mapInputVariables(DelegateExecution superExecution, VariableMap subVariables) {

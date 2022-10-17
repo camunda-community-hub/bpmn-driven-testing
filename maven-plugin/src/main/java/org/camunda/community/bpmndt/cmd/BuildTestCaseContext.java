@@ -61,7 +61,6 @@ public class BuildTestCaseContext implements Function<TestCase, TestCaseContext>
     }
 
     List<String> flowNodeIds = testCase.getPath().getFlowNodeIds();
-
     for (int i = 0; i < flowNodeIds.size(); i++) {
       String flowNodeId = flowNodeIds.get(i);
 
@@ -86,7 +85,7 @@ public class BuildTestCaseContext implements Function<TestCase, TestCaseContext>
       } else if (bpmnSupport.isBoundaryEvent(flowNodeId)) {
         handleBoundaryEvent(activity, flowNodeId);
       } else if (bpmnSupport.isReceiveTask(flowNodeId)) {
-        // handled like a message catch event
+        // handle receive task as message catch event
         Message message = activity.as(ReceiveTask.class).getMessage();
 
         activity.setType(TestCaseActivityType.MESSAGE_CATCH);

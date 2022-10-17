@@ -89,10 +89,8 @@ public class GeneratorTest {
     assertThat(typeSpec.fieldSpecs, hasSize(0));
     assertThat(typeSpec.methodSpecs, hasSize(6));
     assertThat(typeSpec.methodSpecs.get(0).name, equalTo("beforeEach"));
-    assertThat(typeSpec.methodSpecs.get(1).name, equalTo("execute"));
 
     containsCode(typeSpec.methodSpecs.get(0)).contains("throw new java.lang.RuntimeException(\"Path is empty\");");
-    containsCode(typeSpec.methodSpecs.get(1)).contains("throw new java.lang.RuntimeException(\"Path is empty\");");
   }
   
   @Test
@@ -107,10 +105,8 @@ public class GeneratorTest {
     assertThat(typeSpec.fieldSpecs, hasSize(0));
     assertThat(typeSpec.methodSpecs, hasSize(6));
     assertThat(typeSpec.methodSpecs.get(0).name, equalTo("beforeEach"));
-    assertThat(typeSpec.methodSpecs.get(1).name, equalTo("execute"));
     
     containsCode(typeSpec.methodSpecs.get(0)).contains("throw new java.lang.RuntimeException(\"Path is incomplete\");");
-    containsCode(typeSpec.methodSpecs.get(1)).contains("throw new java.lang.RuntimeException(\"Path is incomplete\");");
   }
 
   @Test
@@ -125,17 +121,11 @@ public class GeneratorTest {
     assertThat(typeSpec.fieldSpecs, hasSize(0));
     assertThat(typeSpec.methodSpecs, hasSize(6));
     assertThat(typeSpec.methodSpecs.get(0).name, equalTo("beforeEach"));
-    assertThat(typeSpec.methodSpecs.get(1).name, equalTo("execute"));
 
     containsCode(typeSpec.methodSpecs.get(0)).contains("// Not existing flow nodes");
     containsCode(typeSpec.methodSpecs.get(0)).contains("// a");
     containsCode(typeSpec.methodSpecs.get(0)).contains("// b");
     containsCode(typeSpec.methodSpecs.get(0)).contains("throw new java.lang.RuntimeException(\"Path is invalid\");");
-
-    containsCode(typeSpec.methodSpecs.get(1)).contains("// Not existing flow nodes");
-    containsCode(typeSpec.methodSpecs.get(1)).contains("// a");
-    containsCode(typeSpec.methodSpecs.get(1)).contains("// b");
-    containsCode(typeSpec.methodSpecs.get(1)).contains("throw new java.lang.RuntimeException(\"Path is invalid\");");
   }
 
   @Test
