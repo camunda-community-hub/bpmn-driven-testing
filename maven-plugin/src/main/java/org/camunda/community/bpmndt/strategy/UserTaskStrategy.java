@@ -21,7 +21,6 @@ public class UserTaskStrategy extends DefaultHandlerStrategy {
     }
 
     TestCaseActivity next = activity.getNext();
-
     if (!next.getType().isBoundaryEvent()) {
       return;
     }

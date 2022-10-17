@@ -25,7 +25,6 @@ public class ExternalTaskStrategy extends DefaultHandlerStrategy {
     }
     
     TestCaseActivity next = activity.getNext();
-
     if (!next.getType().isBoundaryEvent()) {
       return;
     }

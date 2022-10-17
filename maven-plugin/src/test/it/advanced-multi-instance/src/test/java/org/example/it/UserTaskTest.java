@@ -12,7 +12,7 @@ public class UserTaskTest {
 
   @Test
   public void testExecute() {
-    tc.handleMultiInstanceUserTask().verifyLoopCount(3).handleDefault().verify((pi, task) -> {
+    tc.handleMultiInstanceUserTask().verifyLoopCount(3).handle().verify((pi, task) -> {
       task.hasName("User task");
     });
 

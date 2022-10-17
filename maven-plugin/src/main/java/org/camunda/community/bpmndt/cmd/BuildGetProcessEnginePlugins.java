@@ -1,4 +1,4 @@
-package org.camunda.community.bpmndt.cmd.generation;
+package org.camunda.community.bpmndt.cmd;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -16,7 +16,7 @@ import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 
-public class GetProcessEnginePlugins implements Function<GeneratorContext, MethodSpec> {
+public class BuildGetProcessEnginePlugins implements Function<GeneratorContext, MethodSpec> {
 
   @Override
   public MethodSpec apply(GeneratorContext ctx) {

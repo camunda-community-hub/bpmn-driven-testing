@@ -13,7 +13,7 @@ public class TestCaseActivity {
   private TestCaseActivity prev;
   private TestCaseActivity next;
 
-  private Boolean processEnd;
+  private boolean processEnd;
 
   private GeneratorStrategy strategy;
 
@@ -122,6 +122,17 @@ public class TestCaseActivity {
     return prev != null;
   }
 
+  /**
+   * Checks if the activity has a predecessor and the predecessor's type is the given type.
+   * 
+   * @param type A specific test activity type.
+   * 
+   * @return {@code true}, if a previous activity with the given type exists. Otherwise {@code false}.
+   */
+  public boolean hasPrev(TestCaseActivityType type) {
+    return hasPrev() && getPrev().getType() == type;
+  }
+
   public boolean isAsyncAfter() {
     return type != TestCaseActivityType.EVENT_BASED_GATEWAY && flowNode.isCamundaAsyncAfter();
   }
@@ -138,10 +149,7 @@ public class TestCaseActivity {
     return multiInstance != null;
   }
 
-  public Boolean isProcessEnd() {
-    if (hasNext()) {
-      return null;
-    } else {
+  public boolean isProcessEnd() {
       return processEnd;
     }
   }

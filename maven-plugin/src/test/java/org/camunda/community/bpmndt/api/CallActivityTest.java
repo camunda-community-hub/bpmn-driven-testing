@@ -131,7 +131,7 @@ public class CallActivityTest {
     }
   }
 
-  private class CallActivityMapping implements DelegateVariableMapping {
+  private static class CallActivityMapping implements DelegateVariableMapping {
 
     @Override
     public void mapInputVariables(DelegateExecution superExecution, VariableMap subVariables) {

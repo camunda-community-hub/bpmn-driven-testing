@@ -27,9 +27,9 @@ import org.camunda.community.bpmndt.api.cfg.SpringConfiguration;
 import org.camunda.community.bpmndt.cmd.BuildTestCaseContext;
 import org.camunda.community.bpmndt.cmd.CollectBpmnFiles;
 import org.camunda.community.bpmndt.cmd.DeleteTestSources;
-import org.camunda.community.bpmndt.cmd.GenerateTestCase;
 import org.camunda.community.bpmndt.cmd.GenerateMultiInstanceHandler;
 import org.camunda.community.bpmndt.cmd.GenerateSpringConfiguration;
+import org.camunda.community.bpmndt.cmd.GenerateTestCase;
 import org.camunda.community.bpmndt.cmd.WriteJavaFile;
 import org.camunda.community.bpmndt.cmd.WriteJavaType;
 import org.camunda.community.bpmndt.model.TestCase;
@@ -79,18 +79,18 @@ public class Generator {
 
     log.info("");
 
-    WriteJavaFile write = new WriteJavaFile(log, ctx);
+    WriteJavaFile writeJavaFile = new WriteJavaFile(log, ctx);
 
     // write test cases
     log.info("Writing test cases");
-    result.getFiles().forEach(write);
+    result.getFiles().forEach(writeJavaFile);
 
     if (!result.getAdditionalFiles().isEmpty()) {
       log.info("");
 
       // write additional classes
       log.info("Writing additional classes");
-      result.getAdditionalFiles().forEach(write);
+      result.getAdditionalFiles().forEach(writeJavaFile);
     }
 
     log.info("");
@@ -121,11 +121,11 @@ public class Generator {
       apiClasses.add(SpringConfiguration.class);
     }
 
-    WriteJavaType writeType = new WriteJavaType(log, ctx);
+    WriteJavaType writeJavaType = new WriteJavaType(log, ctx);
 
     // write API classes
     log.info("Writing API classes");
-    apiClasses.forEach(writeType);
+    apiClasses.forEach(writeJavaType);
   }
 
   protected void generateSpringConfiguration(GeneratorContext ctx) {

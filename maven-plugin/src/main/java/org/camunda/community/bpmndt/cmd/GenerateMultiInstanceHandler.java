@@ -5,12 +5,10 @@ import java.util.function.Consumer;
 import javax.lang.model.element.Modifier;
 
 import org.camunda.bpm.engine.runtime.ProcessInstance;
-import org.camunda.community.bpmndt.GeneratorContext;
 import org.camunda.community.bpmndt.GeneratorResult;
 import org.camunda.community.bpmndt.GeneratorStrategy;
 import org.camunda.community.bpmndt.TestCaseActivity;
 import org.camunda.community.bpmndt.TestCaseActivityType;
-import org.camunda.community.bpmndt.TestCaseContext;
 import org.camunda.community.bpmndt.api.MultiInstanceHandler;
 import org.camunda.community.bpmndt.api.TestCaseInstance;
 import org.camunda.community.bpmndt.strategy.MultiInstanceStrategy;
@@ -29,15 +27,10 @@ import com.squareup.javapoet.TypeSpec;
  */
 public class GenerateMultiInstanceHandler implements Consumer<TestCaseActivity> {
 
-  private final GeneratorContext gCtx;
   private final GeneratorResult result;
 
-  private final TestCaseContext ctx;
-
-  public GenerateMultiInstanceHandler(GeneratorContext gCtx, GeneratorResult result, TestCaseContext ctx) {
-    this.gCtx = gCtx;
+  public GenerateMultiInstanceHandler(GeneratorResult result) {
     this.result = result;
-    this.ctx = ctx;
   }
 
   @Override
@@ -70,9 +63,7 @@ public class GenerateMultiInstanceHandler implements Consumer<TestCaseActivity> 
       classBuilder.addMethod(buildIsSequential());
     }
 
-    String packageName = String.format("%s.%s", gCtx.getPackageName(), ctx.getPackageName());
-
-    JavaFile javaFile = JavaFile.builder(packageName, classBuilder.build())
+    JavaFile javaFile = JavaFile.builder(className.packageName(), classBuilder.build())
         .skipJavaLangImports(true)
         .build();
 

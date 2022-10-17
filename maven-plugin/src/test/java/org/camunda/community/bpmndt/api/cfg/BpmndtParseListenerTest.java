@@ -16,10 +16,10 @@ public class BpmndtParseListenerTest {
   }
 
   @Test
-  public void testExtractActivityId() {
-    assertThat(l.extractActivityId("test"), equalTo("test"));
-    assertThat(l.extractActivityId("test#"), equalTo("test#"));
-    assertThat(l.extractActivityId("test#multiInstance"), equalTo("test#multiInstance"));
-    assertThat(l.extractActivityId("test#multiInstanceBody"), equalTo("test"));
+  public void testStripMultiInstanceScopeSuffix() {
+    assertThat(l.stripMultiInstanceScopeSuffix("test"), equalTo("test"));
+    assertThat(l.stripMultiInstanceScopeSuffix("test#"), equalTo("test#"));
+    assertThat(l.stripMultiInstanceScopeSuffix("test#multiInstance"), equalTo("test#multiInstance"));
+    assertThat(l.stripMultiInstanceScopeSuffix("test#multiInstanceBody"), equalTo("test"));
   }
 }

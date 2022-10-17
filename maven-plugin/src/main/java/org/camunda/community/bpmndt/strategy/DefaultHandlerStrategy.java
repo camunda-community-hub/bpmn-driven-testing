@@ -37,7 +37,7 @@ public class DefaultHandlerStrategy extends DefaultStrategy {
 
   @Override
   public void applyHandler(MethodSpec.Builder methodBuilder) {
-    if (activity.hasPrev() && activity.getPrev().getType() == TestCaseActivityType.EVENT_BASED_GATEWAY) {
+    if (activity.hasPrev(TestCaseActivityType.EVENT_BASED_GATEWAY)) {
       // if an event or job is part of an event based gateway
       // the process instance is waiting at the gateway and not at the event or job itself
       methodBuilder.addStatement("instance.apply($L)", activity.getLiteral());
@@ -51,7 +51,6 @@ public class DefaultHandlerStrategy extends DefaultStrategy {
     }
 
     TestCaseActivity next = activity.getNext();
-    
     if (!next.getType().isBoundaryEvent()) {
       return;
     }

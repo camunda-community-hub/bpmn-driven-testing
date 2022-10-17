@@ -109,7 +109,7 @@ public class MultiInstanceHandler<T extends MultiInstanceHandler<?, ?>, U> {
    * 
    * @return The newly created job handler.
    */
-  private JobHandler createJobHandlerAfter(int loopIndex) {
+  protected JobHandler createHandlerAfter(int loopIndex) {
     return new JobHandler(getProcessEngine(), activityId, isSequential() ? Cardinality.ZERO_TO_ONE : Cardinality.ZERO_TO_N);
   }
 
@@ -120,7 +120,7 @@ public class MultiInstanceHandler<T extends MultiInstanceHandler<?, ?>, U> {
    * 
    * @return The newly created job handler.
    */
-  private JobHandler createJobHandlerBefore(int loopIndex) {
+  protected JobHandler createHandlerBefore(int loopIndex) {
     return new JobHandler(getProcessEngine(), activityId, isSequential() ? Cardinality.ONE : Cardinality.ONE_TO_N);
   }
 
@@ -145,15 +145,15 @@ public class MultiInstanceHandler<T extends MultiInstanceHandler<?, ?>, U> {
   }
 
   protected U getHandler(int loopIndex) {
-    return handlers.getOrDefault(loopIndex, handleDefault());
+    return handlers.getOrDefault(loopIndex, handle());
   }
 
   protected JobHandler getHandlerAfter(int loopIndex) {
-    return handlersAfter.getOrDefault(loopIndex, handleAfterDefault());
+    return handlersAfter.getOrDefault(loopIndex, handleAfter());
   }
 
   protected JobHandler getHandlerBefore(int loopIndex) {
-    return handlersBefore.getOrDefault(loopIndex, handleBeforeDefault());
+    return handlersBefore.getOrDefault(loopIndex, handleBefore());
   }
 
   protected ProcessEngine getProcessEngine() {
@@ -162,6 +162,16 @@ public class MultiInstanceHandler<T extends MultiInstanceHandler<?, ?>, U> {
 
   private String getText(boolean sequential) {
     return sequential ? "sequential" : "parallel";
+  }
+
+  /**
+   * Returns the default activity handler, which is used when for a multi instance loop with a
+   * specific index no handler is defined.
+   * 
+   * @return The default handler.
+   */
+  public U handle() {
+    return handle(-1);
   }
 
   /**
@@ -176,6 +186,16 @@ public class MultiInstanceHandler<T extends MultiInstanceHandler<?, ?>, U> {
   }
 
   /**
+   * Returns the default job handler for the asynchronous continuation after the activity, which is
+   * used when for a multi instance loop with a specific index no handler is defined.
+   * 
+   * @return The default async after job handler.
+   */
+  public JobHandler handleAfter() {
+    return handleAfter(-1);
+  }
+
+  /**
    * Returns the job handler for the asynchronous continuation after the activity, which is applied on
    * the multi instance loop with the given index. This handler can be used to verify the process
    * variables after the activity was executed the nth time.
@@ -185,16 +205,17 @@ public class MultiInstanceHandler<T extends MultiInstanceHandler<?, ?>, U> {
    * @return The async after job handler for the given loop index.
    */
   public JobHandler handleAfter(int loopIndex) {
-    return handlersAfter.computeIfAbsent(loopIndex, this::createJobHandlerAfter);
+    return handlersAfter.computeIfAbsent(loopIndex, this::createHandlerAfter);
   }
 
   /**
-   * Returns the default job handler for the asynchronous continuation after the activity.
+   * Returns the default job handler for the asynchronous continuation before the activity, which is
+   * used when for a multi instance loop with a specific index no handler is defined.
    * 
-   * @return The default async after job handler.
+   * @return The default async before job handler.
    */
-  public JobHandler handleAfterDefault() {
-    return handleAfter(-1);
+  public JobHandler handleBefore() {
+    return handleBefore(-1);
   }
 
   /**
@@ -207,25 +228,7 @@ public class MultiInstanceHandler<T extends MultiInstanceHandler<?, ?>, U> {
    * @return The async before job handler for the given loop index.
    */
   public JobHandler handleBefore(int loopIndex) {
-    return handlersBefore.computeIfAbsent(loopIndex, this::createJobHandlerBefore);
-  }
-
-  /**
-   * Returns the default job handler for the asynchronous continuation before the activity.
-   * 
-   * @return The default async before job handler.
-   */
-  public JobHandler handleBeforeDefault() {
-    return handleBefore(-1);
-  }
-
-  /**
-   * Returns the default activity handler.
-   * 
-   * @return The default handler.
-   */
-  public U handleDefault() {
-    return handle(-1);
+    return handlersBefore.computeIfAbsent(loopIndex, this::createHandlerBefore);
   }
 
   /**
@@ -283,8 +286,8 @@ public class MultiInstanceHandler<T extends MultiInstanceHandler<?, ?>, U> {
   /**
    * Verifies that the multi instance loop is executed n-times.
    * 
-   * @param loopCount The expected loop count at the point of time when the multi instance scope is
-   *        left (finished or terminated by a boundary event).
+   * @param loopCount The expected loop count at the point of time when the multi instance is left
+   *        (finished or terminated by a boundary event).
    * 
    * @return The handler.
    */
