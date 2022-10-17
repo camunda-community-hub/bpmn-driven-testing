@@ -6,6 +6,7 @@ import java.util.function.Consumer;
 
 import javax.lang.model.element.Modifier;
 
+import org.camunda.bpm.engine.ActivityTypes;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.test.assertions.ProcessEngineTests;
 import org.camunda.community.bpmndt.GeneratorContext;
@@ -185,11 +186,20 @@ public class GenerateTestCase implements Consumer<TestCaseContext> {
   protected MethodSpec buildGetEnd(TestCaseContext ctx) {
     TestCaseActivity end = ctx.getEndActivity();
 
+    String endId;
+    if (end == null) {
+      endId = null;
+    } else if (end.isScope() && end.isMultiInstance()) {
+      endId = String.format("%s#%s", end.getId(), ActivityTypes.MULTI_INSTANCE_BODY);
+    } else {
+      endId = end.getId();
+    }
+
     return MethodSpec.methodBuilder("getEnd")
         .addAnnotation(Override.class)
         .addModifiers(Modifier.PUBLIC)
         .returns(String.class)
-        .addStatement("return $S", end != null ? end.getId() : null)
+        .addStatement("return $S", endId)
         .build();
   }
 
@@ -205,11 +215,20 @@ public class GenerateTestCase implements Consumer<TestCaseContext> {
   protected MethodSpec buildGetStart(TestCaseContext ctx) {
     TestCaseActivity start = ctx.getStartActivity();
 
+    String startId;
+    if (start == null) {
+      startId = null;
+    } else if (start.isScope() && start.isMultiInstance()) {
+      startId = String.format("%s#%s", start.getId(), ActivityTypes.MULTI_INSTANCE_BODY);
+    } else {
+      startId = start.getId();
+    }
+
     return MethodSpec.methodBuilder("getStart")
         .addAnnotation(Override.class)
         .addModifiers(Modifier.PUBLIC)
         .returns(String.class)
-        .addStatement("return $S", start != null ? start.getId() : null)
+        .addStatement("return $S", startId)
         .build();
   }
 

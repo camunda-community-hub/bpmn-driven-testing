@@ -15,6 +15,7 @@ import org.camunda.community.bpmndt.api.cfg.BpmndtParseListener;
 
 import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.MethodSpec.Builder;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
@@ -56,7 +57,7 @@ public class DefaultStrategy implements GeneratorStrategy {
   @Override
   public void addHandlerMethodAfter(TypeSpec.Builder classBuilder) {
     MethodSpec method = MethodSpec.methodBuilder(buildHandlerMethodName(getLiteralAfter()))
-        .addJavadoc(buildHandlerMethodJavadocAfter())
+        .addJavadoc("Returns the async after handler for $L: $L", activity.getTypeName(), activity.getId())
         .addModifiers(Modifier.PUBLIC)
         .returns(JobHandler.class)
         .addStatement("return $L", getLiteralAfter())
@@ -68,7 +69,7 @@ public class DefaultStrategy implements GeneratorStrategy {
   @Override
   public void addHandlerMethodBefore(TypeSpec.Builder classBuilder) {
     MethodSpec method = MethodSpec.methodBuilder(buildHandlerMethodName(getLiteralBefore()))
-        .addJavadoc(buildHandlerMethodJavadocBefore())
+        .addJavadoc("Returns the async before handler for $L: $L", activity.getTypeName(), activity.getId())
         .addModifiers(Modifier.PUBLIC)
         .returns(JobHandler.class)
         .addStatement("return $L", getLiteralBefore())
@@ -85,25 +86,41 @@ public class DefaultStrategy implements GeneratorStrategy {
   @Override
   public void applyHandlerAfter(MethodSpec.Builder methodBuilder) {
     methodBuilder.addStatement("assertThat(pi).isWaitingAt($S)", activity.getId());
-    methodBuilder.addStatement("instance.apply($L)", getLiteralAfter());
+    methodBuilder.addStatement("instance.apply($L)", getHandlerAfter());
   }
 
   @Override
   public void applyHandlerBefore(MethodSpec.Builder methodBuilder) {
     methodBuilder.addStatement("assertThat(pi).isWaitingAt($S)", activity.getId());
-    methodBuilder.addStatement("instance.apply($L)", getLiteralBefore());
-  }
-
-  protected String buildHandlerMethodJavadocAfter() {
-    return String.format("Returns the async after handler for %s: %s", activity.getTypeName(), activity.getId());
-  }
-
-  protected String buildHandlerMethodJavadocBefore() {
-    return String.format("Returns the async before handler for %s: %s", activity.getTypeName(), activity.getId());
+    methodBuilder.addStatement("instance.apply($L)", getHandlerBefore());
   }
 
   protected String buildHandlerMethodName(String literal) {
     return String.format("handle%s", StringUtils.capitalize(literal));
+  }
+
+  @Override
+  public CodeBlock getHandler() {
+    // nothing to return
+    return null;
+  }
+
+  @Override
+  public CodeBlock getHandlerAfter() {
+    if (activity.hasMultiInstanceParent()) {
+      return CodeBlock.of("get$LHandlerAfter(loopIndex)", StringUtils.capitalize(activity.getLiteral()));
+    } else {
+      return CodeBlock.of(getLiteralAfter());
+    }
+  }
+
+  @Override
+  public CodeBlock getHandlerBefore() {
+    if (activity.hasMultiInstanceParent()) {
+      return CodeBlock.of("get$LHandlerBefore(loopIndex)", StringUtils.capitalize(activity.getLiteral()));
+    } else {
+      return CodeBlock.of(getLiteralBefore());
+    }
   }
 
   @Override
@@ -120,6 +137,11 @@ public class DefaultStrategy implements GeneratorStrategy {
   }
 
   @Override
+  public void hasPassed(Builder methodBuilder) {
+    methodBuilder.addStatement("assertThat(pi).hasPassed($S)", activity.getId());
+  }
+
+  @Override
   public void initHandler(MethodSpec.Builder methodBuilder) {
     // nothing to initialize
   }
@@ -127,18 +149,35 @@ public class DefaultStrategy implements GeneratorStrategy {
   @Override
   public void initHandlerAfter(MethodSpec.Builder methodBuilder) {
     methodBuilder.addCode("\n// $L: $L\n", activity.getTypeName(), activity.getId());
-    methodBuilder.addStatement("$L = new $T(getProcessEngine(), $S)", getLiteralAfter(), JobHandler.class, activity.getId());
+    methodBuilder.addCode("$L = ", getLiteralAfter());
+    methodBuilder.addStatement(initHandlerAfterStatement());
+  }
+
+  @Override
+  public CodeBlock initHandlerAfterStatement() {
+    return CodeBlock.of("new $T(getProcessEngine(), $S)", JobHandler.class, activity.getId());
   }
 
   @Override
   public void initHandlerBefore(MethodSpec.Builder methodBuilder) {
     methodBuilder.addCode("\n// $L: $L\n", activity.getTypeName(), activity.getId());
-    methodBuilder.addStatement("$L = new $T(getProcessEngine(), $S)", getLiteralBefore(), JobHandler.class, activity.getId());
+    methodBuilder.addCode("$L = ", getLiteralBefore());
+    methodBuilder.addStatement(initHandlerBeforeStatement());
+  }
+
+  @Override
+  public CodeBlock initHandlerBeforeStatement() {
+    return CodeBlock.of("new $T(getProcessEngine(), $S)", JobHandler.class, activity.getId());
   }
 
   @Override
   public CodeBlock initHandlerStatement() {
     return null;
+  }
+
+  @Override
+  public void isWaitingAt(Builder methodBuilder) {
+    methodBuilder.addStatement("assertThat(pi).isWaitingAt($S)", activity.getId());
   }
 
   public void setActivity(TestCaseActivity activity) {

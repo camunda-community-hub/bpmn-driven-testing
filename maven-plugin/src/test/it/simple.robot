@@ -57,6 +57,7 @@ mvn clean test
   Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/simplereceivetask/TC_startEvent__endEvent.java
   Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/simplesignalcatchevent/TC_startEvent__endEvent.java
   Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/simplesubprocess/TC_startEvent__endEvent.java
+  Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/simplesubprocessnested/TC_startEvent__endEvent.java
   Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/simpletimercatchevent/TC_startEvent__endEvent.java
   Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/simpleusertask/TC_startEvent__endEvent.java
 
@@ -74,6 +75,7 @@ mvn clean test
   File should exist  ${testSources}/generated/simplereceivetask/TC_startEvent__endEvent.java
   File should exist  ${testSources}/generated/simplesignalcatchevent/TC_startEvent__endEvent.java
   File should exist  ${testSources}/generated/simplesubprocess/TC_startEvent__endEvent.java
+  File should exist  ${testSources}/generated/simplesubprocessnested/TC_startEvent__endEvent.java
   File should exist  ${testSources}/generated/simpletimercatchevent/TC_startEvent__endEvent.java
   File should exist  ${testSources}/generated/simpleusertask/TC_startEvent__endEvent.java
 
@@ -87,6 +89,7 @@ mvn clean test
   Should contain  ${result.stdout}  Writing file: target/bpmndt/org/camunda/community/bpmndt/api/ExternalTaskHandler.java
   Should contain  ${result.stdout}  Writing file: target/bpmndt/org/camunda/community/bpmndt/api/JobHandler.java
   Should contain  ${result.stdout}  Writing file: target/bpmndt/org/camunda/community/bpmndt/api/MultiInstanceHandler.java
+  Should contain  ${result.stdout}  Writing file: target/bpmndt/org/camunda/community/bpmndt/api/MultiInstanceScopeHandler.java
   Should contain  ${result.stdout}  Writing file: target/bpmndt/org/camunda/community/bpmndt/api/TestCaseInstance.java
   Should contain  ${result.stdout}  Writing file: target/bpmndt/org/camunda/community/bpmndt/api/TestCaseExecutor.java
   Should contain  ${result.stdout}  Writing file: target/bpmndt/org/camunda/community/bpmndt/api/UserTaskHandler.java
@@ -101,6 +104,7 @@ mvn clean test
   File should exist  ${testSources}/org/camunda/community/bpmndt/api/ExternalTaskHandler.java
   File should exist  ${testSources}/org/camunda/community/bpmndt/api/JobHandler.java
   File should exist  ${testSources}/org/camunda/community/bpmndt/api/MultiInstanceHandler.java
+  File should exist  ${testSources}/org/camunda/community/bpmndt/api/MultiInstanceScopeHandler.java
   File should exist  ${testSources}/org/camunda/community/bpmndt/api/TestCaseInstance.java
   File should exist  ${testSources}/org/camunda/community/bpmndt/api/TestCaseExecutor.java
   File should exist  ${testSources}/org/camunda/community/bpmndt/api/UserTaskHandler.java
@@ -120,6 +124,7 @@ mvn clean test
   Should contain  ${result.stdout}  Running org.example.it.SimpleReceiveTaskTest
   Should contain  ${result.stdout}  Running org.example.it.SimpleSignalCatchEventTest
   Should contain  ${result.stdout}  Running org.example.it.SimpleSubProcessTest
+  Should contain  ${result.stdout}  Running org.example.it.SimpleSubProcessNestedTest
   Should contain  ${result.stdout}  Running org.example.it.SimpleTimerCatchEventTest
   Should contain  ${result.stdout}  Running org.example.it.SimpleUserTaskTest
   # tests executed successfully

@@ -26,6 +26,7 @@ import javax.lang.model.SourceVersion;
 import org.camunda.bpm.model.bpmn.Bpmn;
 import org.camunda.bpm.model.bpmn.BpmnModelInstance;
 import org.camunda.bpm.model.bpmn.instance.Activity;
+import org.camunda.bpm.model.bpmn.instance.BaseElement;
 import org.camunda.bpm.model.bpmn.instance.FlowNode;
 import org.camunda.bpm.model.bpmn.instance.IntermediateThrowEvent;
 import org.camunda.bpm.model.bpmn.instance.MessageEventDefinition;
@@ -171,6 +172,32 @@ public class BpmnSupport {
     }
 
     return (MultiInstanceLoopCharacteristics) activity.getLoopCharacteristics();
+  }
+
+  /**
+   * Returns the ID of the parent element, which can be the ID of the process, an embedded sub process
+   * or a transaction.
+   * 
+   * @param flowNodeId A specific flow node ID.
+   * 
+   * @return The parent element ID or {@code null}, if the flow node with the given ID does not exist,
+   *         has no parent element or the parent element is not of type {@link BaseElement}.
+   */
+  public String getParentElementId(String flowNodeId) {
+    FlowNode flowNode = flowNodes.get(flowNodeId);
+    if (flowNode == null) {
+      return null;
+    }
+    if (flowNode.getParentElement() == null) {
+      // should not be the case
+      return null;
+    }
+
+    try {
+      return ((BaseElement) flowNode.getParentElement()).getId();
+    } catch (ClassCastException e) {
+      return null;
+    }
   }
 
   public String getProcessId() {

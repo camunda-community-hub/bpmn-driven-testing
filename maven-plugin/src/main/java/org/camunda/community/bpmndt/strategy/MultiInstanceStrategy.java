@@ -4,6 +4,7 @@ import javax.lang.model.element.Modifier;
 
 import org.camunda.bpm.engine.ActivityTypes;
 import org.camunda.community.bpmndt.GeneratorStrategy;
+import org.camunda.community.bpmndt.TestCaseActivity;
 import org.camunda.community.bpmndt.api.JobHandler;
 
 import com.squareup.javapoet.ClassName;
@@ -21,6 +22,8 @@ public class MultiInstanceStrategy extends DefaultStrategy {
   private final GeneratorStrategy strategy;
   private final ClassName typeName;
   
+  private String scopeId;
+
   public MultiInstanceStrategy(GeneratorStrategy strategy, ClassName typeName) {
     this.strategy = strategy;
     this.typeName = typeName;
@@ -50,22 +53,18 @@ public class MultiInstanceStrategy extends DefaultStrategy {
   
   @Override
   public void applyHandlerAfter(MethodSpec.Builder methodBuilder) {
-    methodBuilder.addStatement("assertThat(pi).isWaitingAt($S)", buildScopeId());
+    methodBuilder.addStatement("assertThat(pi).isWaitingAt($S)", scopeId);
     methodBuilder.addStatement("instance.apply($L)", getLiteralAfter());
   }
 
   @Override
   public void applyHandlerBefore(MethodSpec.Builder methodBuilder) {
-    methodBuilder.addStatement("assertThat(pi).isWaitingAt($S)", buildScopeId());
+    methodBuilder.addStatement("assertThat(pi).isWaitingAt($S)", scopeId);
     methodBuilder.addStatement("instance.apply($L)", getLiteralBefore());
   }
 
   protected CodeBlock buildHandlerMethodJavadoc() {
     return CodeBlock.builder().add("Returns the handler for multi instance $L: $L", activity.getTypeName(), activity.getId()).build();
-  }
-
-  protected String buildScopeId() {
-    return String.format("%s#%s", activity.getId(), ActivityTypes.MULTI_INSTANCE_BODY);
   }
 
   /**
@@ -83,6 +82,11 @@ public class MultiInstanceStrategy extends DefaultStrategy {
   }
 
   @Override
+  public void hasPassed(Builder methodBuilder) {
+    methodBuilder.addStatement("assertThat(pi).hasPassed($S)", scopeId);
+  }
+
+  @Override
   public void initHandler(MethodSpec.Builder methodBuilder) {
     methodBuilder.addCode("\n// $L: $L\n", activity.getTypeName(), activity.getId());
     methodBuilder.addCode("$L = ", activity.getLiteral());
@@ -92,17 +96,29 @@ public class MultiInstanceStrategy extends DefaultStrategy {
   @Override
   public void initHandlerAfter(MethodSpec.Builder methodBuilder) {
     methodBuilder.addCode("\n// $L: $L\n", activity.getTypeName(), activity.getId());
-    methodBuilder.addStatement("$L = new $T(getProcessEngine(), $S)", getLiteralAfter(), JobHandler.class, buildScopeId());
+    methodBuilder.addStatement("$L = new $T(getProcessEngine(), $S)", getLiteralAfter(), JobHandler.class, scopeId);
   }
 
   @Override
   public void initHandlerBefore(MethodSpec.Builder methodBuilder) {
     methodBuilder.addCode("\n// $L: $L\n", activity.getTypeName(), activity.getId());
-    methodBuilder.addStatement("$L = new $T(getProcessEngine(), $S)", getLiteralBefore(), JobHandler.class, buildScopeId());
+    methodBuilder.addStatement("$L = new $T(getProcessEngine(), $S)", getLiteralBefore(), JobHandler.class, scopeId);
   }
 
   @Override
   public CodeBlock initHandlerStatement() {
     return CodeBlock.of("new $T(instance, $S)", getHandlerType(), activity.getId());
+  }
+
+  @Override
+  public void isWaitingAt(Builder methodBuilder) {
+    methodBuilder.addStatement("assertThat(pi).isWaitingAt($S)", scopeId);
+  }
+
+  @Override
+  public void setActivity(TestCaseActivity activity) {
+    super.setActivity(activity);
+
+    scopeId = String.format("%s#%s", activity.getId(), ActivityTypes.MULTI_INSTANCE_BODY);
   }
 }

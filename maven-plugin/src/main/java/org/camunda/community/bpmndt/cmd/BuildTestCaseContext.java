@@ -1,9 +1,11 @@
 package org.camunda.community.bpmndt.cmd;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 
 import org.apache.commons.lang3.StringUtils;
 import org.camunda.bpm.model.bpmn.instance.BoundaryEvent;
@@ -11,12 +13,14 @@ import org.camunda.bpm.model.bpmn.instance.Error;
 import org.camunda.bpm.model.bpmn.instance.Escalation;
 import org.camunda.bpm.model.bpmn.instance.IntermediateCatchEvent;
 import org.camunda.bpm.model.bpmn.instance.Message;
+import org.camunda.bpm.model.bpmn.instance.MultiInstanceLoopCharacteristics;
 import org.camunda.bpm.model.bpmn.instance.ReceiveTask;
 import org.camunda.bpm.model.bpmn.instance.Signal;
 import org.camunda.community.bpmndt.BpmnEventSupport;
 import org.camunda.community.bpmndt.BpmnSupport;
 import org.camunda.community.bpmndt.GeneratorContext;
 import org.camunda.community.bpmndt.TestCaseActivity;
+import org.camunda.community.bpmndt.TestCaseActivityScope;
 import org.camunda.community.bpmndt.TestCaseActivityType;
 import org.camunda.community.bpmndt.TestCaseContext;
 import org.camunda.community.bpmndt.model.TestCase;
@@ -27,18 +31,22 @@ import org.camunda.community.bpmndt.strategy.DefaultStrategy;
 import org.camunda.community.bpmndt.strategy.EventStrategy;
 import org.camunda.community.bpmndt.strategy.ExternalTaskStrategy;
 import org.camunda.community.bpmndt.strategy.JobStrategy;
+import org.camunda.community.bpmndt.strategy.MultiInstanceScopeStrategy;
 import org.camunda.community.bpmndt.strategy.MultiInstanceStrategy;
 import org.camunda.community.bpmndt.strategy.UserTaskStrategy;
 
 import com.squareup.javapoet.ClassName;
 
 /**
- * Builds a new test case context, used for code generation.
+ * Builds a new test case context, used for code generation. An instance of this class needs to be
+ * reused for all test cases of one BPMN file.
  */
-public class BuildTestCaseContext implements Function<TestCase, TestCaseContext> {
+public class BuildTestCaseContext implements BiFunction<TestCase, Integer, TestCaseContext> {
 
   private final GeneratorContext gCtx;
   private final BpmnSupport bpmnSupport;
+
+  private final Map<String, TestCaseActivityScope> scopes;
 
   private final Set<String> testCaseNames;
 
@@ -46,11 +54,14 @@ public class BuildTestCaseContext implements Function<TestCase, TestCaseContext>
     this.gCtx = gCtx;
     this.bpmnSupport = bpmnSupport;
 
+    scopes = new HashMap<>();
     testCaseNames = new HashSet<>();
   }
 
   @Override
-  public TestCaseContext apply(TestCase testCase) {
+  public TestCaseContext apply(TestCase testCase, Integer index) {
+    scopes.clear();
+
     TestCaseContext ctx = new TestCaseContext(bpmnSupport, testCase);
 
     if (testCaseNames.contains(ctx.getName())) {
@@ -105,10 +116,67 @@ public class BuildTestCaseContext implements Function<TestCase, TestCaseContext>
         activity.setProcessEnd(bpmnSupport.isProcessEnd(flowNodeId));
       }
 
-      ctx.addActivity(activity);
+      addActivity(ctx, activity);
+    }
+
+    // handle multi instance scopes
+    for (TestCaseActivityScope scope : scopes.values()) {
+      if (scope.isMultiInstance()) {
+        handleMultiInstanceScope(ctx, index, scope);
+      }
     }
 
     return ctx;
+  }
+
+  private void addActivity(TestCaseContext ctx, TestCaseActivity next) {
+    String parentElementId = bpmnSupport.getParentElementId(next.getId());
+
+    // if next activity has process element as parent
+    if (parentElementId == null || ctx.getProcessId().equals(parentElementId)) {
+      ctx.addActivity(next);
+      return;
+    }
+
+    TestCaseActivityScope scope = scopes.get(parentElementId);
+    if (scope == null) {
+      MultiInstanceLoopCharacteristics multiInstance = bpmnSupport.getMultiInstance(parentElementId);
+      if (multiInstance == null) {
+        scope = addActivityScope(ctx, parentElementId);
+      } else {
+        scope = addMultiInstanceActivityScope(ctx, parentElementId, multiInstance);
+      }
+      
+      scopes.put(scope.getId(), scope);
+    }
+
+    scope.addActivity(next);
+  }
+
+  private TestCaseActivityScope addActivityScope(TestCaseContext ctx, String scopeId) {
+    String parentElementId = bpmnSupport.getParentElementId(scopeId);
+    
+    List<TestCaseActivity> activities;
+    if (ctx.getProcessId().equals(parentElementId)) {
+      activities = ctx.getActivities();
+    } else {
+      activities = scopes.get(parentElementId).getActivities();
+    }
+
+    return new TestCaseActivityScope(bpmnSupport.get(scopeId), activities);
+  }
+
+  private TestCaseActivityScope addMultiInstanceActivityScope(TestCaseContext ctx, String scopeId, MultiInstanceLoopCharacteristics multiInstance) {
+    TestCaseActivityScope scope = new TestCaseActivityScope(bpmnSupport.get(scopeId), multiInstance);
+
+    String parentElementId = bpmnSupport.getParentElementId(scope.getId());
+    if (ctx.getProcessId().equals(parentElementId)) {
+      ctx.addActivity(scope);
+    } else {
+      scopes.get(parentElementId).addActivity(scope);
+    }
+
+    return scope;
   }
 
   protected DefaultStrategy getStrategy(TestCaseActivity current) {
@@ -203,5 +271,20 @@ public class BuildTestCaseContext implements Function<TestCase, TestCaseContext>
     MultiInstanceStrategy multiInstanceStrategy = new MultiInstanceStrategy(activity.getStrategy(), ClassName.get(packageName, name));
     multiInstanceStrategy.setActivity(activity);
     activity.setStrategy(multiInstanceStrategy);
+  }
+
+  protected void handleMultiInstanceScope(TestCaseContext ctx, int index, TestCaseActivityScope scope) {
+    String packageName = String.format("%s.%s", gCtx.getPackageName(), ctx.getPackageName());
+    String name = String.format("%sHandler%d", StringUtils.capitalize(scope.getLiteral()), index + 1);
+    ClassName handlerType = ClassName.get(packageName, name);
+
+    MultiInstanceScopeStrategy multiInstanceScopeStrategy = new MultiInstanceScopeStrategy(handlerType);
+    multiInstanceScopeStrategy.setActivity(scope);
+    scope.setStrategy(multiInstanceScopeStrategy);
+    scope.setType(TestCaseActivityType.SCOPE);
+
+    for (TestCaseActivity activity : scope.getActivities()) {
+      activity.setParent(scope);
+    }
   }
 }

@@ -34,9 +34,9 @@ public class BpmndtParseListener extends AbstractBpmnParseListener {
       String id;
       if (isMultiInstanceScope) {
         id = activity.getId();
-    } else {
+      } else {
         id = stripMultiInstanceScopeSuffix(activity.getId());
-    }
+      }
 
       if (id.equals(activityId)) {
         return activity;
@@ -105,6 +105,23 @@ public class BpmndtParseListener extends AbstractBpmnParseListener {
     }
   }
 
+  /**
+   * Instruments the given activity, if it is a multi instance scope.
+   * 
+   * @param scope The surrounding scope.
+   * 
+   * @param activity The current activity.
+   */
+  protected void instrumentMultiInstanceScope(ScopeImpl scope, ActivityImpl activity) {
+    if (instance == null) {
+      return;
+    }
+
+    if (!scope.isSubProcessScope() && scope.getId().endsWith(MULTI_INSTANCE_SCOPE_SUFFIX)) {
+      activity.setAsyncBefore(true);
+    }
+  }
+
   @Override
   public void parseCallActivity(Element callActivityElement, ScopeImpl scope, ActivityImpl activity) {
     instrumentCallActivity(activity);
@@ -139,6 +156,11 @@ public class BpmndtParseListener extends AbstractBpmnParseListener {
   @Override
   public void parseServiceTask(Element serviceTaskElement, ScopeImpl scope, ActivityImpl activity) {
     instrumentMultiInstanceActivity(scope, activity);
+  }
+
+  @Override
+  public void parseSubProcess(Element subProcessElement, ScopeImpl scope, ActivityImpl activity) {
+    instrumentMultiInstanceScope(scope, activity);
   }
 
   @Override

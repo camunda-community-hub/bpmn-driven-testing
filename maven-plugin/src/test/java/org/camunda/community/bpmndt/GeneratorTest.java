@@ -242,6 +242,7 @@ public class GeneratorTest {
     assertThat(isFile.test("org/camunda/community/bpmndt/api/ExternalTaskHandler.java"), is(true));
     assertThat(isFile.test("org/camunda/community/bpmndt/api/JobHandler.java"), is(true));
     assertThat(isFile.test("org/camunda/community/bpmndt/api/MultiInstanceHandler.java"), is(true));
+    assertThat(isFile.test("org/camunda/community/bpmndt/api/MultiInstanceScopeHandler.java"), is(true));
     assertThat(isFile.test("org/camunda/community/bpmndt/api/TestCaseInstance.java"), is(true));
     assertThat(isFile.test("org/camunda/community/bpmndt/api/TestCaseExecutor.java"), is(true));
     assertThat(isFile.test("org/camunda/community/bpmndt/api/UserTaskHandler.java"), is(true));
@@ -284,6 +285,7 @@ public class GeneratorTest {
     assertThat(isFile.test("org/camunda/community/bpmndt/api/ExternalTaskHandler.java"), is(true));
     assertThat(isFile.test("org/camunda/community/bpmndt/api/JobHandler.java"), is(true));
     assertThat(isFile.test("org/camunda/community/bpmndt/api/MultiInstanceHandler.java"), is(true));
+    assertThat(isFile.test("org/camunda/community/bpmndt/api/MultiInstanceScopeHandler.java"), is(true));
     assertThat(isFile.test("org/camunda/community/bpmndt/api/TestCaseInstance.java"), is(true));
     assertThat(isFile.test("org/camunda/community/bpmndt/api/TestCaseExecutor.java"), is(true));
     assertThat(isFile.test("org/camunda/community/bpmndt/api/UserTaskHandler.java"), is(true));

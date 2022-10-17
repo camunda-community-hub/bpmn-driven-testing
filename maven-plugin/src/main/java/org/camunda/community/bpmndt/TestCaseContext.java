@@ -2,9 +2,12 @@ package org.camunda.community.bpmndt;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
+import java.util.function.Predicate;
 
 import org.camunda.community.bpmndt.model.TestCase;
 
@@ -52,12 +55,48 @@ public class TestCaseContext {
     activities.add(next);
   }
 
+  /**
+   * Adds the ID of a flow node to the invalid node IDs, because it does not exists within the BPMN
+   * model instance. If at least one flow node ID is added, the test case is considered to be invalid,
+   * since its path is invalid.
+   * 
+   * @param flowNodeId A flow node ID of the test case.
+   * 
+   * @see #getInvalidFlowNodeIds()
+   * @see #isPathInvalid()
+   */
   public void addInvalidFlowNodeId(String flowNodeId) {
     invalidFlowNodeIds.add(flowNodeId);
   }
 
+  private void filter(List<TestCaseActivity> activities, Set<TestCaseActivity> filtered, Predicate<TestCaseActivity> filter) {
+    for (TestCaseActivity activity : activities) {
+      if (filter.test(activity)) {
+        filtered.add(activity);
+      }
+
+      if (activity.isScope()) {
+        TestCaseActivityScope scope = (TestCaseActivityScope) activity;
+        filter(scope.getActivities(), filtered, filter);
+      }
+    }
+  }
+
   public List<TestCaseActivity> getActivities() {
     return activities;
+  }
+
+  /**
+   * Gets all activities (including activities from scopes) that satisfy the given filter.
+   * 
+   * @param filter An activity filter.
+   * 
+   * @return A set of filtered activities.
+   */
+  public Set<TestCaseActivity> getActivities(Predicate<TestCaseActivity> filter) {
+    Set<TestCaseActivity> filtered = new HashSet<>();
+    filter(activities, filtered, filter);
+    return filtered;
   }
 
   /**

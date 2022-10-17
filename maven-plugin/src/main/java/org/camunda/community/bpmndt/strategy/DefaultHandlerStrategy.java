@@ -2,6 +2,7 @@ package org.camunda.community.bpmndt.strategy;
 
 import javax.lang.model.element.Modifier;
 
+import org.apache.commons.lang3.StringUtils;
 import org.camunda.community.bpmndt.TestCaseActivity;
 import org.camunda.community.bpmndt.TestCaseActivityType;
 
@@ -40,10 +41,10 @@ public class DefaultHandlerStrategy extends DefaultStrategy {
     if (activity.hasPrev(TestCaseActivityType.EVENT_BASED_GATEWAY)) {
       // if an event or job is part of an event based gateway
       // the process instance is waiting at the gateway and not at the event or job itself
-      methodBuilder.addStatement("instance.apply($L)", activity.getLiteral());
+      methodBuilder.addStatement("instance.apply($L)", getHandler());
     } else if (activity.getType().isWaitState()) {
       methodBuilder.addStatement("assertThat(pi).isWaitingAt($S)", activity.getId());
-      methodBuilder.addStatement("instance.apply($L)", activity.getLiteral());
+      methodBuilder.addStatement("instance.apply($L)", getHandler());
     }
 
     if (!activity.hasNext()) {
@@ -64,6 +65,15 @@ public class DefaultHandlerStrategy extends DefaultStrategy {
         break;
       default:
         break;
+    }
+  }
+
+  @Override
+  public CodeBlock getHandler() {
+    if (activity.hasMultiInstanceParent()) {
+      return CodeBlock.of("get$LHandler(loopIndex)", StringUtils.capitalize(activity.getLiteral()));
+    } else {
+      return CodeBlock.of(activity.getLiteral());
     }
   }
 
