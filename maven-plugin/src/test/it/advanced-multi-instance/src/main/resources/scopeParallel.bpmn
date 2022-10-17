@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:bpmndt="http://camunda.org/schema/extension/bpmn-driven-testing" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" id="Definitions_11pe5rz" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.4.0">
+  <bpmn:process id="scopeParallel" isExecutable="true">
+    <bpmn:extensionElements>
+      <bpmndt:testCases>
+        <bpmndt:testCase>
+          <bpmndt:path>
+            <bpmndt:node>startEvent</bpmndt:node>
+            <bpmndt:node>subProcessStartEvent</bpmndt:node>
+            <bpmndt:node>userTask</bpmndt:node>
+            <bpmndt:node>messageCatchEvent</bpmndt:node>
+            <bpmndt:node>callActivity</bpmndt:node>
+            <bpmndt:node>subProcessEndEvent</bpmndt:node>
+            <bpmndt:node>endEvent</bpmndt:node>
+          </bpmndt:path>
+        </bpmndt:testCase>
+      </bpmndt:testCases>
+    </bpmn:extensionElements>
+    <bpmn:startEvent id="startEvent">
+      <bpmn:outgoing>Flow_1cn6rz9</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:subProcess id="multiInstanceScope">
+      <bpmn:incoming>Flow_1cn6rz9</bpmn:incoming>
+      <bpmn:outgoing>Flow_18quzb6</bpmn:outgoing>
+      <bpmn:multiInstanceLoopCharacteristics>
+        <bpmn:loopCardinality xsi:type="bpmn:tFormalExpression">3</bpmn:loopCardinality>
+      </bpmn:multiInstanceLoopCharacteristics>
+      <bpmn:startEvent id="subProcessStartEvent">
+        <bpmn:outgoing>Flow_0o03grm</bpmn:outgoing>
+      </bpmn:startEvent>
+      <bpmn:sequenceFlow id="Flow_0o03grm" sourceRef="subProcessStartEvent" targetRef="userTask" />
+      <bpmn:sequenceFlow id="Flow_15s39f0" sourceRef="userTask" targetRef="messageCatchEvent" />
+      <bpmn:intermediateCatchEvent id="messageCatchEvent">
+        <bpmn:incoming>Flow_15s39f0</bpmn:incoming>
+        <bpmn:outgoing>Flow_05h05tp</bpmn:outgoing>
+        <bpmn:messageEventDefinition id="MessageEventDefinition_1wzdf3e" messageRef="Message_097orcz" />
+      </bpmn:intermediateCatchEvent>
+      <bpmn:userTask id="userTask">
+        <bpmn:incoming>Flow_0o03grm</bpmn:incoming>
+        <bpmn:outgoing>Flow_15s39f0</bpmn:outgoing>
+      </bpmn:userTask>
+      <bpmn:sequenceFlow id="Flow_05h05tp" sourceRef="messageCatchEvent" targetRef="callActivity" />
+      <bpmn:callActivity id="callActivity" calledElement="advanced" camunda:variableMappingDelegateExpression="${callActivityMapping}">
+        <bpmn:incoming>Flow_05h05tp</bpmn:incoming>
+        <bpmn:outgoing>Flow_0kyh77m</bpmn:outgoing>
+      </bpmn:callActivity>
+      <bpmn:endEvent id="subProcessEndEvent">
+        <bpmn:incoming>Flow_0kyh77m</bpmn:incoming>
+      </bpmn:endEvent>
+      <bpmn:sequenceFlow id="Flow_0kyh77m" sourceRef="callActivity" targetRef="subProcessEndEvent" />
+    </bpmn:subProcess>
+    <bpmn:sequenceFlow id="Flow_1cn6rz9" sourceRef="startEvent" targetRef="multiInstanceScope" />
+    <bpmn:endEvent id="endEvent">
+      <bpmn:incoming>Flow_18quzb6</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_18quzb6" sourceRef="multiInstanceScope" targetRef="endEvent" />
+  </bpmn:process>
+  <bpmn:message id="Message_097orcz" name="advancedMessage" />
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="scopeParallel">
+      <bpmndi:BPMNEdge id="Flow_18quzb6_di" bpmnElement="Flow_18quzb6">
+        <di:waypoint x="900" y="177" />
+        <di:waypoint x="962" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1cn6rz9_di" bpmnElement="Flow_1cn6rz9">
+        <di:waypoint x="215" y="177" />
+        <di:waypoint x="270" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="startEvent">
+        <dc:Bounds x="179" y="159" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_19dpja3_di" bpmnElement="multiInstanceScope" isExpanded="true">
+        <dc:Bounds x="270" y="77" width="630" height="200" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_0kyh77m_di" bpmnElement="Flow_0kyh77m">
+        <di:waypoint x="760" y="177" />
+        <di:waypoint x="822" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_05h05tp_di" bpmnElement="Flow_05h05tp">
+        <di:waypoint x="598" y="177" />
+        <di:waypoint x="660" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_15s39f0_di" bpmnElement="Flow_15s39f0">
+        <di:waypoint x="500" y="177" />
+        <di:waypoint x="562" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0o03grm_di" bpmnElement="Flow_0o03grm">
+        <di:waypoint x="346" y="177" />
+        <di:waypoint x="400" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Event_0xeqnx4_di" bpmnElement="subProcessStartEvent">
+        <dc:Bounds x="310" y="159" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0qwla6q_di" bpmnElement="messageCatchEvent">
+        <dc:Bounds x="562" y="159" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_19h0121_di" bpmnElement="userTask">
+        <dc:Bounds x="400" y="137" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0fdgctx_di" bpmnElement="callActivity">
+        <dc:Bounds x="660" y="137" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_10l21in_di" bpmnElement="subProcessEndEvent">
+        <dc:Bounds x="822" y="159" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1n1ee7k_di" bpmnElement="endEvent">
+        <dc:Bounds x="962" y="159" width="36" height="36" />
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

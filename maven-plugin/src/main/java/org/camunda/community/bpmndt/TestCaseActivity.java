@@ -9,6 +9,7 @@ public class TestCaseActivity {
   private final String literal;
   private final MultiInstanceLoopCharacteristics multiInstance;
 
+  private TestCaseActivityScope parent;
   private TestCaseActivityType type;
   private TestCaseActivity prev;
   private TestCaseActivity next;
@@ -34,6 +35,19 @@ public class TestCaseActivity {
 
   public <T extends FlowNode> T as(Class<T> type) {
     return type.cast(flowNode);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (obj == this) {
+      return true;
+    }
+    if (!(obj instanceof TestCaseActivity)) {
+      return false;
+    }
+
+    TestCaseActivity activity = (TestCaseActivity) obj;
+    return activity.getId().equals(getId());
   }
 
   /**
@@ -90,6 +104,15 @@ public class TestCaseActivity {
   }
 
   /**
+   * Return the parent test case activity scope.
+   * 
+   * @return The parent or {@code null}, if there is no parent.
+   */
+  public TestCaseActivityScope getParent() {
+    return parent;
+  }
+
+  /**
    * Returns the previous test activity.
    * 
    * @return The previous activity or {@code null}, if this is the first activity.
@@ -114,8 +137,21 @@ public class TestCaseActivity {
     return flowNode.getElementType().getTypeName();
   }
 
+  @Override
+  public int hashCode() {
+    return getId().hashCode();
+  }
+
+  public boolean hasMultiInstanceParent() {
+    return parent != null && parent.isMultiInstance();
+  }
+
   public boolean hasNext() {
     return next != null;
+  }
+
+  public boolean hasParent() {
+    return parent != null;
   }
 
   public boolean hasPrev() {
@@ -150,8 +186,17 @@ public class TestCaseActivity {
   }
 
   public boolean isProcessEnd() {
-      return processEnd;
-    }
+    return processEnd;
+  }
+
+  /**
+   * Determines if the activity is a scope (embedded sub process or transaction) or an atomic
+   * activity.
+   * 
+   * @return {@code true}, if the activity is a scope. Otherwise {@code false}.
+   */
+  public boolean isScope() {
+    return false;
   }
 
   public void setAttachedTo(String attachedTo) {
@@ -168,6 +213,10 @@ public class TestCaseActivity {
 
   public void setNext(TestCaseActivity next) {
     this.next = next;
+  }
+
+  public void setParent(TestCaseActivityScope parent) {
+    this.parent = parent;
   }
 
   public void setPrev(TestCaseActivity prev) {

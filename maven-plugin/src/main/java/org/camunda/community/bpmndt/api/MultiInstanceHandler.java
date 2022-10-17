@@ -14,7 +14,7 @@ import org.camunda.community.bpmndt.api.JobHandler.Cardinality;
 
 /**
  * Fluent API for multi instance activites (call activities or tasks). This class does not support
- * sub process multi instances like embedded sub processes or transactions.
+ * multi instances scopes like sub processes or transactions.
  *
  * @param <T> The generated multi instance handler type.
  * 
@@ -244,6 +244,7 @@ public class MultiInstanceHandler<T extends MultiInstanceHandler<?, ?>, U> {
     List<HistoricActivityInstance> historicActivityInstances = historyService.createHistoricActivityInstanceQuery()
         .processInstanceId(pi.getId())
         .activityId(scopeId)
+        .orderByHistoricActivityInstanceStartTime().desc() // last activity instance first
         .list();
 
     if (historicActivityInstances.isEmpty()) {

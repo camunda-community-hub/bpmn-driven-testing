@@ -63,6 +63,10 @@ public class TestCaseInstance {
     handler.apply(pi);
   }
 
+  public void apply(MultiInstanceScopeHandler<?> handler) {
+    handler.apply(pi);
+  }
+
   public void apply(UserTaskHandler handler) {
     handler.apply(pi);
   }

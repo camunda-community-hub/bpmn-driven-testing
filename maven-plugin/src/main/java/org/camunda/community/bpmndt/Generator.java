@@ -18,6 +18,7 @@ import org.camunda.community.bpmndt.api.EventHandler;
 import org.camunda.community.bpmndt.api.ExternalTaskHandler;
 import org.camunda.community.bpmndt.api.JobHandler;
 import org.camunda.community.bpmndt.api.MultiInstanceHandler;
+import org.camunda.community.bpmndt.api.MultiInstanceScopeHandler;
 import org.camunda.community.bpmndt.api.TestCaseExecutor;
 import org.camunda.community.bpmndt.api.TestCaseInstance;
 import org.camunda.community.bpmndt.api.UserTaskHandler;
@@ -28,6 +29,7 @@ import org.camunda.community.bpmndt.cmd.BuildTestCaseContext;
 import org.camunda.community.bpmndt.cmd.CollectBpmnFiles;
 import org.camunda.community.bpmndt.cmd.DeleteTestSources;
 import org.camunda.community.bpmndt.cmd.GenerateMultiInstanceHandler;
+import org.camunda.community.bpmndt.cmd.GenerateMultiInstanceScopeHandler;
 import org.camunda.community.bpmndt.cmd.GenerateSpringConfiguration;
 import org.camunda.community.bpmndt.cmd.GenerateTestCase;
 import org.camunda.community.bpmndt.cmd.WriteJavaFile;
@@ -104,6 +106,7 @@ public class Generator {
     apiClasses.add(EventHandler.class);
     apiClasses.add(JobHandler.class);
     apiClasses.add(MultiInstanceHandler.class);
+    apiClasses.add(MultiInstanceScopeHandler.class);
     apiClasses.add(TestCaseInstance.class);
     apiClasses.add(TestCaseExecutor.class);
     apiClasses.add(UserTaskHandler.class);
@@ -133,10 +136,12 @@ public class Generator {
     new GenerateSpringConfiguration(result).accept(ctx);
   }
 
-  protected void generateMultiInstanceHandlers(GeneratorContext gCtx, TestCaseContext ctx) {
-    Consumer<TestCaseActivity> generate = new GenerateMultiInstanceHandler(gCtx, result, ctx);
+  protected void generateMultiInstanceHandlers(TestCaseContext ctx) {
+    ctx.getActivities(activity -> activity.isMultiInstance() && !activity.isScope()).forEach(new GenerateMultiInstanceHandler(result));
+  }
 
-    ctx.getActivities().stream().filter(TestCaseActivity::isMultiInstance).forEach(generate::accept);
+  protected void generateMultiInstanceScopeHandlers(TestCaseContext ctx) {
+    ctx.getActivities(activity -> activity.isMultiInstance() && activity.isScope()).forEach(new GenerateMultiInstanceScopeHandler(result));
   }
 
   protected void generateTestCases(GeneratorContext gCtx, Path bpmnFile) {
@@ -153,8 +158,9 @@ public class Generator {
     Consumer<TestCaseContext> generate = new GenerateTestCase(gCtx, result);
 
     BuildTestCaseContext ctxBuilder = new BuildTestCaseContext(gCtx, bpmnSupport);
-    for (TestCase testCase : bpmnSupport.getTestCases()) {
-      TestCaseContext ctx = ctxBuilder.apply(testCase);
+
+    for (int i = 0; i < testCases.size(); i++) {
+      TestCaseContext ctx = ctxBuilder.apply(testCases.get(i), i);
 
       String testCaseName = ctx.getName();
 
@@ -166,7 +172,8 @@ public class Generator {
 
       log.info(String.format("Generating test case '%s'", testCaseName));
       generate.accept(ctx);
-      generateMultiInstanceHandlers(gCtx, ctx);
+      generateMultiInstanceHandlers(ctx);
+      generateMultiInstanceScopeHandlers(ctx);
     }
   }
 
