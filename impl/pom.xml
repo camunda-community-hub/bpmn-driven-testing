@@ -1,0 +1,161 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.camunda.community</groupId>
+    <artifactId>bpmn-driven-testing-root</artifactId>
+    <version>0.6.0-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>bpmn-driven-testing-impl</artifactId>
+
+  <properties>
+    <!-- Versions -->
+    <assertj.version>3.22.0</assertj.version>
+    <camunda.bpm.version>7.17.0</camunda.bpm.version>
+    <camunda.bpm.assert.version>13.0.0</camunda.bpm.assert.version>
+    <javapoet.version>1.13.0</javapoet.version>
+    <junit.version>4.13.2</junit.version>
+    <junit.jupiter.version>5.8.2</junit.jupiter.version>
+    <spring.version>5.3.18</spring.version>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.camunda.bpm</groupId>
+        <artifactId>camunda-bom</artifactId>
+        <version>${camunda.bpm.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <!-- Camunda -->
+    <dependency>
+      <groupId>org.camunda.bpm.model</groupId>
+      <artifactId>camunda-bpmn-model</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.camunda.bpm</groupId>
+      <artifactId>camunda-engine</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.camunda.bpm</groupId>
+      <artifactId>camunda-engine-plugin-spin</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.camunda.bpm</groupId>
+      <artifactId>camunda-engine-spring</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.camunda.bpm.assert</groupId>
+      <artifactId>camunda-bpm-assert</artifactId>
+      <version>${camunda.bpm.assert.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <version>${assertj.version}</version>
+    </dependency>
+
+    <!-- Spring -->
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-beans</artifactId>
+      <version>${spring.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-context</artifactId>
+      <version>${spring.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-jdbc</artifactId>
+      <version>${spring.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-test</artifactId>
+      <version>${spring.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.squareup</groupId>
+      <artifactId>javapoet</artifactId>
+      <version>${javapoet.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>2.11.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>3.12.0</version>
+    </dependency>
+
+    <!-- JUnit -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <version>${junit.jupiter.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
+      <version>2.1.210</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+    </dependency>
+
+    <!-- Test -->
+    <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest-core</artifactId>
+      <version>2.2</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>4.2.0</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <resources>
+      <resource>
+        <directory>${project.basedir}/src/main/resources</directory>
+      </resource>
+
+      <!-- Add API classes as resources, since those are needed to run generated test code -->
+      <resource>
+        <directory>${project.basedir}/src/main/java/org/camunda/community/bpmndt/api</directory>
+        <targetPath>${project.build.outputDirectory}/org/camunda/community/bpmndt/api</targetPath>
+      </resource>
+    </resources>
+  </build>
+</project>

@@ -109,9 +109,7 @@ public class MavenPluginRule extends TestWatcher {
     // find plugin JAR
     Optional<Path> pluginJar;
     try {
-      pluginJar = Files.list(Paths.get("./target"))
-          .filter(p -> p.getFileName().toString().endsWith(".jar"))
-          .findFirst();
+      pluginJar = Files.list(Paths.get("./target")).filter(p -> p.getFileName().toString().endsWith(".jar")).findFirst();
     } catch (IOException e) {
       throw new RuntimeException("Could not find plugin JAR file", e);
     }

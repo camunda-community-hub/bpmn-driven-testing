@@ -33,8 +33,7 @@ jobs:
           maven-psw: ${{ secrets.MAVEN_CENTRAL_DEPLOYMENT_PSW }}
           maven-gpg-passphrase: ${{ secrets.MAVEN_CENTRAL_GPG_SIGNING_KEY_PASSPHRASE }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          maven-additional-options: -f maven-plugin/pom.xml
-          artifacts-pattern: ./maven-plugin/target/nexus-staging/**/*.jar
+          artifacts-pattern: ""
           run-tests: true
         id: release
       - if: github.event.release

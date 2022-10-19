@@ -1,7 +1,7 @@
 # Maven Plugin
 The plugin's `generator` goal runs within Maven's default lifecycle in phase `generate-test-sources` (run `mvn generate-test-sources` to see the generator's log).
 It generates the test code under `target/bpmndt` and adds this directory as test source directory, which is automatically compiled during the `test-compile` phase.
-The compilation results (test cases and [API classes](src/main/java/org/camunda/community/bpmndt/api)) will be available in the test classpath afterwards.
+The compilation results (test cases and [API classes](../impl/src/main/java/org/camunda/community/bpmndt/api)) will be available in the test classpath afterwards.
 
 :warning: With **IntelliJ IDEA**, you may need to [add the additional test source directory manually](https://www.jetbrains.com/help/idea/testing.html#add-test-root).
 Right click on `target/bpmndt` > `Mark Directory as` > `Test Sources Root`
@@ -33,7 +33,7 @@ Available parameters for the plugin's `generator` goal:
 | jUnit5Enabled        | Boolean      | Enables JUnit 5 based test case generation | false |
 | packageName          | String       | Package name, used for the generated test sources | generated     |
 | processEnginePlugins | List<String> | List of process engine plugins to register at the process engine (not required for Spring Boot, since process engine plugins must be exposed as beans) | -             |
-| springEnabled        | Boolean      | Enables Spring based testing (not required for Spring Boot, since here only the [BpmndtProcessEnginePlugin](src/main/java/org/camunda/community/bpmndt/api/cfg/BpmndtProcessEnginePlugin.java) must be exposed as a bean) | false |
+| springEnabled        | Boolean      | Enables Spring based testing (not required for Spring Boot, since here only the [BpmndtProcessEnginePlugin](../impl/src/main/java/org/camunda/community/bpmndt/api/cfg/BpmndtProcessEnginePlugin.java) must be exposed as a bean) | false |
 | testSourceDirectory  | String       | Name of the directory under `target/`, used for the generated test sources | bpmndt |
 
 ## Dependencies
@@ -160,8 +160,8 @@ Recommended versions:
 ## Testing
 :warning: This section is only important for plugin development!
 
-Beside unit tests, a set of integration tests exist under [src/test/it](src/test/it).
-These tests verify that the Maven plugin works correctly when executed within a Maven build.
+Beside unit tests, a set of [integration tests](../integration-tests) exist,
+which verify that the Maven plugin works correctly when executed within a Maven build.
 The integration tests are implemented using the [Robot Framework](https://robotframework.org/) (Java implementation).
 
 To execute unit and integration tests, run:
