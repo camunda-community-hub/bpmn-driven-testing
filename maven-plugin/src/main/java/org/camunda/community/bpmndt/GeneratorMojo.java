@@ -62,7 +62,7 @@ public class GeneratorMojo extends AbstractMojo {
 
     // generate test code
     try {
-      new Generator(getLog()).generate(ctx);
+      new Generator().generate(ctx);
     } catch (RuntimeException e) {
       throw new MojoFailureException("Unexpected error occurred", e);
     }

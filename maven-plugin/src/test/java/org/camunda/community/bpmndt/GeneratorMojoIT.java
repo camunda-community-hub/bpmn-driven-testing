@@ -26,7 +26,7 @@ public class GeneratorMojoIT {
 
   @Test
   public void testIntegration() {
-    assumeTrue("Plugin has not been installed", mavenPlugin.isInstalled());
+    assumeTrue("Maven plugin has not been installed", mavenPlugin.isInstalled());
 
     // set console encoding
     System.setProperty("python.console.encoding", StandardCharsets.UTF_8.name());
@@ -43,7 +43,7 @@ public class GeneratorMojoIT {
     arguments.add("ignore");
     arguments.add("--outputdir");
     arguments.add("./target/robot");
-    arguments.add("./src/test/it");
+    arguments.add("../integration-tests");
 
     int exitCode = RobotFramework.run(arguments.toArray(new String[arguments.size()]));
     assertThat(exitCode, is(0));

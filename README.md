@@ -25,11 +25,11 @@ The extension consists of:
   - Loop detection
 - Generated test cases provide
   - Automatic handling of wait states
-  - Call activity stubbing for isolated testing - see [test](maven-plugin/src/test/it/advanced/src/test/java/org/example/it/CallActivityWithMappingTest.java)
-  - [Fluent API](maven-plugin/src/main/java/org/camunda/community/bpmndt/api) to override default behavior
-  - Multi instance activity support - see [tests](maven-plugin/src/test/it/advanced-multi-instance/src/test/java/org/example/it)
-- Spring test support - see [integration test](maven-plugin/src/test/it/advanced-spring/)
-- Spring Boot test support - see [integration test](maven-plugin/src/test/it/advanced-spring-boot/)
+  - Call activity stubbing for isolated testing - see [test](integration-tests/advanced/src/test/java/org/example/it/CallActivityWithMappingTest.java)
+  - [Fluent API](impl/src/main/java/org/camunda/community/bpmndt/api) to override default behavior
+  - Multi instance activity support - see [tests](integration-tests/advanced-multi-instance/src/test/java/org/example/it)
+- Spring test support - see [integration test](integration-tests/advanced-spring/)
+- Spring Boot test support - see [integration test](integration-tests/advanced-spring-boot/)
 - Testing of arbitrary paths through a BPMN process
 - Test case validation and migration, when a BPMN process was changed - see [docs](docs/test-case-validation-and-migration.md)
 

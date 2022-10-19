@@ -1,0 +1,136 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.camunda.community</groupId>
+    <artifactId>community-hub-release-parent</artifactId>
+    <version>1.3.1</version>
+    <relativePath />
+  </parent>
+
+  <artifactId>bpmn-driven-testing-root</artifactId>
+  <version>0.6.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+
+  <modules>
+    <module>impl</module>
+    <module>maven-plugin</module>
+  </modules>
+
+  <properties>
+    <version.java>1.8</version.java>
+
+    <!-- Versions -->
+    <junit.version>4.13.2</junit.version>
+    <slf4j.version>1.7.32</slf4j.version>
+  </properties>
+
+  <repositories>
+    <repository>
+      <id>camunda-bpm-nexus</id>
+      <name>camunda-bpm-nexus</name>
+      <url>https://artifacts.camunda.com/artifactory/public/</url>
+    </repository>
+  </repositories>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.camunda.community</groupId>
+        <artifactId>bpmn-driven-testing-impl</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>${junit.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>${slf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-log4j12</artifactId>
+        <version>${slf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-simple</artifactId>
+        <version>${slf4j.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <profiles>
+    <profile>
+      <id>community-action-maven-release</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>3.0.1</version>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <!-- Prevent gpg from using pinentry programs -->
+              <gpgArguments>
+                <arg>--pinentry-mode</arg>
+                <arg>loopback</arg>
+              </gpgArguments>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+
+  <name>BPMN Driven Testing</name>
+  <description>Camunda extension, which is able to generate test code based on an extended BPMN model</description>
+  <url>https://github.com/camunda-community-hub/bpmn-driven-testing</url>
+
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <id>gclaussn</id>
+      <name>Gabor Claußnitzer</name>
+      <organization>cimt objects ag</organization>
+      <organizationUrl>https://www.cimt-ag.de/</organizationUrl>
+    </developer>
+    <developer>
+      <id>jwhoeche</id>
+      <name>John-Wieland Höche</name>
+      <organization>cimt objects ag</organization>
+      <organizationUrl>https://www.cimt-ag.de/</organizationUrl>
+    </developer>
+  </developers>
+
+  <scm>
+    <url>scm:git:git@github.com:camunda-community-hub/bpmn-driven-testing.git</url>
+    <connection>scm:git:git@github.com:camunda-community-hub/bpmn-driven-testing.git</connection>
+    <developerConnection>scm:git:git@github.com:camunda-community-hub/bpmn-driven-testing.git</developerConnection>
+    <tag>HEAD</tag>
+  </scm>
+
+  <issueManagement>
+    <system>GitHub Issues</system>
+    <url>https://github.com/camunda-community-hub/bpmn-driven-testing/issues</url>
+  </issueManagement>
+</project>
