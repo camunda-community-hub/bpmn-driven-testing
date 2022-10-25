@@ -13,11 +13,11 @@ import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 
 /**
- * JUnit test rule, which installs the packaged Maven plugin from the target directory into the
+ * JUnit test rule, which installs the packaged Gradle plugin from the target directory into the
  * local repository. This rule requires to have the "mvn" executable within the {@code PATH}
  * environment variable.
  */
-public class MavenPluginRule extends TestWatcher {
+public class GradlePluginRule extends TestWatcher {
 
   /** Path to the plugin JAR. */
   private Path path;
@@ -48,7 +48,7 @@ public class MavenPluginRule extends TestWatcher {
   }
 
   /**
-   * Returns the version of the installed Maven plugin jar.
+   * Returns the version of the installed Gradle plugin jar.
    * 
    * @return The plugin version e.g. "0.1.0".
    */
@@ -57,7 +57,7 @@ public class MavenPluginRule extends TestWatcher {
   }
 
   /**
-   * Determines if the Maven plugin jar has been installed into local plugin repository or not.
+   * Determines if the Gradle plugin jar has been installed into local plugin repository or not.
    * 
    * @return {@code true}, if the plugin is installed. Otherwise {@code false}.
    */
@@ -85,7 +85,7 @@ public class MavenPluginRule extends TestWatcher {
     command.add("-DgroupId=" + groupId);
     command.add("-DartifactId=" + artifactId);
     command.add("-Dversion=" + version);
-    command.add("-Dpackaging=maven-plugin");
+    command.add("-Dpackaging=jar");
 
     try {
       Process process = new ProcessBuilder(command).redirectErrorStream(true).start();
@@ -102,7 +102,7 @@ public class MavenPluginRule extends TestWatcher {
   @Override
   protected void starting(Description description) {
     if (path != null) {
-      // Maven plugin already installed
+      // Gradle plugin already installed
       return;
     }
 
@@ -119,18 +119,18 @@ public class MavenPluginRule extends TestWatcher {
       return;
     }
 
-    // e.g.: ./target/bpmn-driven-testing-maven-plugin-0.1.0.jar
+    // e.g.: ./target/bpmn-driven-testing-gradle-plugin-0.6.0.jar
     path = pluginJar.get();
-    // e.g.: bpmn-driven-testing-maven-plugin-0.1.0.jar
+    // e.g.: bpmn-driven-testing-gradle-plugin-0.6.0.jar
     fileName = path.getFileName().toString();
 
     groupId = "org.camunda.community";
-    // bpmn-driven-testing-maven-plugin
+    // bpmn-driven-testing-gradle-plugin
     artifactId = extractArtifactId(fileName);
-    // e.g.: 0.1.0
+    // e.g.: 0.6.0
     version = extractVersion(fileName);
 
-    // install Maven plugin
+    // install Gradle plugin
     installPluginJar();
   }
 }

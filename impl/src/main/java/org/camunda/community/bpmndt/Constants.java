@@ -6,6 +6,8 @@ package org.camunda.community.bpmndt;
  */
 public final class Constants {
 
+  public static final String EXTENSION_NAME = "bpmndt";
+
   public static final String BPMN_EXTENSION = ".bpmn";
   public static final String JAVA_EXTENSION = ".java";
 

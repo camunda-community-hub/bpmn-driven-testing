@@ -1,0 +1,36 @@
+plugins {
+  id 'java'
+  id 'org.camunda.community.bpmndt'
+}
+
+repositories {
+  mavenLocal()
+  mavenCentral()
+}
+
+dependencies {
+  implementation 'org.camunda.bpm.springboot:camunda-bpm-spring-boot-starter:7.17.0'
+  implementation 'org.camunda.bpm:camunda-engine-plugin-spin:7.17.0'
+  implementation 'org.camunda.spin:camunda-spin-dataformat-json-jackson:1.14.0'
+
+  testImplementation 'org.hamcrest:hamcrest-core:2.2'
+  testImplementation 'com.h2database:h2:2.1.210'
+  testImplementation 'org.camunda.bpm.assert:camunda-bpm-assert:13.0.0'
+  testImplementation 'org.assertj:assertj-core:3.22.0'
+  testImplementation 'org.springframework.boot:spring-boot-starter-test:2.6.6'
+  testImplementation 'org.junit.vintage:junit-vintage-engine:5.8.2'
+}
+
+test {
+  testLogging {
+    afterSuite { desc, result ->
+      if (!desc.parent) {
+        println "Tests run: ${result.testCount}, Failures: ${result.failedTestCount}, Skipped: ${result.skippedTestCount}"
+      }
+    }
+  }
+}
+
+bpmndt {
+  springEnabled = false // not required for Spring Boot, since only the BpmndtProcessEnginePlugin must be exposed as a bean
+}
