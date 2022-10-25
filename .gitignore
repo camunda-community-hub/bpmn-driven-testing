@@ -6,8 +6,16 @@
 .meta-data/
 .java-version
 .DS_Store
+bin/
+
+# Maven
 target/
 pom.xml.versionsBackup
+
+# Gradle
+.gradle/
+.groovylintrc.json
+build/
 
 # camunda-modeler-plugin
 .nyc_output/

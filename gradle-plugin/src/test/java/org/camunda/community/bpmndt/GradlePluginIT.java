@@ -8,7 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.camunda.community.bpmndt.test.MavenPluginRule;
+import org.camunda.community.bpmndt.test.GradlePluginRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -17,16 +17,16 @@ import org.robotframework.RobotFramework;
 /**
  * Robot Framework based integration tests.
  */
-public class GeneratorMojoIT {
+public class GradlePluginIT {
 
   @Rule
-  public MavenPluginRule mavenPlugin = new MavenPluginRule();
+  public GradlePluginRule gradlePlugin = new GradlePluginRule();
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   @Test
   public void testIntegration() {
-    assumeTrue("Maven plugin has not been installed", mavenPlugin.isInstalled());
+    assumeTrue("Gradle plugin has not been installed", gradlePlugin.isInstalled());
 
     // set console encoding
     System.setProperty("python.console.encoding", StandardCharsets.UTF_8.name());
@@ -38,9 +38,9 @@ public class GeneratorMojoIT {
     arguments.add("-v");
     arguments.add("TEMP:" + temporaryFolder.getRoot().getAbsolutePath());
     arguments.add("-v");
-    arguments.add("VERSION:" + mavenPlugin.getVersion());
+    arguments.add("VERSION:" + gradlePlugin.getVersion());
     arguments.add("--include");
-    arguments.add("maven");
+    arguments.add("gradle");
     arguments.add("--exclude");
     arguments.add("ignore");
     arguments.add("--outputdir");

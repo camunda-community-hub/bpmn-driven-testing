@@ -3,7 +3,7 @@ The plugin's `generator` goal runs within Maven's default lifecycle in phase `ge
 It generates the test code under `target/bpmndt` and adds this directory as test source directory, which is automatically compiled during the `test-compile` phase.
 The compilation results (test cases and [API classes](../impl/src/main/java/org/camunda/community/bpmndt/api)) will be available in the test classpath afterwards.
 
-:warning: With **IntelliJ IDEA**, you may need to [add the additional test source directory manually](https://www.jetbrains.com/help/idea/testing.html#add-test-root).
+:warning: Within **IntelliJ IDEA**, [add the additional test source directory manually](https://www.jetbrains.com/help/idea/testing.html#add-test-root).
 Right click on `target/bpmndt` > `Mark Directory as` > `Test Sources Root`
 
 ## Usage
@@ -34,7 +34,6 @@ Available parameters for the plugin's `generator` goal:
 | packageName          | String       | Package name, used for the generated test sources | generated     |
 | processEnginePlugins | List<String> | List of process engine plugins to register at the process engine (not required for Spring Boot, since process engine plugins must be exposed as beans) | -             |
 | springEnabled        | Boolean      | Enables Spring based testing (not required for Spring Boot, since here only the [BpmndtProcessEnginePlugin](../impl/src/main/java/org/camunda/community/bpmndt/api/cfg/BpmndtProcessEnginePlugin.java) must be exposed as a bean) | false |
-| testSourceDirectory  | String       | Name of the directory under `target/`, used for the generated test sources | bpmndt |
 
 ## Dependencies
 Add dependencies, which are required to execute the generated test code:
@@ -158,7 +157,7 @@ Recommended versions:
 | Spring Boot        | 2.6.6   |
 
 ## Testing
-:warning: This section is only important for plugin development!
+:warning: This section is only important for Maven plugin development!
 
 Beside unit tests, a set of [integration tests](../integration-tests) exist,
 which verify that the Maven plugin works correctly when executed within a Maven build.

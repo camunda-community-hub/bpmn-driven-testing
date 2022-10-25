@@ -37,13 +37,9 @@ public class GeneratorMojo extends AbstractMojo {
   @Parameter(defaultValue = "false", required = true)
   protected boolean springEnabled;
 
-  /** Name of the test source directory, with the build directory (target). */
-  @Parameter(defaultValue = "bpmndt", required = true)
-  protected String testSourceDirectory;
-
   @Override
   public void execute() throws MojoExecutionException, MojoFailureException {
-    Path testSourcePath = Paths.get(project.getBuild().getDirectory()).resolve(testSourceDirectory);
+    Path testSourcePath = Paths.get(project.getBuild().getDirectory()).resolve(Constants.EXTENSION_NAME);
 
     // add test source directory
     getLog().info(String.format("Adding test source directory: %s", testSourcePath));

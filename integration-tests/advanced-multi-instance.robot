@@ -4,7 +4,7 @@ Library  Process
 
 * Test Cases
 mvn clean test
-  [Tags]  xignore
+  [Tags]  xignore  maven
   ${result}=  Run process
   ...  mvn  -B  -f  ${CURDIR}/advanced-multi-instance/pom.xml  clean  test  -Dplugin.version\=${VERSION}
   ...  shell=True  stdout=${TEMP}/advanced-multi-instance.out  stderr=STDOUT
@@ -14,28 +14,76 @@ mvn clean test
   # plugin executed
   Should contain  ${result.stdout}  bpmn-driven-testing-maven-plugin:${VERSION}:generator
 
-  ${testSources}  Set variable  ${CURDIR}/advanced-multi-instance/target/bpmndt
+  Assert Test Code Generation  ${result}  target
+
+  # tests executed
+  Should contain  ${result.stdout}  Running org.example.it.AsyncTest
+  Should contain  ${result.stdout}  Running org.example.it.CallActivityTest
+  Should contain  ${result.stdout}  Running org.example.it.CallActivityErrorTest
+  Should contain  ${result.stdout}  Running org.example.it.CallActivityTimerTest
+  Should contain  ${result.stdout}  Running org.example.it.ParallelTest
+  Should contain  ${result.stdout}  Running org.example.it.ScopeErrorEndEventTest
+  Should contain  ${result.stdout}  Running org.example.it.ScopeInnerTest
+  Should contain  ${result.stdout}  Running org.example.it.ScopeNestedSubProcessTest
+  Should contain  ${result.stdout}  Running org.example.it.ScopeNestedTest
+  Should contain  ${result.stdout}  Running org.example.it.ScopeParallelTest
+  Should contain  ${result.stdout}  Running org.example.it.ScopeSequentialTest
+  Should contain  ${result.stdout}  Running org.example.it.ScopeZeroTest
+  Should contain  ${result.stdout}  Running org.example.it.SequentialTest
+  Should contain  ${result.stdout}  Running org.example.it.UserTaskTest
+  Should contain  ${result.stdout}  Running org.example.it.UserTaskErrorTest
+  Should contain  ${result.stdout}  Running org.example.it.UserTaskMessageTest
+  # tests executed successfully
+  Should contain  ${result.stdout}  Failures: 0, Errors: 0, Skipped: 0
+
+  Should be equal as integers  ${result.rc}  0
+
+gradle clean build
+  [Tags]  xignore  gradle
+  ${result}=  Run process
+  ...  gradle  -p  ${CURDIR}/advanced-multi-instance  clean  build  -Pplugin.version\=${VERSION}  --info  --stacktrace
+  ...  shell=True  stdout=${TEMP}/advanced-multi-instance.out  stderr=STDOUT
+
+  Log  ${result.stdout}
+
+  # task executed
+  Should contain  ${result.stdout}  > Task :generateTestCases
+
+  Assert Test Code Generation  ${result}  build
+
+  # tests executed
+  Should contain  ${result.stdout}  finished executing tests
+  # tests executed successfully
+  Should contain  ${result.stdout}  Failures: 0, Skipped: 0
+
+  Should be equal as integers  ${result.rc}  0
+
+* Keywords
+Assert Test Code Generation
+  [Arguments]  ${result}  ${buildDir}
+
+  ${testSources}  Set variable  ${CURDIR}/advanced-multi-instance/${buildDir}/bpmndt
 
   # multi instance handler classes generated and written
-  Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/async/MultiInstanceManualTaskHandler.java
-  Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/callactivity/MultiInstanceCallActivityHandler.java
-  Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/callactivityerror/MultiInstanceCallActivityHandler.java
-  Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/callactivitytimer/MultiInstanceCallActivityHandler.java
-  Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/parallel/MultiInstanceManualTaskHandler.java
-  Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/scopeerrorendevent/SubProcessHandler1.java
-  Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/scopeerrorendevent/SubProcessHandler2.java
-  Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/scopeinner/SubProcessHandler1.java
-  Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/scopeinner/SubProcessHandler2.java
-  Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/scopeinner/SubProcessHandler3.java
-  Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/scopenested/NestedSubProcessHandler1.java
-  Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/scopenested/SubProcessHandler1.java
-  Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/scopenestedsubprocess/SubProcessHandler1.java
-  Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/scopeparallel/MultiInstanceScopeHandler1.java
-  Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/scopesequential/MultiInstanceScopeHandler1.java
-  Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/sequential/MultiInstanceManualTaskHandler.java
-  Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/usertask/MultiInstanceUserTaskHandler.java
-  Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/usertaskerror/MultiInstanceUserTaskHandler.java
-  Should contain  ${result.stdout}  Writing file: target/bpmndt/generated/usertaskmessage/MultiInstanceUserTaskHandler.java
+  Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/async/MultiInstanceManualTaskHandler.java
+  Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/callactivity/MultiInstanceCallActivityHandler.java
+  Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/callactivityerror/MultiInstanceCallActivityHandler.java
+  Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/callactivitytimer/MultiInstanceCallActivityHandler.java
+  Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/parallel/MultiInstanceManualTaskHandler.java
+  Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/scopeerrorendevent/SubProcessHandler1.java
+  Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/scopeerrorendevent/SubProcessHandler2.java
+  Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/scopeinner/SubProcessHandler1.java
+  Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/scopeinner/SubProcessHandler2.java
+  Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/scopeinner/SubProcessHandler3.java
+  Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/scopenested/NestedSubProcessHandler1.java
+  Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/scopenested/SubProcessHandler1.java
+  Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/scopenestedsubprocess/SubProcessHandler1.java
+  Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/scopeparallel/MultiInstanceScopeHandler1.java
+  Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/scopesequential/MultiInstanceScopeHandler1.java
+  Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/sequential/MultiInstanceManualTaskHandler.java
+  Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/usertask/MultiInstanceUserTaskHandler.java
+  Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/usertaskerror/MultiInstanceUserTaskHandler.java
+  Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/usertaskmessage/MultiInstanceUserTaskHandler.java
 
   File should exist  ${testSources}/generated/async/MultiInstanceManualTaskHandler.java
   File should exist  ${testSources}/generated/callactivity/MultiInstanceCallActivityHandler.java
@@ -56,26 +104,3 @@ mvn clean test
   File should exist  ${testSources}/generated/usertask/MultiInstanceUserTaskHandler.java
   File should exist  ${testSources}/generated/usertaskerror/MultiInstanceUserTaskHandler.java
   File should exist  ${testSources}/generated/usertaskmessage/MultiInstanceUserTaskHandler.java
-
-  # tests executed
-  Should contain  ${result.stdout}  Running org.example.it.AsyncTest
-  Should contain  ${result.stdout}  Running org.example.it.CallActivityTest
-  Should contain  ${result.stdout}  Running org.example.it.CallActivityErrorTest
-  Should contain  ${result.stdout}  Running org.example.it.CallActivityTimerTest
-  Should contain  ${result.stdout}  Running org.example.it.ParallelTest
-  Should contain  ${result.stdout}  Running org.example.it.ScopeErrorEndEventTest
-  Should contain  ${result.stdout}  Running org.example.it.ScopeInnerTest
-  Should contain  ${result.stdout}  Running org.example.it.ScopeNestedSubProcessTest
-  Should contain  ${result.stdout}  Running org.example.it.ScopeNestedTest
-  Should contain  ${result.stdout}  Running org.example.it.ScopeParallelTest
-  Should contain  ${result.stdout}  Running org.example.it.ScopeSequentialTest
-  Should contain  ${result.stdout}  Running org.example.it.ScopeZeroTest
-  Should contain  ${result.stdout}  Running org.example.it.SequentialTest
-  Should contain  ${result.stdout}  Running org.example.it.UserTaskTest
-  Should contain  ${result.stdout}  Running org.example.it.UserTaskErrorTest
-  Should contain  ${result.stdout}  Running org.example.it.UserTaskMessageTest
-
-  # tests executed successfully
-  Should contain  ${result.stdout}  Failures: 0, Errors: 0, Skipped: 0
-
-  Should be equal as integers  ${result.rc}  0

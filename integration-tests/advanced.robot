@@ -4,7 +4,7 @@ Library  Process
 
 * Test Cases
 mvn clean test
-  [Tags]  xignore
+  [Tags]  xignore  maven
   ${result}=  Run process
   ...  mvn  -B  -f  ${CURDIR}/advanced/pom.xml  clean  test  -Dplugin.version\=${VERSION}
   ...  shell=True  stdout=${TEMP}/advanced.out  stderr=STDOUT
@@ -27,5 +27,23 @@ mvn clean test
   Should contain  ${result.stdout}  Running org.example.it.UserTaskErrorTest
   # tests executed successfully
   Should contain  ${result.stdout}  Failures: 0, Errors: 0, Skipped: 0
+
+  Should be equal as integers  ${result.rc}  0
+
+gradle clean build
+  [Tags]  xignore  gradle
+  ${result}=  Run process
+  ...  gradle  -p  ${CURDIR}/advanced  clean  build  -Pplugin.version\=${VERSION}  --info  --stacktrace
+  ...  shell=True  stdout=${TEMP}/advanced.out  stderr=STDOUT
+
+  Log  ${result.stdout}
+
+  # task executed
+  Should contain  ${result.stdout}  > Task :generateTestCases
+
+  # tests executed
+  Should contain  ${result.stdout}  finished executing tests
+  # tests executed successfully
+  Should contain  ${result.stdout}  Failures: 0, Skipped: 0
 
   Should be equal as integers  ${result.rc}  0
