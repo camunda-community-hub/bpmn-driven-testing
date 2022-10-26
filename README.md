@@ -2,7 +2,8 @@
 [![](https://img.shields.io/badge/Community%20Extension-An%20open%20source%20community%20maintained%20project-FF4700)](https://github.com/camunda-community-hub/community)
 [![](https://img.shields.io/badge/Lifecycle-Incubating-blue)](https://github.com/Camunda-Community-Hub/community/blob/main/extension-lifecycle.md#incubating-)
 ![Compatible with: Camunda Platform 7](https://img.shields.io/badge/Compatible%20with-Camunda%20Platform%207-26d07c)
-[![Maven Central](https://img.shields.io/maven-central/v/org.camunda.community/bpmn-driven-testing-maven-plugin.svg?label=Maven%20Central)](https://search.maven.org/artifact/org.camunda.community/bpmn-driven-testing-maven-plugin)
+[![Maven plugin](https://img.shields.io/maven-central/v/org.camunda.community/bpmn-driven-testing-maven-plugin.svg?label=Maven%20plugin)](https://search.maven.org/artifact/org.camunda.community/bpmn-driven-testing-maven-plugin)
+[![Gradle plugin](https://img.shields.io/maven-central/v/org.camunda.community/bpmn-driven-testing-gradle-plugin.svg?label=Gradle%20plugin)](https://search.maven.org/artifact/org.camunda.community/bpmn-driven-testing-gradle-plugin)
 
 [Camunda Platform 7](https://docs.camunda.org/manual/latest/) extension, which is able to generate test code based on an extended BPMN model.
 
@@ -14,7 +15,7 @@ Moreover any breaking changes (e.g. a user task becomes an external task) in the
 The extension consists of:
 
 - [Camunda Modeler plugin](camunda-modeler-plugin) for a visual selection and the management of test cases
-- [Maven plugin](maven-plugin) for generation of JUnit 4 or 5 based test code
+- [Maven plugin](maven-plugin) / [Gradle plugin](gradle-plugin)  for generation of JUnit 4 or 5 based test code
 
 ## Features
 - Visual test case selection
@@ -27,7 +28,7 @@ The extension consists of:
   - Automatic handling of wait states
   - Call activity stubbing for isolated testing - see [test](integration-tests/advanced/src/test/java/org/example/it/CallActivityWithMappingTest.java)
   - [Fluent API](impl/src/main/java/org/camunda/community/bpmndt/api) to override default behavior
-  - Multi instance activity support - see [tests](integration-tests/advanced-multi-instance/src/test/java/org/example/it)
+  - Multi instance activity / embedded subprocess support - see [tests](integration-tests/advanced-multi-instance/src/test/java/org/example/it)
 - Spring test support - see [integration test](integration-tests/advanced-spring/)
 - Spring Boot test support - see [integration test](integration-tests/advanced-spring-boot/)
 - Testing of arbitrary paths through a BPMN process
