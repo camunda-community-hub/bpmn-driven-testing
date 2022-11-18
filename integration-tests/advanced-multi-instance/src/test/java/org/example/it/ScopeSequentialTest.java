@@ -2,8 +2,10 @@ package org.example.it;
 
 import org.camunda.bpm.engine.delegate.DelegateExecution;
 import org.camunda.bpm.engine.delegate.DelegateVariableMapping;
+import org.camunda.bpm.engine.delegate.JavaDelegate;
 import org.camunda.bpm.engine.delegate.VariableScope;
 import org.camunda.bpm.engine.variable.VariableMap;
+import org.camunda.community.bpmndt.api.TestCaseExecutor;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -19,7 +21,7 @@ public class ScopeSequentialTest {
     tc.handleMultiInstanceScope().verifySequential();
     tc.handleMultiInstanceScope().verifyLoopCount(3);
 
-    tc.createExecutor().withBean("callActivityMapping", new CallActivityMapping()).execute();
+    tc.createExecutor().customize(this::addBeans).execute();
   }
 
   @Test
@@ -40,11 +42,24 @@ public class ScopeSequentialTest {
       variables.setVariable("test", 2);
     });
 
-    tc.createExecutor().withBean("callActivityMapping", new CallActivityMapping()).verify(pi -> {
+    tc.createExecutor().customize(this::addBeans).verify(pi -> {
       pi.variables().containsEntry("test", 2);
 
       pi.isEnded();
     }).execute();
+  }
+
+  private void addBeans(TestCaseExecutor executor) {
+    executor.withBean("serviceTask", new ServiceTask());
+    executor.withBean("callActivityMapping", new CallActivityMapping());
+  }
+
+  private static class ServiceTask implements JavaDelegate {
+
+    @Override
+    public void execute(DelegateExecution execution) throws Exception {
+      // nothing to do here
+    }
   }
 
   private static class CallActivityMapping implements DelegateVariableMapping {
