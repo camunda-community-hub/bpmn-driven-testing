@@ -12,6 +12,7 @@ import java.util.Map;
 
 import org.camunda.bpm.engine.delegate.DelegateExecution;
 import org.camunda.bpm.engine.delegate.DelegateVariableMapping;
+import org.camunda.bpm.engine.delegate.JavaDelegate;
 import org.camunda.bpm.engine.delegate.VariableScope;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.test.assertions.ProcessEngineTests;
@@ -36,14 +37,20 @@ public class MultiInstanceScopeSequentialTest {
 
   @Test
   public void testExecute() {
-    tc.createExecutor().withBean("callActivityMapping", new CallActivityMapping()).execute();
+    tc.createExecutor()
+        .withBean("serviceTask", new ServiceTask())
+        .withBean("callActivityMapping", new CallActivityMapping())
+        .execute();
   }
 
   @Test
   public void testVerify() {
     handler.verifyLoopCount(3).verifySequential();
 
-    tc.createExecutor().withBean("callActivityMapping", new CallActivityMapping()).execute();
+    tc.createExecutor()
+        .withBean("serviceTask", new ServiceTask())
+        .withBean("callActivityMapping", new CallActivityMapping())
+        .execute();
   }
 
   private class TestCase extends AbstractJUnit4TestCase<TestCase> {
@@ -88,6 +95,8 @@ public class MultiInstanceScopeSequentialTest {
 
     private final Map<Integer, UserTaskHandler> userTaskHandlers;
     private final Map<Integer, EventHandler> messageCatchEventHandlers;
+    private final Map<Integer, JobHandler> serviceTaskHandlersBefore;
+    private final Map<Integer, JobHandler> serviceTaskHandlersAfter;
     private final Map<Integer, JobHandler> callActivityHandlersBefore;
     private final Map<Integer, CallActivityHandler> callActivityHandlers;
 
@@ -96,6 +105,8 @@ public class MultiInstanceScopeSequentialTest {
 
       userTaskHandlers = new HashMap<>();
       messageCatchEventHandlers = new HashMap<>();
+      serviceTaskHandlersBefore = new HashMap<>();
+      serviceTaskHandlersAfter = new HashMap<>();
       callActivityHandlersBefore = new HashMap<>();
       callActivityHandlers = new HashMap<>();
     }
@@ -118,6 +129,13 @@ public class MultiInstanceScopeSequentialTest {
       instance.apply(getMessageCatchEventHandler(loopIndex));
       assertThat(pi).hasPassed("messageCatchEvent");
 
+      // serviceTask: serviceTask
+      assertThat(pi).isWaitingAt("serviceTask");
+      instance.apply(getServiceTaskHandlerBefore(loopIndex));
+      assertThat(pi).isWaitingAt("serviceTask");
+      instance.apply(getServiceTaskHandlerAfter(loopIndex));
+      assertThat(pi).hasPassed("serviceTask");
+
       // callActivity: callActivity
       assertThat(pi).isWaitingAt("callActivity");
       instance.apply(getCallActivityHandlerBefore(loopIndex));
@@ -137,6 +155,14 @@ public class MultiInstanceScopeSequentialTest {
       return new EventHandler(getProcessEngine(), "messageCatchEvent", "advancedMessage");
     }
 
+    protected JobHandler createServiceTaskHandlerBefore(int loopIndex) {
+      return new JobHandler(getProcessEngine(), "serviceTask");
+    }
+
+    protected JobHandler createServiceTaskHandlerAfter(int loopIndex) {
+      return new JobHandler(getProcessEngine(), "serviceTask");
+    }
+
     protected JobHandler createCallActivityHandlerBefore(int loopIndex) {
       return new JobHandler(getProcessEngine(), "callActivity");
     }
@@ -151,6 +177,14 @@ public class MultiInstanceScopeSequentialTest {
 
     protected EventHandler getMessageCatchEventHandler(int loopIndex) {
       return messageCatchEventHandlers.getOrDefault(loopIndex, handleMessageCatchEvent());
+    }
+
+    protected JobHandler getServiceTaskHandlerBefore(int loopIndex) {
+      return serviceTaskHandlersBefore.getOrDefault(loopIndex, handleServiceTaskBefore());
+    }
+
+    protected JobHandler getServiceTaskHandlerAfter(int loopIndex) {
+      return serviceTaskHandlersAfter.getOrDefault(loopIndex, handleServiceTaskAfter());
     }
 
     protected JobHandler getCallActivityHandlerBefore(int loopIndex) {
@@ -177,6 +211,22 @@ public class MultiInstanceScopeSequentialTest {
       return messageCatchEventHandlers.computeIfAbsent(loopIndex, this::createMessageCatchEventHandler);
     }
 
+    public JobHandler handleServiceTaskBefore() {
+      return handleServiceTaskBefore(-1);
+    }
+
+    public JobHandler handleServiceTaskBefore(int loopIndex) {
+      return serviceTaskHandlersBefore.computeIfAbsent(loopIndex, this::createServiceTaskHandlerBefore);
+    }
+
+    public JobHandler handleServiceTaskAfter() {
+      return handleServiceTaskAfter(-1);
+    }
+
+    public JobHandler handleServiceTaskAfter(int loopIndex) {
+      return serviceTaskHandlersAfter.computeIfAbsent(loopIndex, this::createServiceTaskHandlerAfter);
+    }
+
     public JobHandler handleCallActivityBefore() {
       return handleCallActivityBefore(-1);
     }
@@ -191,6 +241,14 @@ public class MultiInstanceScopeSequentialTest {
 
     public CallActivityHandler handleCallActivity(int loopIndex) {
       return callActivityHandlers.computeIfAbsent(loopIndex, this::createCallActivityHandler);
+    }
+  }
+
+  private static class ServiceTask implements JavaDelegate {
+
+    @Override
+    public void execute(DelegateExecution execution) throws Exception {
+      // nothing to do here
     }
   }
 

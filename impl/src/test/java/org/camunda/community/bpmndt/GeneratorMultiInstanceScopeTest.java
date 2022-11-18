@@ -184,8 +184,8 @@ public class GeneratorMultiInstanceScopeTest {
     assertThat(typeSpec.methodSpecs.get(6).returnType, equalTo(multiInstanceScopeHandlerType));
 
     typeSpec = result.getFiles().get(1).typeSpec;
-    assertThat(typeSpec.fieldSpecs, hasSize(4));
-    assertThat(typeSpec.methodSpecs, hasSize(18));
+    assertThat(typeSpec.fieldSpecs, hasSize(6));
+    assertThat(typeSpec.methodSpecs, hasSize(26));
     assertThat(typeSpec.name, equalTo("MultiInstanceScopeHandler1"));
 
     ParameterizedTypeName parameterizedTypeName;
@@ -202,14 +202,26 @@ public class GeneratorMultiInstanceScopeTest {
     assertThat(parameterizedTypeName.typeArguments.get(0), equalTo(TypeName.get(Integer.class)));
     assertThat(parameterizedTypeName.typeArguments.get(1), equalTo(TypeName.get(EventHandler.class)));
 
-    assertThat(typeSpec.fieldSpecs.get(2).name, equalTo("callActivityHandlersBefore"));
+    assertThat(typeSpec.fieldSpecs.get(2).name, equalTo("serviceTaskHandlersBefore"));
     parameterizedTypeName = (ParameterizedTypeName) typeSpec.fieldSpecs.get(2).type;
     assertThat(parameterizedTypeName.rawType, equalTo(TypeName.get(Map.class)));
     assertThat(parameterizedTypeName.typeArguments.get(0), equalTo(TypeName.get(Integer.class)));
     assertThat(parameterizedTypeName.typeArguments.get(1), equalTo(TypeName.get(JobHandler.class)));
 
-    assertThat(typeSpec.fieldSpecs.get(3).name, equalTo("callActivityHandlers"));
+    assertThat(typeSpec.fieldSpecs.get(3).name, equalTo("serviceTaskHandlersAfter"));
     parameterizedTypeName = (ParameterizedTypeName) typeSpec.fieldSpecs.get(3).type;
+    assertThat(parameterizedTypeName.rawType, equalTo(TypeName.get(Map.class)));
+    assertThat(parameterizedTypeName.typeArguments.get(0), equalTo(TypeName.get(Integer.class)));
+    assertThat(parameterizedTypeName.typeArguments.get(1), equalTo(TypeName.get(JobHandler.class)));
+
+    assertThat(typeSpec.fieldSpecs.get(4).name, equalTo("callActivityHandlersBefore"));
+    parameterizedTypeName = (ParameterizedTypeName) typeSpec.fieldSpecs.get(4).type;
+    assertThat(parameterizedTypeName.rawType, equalTo(TypeName.get(Map.class)));
+    assertThat(parameterizedTypeName.typeArguments.get(0), equalTo(TypeName.get(Integer.class)));
+    assertThat(parameterizedTypeName.typeArguments.get(1), equalTo(TypeName.get(JobHandler.class)));
+
+    assertThat(typeSpec.fieldSpecs.get(5).name, equalTo("callActivityHandlers"));
+    parameterizedTypeName = (ParameterizedTypeName) typeSpec.fieldSpecs.get(5).type;
     assertThat(parameterizedTypeName.rawType, equalTo(TypeName.get(Map.class)));
     assertThat(parameterizedTypeName.typeArguments.get(0), equalTo(TypeName.get(Integer.class)));
     assertThat(parameterizedTypeName.typeArguments.get(1), equalTo(TypeName.get(CallActivityHandler.class)));
@@ -234,55 +246,66 @@ public class GeneratorMultiInstanceScopeTest {
     assertThat(typeSpec.methodSpecs.get(2).parameters.get(0).name, equalTo("loopIndex"));
     containsCode(typeSpec.methodSpecs.get(2)).contains("return new org.camunda.community.bpmndt.api.UserTaskHandler(getProcessEngine(), \"userTask\")");
 
-    assertThat(typeSpec.methodSpecs.get(4).modifiers, hasSize(1));
-    assertThat(typeSpec.methodSpecs.get(4).modifiers, hasItem(Modifier.PROTECTED));
-    assertThat(typeSpec.methodSpecs.get(4).name, equalTo("createCallActivityHandlerBefore"));
-    assertThat(typeSpec.methodSpecs.get(4).parameters, hasSize(1));
-    assertThat(typeSpec.methodSpecs.get(4).parameters.get(0).name, equalTo("loopIndex"));
-    containsCode(typeSpec.methodSpecs.get(4)).contains("return new org.camunda.community.bpmndt.api.JobHandler(getProcessEngine(), \"callActivity\")");
+    assertThat(typeSpec.methodSpecs.get(4).name, equalTo("createServiceTaskHandlerBefore"));
+    assertThat(typeSpec.methodSpecs.get(5).name, equalTo("createServiceTaskHandlerAfter"));
 
     assertThat(typeSpec.methodSpecs.get(6).modifiers, hasSize(1));
     assertThat(typeSpec.methodSpecs.get(6).modifiers, hasItem(Modifier.PROTECTED));
-    assertThat(typeSpec.methodSpecs.get(6).name, equalTo("getUserTaskHandler"));
+    assertThat(typeSpec.methodSpecs.get(6).name, equalTo("createCallActivityHandlerBefore"));
     assertThat(typeSpec.methodSpecs.get(6).parameters, hasSize(1));
     assertThat(typeSpec.methodSpecs.get(6).parameters.get(0).name, equalTo("loopIndex"));
-    containsCode(typeSpec.methodSpecs.get(6)).contains("return userTaskHandlers.getOrDefault(loopIndex, handleUserTask())");
+    containsCode(typeSpec.methodSpecs.get(6)).contains("return new org.camunda.community.bpmndt.api.JobHandler(getProcessEngine(), \"callActivity\")");
 
     assertThat(typeSpec.methodSpecs.get(8).modifiers, hasSize(1));
     assertThat(typeSpec.methodSpecs.get(8).modifiers, hasItem(Modifier.PROTECTED));
-    assertThat(typeSpec.methodSpecs.get(8).name, equalTo("getCallActivityHandlerBefore"));
+    assertThat(typeSpec.methodSpecs.get(8).name, equalTo("getUserTaskHandler"));
     assertThat(typeSpec.methodSpecs.get(8).parameters, hasSize(1));
     assertThat(typeSpec.methodSpecs.get(8).parameters.get(0).name, equalTo("loopIndex"));
-    containsCode(typeSpec.methodSpecs.get(8)).contains("return callActivityHandlersBefore.getOrDefault(loopIndex, handleCallActivityBefore())");
+    containsCode(typeSpec.methodSpecs.get(8)).contains("return userTaskHandlers.getOrDefault(loopIndex, handleUserTask())");
 
-    assertThat(typeSpec.methodSpecs.get(10).javadoc.isEmpty(), is(false));
-    assertThat(typeSpec.methodSpecs.get(10).modifiers, hasSize(1));
-    assertThat(typeSpec.methodSpecs.get(10).modifiers, hasItem(Modifier.PUBLIC));
-    assertThat(typeSpec.methodSpecs.get(10).name, equalTo("handleUserTask"));
-    assertThat(typeSpec.methodSpecs.get(10).parameters, hasSize(0));
-    containsCode(typeSpec.methodSpecs.get(10)).contains("return handleUserTask(-1)");
+    assertThat(typeSpec.methodSpecs.get(10).name, equalTo("getServiceTaskHandlerBefore"));
+    assertThat(typeSpec.methodSpecs.get(11).name, equalTo("getServiceTaskHandlerAfter"));
 
-    assertThat(typeSpec.methodSpecs.get(11).javadoc.isEmpty(), is(false));
-    assertThat(typeSpec.methodSpecs.get(11).modifiers, hasSize(1));
-    assertThat(typeSpec.methodSpecs.get(11).modifiers, hasItem(Modifier.PUBLIC));
-    assertThat(typeSpec.methodSpecs.get(11).name, equalTo("handleUserTask"));
-    assertThat(typeSpec.methodSpecs.get(11).parameters, hasSize(1));
-    assertThat(typeSpec.methodSpecs.get(11).parameters.get(0).name, equalTo("loopIndex"));
-    containsCode(typeSpec.methodSpecs.get(11)).contains("return userTaskHandlers.computeIfAbsent(loopIndex, this::createUserTaskHandler)");
+    assertThat(typeSpec.methodSpecs.get(12).modifiers, hasSize(1));
+    assertThat(typeSpec.methodSpecs.get(12).modifiers, hasItem(Modifier.PROTECTED));
+    assertThat(typeSpec.methodSpecs.get(12).name, equalTo("getCallActivityHandlerBefore"));
+    assertThat(typeSpec.methodSpecs.get(12).parameters, hasSize(1));
+    assertThat(typeSpec.methodSpecs.get(12).parameters.get(0).name, equalTo("loopIndex"));
+    containsCode(typeSpec.methodSpecs.get(12)).contains("return callActivityHandlersBefore.getOrDefault(loopIndex, handleCallActivityBefore())");
 
     assertThat(typeSpec.methodSpecs.get(14).javadoc.isEmpty(), is(false));
     assertThat(typeSpec.methodSpecs.get(14).modifiers, hasSize(1));
     assertThat(typeSpec.methodSpecs.get(14).modifiers, hasItem(Modifier.PUBLIC));
-    assertThat(typeSpec.methodSpecs.get(14).name, equalTo("handleCallActivityBefore"));
+    assertThat(typeSpec.methodSpecs.get(14).name, equalTo("handleUserTask"));
     assertThat(typeSpec.methodSpecs.get(14).parameters, hasSize(0));
-    containsCode(typeSpec.methodSpecs.get(14)).contains("return handleCallActivityBefore(-1)");
+    containsCode(typeSpec.methodSpecs.get(14)).contains("return handleUserTask(-1)");
 
     assertThat(typeSpec.methodSpecs.get(15).javadoc.isEmpty(), is(false));
     assertThat(typeSpec.methodSpecs.get(15).modifiers, hasSize(1));
     assertThat(typeSpec.methodSpecs.get(15).modifiers, hasItem(Modifier.PUBLIC));
-    assertThat(typeSpec.methodSpecs.get(15).name, equalTo("handleCallActivityBefore"));
+    assertThat(typeSpec.methodSpecs.get(15).name, equalTo("handleUserTask"));
     assertThat(typeSpec.methodSpecs.get(15).parameters, hasSize(1));
     assertThat(typeSpec.methodSpecs.get(15).parameters.get(0).name, equalTo("loopIndex"));
-    containsCode(typeSpec.methodSpecs.get(15)).contains("return callActivityHandlersBefore.computeIfAbsent(loopIndex, this::createCallActivityHandlerBefore)");
+    containsCode(typeSpec.methodSpecs.get(15)).contains("return userTaskHandlers.computeIfAbsent(loopIndex, this::createUserTaskHandler)");
+
+    assertThat(typeSpec.methodSpecs.get(18).name, equalTo("handleServiceTaskBefore"));
+    assertThat(typeSpec.methodSpecs.get(19).name, equalTo("handleServiceTaskBefore"));
+    assertThat(typeSpec.methodSpecs.get(20).name, equalTo("handleServiceTaskAfter"));
+    assertThat(typeSpec.methodSpecs.get(21).name, equalTo("handleServiceTaskAfter"));
+
+    assertThat(typeSpec.methodSpecs.get(22).javadoc.isEmpty(), is(false));
+    assertThat(typeSpec.methodSpecs.get(22).modifiers, hasSize(1));
+    assertThat(typeSpec.methodSpecs.get(22).modifiers, hasItem(Modifier.PUBLIC));
+    assertThat(typeSpec.methodSpecs.get(22).name, equalTo("handleCallActivityBefore"));
+    assertThat(typeSpec.methodSpecs.get(22).parameters, hasSize(0));
+    containsCode(typeSpec.methodSpecs.get(22)).contains("return handleCallActivityBefore(-1)");
+
+    assertThat(typeSpec.methodSpecs.get(23).javadoc.isEmpty(), is(false));
+    assertThat(typeSpec.methodSpecs.get(23).modifiers, hasSize(1));
+    assertThat(typeSpec.methodSpecs.get(23).modifiers, hasItem(Modifier.PUBLIC));
+    assertThat(typeSpec.methodSpecs.get(23).name, equalTo("handleCallActivityBefore"));
+    assertThat(typeSpec.methodSpecs.get(23).parameters, hasSize(1));
+    assertThat(typeSpec.methodSpecs.get(23).parameters.get(0).name, equalTo("loopIndex"));
+    containsCode(typeSpec.methodSpecs.get(23)).contains("return callActivityHandlersBefore.computeIfAbsent(loopIndex, this::createCallActivityHandlerBefore)");
   }
 }

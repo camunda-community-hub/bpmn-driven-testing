@@ -74,15 +74,13 @@ public class GenerateMultiInstanceScopeHandler implements Consumer<TestCaseActiv
 
   protected void addHandlerFields(TestCaseActivityScope scope, TypeSpec.Builder classBuilder) {
     for (TestCaseActivity activity : scope.getActivities()) {
-      if (activity.getType() == TestCaseActivityType.OTHER) {
-        continue;
-      }
-
       if (activity.getStrategy().shouldHandleBefore()) {
         addHandlerField(classBuilder, String.format("%sHandlersBefore", activity.getLiteral()), TypeName.get(JobHandler.class));
       }
 
-      addHandlerField(classBuilder, String.format("%sHandlers", activity.getLiteral()), activity.getStrategy().getHandlerType());
+      if (activity.getType() != TestCaseActivityType.OTHER) {
+        addHandlerField(classBuilder, String.format("%sHandlers", activity.getLiteral()), activity.getStrategy().getHandlerType());
+      }
 
       if (activity.getStrategy().shouldHandleAfter()) {
         addHandlerField(classBuilder, String.format("%sHandlersAfter", activity.getLiteral()), TypeName.get(JobHandler.class));
@@ -196,10 +194,6 @@ public class GenerateMultiInstanceScopeHandler implements Consumer<TestCaseActiv
         .addStatement("super(instance, activityId)");
 
     for (TestCaseActivity activity : scope.getActivities()) {
-      if (activity.getType() == TestCaseActivityType.OTHER) {
-        continue;
-      }
-
       GeneratorStrategy strategy = activity.getStrategy();
 
       builder.addCode("\n// $L: $L\n", activity.getTypeName(), activity.getId());
@@ -208,7 +202,9 @@ public class GenerateMultiInstanceScopeHandler implements Consumer<TestCaseActiv
         builder.addStatement("$LHandlersBefore = new $T<>()", activity.getLiteral(), HashMap.class);
       }
 
-      builder.addStatement("$LHandlers = new $T<>()", activity.getLiteral(), HashMap.class);
+      if (activity.getType() != TestCaseActivityType.OTHER) {
+        builder.addStatement("$LHandlers = new $T<>()", activity.getLiteral(), HashMap.class);
+      }
 
       if (strategy.shouldHandleAfter()) {
         builder.addStatement("$LHandlersAfter = new $T<>()", activity.getLiteral(), HashMap.class);
