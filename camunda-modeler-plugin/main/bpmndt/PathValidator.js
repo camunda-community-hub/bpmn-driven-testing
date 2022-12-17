@@ -9,9 +9,9 @@ import { pathEquals } from "./functions";
 import PathFinder from "./PathFinder";
 
 export default class PathValidator {
-  constructor(options) {
-    this.elementRegistry = options.elementRegistry;
-    this.pathFinder = new PathFinder(options);
+  constructor(elementRegistry) {
+    this.elementRegistry = elementRegistry;
+    this.pathFinder = new PathFinder(elementRegistry);
   }
 
   validate(testCase) {

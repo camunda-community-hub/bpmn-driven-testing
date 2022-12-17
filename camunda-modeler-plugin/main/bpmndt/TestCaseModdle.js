@@ -11,12 +11,35 @@ import {
 } from "./constants";
 
 export default class TestCaseModdle {
-  constructor(options) {
-    const { elementRegistry, modeling, moddle } = options;
-
+  constructor(elementRegistry, modeling, moddle) {
     this.elementRegistry = elementRegistry;
     this.modeling = modeling;
     this.moddle = moddle;
+  }
+
+  enrichProblem(problem) {
+    if (problem.start) {
+      problem.startType = this.elementRegistry.get(problem.start)?.type;
+    }
+    if (problem.end) {
+      problem.endType = this.elementRegistry.get(problem.end)?.type;
+    }
+  }
+
+  /**
+   * Enriches the test case with additional path information, regarding start and end node.
+   * 
+   * @param {TestCase} testCase
+   */
+  enrichTestCase(testCase) {
+    const { path } = testCase;
+
+    if (path.length >= 2) {
+      testCase.start = path[0];
+      testCase.startType = this.elementRegistry.get(testCase.start)?.type;
+      testCase.end = path[path.length - 1];
+      testCase.endType = this.elementRegistry.get(testCase.end)?.type;
+    }
   }
 
   findProcess() {
@@ -96,18 +119,20 @@ export default class TestCaseModdle {
    * @param {object} testCaseModdle 
    */
   _testCaseFromModdle(testCaseModdle) {
-    const { elementRegistry } = this;
-
     const path = testCaseModdle.path || {};
     
     // array of flow node IDs
     const node = path.node || [];
 
-    return new TestCase({
+    const testCase = new TestCase({
       name: testCaseModdle.name,
       description: testCaseModdle.description,
       path: node
     });
+
+    this.enrichTestCase(testCase);
+
+    return testCase;
   }
 
   /**

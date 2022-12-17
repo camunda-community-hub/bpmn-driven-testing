@@ -21,10 +21,7 @@ const moddle = new BpmnModdle({
 });
 
 function createTestCaseModdle(modelInstance) {
-  return new TestCaseModdle({
-    elementRegistry: new ElementRegistry(modelInstance),
-    moddle: moddle
-  });
+  return new TestCaseModdle(new ElementRegistry(modelInstance), null, moddle);
 }
 
 describe("TestCaseModdle", () => {

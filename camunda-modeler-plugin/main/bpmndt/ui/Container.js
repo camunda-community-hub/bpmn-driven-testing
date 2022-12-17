@@ -8,31 +8,26 @@ export default class Container extends React.Component {
   }
 
   render() {
-    const { state } = this.props.controller;
-
-    const { viewModel } = state;
-    if (viewModel === undefined) {
-      return null;
-    }
+    const { model } = this.props;
 
     return (
       <div className="container h-100">
         <div className="row h-100">
           <div className="col-1 h-100">
             <div className="v-center-l">
-              {this.renderPrev(viewModel.prev)}
+              {this.renderPrev(model.prev)}
             </div>
           </div>
           <div className={`col-10 box ${this.getBoxClassNames()}`}>
-            {this.renderContent(viewModel.content)}
+            {this.renderContent(model.content)}
 
-            {this.renderAction(viewModel.actionLeft, "container-left")}
-            {this.renderAction(viewModel.actionCenter, "container-center")}
-            {this.renderAction(viewModel.actionRight, "container-right")}
+            {this.renderAction(model.actionLeft, "container-left")}
+            {this.renderAction(model.actionCenter, "container-center")}
+            {this.renderAction(model.actionRight, "container-right")}
           </div>
           <div className="col-1 h-100">
             <div className="v-center-r">
-              {this.renderNext(viewModel.next)}
+              {this.renderNext(model.next)}
             </div>
           </div>
         </div>

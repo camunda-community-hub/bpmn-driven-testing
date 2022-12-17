@@ -4,13 +4,13 @@ import { MODE_EDIT } from "../constants";
 
 export default class EditModalBackdrop extends React.Component {
   _handleClick = () => {
-    this.props.controller.handleToggleMode(MODE_EDIT);
+    this.props.mode.toggle(MODE_EDIT);
   }
 
   render() {
-    const { state } = this.props.controller;
+    const { mode } = this.props;
 
-    if (!state.activeModes[MODE_EDIT]) {
+    if (mode.id !== MODE_EDIT) {
       return null;
     }
 

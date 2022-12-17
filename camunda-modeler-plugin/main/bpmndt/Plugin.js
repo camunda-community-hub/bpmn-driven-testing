@@ -1,18 +1,42 @@
 import React from "react";
 import ReactDOM from "react-dom";
 
-import { PLUGIN_VIEW_PARENT_CLASS_NAME, PLUGIN_VIEW_STYLE } from "./constants";
+import {
+  MODE_EDIT,
+  MODE_MIGRATE,
+  MODE_SELECT,
+  MODE_SHOW_COVERAGE,
+  MODE_VIEW,
+  PLUGIN_VIEW_PARENT_CLASS_NAME,
+  PLUGIN_VIEW_STYLE,
+  UNSUPPORTED_ELEMENT_TYPES
+} from "./constants";
 
-import PluginController from "./PluginController";
-import pluginTabState from "./PluginTabState";
+import PathFinder from "./PathFinder";
+import PathMarker from "./PathMarker";
+import PathValidator from "./PathValidator";
+import TestCaseModdle from "./TestCaseModdle";
+
 import PluginView from "./PluginView";
 
+import EditMode from "./mode/EditMode";
+import SelectMode from "./mode/SelectMode";
+import ShowCoverageMode from "./mode/ShowCoverageMode";
+import ViewMode from "./mode/ViewMode";
+import MigrateMode from "./mode/MigrateMode";
+
 export default class Plugin {
-  constructor(options) {
-    const controller = new PluginController({ hidePlugin: this.hide, ...options });
-    
-    this.controller = controller;
-    this.shown = false;
+  constructor(canvas, elementRegistry, eventBus, modeling, moddle) {
+    this.bpmnModelChanged = false;
+    this.mode = null;
+    this.testCases = [];
+    this.visible = false;
+
+    // plugin modules
+    this.pathFinder = new PathFinder(elementRegistry);
+    this.pathMarker = new PathMarker(canvas, elementRegistry);
+    this.pathValidator = new PathValidator(elementRegistry);
+    this.testCaseModdle = new TestCaseModdle(elementRegistry, modeling, moddle);
 
     // DOM elements, required for PluginView
     this.styleElement = document.createElement("style");
@@ -22,54 +46,21 @@ export default class Plugin {
     this.rootElement.className = "bpmndt";
 
     // subscribe events
-    const { eventBus } = options;
-
-    eventBus.on("commandStack.element.updateProperties.postExecuted", (event) => {
-      const { oldProperties, properties } = event.context;
-
-      controller.handleBpmnElementChanged(oldProperties, properties);
-    });
-
-    eventBus.on("diagram.destroy", () => {
-      this.hide();
-
-      pluginTabState.unregister(this.tabId); 
-    });
-
-    eventBus.on("editorActions.init", (event) => {
-      event.editorActions.register("toggleBpmnDrivenTesting", () => {
-        if (this.shown) {
-          this.hide();
-        } else {
-          this.show();
-        }
-      });
-    });
-
-    eventBus.on("element.click", 1500, (event) => {
-      if (this.shown) {
-        controller.handleBpmnElementClicked(event);
-        return false;
-      }
-    });
-
-    eventBus.on("elements.changed", () => {
-      controller.handleBpmnModelChanged();
-    });
-
-    eventBus.on("import.done", () => {
-      this.tabId = pluginTabState.register(this);
-
-      controller.handleLoadTestCases();
-    });
-
-    eventBus.on("saveXML.start", () => {
-      controller.handleSaveTestCases();
-    });
+    eventBus.on("commandStack.element.updateProperties.postExecuted", this._updateFlowNodeId);
+    eventBus.on("diagram.destroy", this._destroy);
+    eventBus.on("editorActions.init", this._registerMenuActions);
+    eventBus.on("element.click", 1500, this._handleClickElement);
+    eventBus.on("elements.changed", this._markBpmnModelAsChanged);
+    eventBus.on("import.done", this._loadTestCases);
+    eventBus.on("saveXML.start", this._saveTestCases);
   }
 
-  hide = () => {
-    const { controller, rootElement, styleElement } = this;
+  enrichTestCase(testCase) {
+    this.testCaseModdle.enrichTestCase(testCase);
+  }
+
+  hide() {
+    const { pathMarker, rootElement, styleElement } = this;
 
     if (styleElement.childNodes.length !== 0) {
       // show diagram elements
@@ -81,13 +72,42 @@ export default class Plugin {
       rootElement.remove();
     }
 
-    controller.disable();
+    pathMarker.removeAll();
 
-    this.shown = false;
+    this.visible = false;
+  }
+
+  mark(markers) {
+    this.pathMarker.mark(markers);
+  }
+
+  markAsChanged() {
+    this.testCaseModdle.markAsChanged();
+  }
+
+  markError() {
+    this.pathMarker.markError();
+  }
+
+  setMode(newModeId, oldMode) {
+    this.mode = this._createMode(newModeId, oldMode);
+    this.updateView();
   }
 
   show() {
-    const { controller, rootElement, styleElement } = this;
+    const { mode, testCases } = this;
+
+    if (mode) {
+      mode.updateMarkers();
+    } else if (testCases.length !== 0) {
+      this.mode = new ViewMode(this);
+    } else {
+      this.mode = new SelectMode(this);
+    }
+
+    this._validateTestCases();
+
+    const { rootElement, styleElement } = this;
 
     if (styleElement.childNodes.length === 0) {
       // hide diagram elements
@@ -98,11 +118,123 @@ export default class Plugin {
       // append root node
       parent.appendChild(rootElement);
       // render view
-      ReactDOM.render(<PluginView controller={controller} />, rootElement);
+      ReactDOM.render(<PluginView plugin={this} />, rootElement);
     }
 
-    controller.enable();
+    this.visible = true;
+  }
 
-    this.shown = true;
+  _createMode(newModeId, oldMode) {
+    switch (newModeId) {
+      case MODE_EDIT:
+        return new EditMode(this, oldMode);
+      case MODE_MIGRATE:
+        return new MigrateMode(this, oldMode);
+      case MODE_SELECT:
+        return new SelectMode(this, oldMode);
+      case MODE_SHOW_COVERAGE:
+        return new ShowCoverageMode(this, oldMode);
+      case MODE_VIEW:
+        return new ViewMode(this, oldMode);
+      default:
+        throw new Error(`Unsupported mode '${newModeId}'`);
+    }
+  }
+
+  _destroy = () => {
+    this.hide();
+    this.unregister();
+  }
+
+  _handleClickElement = (event) => {
+    if (!this.visible) {
+      return;
+    }
+
+    const { element } = event;
+    if (UNSUPPORTED_ELEMENT_TYPES.has(element.type)) {
+      // skip click on unsupported element
+      return false;
+    }
+
+    this.mode.handleClickElement(element);
+
+    return false;
+  }
+
+  _loadTestCases = () => {
+    const { testCaseModdle } = this;
+    if (!testCaseModdle.findProcess()) {
+      // if process element could not be found
+      return;
+    }
+
+    this.testCases = testCaseModdle.getTestCases();
+
+    // allow initial validation
+    this._markBpmnModelAsChanged();
+    this._validateTestCases();
+  }
+
+  _markBpmnModelAsChanged = () => {
+    this.bpmnModelChanged = true;
+  }
+
+  _registerMenuActions = (event) => {
+    event.editorActions.register("toggleBpmnDrivenTesting", () => {
+      if (this.visible) {
+        this.hide();
+      } else {
+        this.show();
+      }
+    });
+  }
+
+  _saveTestCases = () => {
+    const { testCases, testCaseModdle } = this;
+    testCaseModdle.setTestCases(testCases);
+  }
+
+  _updateFlowNodeId = (event) => {
+    const { oldProperties, properties } = event.context;
+
+    if (!oldProperties.id) {
+      return;
+    }
+
+    this.testCases.forEach(testCase => testCase.updateFlowNodeId(oldProperties.id, properties.id));
+  }
+
+  _validateTestCases() {
+    const { bpmnModelChanged, pathValidator, testCases } = this;
+
+    if (!bpmnModelChanged || testCases.length === 0) {
+      // nothing to validate
+      return;
+    }
+
+    this.bpmnModelChanged = false;
+
+    setTimeout(() => {
+      testCases.forEach((testCase) => {
+        const problems = pathValidator.validate(testCase);
+        problems.forEach(problem => {
+          this.testCaseModdle.enrichProblem(problem);
+        });
+
+        testCase.problems = problems;
+
+        if (testCase.autoResolveProblem()) {
+          this.markAsChanged();
+          this.mode.updateMarkers();
+        }
+      });
+
+      if (this.visible) {
+        this.updateView();
+      }
+    }, 1000);
   }
 }
+
+Plugin.$inject = [ "canvas", "elementRegistry", "eventBus", "modeling", "moddle" ];

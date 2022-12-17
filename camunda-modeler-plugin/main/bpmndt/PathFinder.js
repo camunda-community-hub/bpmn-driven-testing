@@ -11,8 +11,8 @@ import {
  * Class to find possible paths through a BPMN process.
  */
 export default class PathFinder {
-  constructor(options) {
-    this.elementRegistry = options.elementRegistry;
+  constructor(elementRegistry) {
+    this.elementRegistry = elementRegistry;
   }
 
   /**

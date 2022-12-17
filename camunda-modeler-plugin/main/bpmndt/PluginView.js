@@ -1,69 +1,72 @@
 import React from "react";
 
-import { MODE_SELECT, MODE_SHOW_COVERAGE } from "./constants";
-
-import Container from "./ui/component/Container";
+import {
+  MODE_EDIT,
+  MODE_MIGRATE,
+  MODE_SELECT,
+  MODE_SHOW_COVERAGE,
+  MODE_VIEW
+} from "./constants";
 
 import EditModal from "./ui/EditModal";
 import EditModalBackdrop from "./ui/EditModalBackdrop";
-import ModeButtonGroup from "./ui/ModeButtonGroup";
-import Select from "./ui/Select";
+import Modes from "./ui/Modes";
+
+import Edit from "./mode/Edit";
+import Migrate from "./mode/Migrate";
+import View from "./mode/View";
+import Select from "./mode/Select";
 
 export default class PluginView extends React.Component {
   constructor(props) {
     super(props);
 
-    this.state = {
-      registered: false
-    };
-  }
+    const { plugin } = props;
+    plugin.updateView = this.forceUpdate.bind(this);
 
-  componentDidMount() {
-    this.props.controller.updateView = this.forceUpdate.bind(this);
-    this.setState({registered: true});
-  }
-
-  componentWillUnmount() {
-    this.props.controller.updateView = null;
-    this.setState({registered: false});
+    this.hidePlugin = plugin.hide.bind(plugin);
   }
 
   render() {
-    if (!this.state.registered) {
+    const { plugin } = this.props;
+    
+    const { mode } = plugin;
+    if (!mode) {
       return null;
     }
 
-    const { controller } = this.props;
-    
-    if (controller.state === undefined) {
-      return null;
-    }
+    const component = this._createComponent(mode);
 
     return (
       <div>
-        <ModeButtonGroup controller={controller} />
+        <Modes activeModes={mode.activeModes} hidePlugin={this.hidePlugin} toggleMode={mode.toggle} />
 
-        <div className="view" style={controller.state.showView ? {} : {display: "none"}}>
+        <div className="view" style={component ? {} : {display: "none"}}>
           <div className="view-container">
-            {this.renderContainer(controller)}
+            {component}
           </div>
         </div>
 
-        <EditModal controller={controller} />
-        <EditModalBackdrop controller={controller} />
+        <EditModal mode={mode} />
+        <EditModalBackdrop mode={mode} />
       </div>
     )
   }
 
-  renderContainer(controller) {
-    const { mode } = controller;
-
-    if (mode.id === MODE_SELECT) {
-      return <Select controller={controller} />
-    } else if (mode.id === MODE_SHOW_COVERAGE) {
-      return null;
-    } else {
-      return <Container controller={controller} />
+  _createComponent(mode) {
+    switch (mode.id) {
+      case MODE_EDIT:
+        return <Edit mode={mode} />
+      case MODE_MIGRATE:
+        return <Migrate mode={mode} />
+      case MODE_SELECT:
+        return <Select mode={mode} />
+      case MODE_SHOW_COVERAGE:
+        return;
+      case MODE_VIEW:
+        return <View mode={mode} />
+      default:
+        throw new Error(`Unsupported mode '${mode.id}'`);
     }
   }
 }

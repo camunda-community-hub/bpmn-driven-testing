@@ -22,6 +22,19 @@ export function getMarkers(testCase) {
   return markers;
 }
 
+export function next(array, currentIndex) {
+  if (currentIndex === -1 && array.length === 0) {
+    return -1;
+  }
+
+  let newIndex = currentIndex + 1;
+  if (newIndex > array.length - 1) {
+    newIndex = 0;
+  }
+
+  return newIndex;
+}
+
 export function pathEquals(a, b) {
   if (a.length !== b.length) {
     return false;
@@ -34,6 +47,15 @@ export function pathEquals(a, b) {
   }
 
   return true;
+}
+
+export function prev(array, currentIndex) {
+  let newIndex = currentIndex - 1;
+  if (newIndex < 0) {
+    newIndex = array.length - 1;
+  }
+
+  return newIndex;
 }
 
 export function selectStartEnd(selection, elementId) {
