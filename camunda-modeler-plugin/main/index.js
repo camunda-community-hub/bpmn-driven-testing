@@ -12,15 +12,9 @@ import Plugin from "./bpmndt/Plugin";
 
 import ModelerExtension from "./bpmndt/ModelerExtension";
 
-/**
- * Plugin bridge, which is used to instantiate the actual plugin class.
- */
-function PluginBridge(canvas, elementRegistry, eventBus, modeling, moddle) {
-  new Plugin({ canvas, elementRegistry, eventBus, modeling, moddle });
-}
-
-PluginBridge.$inject = [ "canvas", "elementRegistry", "eventBus", "modeling", "moddle" ];
-
 registerBpmnJSModdleExtension(bpmndt);
-registerBpmnJSPlugin({ __init__: [ PluginBridge ] });
+registerBpmnJSPlugin({
+  __init__: [ "bpmndt" ],
+  "bpmndt": [ "type", Plugin ]
+});
 registerClientExtension(ModelerExtension);

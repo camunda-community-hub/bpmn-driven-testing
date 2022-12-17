@@ -22,14 +22,14 @@ const moddle = new BpmnModdle({
 });
 
 function createTestCaseModdle(modelInstance) {
-  const testCaseModdle = new TestCaseModdle({ elementRegistry: new ElementRegistry(modelInstance), moddle: moddle });
+  const testCaseModdle = new TestCaseModdle(new ElementRegistry(modelInstance), null, moddle);
   testCaseModdle.findProcess();
   return testCaseModdle;
 }
 
 function createPathValidator(modelInstance) {
   const elementRegistry = new ElementRegistry(modelInstance);
-  return new PathValidator({ elementRegistry });
+  return new PathValidator(elementRegistry);
 }
 
 describe("PathValidator", () => {

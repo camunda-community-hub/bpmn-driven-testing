@@ -3,17 +3,17 @@ import { MARKER, MODE_SHOW_COVERAGE } from "../constants";
 import BaseMode from "./BaseMode";
 
 export default class ShowCoverageMode extends BaseMode {
-  constructor(controller) {
-    super(controller);
+  constructor(plugin) {
+    super(plugin, MODE_SHOW_COVERAGE);
 
-    this.id = MODE_SHOW_COVERAGE;
+    this.updateMarkers();
   }
 
-  computeInitialState(ctx) {
-    const { testCases } = ctx;
+  updateMarkers() {
+    const { plugin } = this;
 
     const flowNodeIds = new Set();
-    for (const testCase of testCases) {
+    for (const testCase of plugin.testCases) {
       testCase.path.forEach(flowNodeId => flowNodeIds.add(flowNodeId));
     }
 
@@ -22,10 +22,6 @@ export default class ShowCoverageMode extends BaseMode {
       markers.push({id: flowNodeId, style: MARKER});
     });
 
-    return {markers: markers};
-  }
-
-  computeViewModel() {
-    // nothing to do here
+    plugin.mark(markers);
   }
 }

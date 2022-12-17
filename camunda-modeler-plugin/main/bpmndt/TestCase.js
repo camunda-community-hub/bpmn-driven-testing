@@ -1,3 +1,7 @@
+import { getMarkers } from "./functions";
+
+import TestCaseMigration from "./TestCaseMigration";
+
 export default class TestCase {
   constructor(data = {path: []}) {
     const { description, name, path } = data;
@@ -7,20 +11,25 @@ export default class TestCase {
     this.path = path;
   }
 
-  /**
-   * Enriches the test case with additional path information, regarding start and end node.
-   * 
-   * @param {object} elementRegistry 
-   */
-  enrich(elementRegistry) {
-    const { path } = this;
+  get markers() {
+    return getMarkers(this);
+  }
 
-    if (path.length >= 2) {
-      this.start = path[0];
-      this.startType = elementRegistry.get(this.start)?.type;
-      this.end = path[path.length - 1];
-      this.endType = elementRegistry.get(this.end)?.type;
+  get valid() {
+    const { problems } = this;
+    return problems === undefined || problems.length === 0;
+  }
+
+  autoResolveProblem() {
+    const problem = this.problems.find(problem => problem.autoResolvable);
+    if (problem === undefined) {
+      return false;
     }
+
+    const migration = new TestCaseMigration(this, problem);
+    migration.migrate(new TestCase({path: problem.paths[0]}));
+
+    return true;
   }
 
   removeProblem(problem) {
@@ -37,10 +46,5 @@ export default class TestCase {
     if (index != -1) {
       this.path[index] = newFlowNodeId
     }
-  }
-
-  get valid() {
-    const { problems } = this;
-    return problems === undefined || problems.length === 0;
   }
 }

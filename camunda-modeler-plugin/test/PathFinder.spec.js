@@ -9,7 +9,7 @@ const expect = chai.expect;
 
 function createPathFinder(modelInstance) {
   const elementRegistry = new ElementRegistry(modelInstance);
-  return new PathFinder({ elementRegistry });
+  return new PathFinder(elementRegistry);
 }
 
 describe("PathFinder", () => {

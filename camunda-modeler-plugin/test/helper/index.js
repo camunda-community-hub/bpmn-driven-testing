@@ -1,7 +1,7 @@
 import fs from "fs";
 
 import ElementRegistry from "./ElementRegistry";
-import PluginController from "./PluginController";
+import Plugin from "./Plugin";
 
 function readBpmnFile(fileName) {
   return fs.readFileSync(`./test/bpmn/${fileName}`, "utf8");
@@ -10,5 +10,5 @@ function readBpmnFile(fileName) {
 export {
   readBpmnFile,
   ElementRegistry,
-  PluginController
+  Plugin
 };
