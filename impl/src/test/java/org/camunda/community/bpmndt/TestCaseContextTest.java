@@ -1,15 +1,12 @@
 package org.camunda.community.bpmndt;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import java.nio.file.Path;
 
 import org.camunda.community.bpmndt.test.TestPaths;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class TestCaseContextTest {
 
@@ -18,7 +15,7 @@ public class TestCaseContextTest {
 
   private Path simple;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     simple = TestPaths.simple("simple.bpmn");
   }
@@ -28,47 +25,47 @@ public class TestCaseContextTest {
     bpmnSupport = BpmnSupport.of(simple);
     ctx = new TestCaseContext(bpmnSupport, bpmnSupport.getTestCases().get(0));
 
-    assertThat(ctx.getStartActivity(), nullValue());
-    assertThat(ctx.getEndActivity(), nullValue());
+    assertThat(ctx.getStartActivity()).isNull();
+    assertThat(ctx.getEndActivity()).isNull();
 
     ctx.addActivity(new TestCaseActivity(bpmnSupport.get("startEvent"), null));
     ctx.addActivity(new TestCaseActivity(bpmnSupport.get("endEvent"), null));
 
-    assertThat(ctx.getStartActivity(), is(ctx.getActivities().get(0)));
-    assertThat(ctx.getEndActivity(), is(ctx.getActivities().get(1)));
+    assertThat(ctx.getStartActivity()).isSameInstanceAs(ctx.getActivities().get(0));
+    assertThat(ctx.getEndActivity()).isSameInstanceAs(ctx.getActivities().get(1));
   }
 
   @Test
   public void testGetClassName() {
     bpmnSupport = BpmnSupport.of(simple);
     ctx = new TestCaseContext(bpmnSupport, bpmnSupport.getTestCases().get(0));
-    assertThat(ctx.getClassName(), equalTo("TC_startEvent__endEvent"));
+    assertThat(ctx.getClassName()).isEqualTo("TC_startEvent__endEvent");
 
     bpmnSupport = BpmnSupport.of(TestPaths.resources("happyPath.bpmn"));
     ctx = new TestCaseContext(bpmnSupport, bpmnSupport.getTestCases().get(0));
-    assertThat(ctx.getClassName(), equalTo("TC_Happy_Path"));
+    assertThat(ctx.getClassName()).isEqualTo("TC_Happy_Path");
   }
 
   @Test
   public void testGetName() {
     bpmnSupport = BpmnSupport.of(simple);
     ctx = new TestCaseContext(bpmnSupport, bpmnSupport.getTestCases().get(0));
-    assertThat(ctx.getName(), equalTo("startEvent__endEvent"));
+    assertThat(ctx.getName()).isEqualTo("startEvent__endEvent");
 
     bpmnSupport = BpmnSupport.of(TestPaths.resources(("happyPath.bpmn")));
     ctx = new TestCaseContext(bpmnSupport, bpmnSupport.getTestCases().get(0));
-    assertThat(ctx.getName(), equalTo("Happy_Path"));
+    assertThat(ctx.getName()).isEqualTo("Happy_Path");
   }
 
   @Test
   public void testGetPackageName() {
     bpmnSupport = BpmnSupport.of(simple);
     ctx = new TestCaseContext(bpmnSupport, bpmnSupport.getTestCases().get(0));
-    assertThat(ctx.getPackageName(), equalTo("simple"));
+    assertThat(ctx.getPackageName()).isEqualTo("simple");
 
     bpmnSupport = BpmnSupport.of(TestPaths.resources(("happyPath.bpmn")));
     ctx = new TestCaseContext(bpmnSupport, bpmnSupport.getTestCases().get(0));
-    assertThat(ctx.getPackageName(), equalTo("happy_path"));
+    assertThat(ctx.getPackageName()).isEqualTo("happy_path");
   }
 
   @Test
@@ -76,10 +73,10 @@ public class TestCaseContextTest {
     bpmnSupport = BpmnSupport.of(TestPaths.resources(("empty.bpmn")));
     ctx = new TestCaseContext(bpmnSupport, bpmnSupport.getTestCases().get(0));
 
-    assertThat(ctx.isPathEmpty(), is(true));
-    assertThat(ctx.isPathIncomplete(), is(false));
-    assertThat(ctx.isPathInvalid(), is(false));
-    assertThat(ctx.isValid(), is(false));
+    assertThat(ctx.isPathEmpty()).isTrue();
+    assertThat(ctx.isPathIncomplete()).isFalse();
+    assertThat(ctx.isPathInvalid()).isFalse();
+    assertThat(ctx.isValid()).isFalse();
   }
 
   @Test
@@ -87,10 +84,10 @@ public class TestCaseContextTest {
     bpmnSupport = BpmnSupport.of(TestPaths.resources(("incomplete.bpmn")));
     ctx = new TestCaseContext(bpmnSupport, bpmnSupport.getTestCases().get(0));
 
-    assertThat(ctx.isPathEmpty(), is(false));
-    assertThat(ctx.isPathIncomplete(), is(true));
-    assertThat(ctx.isPathInvalid(), is(false));
-    assertThat(ctx.isValid(), is(false));
+    assertThat(ctx.isPathEmpty()).isFalse();
+    assertThat(ctx.isPathIncomplete()).isTrue();
+    assertThat(ctx.isPathInvalid()).isFalse();
+    assertThat(ctx.isValid()).isFalse();
   }
 
   @Test
@@ -101,10 +98,10 @@ public class TestCaseContextTest {
     ctx.addInvalidFlowNodeId("a");
     ctx.addInvalidFlowNodeId("b");
 
-    assertThat(ctx.isPathEmpty(), is(false));
-    assertThat(ctx.isPathIncomplete(), is(false));
-    assertThat(ctx.isPathInvalid(), is(true));
-    assertThat(ctx.isValid(), is(false));
+    assertThat(ctx.isPathEmpty()).isFalse();
+    assertThat(ctx.isPathIncomplete()).isFalse();
+    assertThat(ctx.isPathInvalid()).isTrue();
+    assertThat(ctx.isValid()).isFalse();
   }
 
   @Test
@@ -112,9 +109,9 @@ public class TestCaseContextTest {
     bpmnSupport = BpmnSupport.of(TestPaths.resources(("happyPath.bpmn")));
     ctx = new TestCaseContext(bpmnSupport, bpmnSupport.getTestCases().get(0));
 
-    assertThat(ctx.isPathEmpty(), is(false));
-    assertThat(ctx.isPathIncomplete(), is(false));
-    assertThat(ctx.isPathInvalid(), is(false));
-    assertThat(ctx.isValid(), is(true));
+    assertThat(ctx.isPathEmpty()).isFalse();
+    assertThat(ctx.isPathIncomplete()).isFalse();
+    assertThat(ctx.isPathInvalid()).isFalse();
+    assertThat(ctx.isValid()).isTrue();
   }
 }

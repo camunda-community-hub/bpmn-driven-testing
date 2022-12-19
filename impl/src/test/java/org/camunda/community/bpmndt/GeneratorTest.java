@@ -1,16 +1,11 @@
 package org.camunda.community.bpmndt;
 
-import static org.camunda.community.bpmndt.test.ContainsCode.containsCode;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
+import static com.google.common.truth.Truth.assertThat;
+import static org.camunda.community.bpmndt.test.MethodSpecSubject.assertThat;
+import static org.camunda.community.bpmndt.test.TypeSpecSubject.assertThat;
 
-import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Predicate;
@@ -21,11 +16,10 @@ import org.camunda.community.bpmndt.api.AbstractJUnit4TestCase;
 import org.camunda.community.bpmndt.api.AbstractJUnit5TestCase;
 import org.camunda.community.bpmndt.api.cfg.SpringConfiguration;
 import org.camunda.community.bpmndt.test.TestPaths;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.rules.TestName;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.io.TempDir;
 
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.MethodSpec;
@@ -34,10 +28,8 @@ import com.squareup.javapoet.TypeSpec;
 
 public class GeneratorTest {
 
-  @Rule
-  public TestName testName = new TestName();
-  @Rule
-  public TemporaryFolder temporaryFolder = new TemporaryFolder(new File("./target"));
+  @TempDir
+  private Path temporaryDirectory;
 
   private GeneratorContext ctx;
   private GeneratorResult result;
@@ -45,20 +37,20 @@ public class GeneratorTest {
 
   private Path bpmnFile;
 
-  @Before
-  public void setUp() {
+  @BeforeEach
+  public void setUp(TestInfo testInfo) {
     generator = new Generator();
 
     ctx = new GeneratorContext();
-    ctx.setBasePath(Paths.get("."));
+    ctx.setBasePath(temporaryDirectory.getRoot());
     ctx.setMainResourcePath(TestPaths.resources());
-    ctx.setTestSourcePath(temporaryFolder.getRoot().toPath());
+    ctx.setTestSourcePath(temporaryDirectory);
 
     ctx.setPackageName("org.example");
 
     result = generator.getResult();
 
-    String fileName = testName.getMethodName().replace("test", "") + ".bpmn";
+    String fileName = testInfo.getTestMethod().get().getName().replace("test", "") + ".bpmn";
     bpmnFile = ctx.getMainResourcePath().resolve(StringUtils.uncapitalize(fileName));
   }
 
@@ -69,79 +61,79 @@ public class GeneratorTest {
   @Test
   public void testDuplicateTestCaseNames() {
     generator.generateTestCases(ctx, bpmnFile);
-    assertThat(result.getFiles(), hasSize(1));
-    assertThat(result.getFiles().get(0).packageName, equalTo("org.example.duplicate_test_case_names"));
+    assertThat(result.getFiles()).hasSize(1);
+    assertThat(result.getFiles().get(0).packageName).isEqualTo("org.example.duplicate_test_case_names");
 
     TypeSpec typeSpec = result.getFiles().get(0).typeSpec;
-    assertThat(typeSpec.name, equalTo("TC_startEvent__endEvent"));
+    assertThat(typeSpec).hasName("TC_startEvent__endEvent");
   }
 
   @Test
   public void testEmpty() {
     generator.generateTestCases(ctx, bpmnFile);
-    assertThat(result.getFiles(), hasSize(1));
-    assertThat(result.getFiles().get(0).packageName, equalTo("org.example.empty"));
+    assertThat(result.getFiles()).hasSize(1);
+    assertThat(result.getFiles().get(0).packageName).isEqualTo("org.example.empty");
 
     TypeSpec typeSpec = result.getFiles().get(0).typeSpec;
-    assertThat(typeSpec.name, equalTo("TC_empty"));
+    assertThat(typeSpec).hasName("TC_empty");
 
-    assertThat(typeSpec.fieldSpecs, hasSize(0));
-    assertThat(typeSpec.methodSpecs, hasSize(6));
-    assertThat(typeSpec.methodSpecs.get(0).name, equalTo("beforeEach"));
+    assertThat(typeSpec).hasFields(0);
+    assertThat(typeSpec).hasMethods(6);
 
-    containsCode(typeSpec.methodSpecs.get(0)).contains("throw new java.lang.RuntimeException(\"Path is empty\");");
+    assertThat(typeSpec.methodSpecs.get(0)).hasName("beforeEach");
+    assertThat(typeSpec.methodSpecs.get(0)).containsCode("throw new java.lang.RuntimeException(\"Path is empty\");");
   }
-  
+
   @Test
   public void testIncomplete() {
     generator.generateTestCases(ctx, bpmnFile);
-    assertThat(result.getFiles(), hasSize(1));
-    assertThat(result.getFiles().get(0).packageName, equalTo("org.example.incomplete"));
+    assertThat(result.getFiles()).hasSize(1);
+    assertThat(result.getFiles().get(0).packageName).isEqualTo("org.example.incomplete");
 
     TypeSpec typeSpec = result.getFiles().get(0).typeSpec;
-    assertThat(typeSpec.name, equalTo("TC_incomplete"));
+    assertThat(typeSpec).hasName("TC_incomplete");
 
-    assertThat(typeSpec.fieldSpecs, hasSize(0));
-    assertThat(typeSpec.methodSpecs, hasSize(6));
-    assertThat(typeSpec.methodSpecs.get(0).name, equalTo("beforeEach"));
-    
-    containsCode(typeSpec.methodSpecs.get(0)).contains("throw new java.lang.RuntimeException(\"Path is incomplete\");");
+    assertThat(typeSpec).hasFields(0);
+    assertThat(typeSpec).hasMethods(6);
+
+    assertThat(typeSpec.methodSpecs.get(0)).hasName("beforeEach");
+    assertThat(typeSpec.methodSpecs.get(0)).containsCode("throw new java.lang.RuntimeException(\"Path is incomplete\");");
   }
 
   @Test
   public void testInvalid() {
     generator.generateTestCases(ctx, bpmnFile);
-    assertThat(result.getFiles(), hasSize(1));
-    assertThat(result.getFiles().get(0).packageName, equalTo("org.example.invalid"));
+    assertThat(result.getFiles()).hasSize(1);
+    assertThat(result.getFiles().get(0).packageName).isEqualTo("org.example.invalid");
 
     TypeSpec typeSpec = result.getFiles().get(0).typeSpec;
-    assertThat(typeSpec.name, equalTo("TC_startEvent__endEvent"));
+    assertThat(typeSpec).hasName("TC_startEvent__endEvent");
 
-    assertThat(typeSpec.fieldSpecs, hasSize(0));
-    assertThat(typeSpec.methodSpecs, hasSize(6));
-    assertThat(typeSpec.methodSpecs.get(0).name, equalTo("beforeEach"));
+    assertThat(typeSpec).hasFields(0);
+    assertThat(typeSpec).hasMethods(6);
 
-    containsCode(typeSpec.methodSpecs.get(0)).contains("// Not existing flow nodes");
-    containsCode(typeSpec.methodSpecs.get(0)).contains("// a");
-    containsCode(typeSpec.methodSpecs.get(0)).contains("// b");
-    containsCode(typeSpec.methodSpecs.get(0)).contains("throw new java.lang.RuntimeException(\"Path is invalid\");");
+    assertThat(typeSpec.methodSpecs.get(0)).hasName("beforeEach");
+    assertThat(typeSpec.methodSpecs.get(0)).containsCode("// Not existing flow nodes");
+    assertThat(typeSpec.methodSpecs.get(0)).containsCode("// a");
+    assertThat(typeSpec.methodSpecs.get(0)).containsCode("// b");
+    assertThat(typeSpec.methodSpecs.get(0)).containsCode("throw new java.lang.RuntimeException(\"Path is invalid\");");
   }
 
   @Test
   public void testHappyPath() {
     generator.generateTestCases(ctx, bpmnFile);
-    assertThat(result.getFiles(), hasSize(1));
-    assertThat(result.getFiles().get(0).packageName, equalTo("org.example.happy_path"));
+    assertThat(result.getFiles()).hasSize(1);
+    assertThat(result.getFiles().get(0).packageName).isEqualTo("org.example.happy_path");
 
     TypeSpec typeSpec = result.getFiles().get(0).typeSpec;
-    assertThat(typeSpec.name, equalTo("TC_Happy_Path"));
+    assertThat(typeSpec).hasName("TC_Happy_Path");
 
     ClassName rawType = ClassName.get(AbstractJUnit4TestCase.class);
     ClassName typeArgument = ClassName.bestGuess(typeSpec.name);
 
-    assertThat(typeSpec.superclass, instanceOf(ParameterizedTypeName.class));
-    assertThat(((ParameterizedTypeName) typeSpec.superclass).rawType, equalTo(rawType));
-    assertThat(((ParameterizedTypeName) typeSpec.superclass).typeArguments.get(0), equalTo(typeArgument));
+    assertThat(typeSpec.superclass).isInstanceOf(ParameterizedTypeName.class);
+    assertThat(((ParameterizedTypeName) typeSpec.superclass).rawType).isEqualTo(rawType);
+    assertThat(((ParameterizedTypeName) typeSpec.superclass).typeArguments.get(0)).isEqualTo(typeArgument);
   }
 
   @Test
@@ -152,24 +144,24 @@ public class GeneratorTest {
     bpmnFile = ctx.getMainResourcePath().resolve("happyPath.bpmn");
 
     generator.generateTestCases(ctx, bpmnFile);
-    assertThat(result.getFiles(), hasSize(1));
-    assertThat(result.getFiles().get(0).packageName, equalTo("org.example.happy_path"));
+    assertThat(result.getFiles()).hasSize(1);
+    assertThat(result.getFiles().get(0).packageName).isEqualTo("org.example.happy_path");
 
     TypeSpec typeSpec = result.getFiles().get(0).typeSpec;
-    assertThat(typeSpec.name, equalTo("TC_Happy_Path"));
+    assertThat(typeSpec).hasName("TC_Happy_Path");
 
     ClassName rawType = ClassName.get(AbstractJUnit5TestCase.class);
     ClassName typeArgument = ClassName.bestGuess(typeSpec.name);
 
-    assertThat(typeSpec.superclass, instanceOf(ParameterizedTypeName.class));
-    assertThat(((ParameterizedTypeName) typeSpec.superclass).rawType, equalTo(rawType));
-    assertThat(((ParameterizedTypeName) typeSpec.superclass).typeArguments.get(0), equalTo(typeArgument));
+    assertThat(typeSpec.superclass).isInstanceOf(ParameterizedTypeName.class);
+    assertThat(((ParameterizedTypeName) typeSpec.superclass).rawType).isEqualTo(rawType);
+    assertThat(((ParameterizedTypeName) typeSpec.superclass).typeArguments.get(0)).isEqualTo(typeArgument);
   }
 
   @Test
   public void testNoTestCases() {
     generator.generateTestCases(ctx, bpmnFile);
-    assertThat(result.getFiles(), hasSize(0));
+    assertThat(result.getFiles()).hasSize(0);
   }
 
   /**
@@ -178,35 +170,35 @@ public class GeneratorTest {
   @Test
   public void testGenerate() {
     generator.generate(ctx);
-    
+
     Predicate<String> isFile = (className) -> {
       return Files.isRegularFile(ctx.getTestSourcePath().resolve(className));
     };
-    
+
     // test cases
-    assertThat(isFile.test("org/example/duplicate_test_case_names/TC_startEvent__endEvent.java"), is(true));
-    assertThat(isFile.test("org/example/empty/TC_empty.java"), is(true));
-    assertThat(isFile.test("org/example/happy_path/TC_Happy_Path.java"), is(true));
-    assertThat(isFile.test("org/example/incomplete/TC_incomplete.java"), is(true));
-    assertThat(isFile.test("org/example/invalid/TC_startEvent__endEvent.java"), is(true));
+    assertThat(isFile.test("org/example/duplicate_test_case_names/TC_startEvent__endEvent.java")).isTrue();
+    assertThat(isFile.test("org/example/empty/TC_empty.java")).isTrue();
+    assertThat(isFile.test("org/example/happy_path/TC_Happy_Path.java")).isTrue();
+    assertThat(isFile.test("org/example/incomplete/TC_incomplete.java")).isTrue();
+    assertThat(isFile.test("org/example/invalid/TC_startEvent__endEvent.java")).isTrue();
 
     // should not exist, since the BPMN process provides no test cases
-    assertThat(isFile.test("org/example/no_test_cases/TC_startEvent__endEvent.java"), is(false));
+    assertThat(isFile.test("org/example/no_test_cases/TC_startEvent__endEvent.java")).isFalse();
 
     // API classes
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/AbstractJUnit4TestCase.java"), is(true));
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/AbstractTestCase.java"), is(true));
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/CallActivityDefinition.java"), is(true));
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/CallActivityHandler.java"), is(true));
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/EventHandler.java"), is(true));
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/ExternalTaskHandler.java"), is(true));
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/JobHandler.java"), is(true));
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/MultiInstanceHandler.java"), is(true));
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/TestCaseInstance.java"), is(true));
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/TestCaseExecutor.java"), is(true));
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/UserTaskHandler.java"), is(true));
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/cfg/BpmndtParseListener.java"), is(true));
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/cfg/BpmndtProcessEnginePlugin.java"), is(true));
+    assertThat(isFile.test("org/camunda/community/bpmndt/api/AbstractJUnit4TestCase.java")).isTrue();
+    assertThat(isFile.test("org/camunda/community/bpmndt/api/AbstractTestCase.java")).isTrue();
+    assertThat(isFile.test("org/camunda/community/bpmndt/api/CallActivityDefinition.java")).isTrue();
+    assertThat(isFile.test("org/camunda/community/bpmndt/api/CallActivityHandler.java")).isTrue();
+    assertThat(isFile.test("org/camunda/community/bpmndt/api/EventHandler.java")).isTrue();
+    assertThat(isFile.test("org/camunda/community/bpmndt/api/ExternalTaskHandler.java")).isTrue();
+    assertThat(isFile.test("org/camunda/community/bpmndt/api/JobHandler.java")).isTrue();
+    assertThat(isFile.test("org/camunda/community/bpmndt/api/MultiInstanceHandler.java")).isTrue();
+    assertThat(isFile.test("org/camunda/community/bpmndt/api/TestCaseInstance.java")).isTrue();
+    assertThat(isFile.test("org/camunda/community/bpmndt/api/TestCaseExecutor.java")).isTrue();
+    assertThat(isFile.test("org/camunda/community/bpmndt/api/UserTaskHandler.java")).isTrue();
+    assertThat(isFile.test("org/camunda/community/bpmndt/api/cfg/BpmndtParseListener.java")).isTrue();
+    assertThat(isFile.test("org/camunda/community/bpmndt/api/cfg/BpmndtProcessEnginePlugin.java")).isTrue();
   }
 
   /**
@@ -223,30 +215,30 @@ public class GeneratorTest {
     };
 
     // test cases
-    assertThat(isFile.test("org/example/duplicate_test_case_names/TC_startEvent__endEvent.java"), is(true));
-    assertThat(isFile.test("org/example/empty/TC_empty.java"), is(true));
-    assertThat(isFile.test("org/example/happy_path/TC_Happy_Path.java"), is(true));
-    assertThat(isFile.test("org/example/incomplete/TC_incomplete.java"), is(true));
-    assertThat(isFile.test("org/example/invalid/TC_startEvent__endEvent.java"), is(true));
+    assertThat(isFile.test("org/example/duplicate_test_case_names/TC_startEvent__endEvent.java")).isTrue();
+    assertThat(isFile.test("org/example/empty/TC_empty.java")).isTrue();
+    assertThat(isFile.test("org/example/happy_path/TC_Happy_Path.java")).isTrue();
+    assertThat(isFile.test("org/example/incomplete/TC_incomplete.java")).isTrue();
+    assertThat(isFile.test("org/example/invalid/TC_startEvent__endEvent.java")).isTrue();
 
     // should not exist, since the BPMN process provides no test cases
-    assertThat(isFile.test("org/example/no_test_cases/TC_startEvent__endEvent.java"), is(false));
+    assertThat(isFile.test("org/example/no_test_cases/TC_startEvent__endEvent.java")).isFalse();
 
     // API classes
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/AbstractJUnit5TestCase.java"), is(true));
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/AbstractTestCase.java"), is(true));
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/CallActivityDefinition.java"), is(true));
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/CallActivityHandler.java"), is(true));
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/EventHandler.java"), is(true));
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/ExternalTaskHandler.java"), is(true));
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/JobHandler.java"), is(true));
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/MultiInstanceHandler.java"), is(true));
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/MultiInstanceScopeHandler.java"), is(true));
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/TestCaseInstance.java"), is(true));
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/TestCaseExecutor.java"), is(true));
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/UserTaskHandler.java"), is(true));
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/cfg/BpmndtParseListener.java"), is(true));
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/cfg/BpmndtProcessEnginePlugin.java"), is(true));
+    assertThat(isFile.test("org/camunda/community/bpmndt/api/AbstractJUnit5TestCase.java")).isTrue();
+    assertThat(isFile.test("org/camunda/community/bpmndt/api/AbstractTestCase.java")).isTrue();
+    assertThat(isFile.test("org/camunda/community/bpmndt/api/CallActivityDefinition.java")).isTrue();
+    assertThat(isFile.test("org/camunda/community/bpmndt/api/CallActivityHandler.java")).isTrue();
+    assertThat(isFile.test("org/camunda/community/bpmndt/api/EventHandler.java")).isTrue();
+    assertThat(isFile.test("org/camunda/community/bpmndt/api/ExternalTaskHandler.java")).isTrue();
+    assertThat(isFile.test("org/camunda/community/bpmndt/api/JobHandler.java")).isTrue();
+    assertThat(isFile.test("org/camunda/community/bpmndt/api/MultiInstanceHandler.java")).isTrue();
+    assertThat(isFile.test("org/camunda/community/bpmndt/api/MultiInstanceScopeHandler.java")).isTrue();
+    assertThat(isFile.test("org/camunda/community/bpmndt/api/TestCaseInstance.java")).isTrue();
+    assertThat(isFile.test("org/camunda/community/bpmndt/api/TestCaseExecutor.java")).isTrue();
+    assertThat(isFile.test("org/camunda/community/bpmndt/api/UserTaskHandler.java")).isTrue();
+    assertThat(isFile.test("org/camunda/community/bpmndt/api/cfg/BpmndtParseListener.java")).isTrue();
+    assertThat(isFile.test("org/camunda/community/bpmndt/api/cfg/BpmndtProcessEnginePlugin.java")).isTrue();
   }
 
   /**
@@ -263,34 +255,34 @@ public class GeneratorTest {
     };
 
     // test cases
-    assertThat(isFile.test("org/example/duplicate_test_case_names/TC_startEvent__endEvent.java"), is(true));
-    assertThat(isFile.test("org/example/empty/TC_empty.java"), is(true));
-    assertThat(isFile.test("org/example/happy_path/TC_Happy_Path.java"), is(true));
-    assertThat(isFile.test("org/example/incomplete/TC_incomplete.java"), is(true));
-    assertThat(isFile.test("org/example/invalid/TC_startEvent__endEvent.java"), is(true));
+    assertThat(isFile.test("org/example/duplicate_test_case_names/TC_startEvent__endEvent.java")).isTrue();
+    assertThat(isFile.test("org/example/empty/TC_empty.java")).isTrue();
+    assertThat(isFile.test("org/example/happy_path/TC_Happy_Path.java")).isTrue();
+    assertThat(isFile.test("org/example/incomplete/TC_incomplete.java")).isTrue();
+    assertThat(isFile.test("org/example/invalid/TC_startEvent__endEvent.java")).isTrue();
 
     // should not exist, since the BPMN process provides no test cases
-    assertThat(isFile.test("org/example/no_test_cases/TC_startEvent__endEvent.java"), is(false));
+    assertThat(isFile.test("org/example/no_test_cases/TC_startEvent__endEvent.java")).isFalse();
 
     // Spring configuration
-    assertThat(isFile.test("org/example/BpmndtConfiguration.java"), is(true));
+    assertThat(isFile.test("org/example/BpmndtConfiguration.java")).isTrue();
 
     // API classes
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/AbstractJUnit4TestCase.java"), is(true));
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/AbstractTestCase.java"), is(true));
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/CallActivityDefinition.java"), is(true));
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/CallActivityHandler.java"), is(true));
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/EventHandler.java"), is(true));
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/ExternalTaskHandler.java"), is(true));
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/JobHandler.java"), is(true));
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/MultiInstanceHandler.java"), is(true));
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/MultiInstanceScopeHandler.java"), is(true));
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/TestCaseInstance.java"), is(true));
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/TestCaseExecutor.java"), is(true));
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/UserTaskHandler.java"), is(true));
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/cfg/BpmndtParseListener.java"), is(true));
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/cfg/BpmndtProcessEnginePlugin.java"), is(true));
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/cfg/SpringConfiguration.java"), is(true));
+    assertThat(isFile.test("org/camunda/community/bpmndt/api/AbstractJUnit4TestCase.java")).isTrue();
+    assertThat(isFile.test("org/camunda/community/bpmndt/api/AbstractTestCase.java")).isTrue();
+    assertThat(isFile.test("org/camunda/community/bpmndt/api/CallActivityDefinition.java")).isTrue();
+    assertThat(isFile.test("org/camunda/community/bpmndt/api/CallActivityHandler.java")).isTrue();
+    assertThat(isFile.test("org/camunda/community/bpmndt/api/EventHandler.java")).isTrue();
+    assertThat(isFile.test("org/camunda/community/bpmndt/api/ExternalTaskHandler.java")).isTrue();
+    assertThat(isFile.test("org/camunda/community/bpmndt/api/JobHandler.java")).isTrue();
+    assertThat(isFile.test("org/camunda/community/bpmndt/api/MultiInstanceHandler.java")).isTrue();
+    assertThat(isFile.test("org/camunda/community/bpmndt/api/MultiInstanceScopeHandler.java")).isTrue();
+    assertThat(isFile.test("org/camunda/community/bpmndt/api/TestCaseInstance.java")).isTrue();
+    assertThat(isFile.test("org/camunda/community/bpmndt/api/TestCaseExecutor.java")).isTrue();
+    assertThat(isFile.test("org/camunda/community/bpmndt/api/UserTaskHandler.java")).isTrue();
+    assertThat(isFile.test("org/camunda/community/bpmndt/api/cfg/BpmndtParseListener.java")).isTrue();
+    assertThat(isFile.test("org/camunda/community/bpmndt/api/cfg/BpmndtProcessEnginePlugin.java")).isTrue();
+    assertThat(isFile.test("org/camunda/community/bpmndt/api/cfg/SpringConfiguration.java")).isTrue();
   }
 
   @Test
@@ -302,33 +294,33 @@ public class GeneratorTest {
     ctx.setProcessEnginePluginNames(processEnginePluginNames);
 
     generator.generateSpringConfiguration(ctx);
-    assertThat(result.getAdditionalFiles(), hasSize(1));
-    assertThat(result.getAdditionalFiles().get(0).packageName, equalTo("org.example"));
+    assertThat(result.getAdditionalFiles()).hasSize(1);
+    assertThat(result.getAdditionalFiles().get(0).packageName).isEqualTo("org.example");
 
     TypeSpec typeSpec = result.getAdditionalFiles().get(0).typeSpec;
-    assertThat(typeSpec.name, equalTo("BpmndtConfiguration"));
-    assertThat(typeSpec.superclass, equalTo(ClassName.get(SpringConfiguration.class)));
-    assertThat(typeSpec.methodSpecs, hasSize(1));
+    assertThat(typeSpec).hasName("BpmndtConfiguration");
+    assertThat(typeSpec.superclass).isEqualTo(ClassName.get(SpringConfiguration.class));
+    assertThat(typeSpec).hasMethods(1);
 
     MethodSpec methodSpec = typeSpec.methodSpecs.get(0);
-    assertThat(methodSpec.name, equalTo("getProcessEnginePlugins"));
+    assertThat(methodSpec).hasName("getProcessEnginePlugins");
 
     String expected = "java.util.List<%s> processEnginePlugins = new java.util.LinkedList<>()";
-    containsCode(methodSpec).contains(String.format(expected, ClassName.get(ProcessEnginePlugin.class)));
-    containsCode(methodSpec).contains("processEnginePlugins.add(new org.example.Abc())");
-    containsCode(methodSpec).notContains("processEnginePlugins.add(new ExamplePlugin())");
-    containsCode(methodSpec).contains("processEnginePlugins.add(new org.camunda.Xzy())");
-    containsCode(methodSpec).contains("return processEnginePlugins");
+    assertThat(methodSpec).containsCode(String.format(expected, ClassName.get(ProcessEnginePlugin.class)));
+    assertThat(methodSpec).containsCode("processEnginePlugins.add(new org.example.Abc())");
+    assertThat(methodSpec).notContainsCode("processEnginePlugins.add(new ExamplePlugin())");
+    assertThat(methodSpec).containsCode("processEnginePlugins.add(new org.camunda.Xzy())");
+    assertThat(methodSpec).containsCode("return processEnginePlugins");
   }
 
   @Test
   public void testGenerateSpringConfigurationEmptyProcessEnginePlugins() {
     generator.generateSpringConfiguration(ctx);
-    assertThat(result.getAdditionalFiles(), hasSize(1));
+    assertThat(result.getAdditionalFiles()).hasSize(1);
 
     TypeSpec typeSpec = result.getAdditionalFiles().get(0).typeSpec;
-    assertThat(typeSpec.name, equalTo("BpmndtConfiguration"));
-    assertThat(typeSpec.superclass, equalTo(ClassName.get(SpringConfiguration.class)));
-    assertThat(typeSpec.methodSpecs, hasSize(0));
+    assertThat(typeSpec).hasName("BpmndtConfiguration");
+    assertThat(typeSpec.superclass).isEqualTo(ClassName.get(SpringConfiguration.class));
+    assertThat(typeSpec).hasMethods(0);
   }
 }

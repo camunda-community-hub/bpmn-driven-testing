@@ -1,11 +1,7 @@
 package org.camunda.community.bpmndt.api;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertThrows;
+import static com.google.common.truth.Truth.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,18 +17,18 @@ import org.camunda.bpm.engine.test.assertions.ProcessEngineTests;
 import org.camunda.bpm.engine.test.assertions.bpmn.ProcessInstanceAssert;
 import org.camunda.bpm.engine.variable.VariableMap;
 import org.camunda.community.bpmndt.test.TestPaths;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 public class MultiInstanceCallActivityTest {
 
-  @Rule
+  @RegisterExtension
   public TestCase tc = new TestCase();
 
   private MultiInstanceCallActivityHandler handler;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     handler = new MultiInstanceCallActivityHandler(tc.instance, "multiInstanceCallActivity");
   }
@@ -42,36 +38,36 @@ public class MultiInstanceCallActivityTest {
     handler.verifyLoopCount(3);
 
     handler.handle(0).verifyInput(variables -> {
-      assertThat(variables.getVariable("nrOfActiveInstances"), notNullValue());
-      assertThat(variables.getVariable("nrOfActiveInstances"), is(1));
-      assertThat(variables.getVariable("nrOfCompletedInstances"), notNullValue());
-      assertThat(variables.getVariable("nrOfCompletedInstances"), is(0));
-      assertThat(variables.getVariable("nrOfInstances"), notNullValue());
-      assertThat(variables.getVariable("nrOfInstances"), is(3));
-      assertThat(variables.getVariable("loopCounter"), notNullValue());
-      assertThat(variables.getVariable("loopCounter"), is(0));
+      assertThat(variables.getVariable("nrOfActiveInstances")).isNotNull();
+      assertThat(variables.getVariable("nrOfActiveInstances")).isEqualTo(1);
+      assertThat(variables.getVariable("nrOfCompletedInstances")).isNotNull();
+      assertThat(variables.getVariable("nrOfCompletedInstances")).isEqualTo(0);
+      assertThat(variables.getVariable("nrOfInstances")).isNotNull();
+      assertThat(variables.getVariable("nrOfInstances")).isEqualTo(3);
+      assertThat(variables.getVariable("loopCounter")).isNotNull();
+      assertThat(variables.getVariable("loopCounter")).isEqualTo(0);
     });
 
     handler.handle(1).verifyInput(variables -> {
-      assertThat(variables.getVariable("nrOfActiveInstances"), notNullValue());
-      assertThat(variables.getVariable("nrOfActiveInstances"), is(1));
-      assertThat(variables.getVariable("nrOfCompletedInstances"), notNullValue());
-      assertThat(variables.getVariable("nrOfCompletedInstances"), is(1));
-      assertThat(variables.getVariable("nrOfInstances"), notNullValue());
-      assertThat(variables.getVariable("nrOfInstances"), is(3));
-      assertThat(variables.getVariable("loopCounter"), notNullValue());
-      assertThat(variables.getVariable("loopCounter"), is(1));
+      assertThat(variables.getVariable("nrOfActiveInstances")).isNotNull();
+      assertThat(variables.getVariable("nrOfActiveInstances")).isEqualTo(1);
+      assertThat(variables.getVariable("nrOfCompletedInstances")).isNotNull();
+      assertThat(variables.getVariable("nrOfCompletedInstances")).isEqualTo(1);
+      assertThat(variables.getVariable("nrOfInstances")).isNotNull();
+      assertThat(variables.getVariable("nrOfInstances")).isEqualTo(3);
+      assertThat(variables.getVariable("loopCounter")).isNotNull();
+      assertThat(variables.getVariable("loopCounter")).isEqualTo(1);
     });
 
     handler.handle(2).verifyInput(variables -> {
-      assertThat(variables.getVariable("nrOfActiveInstances"), notNullValue());
-      assertThat(variables.getVariable("nrOfActiveInstances"), is(1));
-      assertThat(variables.getVariable("nrOfCompletedInstances"), notNullValue());
-      assertThat(variables.getVariable("nrOfCompletedInstances"), is(2));
-      assertThat(variables.getVariable("nrOfInstances"), notNullValue());
-      assertThat(variables.getVariable("nrOfInstances"), is(3));
-      assertThat(variables.getVariable("loopCounter"), notNullValue());
-      assertThat(variables.getVariable("loopCounter"), is(2));
+      assertThat(variables.getVariable("nrOfActiveInstances")).isNotNull();
+      assertThat(variables.getVariable("nrOfActiveInstances")).isEqualTo(1);
+      assertThat(variables.getVariable("nrOfCompletedInstances")).isNotNull();
+      assertThat(variables.getVariable("nrOfCompletedInstances")).isEqualTo(2);
+      assertThat(variables.getVariable("nrOfInstances")).isNotNull();
+      assertThat(variables.getVariable("nrOfInstances")).isEqualTo(3);
+      assertThat(variables.getVariable("loopCounter")).isNotNull();
+      assertThat(variables.getVariable("loopCounter")).isEqualTo(2);
     });
 
     tc.createExecutor().withBean("multiInstanceCallActivityMapping", new MultiInstanceCallActivityMapping()).execute();
@@ -83,7 +79,7 @@ public class MultiInstanceCallActivityTest {
   @Test
   public void testVerifyWithAssertionError() {
     handler.handle(0).verify((pi, callActivity) -> {
-      assertThat(callActivity.getDefinitionKey(), equalTo("not-equal"));
+      assertThat(callActivity.getDefinitionKey()).isEqualTo("not-equal");
     });
 
     AssertionError e = assertThrows(AssertionError.class, () -> {
@@ -97,15 +93,15 @@ public class MultiInstanceCallActivityTest {
       }
     });
 
-    assertThat(e.getMessage(), containsString("Expected: \"not-equal\""));
-    assertThat(e.getMessage(), containsString("but: was \"advanced\""));
+    assertThat(e.getMessage()).contains("expected: not-equal");
+    assertThat(e.getMessage()).contains("but was : advanced");
   }
 
-  private class TestCase extends AbstractJUnit4TestCase<TestCase> {
+  private class TestCase extends AbstractJUnit5TestCase<TestCase> {
 
     @Override
     protected void execute(ProcessInstance pi) {
-      assertThat(pi, notNullValue());
+      assertThat(pi).isNotNull();
 
       instance.apply(handler);
 

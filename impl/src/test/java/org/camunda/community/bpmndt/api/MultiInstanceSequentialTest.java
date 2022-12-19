@@ -1,8 +1,6 @@
 package org.camunda.community.bpmndt.api;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,18 +10,18 @@ import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.test.assertions.ProcessEngineTests;
 import org.camunda.bpm.engine.test.assertions.bpmn.ProcessInstanceAssert;
 import org.camunda.community.bpmndt.test.TestPaths;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 public class MultiInstanceSequentialTest {
 
-  @Rule
+  @RegisterExtension
   public TestCase tc = new TestCase();
 
   private MultiInstanceHandler<?, ?> handler;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     handler = new MultiInstanceHandler<>(tc.instance, "multiInstanceManualTask");
   }
@@ -47,7 +45,7 @@ public class MultiInstanceSequentialTest {
     try {
       tc.createExecutor().execute();
     } catch (AssertionError e) {
-      assertThat(e.getMessage(), containsString("1x, but was 3x"));
+      assertThat(e.getMessage()).contains("1x, but was 3x");
     }
   }
 
@@ -58,7 +56,7 @@ public class MultiInstanceSequentialTest {
     try {
       tc.createExecutor().execute();
     } catch (AssertionError e) {
-      assertThat(e.getMessage(), containsString("to be parallel, but was sequential"));
+      assertThat(e.getMessage()).contains("to be parallel, but was sequential");
     }
   }
 
@@ -71,15 +69,15 @@ public class MultiInstanceSequentialTest {
     try {
       tc.createExecutor().execute();
     } catch (AssertionError e) {
-      assertThat(e.getMessage(), containsString("to be parallel, but was sequential"));
+      assertThat(e.getMessage()).contains("to be parallel, but was sequential");
     }
   }
 
-  private class TestCase extends AbstractJUnit4TestCase<TestCase> {
+  private class TestCase extends AbstractJUnit5TestCase<TestCase> {
 
     @Override
     protected void execute(ProcessInstance pi) {
-      assertThat(pi, notNullValue());
+      assertThat(pi).isNotNull();
 
       instance.apply(handler);
 

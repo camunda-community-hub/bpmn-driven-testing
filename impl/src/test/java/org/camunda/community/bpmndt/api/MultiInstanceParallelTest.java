@@ -1,8 +1,6 @@
 package org.camunda.community.bpmndt.api;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,18 +10,18 @@ import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.test.assertions.ProcessEngineTests;
 import org.camunda.bpm.engine.test.assertions.bpmn.ProcessInstanceAssert;
 import org.camunda.community.bpmndt.test.TestPaths;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 public class MultiInstanceParallelTest {
 
-  @Rule
+  @RegisterExtension
   public TestCase tc = new TestCase();
 
   private MultiInstanceParallelHandler handler;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     handler = new MultiInstanceParallelHandler(tc.instance, "multiInstanceManualTask");
   }
@@ -47,15 +45,15 @@ public class MultiInstanceParallelTest {
     try {
       tc.createExecutor().execute();
     } catch (AssertionError e) {
-      assertThat(e.getMessage(), containsString("to be sequential, but was parallel"));
+      assertThat(e.getMessage()).contains("to be sequential, but was parallel");
     }
   }
 
-  private class TestCase extends AbstractJUnit4TestCase<TestCase> {
+  private class TestCase extends AbstractJUnit5TestCase<TestCase> {
 
     @Override
     protected void execute(ProcessInstance pi) {
-      assertThat(pi, notNullValue());
+      assertThat(pi).isNotNull();
 
       instance.apply(handler);
 

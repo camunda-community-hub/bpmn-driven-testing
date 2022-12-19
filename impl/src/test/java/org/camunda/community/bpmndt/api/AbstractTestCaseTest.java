@@ -1,9 +1,6 @@
 package org.camunda.community.bpmndt.api;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,18 +13,18 @@ import org.camunda.bpm.engine.test.Deployment;
 import org.camunda.bpm.engine.test.assertions.ProcessEngineTests;
 import org.camunda.bpm.engine.test.assertions.bpmn.ProcessInstanceAssert;
 import org.camunda.community.bpmndt.test.TestPaths;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 public class AbstractTestCaseTest {
 
-  @Rule
+  @RegisterExtension
   public TestCase tc = new TestCase();
 
   private RepositoryService repositoryService;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     repositoryService = tc.getProcessEngine().getRepositoryService();
   }
@@ -37,21 +34,21 @@ public class AbstractTestCaseTest {
    */
   @Test
   public void testDeployment() {
-    assertThat(tc.getDeploymentId(), notNullValue());
+    assertThat(tc.getDeploymentId()).isNotNull();
 
     org.camunda.bpm.engine.repository.Deployment deployment = repositoryService.createDeploymentQuery()
         .deploymentId(tc.getDeploymentId())
         .singleResult();
 
-    assertThat(deployment, notNullValue());
-    assertThat(deployment.getName(), equalTo("TestCase"));
+    assertThat(deployment).isNotNull();
+    assertThat(deployment.getName()).isEqualTo("TestCase");
 
     ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery()
         .deploymentId(tc.getDeploymentId())
         .processDefinitionKey("simple")
         .singleResult();
 
-    assertThat(processDefinition, notNullValue());
+    assertThat(processDefinition).isNotNull();
   }
 
   /**
@@ -65,22 +62,22 @@ public class AbstractTestCaseTest {
         .processDefinitionKey("no-test-cases")
         .singleResult();
 
-    assertThat(processDefinition, notNullValue());
-    assertThat(processDefinition.getDeploymentId(), not(equalTo(tc.getDeploymentId())));
+    assertThat(processDefinition).isNotNull();
+    assertThat(processDefinition.getDeploymentId()).isNotEqualTo(tc.getDeploymentId());
 
     org.camunda.bpm.engine.repository.Deployment deployment = repositoryService.createDeploymentQuery()
         .deploymentId(processDefinition.getDeploymentId())
         .singleResult();
 
-    assertThat(deployment, notNullValue());
-    assertThat(deployment.getName(), equalTo("AbstractTestCaseTest.testDeploymentAnnotation"));
+    assertThat(deployment).isNotNull();
+    assertThat(deployment.getName()).isEqualTo("AbstractTestCaseTest.testDeploymentAnnotation");
   }
 
-  private class TestCase extends AbstractJUnit4TestCase<TestCase> {
+  private class TestCase extends AbstractJUnit5TestCase<TestCase> {
 
     @Override
     protected void execute(ProcessInstance pi) {
-      assertThat(pi, notNullValue());
+      assertThat(pi).isNotNull();
 
       ProcessInstanceAssert piAssert = ProcessEngineTests.assertThat(pi);
 
