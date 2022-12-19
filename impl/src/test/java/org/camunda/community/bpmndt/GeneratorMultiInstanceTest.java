@@ -1,16 +1,11 @@
 package org.camunda.community.bpmndt;
 
-import static org.camunda.community.bpmndt.test.ContainsCode.containsCode;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
+import static com.google.common.truth.Truth.assertThat;
+import static org.camunda.community.bpmndt.test.FieldSpecSubject.assertThat;
+import static org.camunda.community.bpmndt.test.MethodSpecSubject.assertThat;
+import static org.camunda.community.bpmndt.test.TypeSpecSubject.assertThat;
 
-import java.io.File;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import org.apache.commons.lang3.StringUtils;
 import org.camunda.community.bpmndt.api.CallActivityHandler;
@@ -18,11 +13,10 @@ import org.camunda.community.bpmndt.api.EventHandler;
 import org.camunda.community.bpmndt.api.JobHandler;
 import org.camunda.community.bpmndt.api.UserTaskHandler;
 import org.camunda.community.bpmndt.test.TestPaths;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.rules.TestName;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.io.TempDir;
 
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.JavaFile;
@@ -31,10 +25,8 @@ import com.squareup.javapoet.TypeSpec;
 
 public class GeneratorMultiInstanceTest {
 
-  @Rule
-  public TestName testName = new TestName();
-  @Rule
-  public TemporaryFolder temporaryFolder = new TemporaryFolder(new File("./target"));
+  @TempDir
+  private Path temporaryDirectory;
 
   private GeneratorContext ctx;
   private GeneratorResult result;
@@ -42,20 +34,20 @@ public class GeneratorMultiInstanceTest {
 
   private Path bpmnFile;
 
-  @Before
-  public void setUp() {
+  @BeforeEach
+  public void setUp(TestInfo testInfo) {
     generator = new Generator();
 
     ctx = new GeneratorContext();
-    ctx.setBasePath(Paths.get("."));
+    ctx.setBasePath(temporaryDirectory.getRoot());
     ctx.setMainResourcePath(TestPaths.advancedMultiInstance());
-    ctx.setTestSourcePath(temporaryFolder.getRoot().toPath());
+    ctx.setTestSourcePath(temporaryDirectory);
 
     ctx.setPackageName("org.example");
 
     result = generator.getResult();
 
-    String fileName = testName.getMethodName().replace("test", "") + ".bpmn";
+    String fileName = testInfo.getTestMethod().get().getName().replace("test", "") + ".bpmn";
     bpmnFile = ctx.getMainResourcePath().resolve(StringUtils.uncapitalize(fileName));
   }
 
@@ -70,90 +62,91 @@ public class GeneratorMultiInstanceTest {
     generator.generateTestCases(ctx, bpmnFile);
 
     // BPMN process contains 2 test cases
-    assertThat(result.getFiles(), hasSize(4));
-    assertThat(result.getFiles().get(0).typeSpec.name, equalTo("TC_startEvent__endEvent"));
-    assertThat(result.getFiles().get(1).typeSpec.name, equalTo("MultiInstanceCallActivityHandler"));
-    assertThat(result.getFiles().get(2).typeSpec.name, equalTo("TC_startEvent__multiInstanceCallActivity"));
-    assertThat(result.getFiles().get(3).typeSpec.name, equalTo("MultiInstanceCallActivityHandler"));
+    assertThat(result.getFiles()).hasSize(4);
+    assertThat(result.getFiles().get(0).typeSpec.name).isEqualTo("TC_startEvent__endEvent");
+    assertThat(result.getFiles().get(1).typeSpec.name).isEqualTo("MultiInstanceCallActivityHandler");
+    assertThat(result.getFiles().get(2).typeSpec.name).isEqualTo("TC_startEvent__multiInstanceCallActivity");
+    assertThat(result.getFiles().get(3).typeSpec.name).isEqualTo("MultiInstanceCallActivityHandler");
 
     TypeSpec typeSpec;
 
     typeSpec = result.getFiles().get(0).typeSpec;
-    assertThat(typeSpec.fieldSpecs, hasSize(1));
-    assertThat(typeSpec.fieldSpecs.get(0).name, equalTo("multiInstanceCallActivity"));
-    assertThat(typeSpec.fieldSpecs.get(0).type, equalTo(multiInstanceHandlerType));
-    assertThat(typeSpec.methodSpecs, hasSize(7));
-    assertThat(typeSpec.methodSpecs.get(6).javadoc.isEmpty(), is(false));
-    assertThat(typeSpec.methodSpecs.get(6).name, equalTo("handleMultiInstanceCallActivity"));
-    assertThat(typeSpec.methodSpecs.get(6).returnType, equalTo(multiInstanceHandlerType));
+    assertThat(typeSpec).hasFields(1);
+    assertThat(typeSpec).hasMethods(7);
+
+    assertThat(typeSpec.fieldSpecs.get(0)).hasName("multiInstanceCallActivity");
+    assertThat(typeSpec.fieldSpecs.get(0)).hasType(multiInstanceHandlerType);
+
+    assertThat(typeSpec.methodSpecs.get(6)).hasJavaDoc();
+    assertThat(typeSpec.methodSpecs.get(6)).hasName("handleMultiInstanceCallActivity");
+    assertThat(typeSpec.methodSpecs.get(6)).hasReturnType(multiInstanceHandlerType);
 
     JavaFile javaFile = result.getFiles().get(1);
-    assertThat(javaFile.packageName, equalTo("org.example.callactivity"));
-    assertThat(javaFile.skipJavaLangImports, is(true));
-    assertThat(javaFile.typeSpec, notNullValue());
+    assertThat(javaFile.packageName).isEqualTo("org.example.callactivity");
+    assertThat(javaFile.skipJavaLangImports).isTrue();
+    assertThat(javaFile.typeSpec).isNotNull();
 
     typeSpec = result.getFiles().get(1).typeSpec;
-    assertThat(typeSpec.javadoc.isEmpty(), is(false));
-    assertThat(typeSpec.fieldSpecs, hasSize(0));
-    assertThat(typeSpec.methodSpecs, hasSize(3));
-    assertThat(typeSpec.methodSpecs.get(1).name, equalTo("apply"));
-    assertThat(typeSpec.methodSpecs.get(2).name, equalTo("createHandler"));
-    assertThat(typeSpec.methodSpecs.get(2).returnType, equalTo(TypeName.get(CallActivityHandler.class)));
+    assertThat(typeSpec).hasFields(0);
+    assertThat(typeSpec).hasJavaDoc();
+    assertThat(typeSpec).hasMethods(3);
 
-    containsCode(typeSpec.methodSpecs.get(1))
-        .contains(String.format("%s handler = getHandler(loopIndex)", TypeName.get(CallActivityHandler.class)))
-        .contains("registerCallActivityHandler(handler)")
-        .contains("getHandlerBefore(loopIndex)")
-        .contains("getHandlerAfter(loopIndex)");
-    
-    containsCode(typeSpec.methodSpecs.get(2))
-        .contains(String.format("return new %s", TypeName.get(CallActivityHandler.class)));
+    assertThat(typeSpec.methodSpecs.get(1)).hasName("apply");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode(String.format("%s handler = getHandler(loopIndex)", TypeName.get(CallActivityHandler.class)));
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("registerCallActivityHandler(handler)");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("getHandlerBefore(loopIndex)");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("getHandlerAfter(loopIndex)");
+
+    assertThat(typeSpec.methodSpecs.get(2)).hasName("createHandler");
+    assertThat(typeSpec.methodSpecs.get(2)).hasReturnType(TypeName.get(CallActivityHandler.class));
+    assertThat(typeSpec.methodSpecs.get(2)).containsCode(String.format("return new %s", TypeName.get(CallActivityHandler.class)));
   }
 
   @Test
   public void testCallActivityError() {
     generator.generateTestCases(ctx, bpmnFile);
-    assertThat(result.getFiles(), hasSize(2));
+    assertThat(result.getFiles()).hasSize(2);
 
     TypeSpec typeSpec = result.getFiles().get(1).typeSpec;
-    assertThat(typeSpec.javadoc.isEmpty(), is(false));
-    assertThat(typeSpec.fieldSpecs, hasSize(0));
-    assertThat(typeSpec.methodSpecs, hasSize(3));
-    assertThat(typeSpec.methodSpecs.get(1).name, equalTo("apply"));
-    assertThat(typeSpec.methodSpecs.get(2).name, equalTo("createHandler"));
-    assertThat(typeSpec.methodSpecs.get(2).returnType, equalTo(TypeName.get(CallActivityHandler.class)));
+    assertThat(typeSpec).hasFields(0);
+    assertThat(typeSpec).hasJavaDoc();
+    assertThat(typeSpec).hasMethods(3);
 
-    containsCode(typeSpec.methodSpecs.get(1))
-        .contains(String.format("%s handler = getHandler(loopIndex)", TypeName.get(CallActivityHandler.class)))
-        .contains("registerCallActivityHandler(handler)")
-        .contains("getHandlerBefore(loopIndex)")
-        .contains("getHandlerAfter(loopIndex)");
+    assertThat(typeSpec.methodSpecs.get(1)).hasName("apply");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode(String.format("%s handler = getHandler(loopIndex)", TypeName.get(CallActivityHandler.class)));
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("registerCallActivityHandler(handler)");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("getHandlerBefore(loopIndex)");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("getHandlerAfter(loopIndex)");
+
+    assertThat(typeSpec.methodSpecs.get(2)).hasName("createHandler");
+    assertThat(typeSpec.methodSpecs.get(2)).hasReturnType(TypeName.get(CallActivityHandler.class));
   }
 
   @Test
   public void testCallActivityTimer() {
     generator.generateTestCases(ctx, bpmnFile);
-    assertThat(result.getFiles(), hasSize(2));
+    assertThat(result.getFiles()).hasSize(2);
 
     TypeSpec typeSpec = result.getFiles().get(1).typeSpec;
-    assertThat(typeSpec.javadoc.isEmpty(), is(false));
-    assertThat(typeSpec.fieldSpecs, hasSize(1));
-    assertThat(typeSpec.fieldSpecs.get(0).name, equalTo("boundaryEventHandler"));
-    assertThat(typeSpec.fieldSpecs.get(0).type, equalTo(TypeName.get(JobHandler.class)));
-    assertThat(typeSpec.methodSpecs, hasSize(4));
-    assertThat(typeSpec.methodSpecs.get(1).name, equalTo("apply"));
-    assertThat(typeSpec.methodSpecs.get(2).name, equalTo("createHandler"));
-    assertThat(typeSpec.methodSpecs.get(2).returnType, equalTo(TypeName.get(CallActivityHandler.class)));
-    assertThat(typeSpec.methodSpecs.get(3).name, equalTo("handleBoundaryEvent"));
-    assertThat(typeSpec.methodSpecs.get(3).returnType, equalTo(TypeName.get(JobHandler.class)));
+    assertThat(typeSpec).hasFields(1);
+    assertThat(typeSpec).hasJavaDoc();
+    assertThat(typeSpec).hasMethods(4);
 
-    containsCode(typeSpec.methodSpecs.get(1))
-        .contains(String.format("%s handler = getHandler(loopIndex)", TypeName.get(CallActivityHandler.class)))
-        .contains("registerCallActivityHandler(handler)")
-        .contains("if (handler.isWaitingForBoundaryEvent())")
-        .contains("instance.apply(boundaryEventHandler)")
-        .contains("getHandlerBefore(loopIndex)")
-        .contains("getHandlerAfter(loopIndex)");
+    assertThat(typeSpec.fieldSpecs.get(0)).hasName("boundaryEventHandler");
+    assertThat(typeSpec.fieldSpecs.get(0)).hasType(TypeName.get(JobHandler.class));
+
+    assertThat(typeSpec.methodSpecs.get(1)).hasName("apply");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode(String.format("%s handler = getHandler(loopIndex)", TypeName.get(CallActivityHandler.class)));
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("registerCallActivityHandler(handler)");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("if (handler.isWaitingForBoundaryEvent())");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.apply(boundaryEventHandler)");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("getHandlerBefore(loopIndex)");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("getHandlerAfter(loopIndex)");
+
+    assertThat(typeSpec.methodSpecs.get(2)).hasName("createHandler");
+    assertThat(typeSpec.methodSpecs.get(2)).hasReturnType(TypeName.get(CallActivityHandler.class));
+    assertThat(typeSpec.methodSpecs.get(3)).hasName("handleBoundaryEvent");
+    assertThat(typeSpec.methodSpecs.get(3)).hasReturnType(TypeName.get(JobHandler.class));
   }
 
   /**
@@ -168,28 +161,30 @@ public class GeneratorMultiInstanceTest {
     TypeName multiInstanceHandlerType = ClassName.get("org.example.sequential", "MultiInstanceManualTaskHandler");
 
     generator.generateTestCases(ctx, bpmnFile);
-    assertThat(result.getFiles(), hasSize(2));
+    assertThat(result.getFiles()).hasSize(2);
 
     TypeSpec typeSpec;
 
     typeSpec = result.getFiles().get(0).typeSpec;
-    assertThat(typeSpec.fieldSpecs, hasSize(1));
-    assertThat(typeSpec.fieldSpecs.get(0).name, equalTo("multiInstanceManualTask"));
-    assertThat(typeSpec.fieldSpecs.get(0).type, equalTo(multiInstanceHandlerType));
-    assertThat(typeSpec.methodSpecs, hasSize(7));
-    assertThat(typeSpec.methodSpecs.get(6).javadoc.isEmpty(), is(false));
-    assertThat(typeSpec.methodSpecs.get(6).name, equalTo("handleMultiInstanceManualTask"));
-    assertThat(typeSpec.methodSpecs.get(6).returnType, equalTo(multiInstanceHandlerType));
+    assertThat(typeSpec).hasFields(1);
+    assertThat(typeSpec).hasMethods(7);
+
+    assertThat(typeSpec.fieldSpecs.get(0)).hasName("multiInstanceManualTask");
+    assertThat(typeSpec.fieldSpecs.get(0)).hasType(multiInstanceHandlerType);
+
+    assertThat(typeSpec.methodSpecs.get(6)).hasJavaDoc();
+    assertThat(typeSpec.methodSpecs.get(6)).hasName("handleMultiInstanceManualTask");
+    assertThat(typeSpec.methodSpecs.get(6)).hasReturnType(multiInstanceHandlerType);
 
     JavaFile javaFile = result.getFiles().get(1);
-    assertThat(javaFile.packageName, equalTo("org.example.sequential"));
-    assertThat(javaFile.skipJavaLangImports, is(true));
-    assertThat(javaFile.typeSpec, notNullValue());
+    assertThat(javaFile.packageName).isEqualTo("org.example.sequential");
+    assertThat(javaFile.skipJavaLangImports).isTrue();
+    assertThat(javaFile.typeSpec).isNotNull();
 
     typeSpec = result.getFiles().get(1).typeSpec;
-    assertThat(typeSpec.javadoc.isEmpty(), is(false));
-    assertThat(typeSpec.fieldSpecs, hasSize(0));
-    assertThat(typeSpec.methodSpecs, hasSize(1));
+    assertThat(typeSpec).hasFields(0);
+    assertThat(typeSpec).hasJavaDoc();
+    assertThat(typeSpec).hasMethods(1);
   }
 
   /**
@@ -199,29 +194,27 @@ public class GeneratorMultiInstanceTest {
   @Test
   public void testParallel() {
     generator.generateTestCases(ctx, bpmnFile);
-    assertThat(result.getFiles(), hasSize(2));
+    assertThat(result.getFiles()).hasSize(2);
 
     TypeSpec typeSpec = result.getFiles().get(1).typeSpec;
-    assertThat(typeSpec.javadoc.isEmpty(), is(false));
-    assertThat(typeSpec.fieldSpecs, hasSize(0));
-    assertThat(typeSpec.methodSpecs, hasSize(2));
-    assertThat(typeSpec.methodSpecs.get(1).name, equalTo("isSequential"));
-    assertThat(typeSpec.methodSpecs.get(1).returnType, equalTo(TypeName.BOOLEAN));
+    assertThat(typeSpec).hasFields(0);
+    assertThat(typeSpec).hasJavaDoc();
+    assertThat(typeSpec).hasMethods(2);
 
-    String isSequentialCode = typeSpec.methodSpecs.get(1).code.toString();
-    assertThat(isSequentialCode, containsString("return false"));
+    assertThat(typeSpec.methodSpecs.get(1)).hasName("isSequential");
+    assertThat(typeSpec.methodSpecs.get(1)).hasReturnType(TypeName.BOOLEAN);
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("return false");
   }
-
 
   @Test
   public void testSequential() {
     generator.generateTestCases(ctx, bpmnFile);
-    assertThat(result.getFiles(), hasSize(2));
+    assertThat(result.getFiles()).hasSize(2);
 
     TypeSpec typeSpec = result.getFiles().get(1).typeSpec;
-    assertThat(typeSpec.javadoc.isEmpty(), is(false));
-    assertThat(typeSpec.fieldSpecs, hasSize(0));
-    assertThat(typeSpec.methodSpecs, hasSize(1));
+    assertThat(typeSpec).hasFields(0);
+    assertThat(typeSpec).hasJavaDoc();
+    assertThat(typeSpec).hasMethods(1);
   }
 
   /**
@@ -233,83 +226,84 @@ public class GeneratorMultiInstanceTest {
     TypeName multiInstanceHandlerType = ClassName.get("org.example.usertask", "MultiInstanceUserTaskHandler");
 
     generator.generateTestCases(ctx, bpmnFile);
-    assertThat(result.getFiles(), hasSize(2));
+    assertThat(result.getFiles()).hasSize(2);
 
     TypeSpec typeSpec;
 
     typeSpec = result.getFiles().get(0).typeSpec;
-    assertThat(typeSpec.fieldSpecs, hasSize(1));
-    assertThat(typeSpec.fieldSpecs.get(0).name, equalTo("multiInstanceUserTask"));
-    assertThat(typeSpec.fieldSpecs.get(0).type, equalTo(multiInstanceHandlerType));
-    assertThat(typeSpec.methodSpecs, hasSize(7));
-    assertThat(typeSpec.methodSpecs.get(6).javadoc.isEmpty(), is(false));
-    assertThat(typeSpec.methodSpecs.get(6).name, equalTo("handleMultiInstanceUserTask"));
-    assertThat(typeSpec.methodSpecs.get(6).returnType, equalTo(multiInstanceHandlerType));
+    assertThat(typeSpec).hasFields(1);
+    assertThat(typeSpec).hasMethods(7);
+
+    assertThat(typeSpec.fieldSpecs.get(0)).hasName("multiInstanceUserTask");
+    assertThat(typeSpec.fieldSpecs.get(0)).hasType(multiInstanceHandlerType);
+
+    assertThat(typeSpec.methodSpecs.get(6)).hasJavaDoc();
+    assertThat(typeSpec.methodSpecs.get(6)).hasName("handleMultiInstanceUserTask");
+    assertThat(typeSpec.methodSpecs.get(6)).hasReturnType(multiInstanceHandlerType);
 
     JavaFile javaFile = result.getFiles().get(1);
-    assertThat(javaFile.packageName, equalTo("org.example.usertask"));
-    assertThat(javaFile.skipJavaLangImports, is(true));
-    assertThat(javaFile.typeSpec, notNullValue());
+    assertThat(javaFile.packageName).isEqualTo("org.example.usertask");
+    assertThat(javaFile.skipJavaLangImports).isTrue();
+    assertThat(javaFile.typeSpec).isNotNull();
 
     typeSpec = result.getFiles().get(1).typeSpec;
-    assertThat(typeSpec.javadoc.isEmpty(), is(false));
-    assertThat(typeSpec.fieldSpecs, hasSize(0));
-    assertThat(typeSpec.methodSpecs, hasSize(3));
-    assertThat(typeSpec.methodSpecs.get(1).name, equalTo("apply"));
-    assertThat(typeSpec.methodSpecs.get(2).name, equalTo("createHandler"));
-    assertThat(typeSpec.methodSpecs.get(2).returnType, equalTo(TypeName.get(UserTaskHandler.class)));
+    assertThat(typeSpec).hasFields(0);
+    assertThat(typeSpec).hasJavaDoc();
+    assertThat(typeSpec).hasMethods(3);
 
-    containsCode(typeSpec.methodSpecs.get(1))
-        .contains("getHandler(loopIndex)")
-        .contains("getHandlerBefore(loopIndex)")
-        .contains("getHandlerAfter(loopIndex)");
+    assertThat(typeSpec.methodSpecs.get(1)).hasName("apply");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("getHandler(loopIndex)");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("getHandlerBefore(loopIndex)");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("getHandlerAfter(loopIndex)");
 
-    containsCode(typeSpec.methodSpecs.get(2))
-        .contains(String.format("return new %s", TypeName.get(UserTaskHandler.class)));
+    assertThat(typeSpec.methodSpecs.get(2)).hasName("createHandler");
+    assertThat(typeSpec.methodSpecs.get(2)).hasReturnType(TypeName.get(UserTaskHandler.class));
+    assertThat(typeSpec.methodSpecs.get(2)).containsCode(String.format("return new %s", TypeName.get(UserTaskHandler.class)));
   }
 
   @Test
   public void testUserTaskError() {
     generator.generateTestCases(ctx, bpmnFile);
-    assertThat(result.getFiles(), hasSize(2));
+    assertThat(result.getFiles()).hasSize(2);
 
     TypeSpec typeSpec = result.getFiles().get(1).typeSpec;
-    assertThat(typeSpec.javadoc.isEmpty(), is(false));
-    assertThat(typeSpec.fieldSpecs, hasSize(0));
-    assertThat(typeSpec.methodSpecs, hasSize(3));
-    assertThat(typeSpec.methodSpecs.get(1).name, equalTo("apply"));
-    assertThat(typeSpec.methodSpecs.get(2).name, equalTo("createHandler"));
-    assertThat(typeSpec.methodSpecs.get(2).returnType, equalTo(TypeName.get(UserTaskHandler.class)));
+    assertThat(typeSpec).hasFields(0);
+    assertThat(typeSpec).hasJavaDoc();
+    assertThat(typeSpec).hasMethods(3);
 
-    containsCode(typeSpec.methodSpecs.get(1))
-        .contains(String.format("%s handler = getHandler(loopIndex)", TypeName.get(UserTaskHandler.class)))
-        .contains("getHandlerBefore(loopIndex)")
-        .contains("instance.apply(handler)")
-        .contains("getHandlerAfter(loopIndex)");
+    assertThat(typeSpec.methodSpecs.get(1)).hasName("apply");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode(String.format("%s handler = getHandler(loopIndex)", TypeName.get(UserTaskHandler.class)));
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("getHandlerBefore(loopIndex)");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.apply(handler)");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("getHandlerAfter(loopIndex)");
+
+    assertThat(typeSpec.methodSpecs.get(2)).hasName("createHandler");
+    assertThat(typeSpec.methodSpecs.get(2)).hasReturnType(TypeName.get(UserTaskHandler.class));
   }
 
   @Test
   public void testUserTaskMessage() {
     generator.generateTestCases(ctx, bpmnFile);
-    assertThat(result.getFiles(), hasSize(2));
+    assertThat(result.getFiles()).hasSize(2);
 
     TypeSpec typeSpec = result.getFiles().get(1).typeSpec;
-    assertThat(typeSpec.javadoc.isEmpty(), is(false));
-    assertThat(typeSpec.fieldSpecs, hasSize(1));
-    assertThat(typeSpec.fieldSpecs.get(0).name, equalTo("boundaryEventHandler"));
-    assertThat(typeSpec.fieldSpecs.get(0).type, equalTo(TypeName.get(EventHandler.class)));
-    assertThat(typeSpec.methodSpecs, hasSize(4));
-    assertThat(typeSpec.methodSpecs.get(1).name, equalTo("apply"));
-    assertThat(typeSpec.methodSpecs.get(2).name, equalTo("createHandler"));
-    assertThat(typeSpec.methodSpecs.get(2).returnType, equalTo(TypeName.get(UserTaskHandler.class)));
-    assertThat(typeSpec.methodSpecs.get(3).name, equalTo("handleBoundaryEvent"));
-    assertThat(typeSpec.methodSpecs.get(3).returnType, equalTo(TypeName.get(EventHandler.class)));
+    assertThat(typeSpec).hasFields(1);
+    assertThat(typeSpec).hasJavaDoc();
+    assertThat(typeSpec).hasMethods(4);
 
-    containsCode(typeSpec.methodSpecs.get(1))
-        .contains(String.format("%s handler = getHandler(loopIndex)", TypeName.get(UserTaskHandler.class)))
-        .contains("if (handler.isWaitingForBoundaryEvent())")
-        .contains("instance.apply(boundaryEventHandler)")
-        .contains("getHandlerBefore(loopIndex)")
-        .contains("getHandlerAfter(loopIndex)");
+    assertThat(typeSpec.fieldSpecs.get(0)).hasName("boundaryEventHandler");
+    assertThat(typeSpec.fieldSpecs.get(0)).hasType(TypeName.get(EventHandler.class));
+
+    assertThat(typeSpec.methodSpecs.get(1)).hasName("apply");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode(String.format("%s handler = getHandler(loopIndex)", TypeName.get(UserTaskHandler.class)));
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("if (handler.isWaitingForBoundaryEvent())");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.apply(boundaryEventHandler)");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("getHandlerBefore(loopIndex)");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("getHandlerAfter(loopIndex)");
+
+    assertThat(typeSpec.methodSpecs.get(2)).hasName("createHandler");
+    assertThat(typeSpec.methodSpecs.get(2)).hasReturnType(TypeName.get(UserTaskHandler.class));
+    assertThat(typeSpec.methodSpecs.get(3)).hasName("handleBoundaryEvent");
+    assertThat(typeSpec.methodSpecs.get(3)).hasReturnType(TypeName.get(EventHandler.class));
   }
 }

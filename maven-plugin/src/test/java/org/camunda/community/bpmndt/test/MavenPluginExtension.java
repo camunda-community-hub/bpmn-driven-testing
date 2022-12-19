@@ -9,15 +9,15 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
-import org.junit.rules.TestWatcher;
-import org.junit.runner.Description;
+import org.junit.jupiter.api.extension.BeforeEachCallback;
+import org.junit.jupiter.api.extension.ExtensionContext;
 
 /**
- * JUnit test rule, which installs the packaged Gradle plugin from the target directory into the
+ * JUnit 5 extension, which installs the packaged Maven plugin from the target directory into the
  * local repository. This rule requires to have the "mvn" executable within the {@code PATH}
  * environment variable.
  */
-public class GradlePluginRule extends TestWatcher {
+public class MavenPluginExtension implements BeforeEachCallback {
 
   /** Path to the plugin JAR. */
   private Path path;
@@ -48,7 +48,7 @@ public class GradlePluginRule extends TestWatcher {
   }
 
   /**
-   * Returns the version of the installed Gradle plugin jar.
+   * Returns the version of the installed Maven plugin jar.
    * 
    * @return The plugin version e.g. "0.1.0".
    */
@@ -57,7 +57,7 @@ public class GradlePluginRule extends TestWatcher {
   }
 
   /**
-   * Determines if the Gradle plugin jar has been installed into local plugin repository or not.
+   * Determines if the Maven plugin jar has been installed into local plugin repository or not.
    * 
    * @return {@code true}, if the plugin is installed. Otherwise {@code false}.
    */
@@ -85,7 +85,7 @@ public class GradlePluginRule extends TestWatcher {
     command.add("-DgroupId=" + groupId);
     command.add("-DartifactId=" + artifactId);
     command.add("-Dversion=" + version);
-    command.add("-Dpackaging=jar");
+    command.add("-Dpackaging=maven-plugin");
 
     try {
       Process process = new ProcessBuilder(command).redirectErrorStream(true).start();
@@ -100,9 +100,9 @@ public class GradlePluginRule extends TestWatcher {
   }
 
   @Override
-  protected void starting(Description description) {
+  public void beforeEach(ExtensionContext context) throws Exception {
     if (path != null) {
-      // Gradle plugin already installed
+      // Maven plugin already installed
       return;
     }
 
@@ -119,18 +119,18 @@ public class GradlePluginRule extends TestWatcher {
       return;
     }
 
-    // e.g.: ./target/bpmn-driven-testing-gradle-plugin-0.6.0.jar
+    // e.g.: ./target/bpmn-driven-testing-maven-plugin-0.1.0.jar
     path = pluginJar.get();
-    // e.g.: bpmn-driven-testing-gradle-plugin-0.6.0.jar
+    // e.g.: bpmn-driven-testing-maven-plugin-0.1.0.jar
     fileName = path.getFileName().toString();
 
     groupId = "org.camunda.community";
-    // bpmn-driven-testing-gradle-plugin
+    // bpmn-driven-testing-maven-plugin
     artifactId = extractArtifactId(fileName);
-    // e.g.: 0.6.0
+    // e.g.: 0.1.0
     version = extractVersion(fileName);
 
-    // install Gradle plugin
+    // install Maven plugin
     installPluginJar();
   }
 }

@@ -1,9 +1,6 @@
 package org.camunda.community.bpmndt.api;
 
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.core.IsInstanceOf.instanceOf;
+import static com.google.common.truth.Truth.assertThat;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,23 +18,23 @@ import org.camunda.community.bpmndt.api.cfg.BpmndtProcessEnginePlugin;
 import org.camunda.community.bpmndt.api.cfg.SpringConfiguration;
 import org.camunda.community.bpmndt.test.TestPaths;
 import org.camunda.spin.plugin.impl.SpinProcessEnginePlugin;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = SpringBasedTest.TestConfiguration.class)
 public class SpringBasedTest {
 
-  @Rule
+  @RegisterExtension
   public TestCase tc = new TestCase();
 
   @Test
   public void testExecute() {
-    assertThat(tc.createExecutor().execute(), notNullValue());
+    assertThat(tc.createExecutor().execute()).isNotNull();
   }
 
   /**
@@ -47,19 +44,19 @@ public class SpringBasedTest {
   @Test
   public void testConfiguration() {
     ProcessEngine processEngine = tc.getProcessEngine();
-    assertThat(processEngine, notNullValue());
+    assertThat(processEngine).isNotNull();
 
     ProcessEngineConfigurationImpl configuration = (ProcessEngineConfigurationImpl) processEngine.getProcessEngineConfiguration();
-    assertThat(configuration.getProcessEnginePlugins(), hasSize(2));
-    assertThat(configuration.getProcessEnginePlugins().get(0), instanceOf(SpinProcessEnginePlugin.class));
-    assertThat(configuration.getProcessEnginePlugins().get(1), instanceOf(BpmndtProcessEnginePlugin.class));
+    assertThat(configuration.getProcessEnginePlugins()).hasSize(2);
+    assertThat(configuration.getProcessEnginePlugins().get(0)).isInstanceOf(SpinProcessEnginePlugin.class);
+    assertThat(configuration.getProcessEnginePlugins().get(1)).isInstanceOf(BpmndtProcessEnginePlugin.class);
   }
 
-  private class TestCase extends AbstractJUnit4TestCase<TestCase> {
+  private class TestCase extends AbstractJUnit5TestCase<TestCase> {
 
     @Override
     protected void execute(ProcessInstance pi) {
-      assertThat(pi, notNullValue());
+      assertThat(pi).isNotNull();
 
       ProcessInstanceAssert piAssert = ProcessEngineTests.assertThat(pi);
 

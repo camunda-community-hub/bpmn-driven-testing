@@ -1,10 +1,8 @@
 package org.camunda.community.bpmndt.api;
 
+import static com.google.common.truth.Truth.assertThat;
 import static org.camunda.community.bpmndt.api.TestCaseInstance.PROCESS_ENGINE_NAME;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,18 +15,18 @@ import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.test.assertions.ProcessEngineTests;
 import org.camunda.bpm.engine.test.assertions.bpmn.ProcessInstanceAssert;
 import org.camunda.community.bpmndt.test.TestPaths;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = SpringBasedNoProcessEngineTest.TestConfiguration.class)
 public class SpringBasedNoProcessEngineTest {
 
-  @Before
+  @BeforeEach
   public void setUp() {
     // make test independent
     Optional.ofNullable(ProcessEngines.getProcessEngine(PROCESS_ENGINE_NAME)).ifPresent(ProcessEngines::unregister);
@@ -48,14 +46,14 @@ public class SpringBasedNoProcessEngineTest {
       testCase.beforeEach();
     });
 
-    assertThat(e.getMessage(), containsString(PROCESS_ENGINE_NAME));
+    assertThat(e.getMessage()).contains(PROCESS_ENGINE_NAME);
   }
 
-  private class TestCase extends AbstractJUnit4TestCase<TestCase> {
+  private class TestCase extends AbstractJUnit5TestCase<TestCase> {
 
     @Override
     protected void execute(ProcessInstance pi) {
-      assertThat(pi, notNullValue());
+      assertThat(pi).isNotNull();
 
       ProcessInstanceAssert piAssert = ProcessEngineTests.assertThat(pi);
 

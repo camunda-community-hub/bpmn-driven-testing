@@ -1,9 +1,6 @@
 package org.camunda.community.bpmndt.api.cfg;
 
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.core.IsInstanceOf.instanceOf;
+import static com.google.common.truth.Truth.assertThat;
 
 import java.util.Collections;
 import java.util.List;
@@ -12,15 +9,15 @@ import org.camunda.bpm.engine.ProcessEngine;
 import org.camunda.bpm.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.camunda.bpm.engine.impl.cfg.ProcessEnginePlugin;
 import org.camunda.spin.plugin.impl.SpinProcessEnginePlugin;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {
     SpringConfiguration.class,
     AbstractConfigurationTest.ProcessEnginePluginConfiguration.class
@@ -36,12 +33,12 @@ public class AbstractConfigurationTest {
    */
   @Test
   public void testConfiguration() {
-    assertThat(processEngine, notNullValue());
+    assertThat(processEngine).isNotNull();
 
     ProcessEngineConfigurationImpl configuration = (ProcessEngineConfigurationImpl) processEngine.getProcessEngineConfiguration();
-    assertThat(configuration.getProcessEnginePlugins(), hasSize(2));
-    assertThat(configuration.getProcessEnginePlugins().get(0), instanceOf(SpinProcessEnginePlugin.class));
-    assertThat(configuration.getProcessEnginePlugins().get(1), instanceOf(BpmndtProcessEnginePlugin.class));
+    assertThat(configuration.getProcessEnginePlugins()).hasSize(2);
+    assertThat(configuration.getProcessEnginePlugins().get(0)).isInstanceOf(SpinProcessEnginePlugin.class);
+    assertThat(configuration.getProcessEnginePlugins().get(1)).isInstanceOf(BpmndtProcessEnginePlugin.class);
   }
   
   @Configuration

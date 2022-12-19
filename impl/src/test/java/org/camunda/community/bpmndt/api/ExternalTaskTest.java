@@ -1,11 +1,7 @@
 package org.camunda.community.bpmndt.api;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertThrows;
+import static com.google.common.truth.Truth.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,18 +12,18 @@ import org.camunda.bpm.engine.test.assertions.ProcessEngineTests;
 import org.camunda.bpm.engine.test.assertions.bpmn.ProcessInstanceAssert;
 import org.camunda.bpm.engine.variable.Variables;
 import org.camunda.community.bpmndt.test.TestPaths;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 public class ExternalTaskTest {
 
-  @Rule
+  @RegisterExtension
   public TestCase tc = new TestCase();
 
   private ExternalTaskHandler handler;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     handler = new ExternalTaskHandler(tc.getProcessEngine(), "externalTask", "test-topic");
   }
@@ -50,8 +46,8 @@ public class ExternalTaskTest {
   @Test
   public void testVerify() {
     handler.withVariable("a", "b").verify((pi, topicName) -> {
-      assertThat(pi, notNullValue());
-      assertThat(topicName, equalTo("test-topic"));
+      assertThat(pi).isNotNull();
+      assertThat(topicName).isEqualTo("test-topic");
     });
 
     tc.createExecutor().execute();
@@ -62,23 +58,23 @@ public class ExternalTaskTest {
    */
   @Test
   public void testWaitForBoundaryEvent() {
-    assertThat(handler.isWaitingForBoundaryEvent(), is(false));
+    assertThat(handler.isWaitingForBoundaryEvent()).isFalse();
     handler.waitForBoundaryEvent();
-    assertThat(handler.isWaitingForBoundaryEvent(), is(true));
+    assertThat(handler.isWaitingForBoundaryEvent()).isTrue();
 
     AssertionError e = assertThrows(AssertionError.class, () -> {
       tc.createExecutor().execute();
     });
 
     // has not passed
-    assertThat(e.getMessage(), containsString("to have passed activities [externalTask, endEvent]"));
+    assertThat(e.getMessage()).contains("to have passed activities [externalTask, endEvent]");
   }
 
-  private class TestCase extends AbstractJUnit4TestCase<TestCase> {
+  private class TestCase extends AbstractJUnit5TestCase<TestCase> {
 
     @Override
     protected void execute(ProcessInstance pi) {
-      assertThat(pi, notNullValue());
+      assertThat(pi).isNotNull();
 
       ProcessInstanceAssert piAssert = ProcessEngineTests.assertThat(pi);
 

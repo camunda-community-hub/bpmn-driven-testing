@@ -1,7 +1,6 @@
 package org.camunda.community.bpmndt.api;
 
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,18 +10,18 @@ import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.test.assertions.ProcessEngineTests;
 import org.camunda.bpm.engine.test.assertions.bpmn.ProcessInstanceAssert;
 import org.camunda.community.bpmndt.test.TestPaths;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 public class JobTest {
 
-  @Rule
+  @RegisterExtension
   public TestCase tc = new TestCase();
 
   private JobHandler handler;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     handler = new JobHandler(tc.getProcessEngine(), "timerCatchEvent");
   }
@@ -35,18 +34,18 @@ public class JobTest {
   @Test
   public void testVerify() {
     handler.verify((pi, job) -> {
-      assertThat(pi, notNullValue());
-      assertThat(job, notNullValue());
+      assertThat(pi).isNotNull();
+      assertThat(job).isNotNull();
     });
 
     tc.createExecutor().execute();
   }
 
-  private class TestCase extends AbstractJUnit4TestCase<TestCase> {
+  private class TestCase extends AbstractJUnit5TestCase<TestCase> {
 
     @Override
     protected void execute(ProcessInstance pi) {
-      assertThat(pi, notNullValue());
+      assertThat(pi).isNotNull();
 
       ProcessInstanceAssert piAssert = ProcessEngineTests.assertThat(pi);
 

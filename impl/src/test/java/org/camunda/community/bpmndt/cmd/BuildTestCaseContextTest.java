@@ -1,8 +1,6 @@
 package org.camunda.community.bpmndt.cmd;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import org.camunda.community.bpmndt.BpmnSupport;
 import org.camunda.community.bpmndt.GeneratorContext;
@@ -10,8 +8,8 @@ import org.camunda.community.bpmndt.TestCaseActivity;
 import org.camunda.community.bpmndt.TestCaseActivityScope;
 import org.camunda.community.bpmndt.TestCaseContext;
 import org.camunda.community.bpmndt.test.TestPaths;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class BuildTestCaseContextTest {
 
@@ -23,7 +21,7 @@ public class BuildTestCaseContextTest {
   private TestCaseActivity activity;
   private TestCaseActivityScope scope;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     gCtx = new GeneratorContext();
   }
@@ -34,34 +32,34 @@ public class BuildTestCaseContextTest {
     cmd = new BuildTestCaseContext(gCtx, bpmnSupport);
 
     TestCaseContext ctx = cmd.apply(bpmnSupport.getTestCases().get(0), 0);
-    assertThat(ctx.getActivities().size(), is(3));
+    assertThat(ctx.getActivities()).hasSize(3);
 
     // subProcess
     activity = ctx.getActivities().get(1);
-    assertThat(activity.getId(), equalTo("subProcess"));
-    assertThat(activity.hasParent(), is(false));
-    assertThat(activity.isMultiInstance(), is(true));
-    assertThat(activity.isScope(), is(true));
+    assertThat(activity.getId()).isEqualTo("subProcess");
+    assertThat(activity.hasParent()).isFalse();
+    assertThat(activity.isMultiInstance()).isTrue();
+    assertThat(activity.isScope()).isTrue();
 
     scope = (TestCaseActivityScope) activity;
-    assertThat(scope.getActivities().size(), is(3));
+    assertThat(scope.getActivities()).hasSize(3);
 
     // nestedSubProcess
     activity = scope.getActivities().get(1);
-    assertThat(activity.getId(), equalTo("nestedSubProcess"));
-    assertThat(activity.hasParent(), is(true));
-    assertThat(activity.isMultiInstance(), is(true));
-    assertThat(activity.isScope(), is(true));
+    assertThat(activity.getId()).isEqualTo("nestedSubProcess");
+    assertThat(activity.hasParent()).isTrue();
+    assertThat(activity.isMultiInstance()).isTrue();
+    assertThat(activity.isScope()).isTrue();
 
     scope = (TestCaseActivityScope) activity;
-    assertThat(scope.getActivities().size(), is(3));
+    assertThat(scope.getActivities()).hasSize(3);
 
     // userTask
     activity = scope.getActivities().get(1);
-    assertThat(activity.getId(), equalTo("userTask"));
-    assertThat(activity.hasParent(), is(true));
-    assertThat(activity.isMultiInstance(), is(false));
-    assertThat(activity.isScope(), is(false));
+    assertThat(activity.getId()).isEqualTo("userTask");
+    assertThat(activity.hasParent()).isTrue();
+    assertThat(activity.isMultiInstance()).isFalse();
+    assertThat(activity.isScope()).isFalse();
   }
 
   @Test
@@ -70,14 +68,14 @@ public class BuildTestCaseContextTest {
     cmd = new BuildTestCaseContext(gCtx, bpmnSupport);
 
     TestCaseContext ctx = cmd.apply(bpmnSupport.getTestCases().get(0), 0);
-    assertThat(ctx.getActivities().size(), is(7));
+    assertThat(ctx.getActivities()).hasSize(7);
 
     // all activities beside startEvent and endEvent
     for (int i = 1; i < ctx.getActivities().size() - 1; i++) {
       TestCaseActivity activity = ctx.getActivities().get(i);
 
-      assertThat(activity.hasParent(), is(false));
-      assertThat(activity.hasMultiInstanceParent(), is(false));
+      assertThat(activity.hasParent()).isFalse();
+      assertThat(activity.hasMultiInstanceParent()).isFalse();
     }
   }
 }

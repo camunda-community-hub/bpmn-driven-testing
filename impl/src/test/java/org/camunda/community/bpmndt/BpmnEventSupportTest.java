@@ -1,14 +1,13 @@
 package org.camunda.community.bpmndt;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import java.nio.file.Path;
 
 import org.camunda.bpm.model.bpmn.instance.ThrowEvent;
 import org.camunda.community.bpmndt.test.TestPaths;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class BpmnEventSupportTest {
 
@@ -17,7 +16,7 @@ public class BpmnEventSupportTest {
 
   private Path advancedMultiInstance;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     advancedMultiInstance = TestPaths.advancedMultiInstance();
   }
@@ -26,10 +25,10 @@ public class BpmnEventSupportTest {
   public void testIsNoneEndEvent() {
     bpmnSupport = BpmnSupport.of(advancedMultiInstance.resolve("scopeSequential.bpmn"));
     bpmnEventSupport = new BpmnEventSupport((ThrowEvent) bpmnSupport.get("subProcessEndEvent"));
-    assertThat(bpmnEventSupport.isNoneEnd(), is(true));
+    assertThat(bpmnEventSupport.isNoneEnd()).isTrue();
 
     bpmnSupport = BpmnSupport.of(advancedMultiInstance.resolve("scopeErrorEndEvent.bpmn"));
     bpmnEventSupport = new BpmnEventSupport((ThrowEvent) bpmnSupport.get("subProcessErrorEndEvent"));
-    assertThat(bpmnEventSupport.isNoneEnd(), is(false));
+    assertThat(bpmnEventSupport.isNoneEnd()).isFalse();
   }
 }

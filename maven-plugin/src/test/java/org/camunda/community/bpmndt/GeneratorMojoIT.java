@@ -1,17 +1,17 @@
 package org.camunda.community.bpmndt;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assume.assumeTrue;
+import static com.google.common.truth.Truth.assertThat;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.camunda.community.bpmndt.test.MavenPluginRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.camunda.community.bpmndt.test.MavenPluginExtension;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.io.TempDir;
 import org.robotframework.RobotFramework;
 
 /**
@@ -19,14 +19,12 @@ import org.robotframework.RobotFramework;
  */
 public class GeneratorMojoIT {
 
-  @Rule
-  public MavenPluginRule mavenPlugin = new MavenPluginRule();
-  @Rule
-  public TemporaryFolder temporaryFolder = new TemporaryFolder();
+  @RegisterExtension
+  public MavenPluginExtension mavenPlugin = new MavenPluginExtension();
 
   @Test
-  public void testIntegration() {
-    assumeTrue("Maven plugin has not been installed", mavenPlugin.isInstalled());
+  public void testIntegration(@TempDir Path temporaryDirectory) {
+    assumeTrue(mavenPlugin.isInstalled(), "Maven plugin has not been installed");
 
     // set console encoding
     System.setProperty("python.console.encoding", StandardCharsets.UTF_8.name());
@@ -36,7 +34,7 @@ public class GeneratorMojoIT {
     arguments.add("--consolecolors");
     arguments.add("off");
     arguments.add("-v");
-    arguments.add("TEMP:" + temporaryFolder.getRoot().getAbsolutePath());
+    arguments.add("TEMP:" + temporaryDirectory.toAbsolutePath());
     arguments.add("-v");
     arguments.add("VERSION:" + mavenPlugin.getVersion());
     arguments.add("--include");
@@ -48,6 +46,6 @@ public class GeneratorMojoIT {
     arguments.add("../integration-tests");
 
     int exitCode = RobotFramework.run(arguments.toArray(new String[arguments.size()]));
-    assertThat(exitCode, is(0));
+    assertThat(exitCode).isEqualTo(0);
   }
 }

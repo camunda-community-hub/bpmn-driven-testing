@@ -1,25 +1,24 @@
 package org.camunda.community.bpmndt.api.cfg;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class BpmndtParseListenerTest {
 
   private BpmndtParseListener l;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     l = new BpmndtParseListener();
   }
 
   @Test
   public void testStripMultiInstanceScopeSuffix() {
-    assertThat(l.stripMultiInstanceScopeSuffix("test"), equalTo("test"));
-    assertThat(l.stripMultiInstanceScopeSuffix("test#"), equalTo("test#"));
-    assertThat(l.stripMultiInstanceScopeSuffix("test#multiInstance"), equalTo("test#multiInstance"));
-    assertThat(l.stripMultiInstanceScopeSuffix("test#multiInstanceBody"), equalTo("test"));
+    assertThat(l.stripMultiInstanceScopeSuffix("test")).isEqualTo("test");
+    assertThat(l.stripMultiInstanceScopeSuffix("test#")).isEqualTo("test#");
+    assertThat(l.stripMultiInstanceScopeSuffix("test#multiInstance")).isEqualTo("test#multiInstance");
+    assertThat(l.stripMultiInstanceScopeSuffix("test#multiInstanceBody")).isEqualTo("test");
   }
 }

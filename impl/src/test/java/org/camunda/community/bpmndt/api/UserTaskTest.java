@@ -1,10 +1,7 @@
 package org.camunda.community.bpmndt.api;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertThrows;
+import static com.google.common.truth.Truth.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,25 +13,25 @@ import org.camunda.bpm.engine.test.assertions.ProcessEngineTests;
 import org.camunda.bpm.engine.test.assertions.bpmn.ProcessInstanceAssert;
 import org.camunda.bpm.engine.variable.Variables;
 import org.camunda.community.bpmndt.test.TestPaths;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 public class UserTaskTest {
 
-  @Rule
+  @RegisterExtension
   public TestCase tc = new TestCase();
 
   private UserTaskHandler handler;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     handler = new UserTaskHandler(tc.getProcessEngine(), "userTask");
   }
 
   @Test
   public void testExecute() {
-    assertThat(tc.createExecutor().execute(), notNullValue());
+    assertThat(tc.createExecutor().execute()).isNotNull();
   }
 
   @Test
@@ -58,7 +55,7 @@ public class UserTaskTest {
   @Test
   public void testExecuteCustom() {
     handler.execute(task -> {
-      assertThat(task, notNullValue());
+      assertThat(task).isNotNull();
 
       tc.getProcessEngine().getTaskService().complete(task.getId());
     });
@@ -69,8 +66,8 @@ public class UserTaskTest {
   @Test
   public void testVerify() {
     handler.verify((pi, task) -> {
-      assertThat(pi, notNullValue());
-      assertThat(task, notNullValue());
+      assertThat(pi).isNotNull();
+      assertThat(task).isNotNull();
 
       pi.variables().containsEntry("test", 123);
 
@@ -95,23 +92,23 @@ public class UserTaskTest {
    */
   @Test
   public void testWaitForBoundaryEvent() {
-    assertThat(handler.isWaitingForBoundaryEvent(), is(false));
+    assertThat(handler.isWaitingForBoundaryEvent()).isFalse();
     handler.waitForBoundaryEvent();
-    assertThat(handler.isWaitingForBoundaryEvent(), is(true));
+    assertThat(handler.isWaitingForBoundaryEvent()).isTrue();
 
     AssertionError e = assertThrows(AssertionError.class, () -> {
       tc.createExecutor().execute();
     });
 
     // has not passed
-    assertThat(e.getMessage(), containsString("to have passed activities [userTask, endEvent]"));
+    assertThat(e.getMessage()).contains("to have passed activities [userTask, endEvent]");
   }
 
-  private class TestCase extends AbstractJUnit4TestCase<TestCase> {
+  private class TestCase extends AbstractJUnit5TestCase<TestCase> {
 
     @Override
     protected void execute(ProcessInstance pi) {
-      assertThat(pi, notNullValue());
+      assertThat(pi).isNotNull();
 
       ProcessInstanceAssert piAssert = ProcessEngineTests.assertThat(pi);
 

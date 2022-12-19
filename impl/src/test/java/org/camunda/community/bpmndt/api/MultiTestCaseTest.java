@@ -1,10 +1,6 @@
 package org.camunda.community.bpmndt.api;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,9 +15,9 @@ import org.camunda.bpm.engine.test.assertions.ProcessEngineTests;
 import org.camunda.bpm.engine.test.assertions.bpmn.ProcessInstanceAssert;
 import org.camunda.bpm.engine.variable.VariableMap;
 import org.camunda.community.bpmndt.test.TestPaths;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * Multiple test cases used in one test.
@@ -29,15 +25,15 @@ import org.junit.Test;
 @Deployment(resources = "bpmn/noTestCases.bpmn")
 public class MultiTestCaseTest {
 
-  @Rule
+  @RegisterExtension
   public TestCase1 tc1 = new TestCase1();
-  @Rule
+  @RegisterExtension
   public TestCase2 tc2 = new TestCase2();
 
   private CallActivityHandler handler1;
   private CallActivityHandler handler2;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     handler1 = new CallActivityHandler(tc1.instance, "callActivity");
     handler2 = new CallActivityHandler(tc2.instance, "callActivity");
@@ -45,7 +41,7 @@ public class MultiTestCaseTest {
 
   @Test
   public void testDeployment() {
-    assertThat(tc1.getDeploymentId(), not(equalTo(tc2.getDeploymentId())));
+    assertThat(tc1.getDeploymentId()).isNotEqualTo(tc2.getDeploymentId());
   }
 
   @Test
@@ -58,8 +54,8 @@ public class MultiTestCaseTest {
     tc1.createExecutor().withVariable("a", "b").withBean("callActivityMapping", new CallActivityMapping()).execute();
 
     // verify annotation deployment works
-    assertThat(ProcessEngineTests.processDefinition("empty"), notNullValue());
-    assertThat(ProcessEngineTests.processDefinition("no-test-cases"), nullValue());
+    assertThat(ProcessEngineTests.processDefinition("empty")).isNotNull();
+    assertThat(ProcessEngineTests.processDefinition("no-test-cases")).isNull();
   }
 
   @Test
@@ -71,15 +67,15 @@ public class MultiTestCaseTest {
     tc2.createExecutor().withVariable("x", "y").withBean("callActivityMapping", new CallActivityMapping()).execute();
 
     // verify annotation deployment works
-    assertThat(ProcessEngineTests.processDefinition("empty"), nullValue());
-    assertThat(ProcessEngineTests.processDefinition("no-test-cases"), notNullValue());
+    assertThat(ProcessEngineTests.processDefinition("empty")).isNull();
+    assertThat(ProcessEngineTests.processDefinition("no-test-cases")).isNotNull();
   }
 
-  private class TestCase1 extends AbstractJUnit4TestCase<TestCase1> {
+  private class TestCase1 extends AbstractJUnit5TestCase<TestCase1> {
 
     @Override
     protected void execute(ProcessInstance pi) {
-      assertThat(pi, notNullValue());
+      assertThat(pi).isNotNull();
 
       ProcessInstanceAssert piAssert = ProcessEngineTests.assertThat(pi);
 
@@ -115,11 +111,11 @@ public class MultiTestCaseTest {
     }
   }
 
-  private class TestCase2 extends AbstractJUnit4TestCase<TestCase2> {
+  private class TestCase2 extends AbstractJUnit5TestCase<TestCase2> {
 
     @Override
     protected void execute(ProcessInstance pi) {
-      assertThat(pi, notNullValue());
+      assertThat(pi).isNotNull();
 
       ProcessInstanceAssert piAssert = ProcessEngineTests.assertThat(pi);
       
