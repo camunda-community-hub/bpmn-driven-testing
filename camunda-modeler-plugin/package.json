@@ -21,7 +21,7 @@
     "@babel/register": "^7.12.13",
     "@fortawesome/fontawesome-free": "^5.13.0",
     "adm-zip": "^0.5.5",
-    "babel-loader": "^8.1.0",
+    "babel-loader": "^8.3.0",
     "bpmn-moddle": "^7.0.4",
     "camunda-modeler-plugin-helpers": "3.4.0-alpha.0",
     "chai": "^4.3.0",
@@ -34,7 +34,7 @@
     "nyc": "^15.1.0",
     "style-loader": "^2.0.0",
     "url-loader": "^4.1.1",
-    "webpack": "^4.46.0",
+    "webpack": "^5.75.0",
     "webpack-cli": "^4.4.0"
   },
   "dependencies": {
