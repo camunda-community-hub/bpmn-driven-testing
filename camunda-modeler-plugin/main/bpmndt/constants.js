@@ -1,3 +1,6 @@
+// Supported tab type to differentiate between "bpmn", "cloud-bpmn", "dmn" and "cmmn"
+export const SUPPORTED_TYPE = "bpmn";
+
 // BPMN element types
 export const BPMN_BOUNDARY_EVENT = "bpmn:BoundaryEvent";
 export const BPMN_COLLABORATION = "bpmn:Collaboration";

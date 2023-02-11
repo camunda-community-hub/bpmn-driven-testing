@@ -1,5 +1,7 @@
 import { PureComponent } from "camunda-modeler-plugin-helpers/react";
 
+import { SUPPORTED_TYPE } from "./constants";
+
 import PluginState from "./PluginState";
 
 /**
@@ -14,7 +16,7 @@ export default class ModelerExtension extends PureComponent {
     // handle tab changes
     props.subscribe("app.activeTabChanged", (event) => {
       const { activeTab } = event;
-      if (activeTab.type === "bpmn") {
+      if (activeTab.type === SUPPORTED_TYPE) {
         this.pluginState.showPlugin(activeTab.id);
       } else {
         this.pluginState.hidePlugin();
@@ -26,9 +28,12 @@ export default class ModelerExtension extends PureComponent {
       const { modeler, tab } = event;
 
       const plugin = modeler.get("bpmndt");
+      plugin.type = tab.type; // "bpmn" (Camunda Platform 7) or "cloud-bpmn" (Camunda Platform 8)
       plugin.unregister = this.pluginState.unregisterPlugin.bind(this.pluginState, tab.id);
 
-      this.pluginState.registerPlugin(tab.id, plugin);
+      if (tab.type === SUPPORTED_TYPE) {
+        this.pluginState.registerPlugin(tab.id, plugin);
+      }
     });
   }
 
