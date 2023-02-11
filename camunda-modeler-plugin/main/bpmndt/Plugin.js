@@ -51,9 +51,11 @@ export default class Plugin {
     eventBus.on("diagram.destroy", this._destroy);
     eventBus.on("editorActions.init", this._registerMenuActions);
     eventBus.on("element.click", 1500, this._handleClickElement);
+    eventBus.on("element.dblclick", 3500, this._ignoreEvent);
     eventBus.on("elements.changed", this._markBpmnModelAsChanged);
     eventBus.on("import.done", this._loadTestCases);
     eventBus.on("saveXML.start", this._saveTestCases);
+    eventBus.on("shape.move.start", 3500, this._ignoreEvent);
   }
 
   enrichTestCase(testCase) {
@@ -165,6 +167,13 @@ export default class Plugin {
     this.mode.handleClickElement(element);
 
     return false;
+  }
+
+  _ignoreEvent = () => {
+    if (this.visible) {
+      // ignore event, when plugin is enabled
+      return false;
+    }
   }
 
   _loadTestCases = () => {
