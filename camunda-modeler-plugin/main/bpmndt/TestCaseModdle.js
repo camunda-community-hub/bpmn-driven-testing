@@ -53,15 +53,19 @@ export default class TestCaseModdle {
         return element.businessObject.processRef !== undefined;
       });
 
-      if (participant) {
-        this.process = participant.businessObject.processRef;
-        return true;
+      if (!participant) {
+        return false;
       }
+
+      this.process = participant;
+      this.processBusinessObject = participant.businessObject.processRef;
+      return true;
     } else {
       // normal process definition
       const process = elementRegistry.find(element => element.type === BPMN_PROCESS);
       if (process) {
-        this.process = process.businessObject;
+        this.process = process;
+        this.processBusinessObject = process.businessObject;
         return true;
       }
     }
@@ -70,7 +74,7 @@ export default class TestCaseModdle {
   }
 
   getTestCases() {
-    const extensionElements = this.process.extensionElements || {};
+    const extensionElements = this.processBusinessObject.extensionElements || {};
 
     // find "bpmndt:TestCases" extension element
     const extension = (extensionElements.values || []).find(extensionElement => extensionElement.$type === BPMNDT_TEST_CASES);
@@ -88,9 +92,9 @@ export default class TestCaseModdle {
   }
 
   setTestCases(testCases) {
-    const { moddle, process } = this;
+    const { moddle, processBusinessObject } = this;
 
-    const extensionElements = process.extensionElements || moddle.create(BPMN_EXTENSION_ELEMENTS)
+    const extensionElements = processBusinessObject.extensionElements || moddle.create(BPMN_EXTENSION_ELEMENTS)
 
     // remove extension
     extensionElements.values = (extensionElements.values || []).filter(extensionElement => {
@@ -99,7 +103,7 @@ export default class TestCaseModdle {
 
     if (testCases.length === 0 && extensionElements.values.length === 0) {
       // remove extension elements
-      delete process.extensionElements;
+      delete processBusinessObject.extensionElements;
 
       return;
     }
@@ -110,7 +114,7 @@ export default class TestCaseModdle {
       }));
     }
 
-    process.extensionElements = extensionElements;
+    processBusinessObject.extensionElements = extensionElements;
   }
 
   /**
