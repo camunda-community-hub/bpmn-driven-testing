@@ -15,7 +15,7 @@ Moreover any breaking changes (e.g. a user task becomes an external task) in the
 The extension consists of:
 
 - [Camunda Modeler plugin](camunda-modeler-plugin) for a visual selection and the management of test cases
-- [Maven plugin](maven-plugin) / [Gradle plugin](gradle-plugin)  for generation of JUnit 4 or 5 based test code
+- [Maven plugin](maven-plugin) / [Gradle plugin](gradle-plugin) for generation of JUnit 4 or 5 based test code
 
 ## Features
 - Visual test case selection
@@ -28,9 +28,9 @@ The extension consists of:
   - Automatic handling of wait states
   - Call activity stubbing for isolated testing - see [test](integration-tests/advanced/src/test/java/org/example/it/CallActivityWithMappingTest.java)
   - [Fluent API](impl/src/main/java/org/camunda/community/bpmndt/api) to override default behavior
-  - Multi instance activity / embedded subprocess support - see [tests](integration-tests/advanced-multi-instance/src/test/java/org/example/it)
-- Spring test support - see [integration test](integration-tests/advanced-spring/)
-- Spring Boot test support - see [integration test](integration-tests/advanced-spring-boot/)
+  - Multi instance activity / embedded subprocess support - see [integration tests](integration-tests/advanced-multi-instance/src/test/java/org/example/it)
+- Spring test support - see [integration tests](integration-tests/advanced-spring/)
+- Spring Boot test support - see [integration tests](integration-tests/advanced-spring-boot/)
 - Testing of arbitrary paths through a BPMN process
 - Test case validation and migration, when a BPMN process was changed - see [docs](docs/test-case-validation-and-migration.md)
 
