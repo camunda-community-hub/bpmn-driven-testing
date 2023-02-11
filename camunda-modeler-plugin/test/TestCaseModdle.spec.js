@@ -114,7 +114,7 @@ describe("TestCaseModdle", () => {
   
         testCaseModdle.setTestCases([]);
   
-        expect(testCaseModdle.process).to.not.have.property("extensionElements");
+        expect(testCaseModdle.processBusinessObject).to.not.have.property("extensionElements");
       });
 
       it("should delete the extension and not remove the extensionElements, when there are other extensions", () => {
@@ -123,9 +123,9 @@ describe("TestCaseModdle", () => {
   
         testCaseModdle.setTestCases([]);
   
-        expect(testCaseModdle.process).to.have.property("extensionElements");
+        expect(testCaseModdle.processBusinessObject).to.have.property("extensionElements");
   
-        const extensionElements = testCaseModdle.process.extensionElements;
+        const extensionElements = testCaseModdle.processBusinessObject.extensionElements;
         expect(extensionElements.values).to.be.an("array");
         expect(extensionElements.values).to.have.lengthOf(1);
         expect(extensionElements.values[0].$type).to.equal("camunda:properties");
@@ -145,9 +145,9 @@ describe("TestCaseModdle", () => {
   
         testCaseModdle.setTestCases([testCase]);
   
-        expect(testCaseModdle.process).to.have.property("extensionElements");
+        expect(testCaseModdle.processBusinessObject).to.have.property("extensionElements");
   
-        const extensionElements = testCaseModdle.process.extensionElements;
+        const extensionElements = testCaseModdle.processBusinessObject.extensionElements;
         expect(extensionElements.values).to.be.an("array");
         expect(extensionElements.values).to.have.lengthOf(1);
         expect(extensionElements.values[0].$type).to.equal(BPMNDT_TEST_CASES);
@@ -180,9 +180,9 @@ describe("TestCaseModdle", () => {
 
         testCaseModdle.setTestCases(testCases);
   
-        expect(testCaseModdle.process).to.have.property("extensionElements");
+        expect(testCaseModdle.processBusinessObject).to.have.property("extensionElements");
   
-        const extensionElements = testCaseModdle.process.extensionElements;
+        const extensionElements = testCaseModdle.processBusinessObject.extensionElements;
         expect(extensionElements.values).to.be.an("array");
         expect(extensionElements.values).to.have.lengthOf(1);
         expect(extensionElements.values[0].$type).to.equal(BPMNDT_TEST_CASES);
