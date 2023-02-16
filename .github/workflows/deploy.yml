@@ -35,4 +35,5 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           artifacts-pattern: ""
           run-tests: true
+          maven-auto-release-after-close: true
         id: release
