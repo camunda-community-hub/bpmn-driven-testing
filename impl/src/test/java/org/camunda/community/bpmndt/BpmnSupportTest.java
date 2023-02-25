@@ -158,6 +158,13 @@ public class BpmnSupportTest {
   }
 
   @Test
+  public void testIsIntermediateThrowEvent() {
+    bpmnSupport = BpmnSupport.of(advanced.resolve("linkEvent.bpmn"));
+    assertThat(bpmnSupport.isIntermediateThrowEvent("linkThrowEventA")).isTrue();
+    assertThat(bpmnSupport.isIntermediateThrowEvent("linkCatchEventA")).isFalse();
+  }
+
+  @Test
   public void testIsProcessEnd() {
     bpmnSupport = BpmnSupport.of(simple.resolve("simpleSubProcess.bpmn"));
     assertThat(bpmnSupport.isProcessEnd("startEvent")).isFalse();

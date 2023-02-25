@@ -24,7 +24,12 @@ mvn clean test
   Should contain  ${result.stdout}  Running org.example.it.CallActivityWithoutMappingTest
   Should contain  ${result.stdout}  Running org.example.it.ExternalTaskErrorTest
   Should contain  ${result.stdout}  Running org.example.it.ExternalTaskMessageTest
+  Should contain  ${result.stdout}  Running org.example.it.LinkEventTest
+  Should contain  ${result.stdout}  Running org.example.it.ServiceTaskTest
+  Should contain  ${result.stdout}  Running org.example.it.SubProcessCallActivityMessageTest
   Should contain  ${result.stdout}  Running org.example.it.UserTaskErrorTest
+  Should contain  ${result.stdout}  Running org.example.it.UserTaskEscalationTest
+  Should contain  ${result.stdout}  Running org.example.it.UserTaskMessageTest
   # tests executed successfully
   Should contain  ${result.stdout}  Failures: 0, Errors: 0, Skipped: 0
 

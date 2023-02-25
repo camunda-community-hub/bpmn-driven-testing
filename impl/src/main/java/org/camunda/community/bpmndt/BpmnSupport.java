@@ -278,6 +278,10 @@ public class BpmnSupport {
     return is(flowNodeId, BPMN_ELEMENT_INTERMEDIATE_CATCH_EVENT);
   }
 
+  public boolean isIntermediateThrowEvent(String flowNodeId) {
+    return is(flowNodeId, BPMN_ELEMENT_INTERMEDIATE_THROW_EVENT);
+  }
+
   /**
    * Determines if the flow node with the given ID ends the process or not. This is the case if it
    * exists, if it is an end event and if the parent element is a process.
