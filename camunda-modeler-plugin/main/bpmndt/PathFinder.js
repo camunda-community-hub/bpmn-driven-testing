@@ -3,6 +3,9 @@ import {
   BPMN_END_EVENT,
   BPMN_ERROR_EVENT_DEFINITION,
   BPMN_ESCALATION_EVENT_DEFINITION,
+  BPMN_INTERMEDIATE_CATCH_EVENT,
+  BPMN_INTERMEDIATE_THROW_EVENT,
+  BPMN_LINK_EVENT_DEFINITION,
   BPMN_START_EVENT,
   BPMN_SUB_PROCESS
 } from "./constants";
@@ -49,6 +52,20 @@ export default class PathFinder {
         stack.push({ id: id, path: current.path.slice() });
       }
     }
+
+    // when end element is a link throw event
+    // find the related link catch event and append it
+    paths.forEach(path => {
+      const endId = path[path.length - 1];
+      const endElement = this.elementRegistry.get(endId);
+
+      if (this._isLinkThrowEvent(endElement)) {
+        const next = this._getOutgoing(endElement);
+        if (next.length === 1) {
+          path.push(next[0]);
+        }
+      }
+    });
 
     return paths.reverse();
   }
@@ -98,11 +115,12 @@ export default class PathFinder {
     const next = [];
 
     this._filterElementsByType(BPMN_BOUNDARY_EVENT).forEach(element => {
-      if (element.businessObject.attachedToRef.id !== elementId) {
+      const { attachedToRef, eventDefinitions } = element.businessObject;
+
+      if (attachedToRef.id !== elementId) {
         return;
       }
 
-      const eventDefinitions = element.businessObject.eventDefinitions;
       if (!this._isErrorEventDefinition(eventDefinitions)) {
         return;
       }
@@ -120,17 +138,42 @@ export default class PathFinder {
     const next = [];
 
     this._filterElementsByType(BPMN_BOUNDARY_EVENT).forEach(element => {
-      if (element.businessObject.attachedToRef.id !== elementId) {
+      const { attachedToRef, eventDefinitions } = element.businessObject;
+
+      if (attachedToRef.id !== elementId) {
         return;
       }
 
-      const eventDefinitions = element.businessObject.eventDefinitions;
       if (!this._isEscalationEventDefinition(eventDefinitions)) {
         return;
       }
 
       const escalationCode = eventDefinitions[0]?.escalationRef?.escalationCode;
       if (expectedEscalationCode && expectedEscalationCode === escalationCode) {
+        next.push(element.id);
+      }
+    });
+
+    return next;
+  }
+
+  _getLinkCatch(parentId, expectedLinkName) {
+    const next = [];
+
+    this._filterElementsByType(BPMN_INTERMEDIATE_CATCH_EVENT).forEach(element => {
+      const { eventDefinitions, $parent } = element.businessObject;
+
+      if ($parent.id !== parentId) {
+        // ensure same scope
+        return;
+      }
+
+      if (!this._isLinkEventDefinition(eventDefinitions)) {
+        return;
+      }
+
+      const linkName = eventDefinitions[0].name;
+      if (expectedLinkName && expectedLinkName === linkName) {
         next.push(element.id);
       }
     });
@@ -159,6 +202,12 @@ export default class PathFinder {
       }
     }
 
+    if (this._isLinkThrowEvent(element)) {
+      // handle link events of same scope
+      const { eventDefinitions, $parent } = element.businessObject;
+      return this._getLinkCatch($parent.id, eventDefinitions[0].name);
+    }
+
     (element.businessObject.outgoing || []).forEach(sequenceFlow => {
       const target = this.elementRegistry.get(sequenceFlow.targetRef.id);
 
@@ -183,6 +232,14 @@ export default class PathFinder {
 
   _isEscalationEventDefinition(eventDefinitions) {
     return eventDefinitions && eventDefinitions.length !== 0 && eventDefinitions[0].$type === BPMN_ESCALATION_EVENT_DEFINITION;
+  }
+
+  _isLinkEventDefinition(eventDefinitions) {
+    return eventDefinitions && eventDefinitions.length !== 0 && eventDefinitions[0].$type === BPMN_LINK_EVENT_DEFINITION;
+  }
+
+  _isLinkThrowEvent(element) {
+    return element.type === BPMN_INTERMEDIATE_THROW_EVENT && this._isLinkEventDefinition(element.businessObject.eventDefinitions);
   }
 
   _isLoop(state) {

@@ -12,6 +12,7 @@ import org.camunda.bpm.model.bpmn.instance.BoundaryEvent;
 import org.camunda.bpm.model.bpmn.instance.Error;
 import org.camunda.bpm.model.bpmn.instance.Escalation;
 import org.camunda.bpm.model.bpmn.instance.IntermediateCatchEvent;
+import org.camunda.bpm.model.bpmn.instance.IntermediateThrowEvent;
 import org.camunda.bpm.model.bpmn.instance.Message;
 import org.camunda.bpm.model.bpmn.instance.MultiInstanceLoopCharacteristics;
 import org.camunda.bpm.model.bpmn.instance.ReceiveTask;
@@ -101,6 +102,8 @@ public class BuildTestCaseContext implements BiFunction<TestCase, Integer, TestC
 
         activity.setType(TestCaseActivityType.MESSAGE_CATCH);
         activity.setEventName(message != null ? message.getName() : null);
+      } else if (bpmnSupport.isIntermediateThrowEvent(flowNodeId)) {
+        handleIntermediateThrowEvent(activity, flowNodeId);
       }
 
       DefaultStrategy strategy = getStrategy(activity);
@@ -261,6 +264,16 @@ public class BuildTestCaseContext implements BiFunction<TestCase, Integer, TestC
       activity.setEventName(signal != null ? signal.getName() : null);
     } else if (eventSupport.isTimer()) {
       activity.setType(TestCaseActivityType.TIMER_CATCH);
+    }
+  }
+
+  protected void handleIntermediateThrowEvent(TestCaseActivity activity, String flowNodeId) {
+    IntermediateThrowEvent event = activity.as(IntermediateThrowEvent.class);
+
+    BpmnEventSupport eventSupport = new BpmnEventSupport(event);
+
+    if (eventSupport.isLink()) {
+      activity.setType(TestCaseActivityType.LINK_THROW);
     }
   }
 

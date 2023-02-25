@@ -6,6 +6,7 @@ import org.camunda.community.bpmndt.BpmnSupport;
 import org.camunda.community.bpmndt.GeneratorContext;
 import org.camunda.community.bpmndt.TestCaseActivity;
 import org.camunda.community.bpmndt.TestCaseActivityScope;
+import org.camunda.community.bpmndt.TestCaseActivityType;
 import org.camunda.community.bpmndt.TestCaseContext;
 import org.camunda.community.bpmndt.test.TestPaths;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,6 +25,23 @@ public class BuildTestCaseContextTest {
   @BeforeEach
   public void setUp() {
     gCtx = new GeneratorContext();
+  }
+
+  @Test
+  public void testLinkEvent() {
+    bpmnSupport = BpmnSupport.of(TestPaths.advanced("linkEvent.bpmn"));
+    cmd = new BuildTestCaseContext(gCtx, bpmnSupport);
+
+    TestCaseContext ctx = cmd.apply(bpmnSupport.getTestCases().get(0), 0);
+    assertThat(ctx.getActivities()).hasSize(3);
+
+    activity = ctx.getActivities().get(1);
+    assertThat(activity.getId()).isEqualTo("linkThrowEventA");
+    assertThat(activity.getType()).isEqualTo(TestCaseActivityType.LINK_THROW);
+
+    activity = ctx.getActivities().get(2);
+    assertThat(activity.getId()).isEqualTo("linkCatchEventA");
+    assertThat(activity.getType()).isEqualTo(TestCaseActivityType.OTHER);
   }
 
   @Test

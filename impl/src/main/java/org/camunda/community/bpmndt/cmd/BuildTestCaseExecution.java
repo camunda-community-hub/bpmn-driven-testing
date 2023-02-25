@@ -41,6 +41,9 @@ public class BuildTestCaseExecution implements BiConsumer<List<TestCaseActivity>
 
       if (activity.getType() == TestCaseActivityType.EVENT_BASED_GATEWAY) {
         activity.getStrategy().isWaitingAt(builder);
+      } else if (activity.getType() == TestCaseActivityType.LINK_THROW) {
+        // since there is no activity for an intermediate link throw event
+        // a process instance will not pass and will never wait at such an activity
       } else if ((activity.hasNext()) || activity.isProcessEnd()) {
         activity.getStrategy().hasPassed(builder);
       } else if (activity.getParent() != null) {
