@@ -34,7 +34,8 @@ public class GetStrategies implements BiFunction<TestCaseContext, List<TestCaseA
       TestCaseActivity current = activities.get(0);
       do {
         actualActivities.add(current);
-        current = current.getNext();
+
+        current = current.hasNext() ? current.getNext() : null;
       } while (current != null && current.getNestingLevel() >= nestingLevel);
     }
 
