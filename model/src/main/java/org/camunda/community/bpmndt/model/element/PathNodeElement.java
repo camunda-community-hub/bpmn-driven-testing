@@ -1,7 +1,7 @@
-package org.camunda.community.bpmndt.model;
+package org.camunda.community.bpmndt.model.element;
 
-import static org.camunda.community.bpmndt.Constants.ELEMENT_NODE;
-import static org.camunda.community.bpmndt.Constants.NS;
+import static org.camunda.community.bpmndt.model.BpmnExtension.ELEMENT_NODE;
+import static org.camunda.community.bpmndt.model.BpmnExtension.NS;
 
 import org.camunda.bpm.model.bpmn.impl.instance.BpmnModelElementInstanceImpl;
 import org.camunda.bpm.model.xml.ModelBuilder;
@@ -11,17 +11,17 @@ import org.camunda.bpm.model.xml.type.ModelElementTypeBuilder;
 /**
  * Node of a path, that is represented by the ID of the related flow node.
  */
-public class PathNode extends BpmnModelElementInstanceImpl {
+public class PathNodeElement extends BpmnModelElementInstanceImpl {
 
   public static void registerType(ModelBuilder modelBuilder) {
-    ModelElementTypeBuilder typeBuilder = modelBuilder.defineType(PathNode.class, ELEMENT_NODE)
+    ModelElementTypeBuilder typeBuilder = modelBuilder.defineType(PathNodeElement.class, ELEMENT_NODE)
         .namespaceUri(NS)
-        .instanceProvider(PathNode::new);
+        .instanceProvider(PathNodeElement::new);
 
     typeBuilder.build();
   }
 
-  public PathNode(ModelTypeInstanceContext instanceContext) {
+  public PathNodeElement(ModelTypeInstanceContext instanceContext) {
     super(instanceContext);
   }
 

@@ -12,25 +12,18 @@
   <properties>
     <!-- Versions -->
     <assertj.version>3.24.2</assertj.version>
-    <camunda.bpm.version>7.18.0</camunda.bpm.version>
     <camunda.bpm.assert.version>15.0.0</camunda.bpm.assert.version>
     <javapoet.version>1.13.0</javapoet.version>
+    <junit.version>4.13.2</junit.version>
     <spring.version>5.3.25</spring.version>
   </properties>
 
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>org.camunda.bpm</groupId>
-        <artifactId>camunda-bom</artifactId>
-        <version>${camunda.bpm.version}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
-
   <dependencies>
+    <dependency>
+      <groupId>org.camunda.community</groupId>
+      <artifactId>bpmn-driven-testing-model</artifactId>
+    </dependency>
+
     <!-- Camunda -->
     <dependency>
       <groupId>org.camunda.bpm.model</groupId>
@@ -48,6 +41,8 @@
       <groupId>org.camunda.bpm</groupId>
       <artifactId>camunda-engine-spring</artifactId>
     </dependency>
+
+    <!-- Camunda BPM Assert -->
     <dependency>
       <groupId>org.camunda.bpm.assert</groupId>
       <artifactId>camunda-bpm-assert</artifactId>
@@ -102,6 +97,7 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
+      <version>${junit.version}</version>
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
@@ -112,7 +108,6 @@
       <groupId>com.h2database</groupId>
       <artifactId>h2</artifactId>
       <version>2.1.214</version>
-      <scope>provided</scope>
     </dependency>
 
     <dependency>
@@ -124,13 +119,6 @@
     <dependency>
       <groupId>com.google.truth</groupId>
       <artifactId>truth</artifactId>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-core</artifactId>
-      <version>4.2.0</version>
       <scope>test</scope>
     </dependency>
 

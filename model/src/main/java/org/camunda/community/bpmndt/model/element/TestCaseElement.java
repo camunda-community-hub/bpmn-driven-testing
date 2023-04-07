@@ -1,7 +1,7 @@
-package org.camunda.community.bpmndt.model;
+package org.camunda.community.bpmndt.model.element;
 
-import static org.camunda.community.bpmndt.Constants.ELEMENT_TEST_CASE;
-import static org.camunda.community.bpmndt.Constants.NS;
+import static org.camunda.community.bpmndt.model.BpmnExtension.ELEMENT_TEST_CASE;
+import static org.camunda.community.bpmndt.model.BpmnExtension.NS;
 
 import org.camunda.bpm.model.bpmn.impl.instance.BpmnModelElementInstanceImpl;
 import org.camunda.bpm.model.xml.ModelBuilder;
@@ -11,33 +11,33 @@ import org.camunda.bpm.model.xml.type.child.ChildElement;
 import org.camunda.bpm.model.xml.type.child.SequenceBuilder;
 
 /**
- * Test case definition.
+ * Test case element.
  */
-public class TestCase extends BpmnModelElementInstanceImpl {
+public class TestCaseElement extends BpmnModelElementInstanceImpl {
 
-  protected static ChildElement<Description> descriptionElement;
-  protected static ChildElement<Name> nameElement;
-  protected static ChildElement<Path> pathElement;
+  protected static ChildElement<DescriptionElement> descriptionElement;
+  protected static ChildElement<NameElement> nameElement;
+  protected static ChildElement<PathElement> pathElement;
 
   public static void registerType(ModelBuilder modelBuilder) {
-    ModelElementTypeBuilder typeBuilder = modelBuilder.defineType(TestCase.class, ELEMENT_TEST_CASE)
+    ModelElementTypeBuilder typeBuilder = modelBuilder.defineType(TestCaseElement.class, ELEMENT_TEST_CASE)
         .namespaceUri(NS)
-        .instanceProvider(TestCase::new);
+        .instanceProvider(TestCaseElement::new);
 
     SequenceBuilder sequenceBuilder = typeBuilder.sequence();
 
-    descriptionElement = sequenceBuilder.element(Description.class).build();
-    nameElement = sequenceBuilder.element(Name.class).build();
-    pathElement = sequenceBuilder.element(Path.class).build();
+    descriptionElement = sequenceBuilder.element(DescriptionElement.class).build();
+    nameElement = sequenceBuilder.element(NameElement.class).build();
+    pathElement = sequenceBuilder.element(PathElement.class).build();
 
     typeBuilder.build();
   }
 
-  private final Description description;
-  private final Name name;
-  private final Path path;
+  private final DescriptionElement description;
+  private final NameElement name;
+  private final PathElement path;
 
-  public TestCase(ModelTypeInstanceContext instanceContext) {
+  public TestCaseElement(ModelTypeInstanceContext instanceContext) {
     super(instanceContext);
 
     description = descriptionElement.getChild(this);
@@ -68,7 +68,7 @@ public class TestCase extends BpmnModelElementInstanceImpl {
    * 
    * @return The test path.
    */
-  public Path getPath() {
+  public PathElement getPath() {
     return path;
   }
 }
