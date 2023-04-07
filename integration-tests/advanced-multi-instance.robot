@@ -70,16 +70,15 @@ Assert Test Code Generation
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/callactivityerror/MultiInstanceCallActivityHandler.java
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/callactivitytimer/MultiInstanceCallActivityHandler.java
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/parallel/MultiInstanceManualTaskHandler.java
-  Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/scopeerrorendevent/SubProcessHandler1.java
-  Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/scopeerrorendevent/SubProcessHandler2.java
-  Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/scopeinner/SubProcessHandler1.java
-  Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/scopeinner/SubProcessHandler2.java
-  Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/scopeinner/SubProcessHandler3.java
-  Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/scopenested/NestedSubProcessHandler1.java
-  Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/scopenested/SubProcessHandler1.java
-  Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/scopenestedsubprocess/SubProcessHandler1.java
-  Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/scopeparallel/MultiInstanceScopeHandler1.java
-  Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/scopesequential/MultiInstanceScopeHandler1.java
+  Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/scopeerrorendevent/TC_Error__SubProcessHandler.java
+  Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/scopeerrorendevent/TC_None__SubProcessHandler.java
+  Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/scopenested/TC_startEvent__endEvent__NestedSubProcessHandler.java
+  Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/scopenested/TC_startEvent__endEvent__SubProcessHandler.java
+  Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/scopenested/TC_subProcessStartEvent__endEvent__NestedSubProcessHandler.java
+  Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/scopenestedsubprocess/TC_startEvent__endEvent__SubProcessHandler.java
+  Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/scopeparallel/TC_startEvent__endEvent__MultiInstanceScopeHandler.java
+  Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/scopesequential/TC_startEvent__endEvent__MultiInstanceScopeHandler.java
+  Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/scopezero/TC_startEvent__endEvent__SubProcessHandler.java
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/sequential/MultiInstanceManualTaskHandler.java
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/usertask/MultiInstanceUserTaskHandler.java
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/usertaskerror/MultiInstanceUserTaskHandler.java
@@ -90,17 +89,16 @@ Assert Test Code Generation
   File should exist  ${testSources}/generated/callactivityerror/MultiInstanceCallActivityHandler.java
   File should exist  ${testSources}/generated/callactivitytimer/MultiInstanceCallActivityHandler.java
   File should exist  ${testSources}/generated/parallel/MultiInstanceManualTaskHandler.java
-  File should exist  ${testSources}/generated/scopeerrorendevent/SubProcessHandler1.java
-  File should exist  ${testSources}/generated/scopeerrorendevent/SubProcessHandler2.java
-  File should exist  ${testSources}/generated/scopeinner/SubProcessHandler1.java
-  File should exist  ${testSources}/generated/scopeinner/SubProcessHandler2.java
-  File should exist  ${testSources}/generated/scopeinner/SubProcessHandler3.java
-  File should exist  ${testSources}/generated/scopenested/NestedSubProcessHandler1.java
-  File should exist  ${testSources}/generated/scopenested/SubProcessHandler1.java
-  File should exist  ${testSources}/generated/scopenestedsubprocess/SubProcessHandler1.java
-  File should exist  ${testSources}/generated/scopeparallel/MultiInstanceScopeHandler1.java
-  File should exist  ${testSources}/generated/scopesequential/MultiInstanceScopeHandler1.java
+  File should exist  ${testSources}/generated/scopeerrorendevent/TC_Error__SubProcessHandler.java
+  File should exist  ${testSources}/generated/scopeerrorendevent/TC_None__SubProcessHandler.java
+  File should exist  ${testSources}/generated/scopenested/TC_startEvent__endEvent__NestedSubProcessHandler.java
+  File should exist  ${testSources}/generated/scopenested/TC_startEvent__endEvent__SubProcessHandler.java
+  File should exist  ${testSources}/generated/scopenested/TC_subProcessStartEvent__endEvent__NestedSubProcessHandler.java
+  File should exist  ${testSources}/generated/scopenestedsubprocess/TC_startEvent__endEvent__SubProcessHandler.java
+  File should exist  ${testSources}/generated/scopeparallel/TC_startEvent__endEvent__MultiInstanceScopeHandler.java
+  File should exist  ${testSources}/generated/scopesequential/TC_startEvent__endEvent__MultiInstanceScopeHandler.java
   File should exist  ${testSources}/generated/sequential/MultiInstanceManualTaskHandler.java
+  File should exist  ${testSources}/generated/scopezero/TC_startEvent__endEvent__SubProcessHandler.java
   File should exist  ${testSources}/generated/usertask/MultiInstanceUserTaskHandler.java
   File should exist  ${testSources}/generated/usertaskerror/MultiInstanceUserTaskHandler.java
   File should exist  ${testSources}/generated/usertaskmessage/MultiInstanceUserTaskHandler.java

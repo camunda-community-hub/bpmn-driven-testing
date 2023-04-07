@@ -14,6 +14,25 @@
             <bpmndt:node>endEvent</bpmndt:node>
           </bpmndt:path>
         </bpmndt:testCase>
+        <bpmndt:testCase>
+          <bpmndt:path>
+            <bpmndt:node>subProcessStartEvent</bpmndt:node>
+            <bpmndt:node>nestedSubProcessStartEvent</bpmndt:node>
+            <bpmndt:node>userTask</bpmndt:node>
+            <bpmndt:node>nestedSubProcessEndEvent</bpmndt:node>
+            <bpmndt:node>subProcessEndEvent</bpmndt:node>
+            <bpmndt:node>endEvent</bpmndt:node>
+          </bpmndt:path>
+        </bpmndt:testCase>
+        <bpmndt:testCase>
+          <bpmndt:path>
+            <bpmndt:node>nestedSubProcessStartEvent</bpmndt:node>
+            <bpmndt:node>userTask</bpmndt:node>
+            <bpmndt:node>nestedSubProcessEndEvent</bpmndt:node>
+            <bpmndt:node>subProcessEndEvent</bpmndt:node>
+            <bpmndt:node>endEvent</bpmndt:node>
+          </bpmndt:path>
+        </bpmndt:testCase>
       </bpmndt:testCases>
     </bpmn:extensionElements>
     <bpmn:startEvent id="startEvent">

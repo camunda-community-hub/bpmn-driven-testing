@@ -1,6 +1,7 @@
 package org.camunda.community.bpmndt.strategy;
 
-import org.camunda.community.bpmndt.TestCaseActivity;
+import org.camunda.community.bpmndt.Generator;
+import org.camunda.community.bpmndt.model.TestCaseActivity;
 
 import com.squareup.javapoet.CodeBlock;
 
@@ -9,22 +10,28 @@ import com.squareup.javapoet.CodeBlock;
  */
 public class BoundaryEventStrategy extends EventStrategy {
 
+  public BoundaryEventStrategy(TestCaseActivity activity) {
+    super(activity);
+  }
+
   @Override
   protected CodeBlock buildHandlerMethodJavadoc() {
-    if (!activity.hasPrev()) {
+    if (!activity.hasPrevious()) {
       return super.buildHandlerMethodJavadoc();
     }
 
-    TestCaseActivity prev = activity.getPrev();
-    if (!activity.isAttachedTo(prev)) {
+    TestCaseActivity previous = activity.getPrevious();
+    if (!activity.isAttachedTo(previous)) {
       return super.buildHandlerMethodJavadoc();
     }
 
     CodeBlock.Builder builder = CodeBlock.builder();
 
-    Object[] args = {activity.getTypeName(), activity.getId(), prev.getTypeName(), prev.getId()};
+    Object[] args = {activity.getTypeName(), activity.getId(), previous.getTypeName(), previous.getId()};
     builder.add("Returns the handler for $L: $L attached to $L: $L", args);
-    builder.add("\n\n@see #$L", buildHandlerMethodName(prev.getLiteral()));
+
+    String literal = Generator.toLiteral(previous.getId());
+    builder.add("\n\n@see #$L", buildHandlerMethodName(literal));
 
     return builder.build();
   }

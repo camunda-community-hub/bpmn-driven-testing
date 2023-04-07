@@ -43,7 +43,7 @@ public class GeneratorTest {
 
     ctx = new GeneratorContext();
     ctx.setBasePath(temporaryDirectory.getRoot());
-    ctx.setMainResourcePath(TestPaths.resources());
+    ctx.setMainResourcePath(TestPaths.simple().resolve("special"));
     ctx.setTestSourcePath(temporaryDirectory);
 
     ctx.setPackageName("org.example");
@@ -54,6 +54,25 @@ public class GeneratorTest {
     bpmnFile = ctx.getMainResourcePath().resolve(StringUtils.uncapitalize(fileName));
   }
 
+  @Test
+  public void testToJavaLiteral() {
+    assertThat(Generator.toJavaLiteral("Happy Path")).isEqualTo("happy_path");
+    assertThat(Generator.toJavaLiteral("Happy-Path")).isEqualTo("happy_path");
+    assertThat(Generator.toJavaLiteral("Happy Path!")).isEqualTo("happy_path_");
+    assertThat(Generator.toJavaLiteral("startEvent__endEvent")).isEqualTo("startevent__endevent");
+    assertThat(Generator.toJavaLiteral("123\nABC")).isEqualTo("_123_abc");
+    assertThat(Generator.toJavaLiteral("New")).isEqualTo("_new");
+  }
+
+  @Test
+  public void testToLiteral() {
+    assertThat(Generator.toLiteral("Happy Path")).isEqualTo("Happy_Path");
+    assertThat(Generator.toLiteral("Happy-Path")).isEqualTo("Happy_Path");
+    assertThat(Generator.toLiteral("Happy Path!")).isEqualTo("Happy_Path_");
+    assertThat(Generator.toLiteral("startEvent__endEvent")).isEqualTo("startEvent__endEvent");
+    assertThat(Generator.toLiteral("123\nABC")).isEqualTo("123_ABC");
+  }
+
   /**
    * Should generate the first test case and skip the second. Since the second test case has the same
    * name as the first, which is not allowed.
@@ -62,7 +81,7 @@ public class GeneratorTest {
   public void testDuplicateTestCaseNames() {
     generator.generateTestCases(ctx, bpmnFile);
     assertThat(result.getFiles()).hasSize(1);
-    assertThat(result.getFiles().get(0).packageName).isEqualTo("org.example.duplicate_test_case_names");
+    assertThat(result.getFiles().get(0).packageName).isEqualTo("org.example.duplicatetestcasenames");
 
     TypeSpec typeSpec = result.getFiles().get(0).typeSpec;
     assertThat(typeSpec).hasName("TC_startEvent__endEvent");
@@ -71,59 +90,26 @@ public class GeneratorTest {
   @Test
   public void testEmpty() {
     generator.generateTestCases(ctx, bpmnFile);
-    assertThat(result.getFiles()).hasSize(1);
-    assertThat(result.getFiles().get(0).packageName).isEqualTo("org.example.empty");
-
-    TypeSpec typeSpec = result.getFiles().get(0).typeSpec;
-    assertThat(typeSpec).hasName("TC_empty");
-
-    assertThat(typeSpec).hasFields(0);
-    assertThat(typeSpec).hasMethods(6);
-
-    assertThat(typeSpec.methodSpecs.get(0)).hasName("beforeEach");
-    assertThat(typeSpec.methodSpecs.get(0)).containsCode("throw new java.lang.RuntimeException(\"Path is empty\");");
+    assertThat(result.getFiles()).isEmpty();
   }
 
   @Test
   public void testIncomplete() {
     generator.generateTestCases(ctx, bpmnFile);
-    assertThat(result.getFiles()).hasSize(1);
-    assertThat(result.getFiles().get(0).packageName).isEqualTo("org.example.incomplete");
-
-    TypeSpec typeSpec = result.getFiles().get(0).typeSpec;
-    assertThat(typeSpec).hasName("TC_incomplete");
-
-    assertThat(typeSpec).hasFields(0);
-    assertThat(typeSpec).hasMethods(6);
-
-    assertThat(typeSpec.methodSpecs.get(0)).hasName("beforeEach");
-    assertThat(typeSpec.methodSpecs.get(0)).containsCode("throw new java.lang.RuntimeException(\"Path is incomplete\");");
+    assertThat(result.getFiles()).isEmpty();
   }
 
   @Test
   public void testInvalid() {
     generator.generateTestCases(ctx, bpmnFile);
-    assertThat(result.getFiles()).hasSize(1);
-    assertThat(result.getFiles().get(0).packageName).isEqualTo("org.example.invalid");
-
-    TypeSpec typeSpec = result.getFiles().get(0).typeSpec;
-    assertThat(typeSpec).hasName("TC_startEvent__endEvent");
-
-    assertThat(typeSpec).hasFields(0);
-    assertThat(typeSpec).hasMethods(6);
-
-    assertThat(typeSpec.methodSpecs.get(0)).hasName("beforeEach");
-    assertThat(typeSpec.methodSpecs.get(0)).containsCode("// Not existing flow nodes");
-    assertThat(typeSpec.methodSpecs.get(0)).containsCode("// a");
-    assertThat(typeSpec.methodSpecs.get(0)).containsCode("// b");
-    assertThat(typeSpec.methodSpecs.get(0)).containsCode("throw new java.lang.RuntimeException(\"Path is invalid\");");
+    assertThat(result.getFiles()).isEmpty();
   }
 
   @Test
   public void testHappyPath() {
     generator.generateTestCases(ctx, bpmnFile);
     assertThat(result.getFiles()).hasSize(1);
-    assertThat(result.getFiles().get(0).packageName).isEqualTo("org.example.happy_path");
+    assertThat(result.getFiles().get(0).packageName).isEqualTo("org.example.happypath");
 
     TypeSpec typeSpec = result.getFiles().get(0).typeSpec;
     assertThat(typeSpec).hasName("TC_Happy_Path");
@@ -145,7 +131,7 @@ public class GeneratorTest {
 
     generator.generateTestCases(ctx, bpmnFile);
     assertThat(result.getFiles()).hasSize(1);
-    assertThat(result.getFiles().get(0).packageName).isEqualTo("org.example.happy_path");
+    assertThat(result.getFiles().get(0).packageName).isEqualTo("org.example.happypath");
 
     TypeSpec typeSpec = result.getFiles().get(0).typeSpec;
     assertThat(typeSpec).hasName("TC_Happy_Path");
@@ -176,14 +162,14 @@ public class GeneratorTest {
     };
 
     // test cases
-    assertThat(isFile.test("org/example/duplicate_test_case_names/TC_startEvent__endEvent.java")).isTrue();
-    assertThat(isFile.test("org/example/empty/TC_empty.java")).isTrue();
-    assertThat(isFile.test("org/example/happy_path/TC_Happy_Path.java")).isTrue();
-    assertThat(isFile.test("org/example/incomplete/TC_incomplete.java")).isTrue();
-    assertThat(isFile.test("org/example/invalid/TC_startEvent__endEvent.java")).isTrue();
+    assertThat(isFile.test("org/example/duplicatetestcasenames/TC_startEvent__endEvent.java")).isTrue();
+    assertThat(isFile.test("org/example/empty/TC_empty.java")).isFalse();
+    assertThat(isFile.test("org/example/happypath/TC_Happy_Path.java")).isTrue();
+    assertThat(isFile.test("org/example/incomplete/TC_incomplete.java")).isFalse();
+    assertThat(isFile.test("org/example/invalid/TC_startEvent__endEvent.java")).isFalse();
 
     // should not exist, since the BPMN process provides no test cases
-    assertThat(isFile.test("org/example/no_test_cases/TC_startEvent__endEvent.java")).isFalse();
+    assertThat(isFile.test("org/example/notestcases/TC_startEvent__endEvent.java")).isFalse();
 
     // API classes
     assertThat(isFile.test("org/camunda/community/bpmndt/api/AbstractJUnit4TestCase.java")).isTrue();
@@ -215,14 +201,14 @@ public class GeneratorTest {
     };
 
     // test cases
-    assertThat(isFile.test("org/example/duplicate_test_case_names/TC_startEvent__endEvent.java")).isTrue();
-    assertThat(isFile.test("org/example/empty/TC_empty.java")).isTrue();
-    assertThat(isFile.test("org/example/happy_path/TC_Happy_Path.java")).isTrue();
-    assertThat(isFile.test("org/example/incomplete/TC_incomplete.java")).isTrue();
-    assertThat(isFile.test("org/example/invalid/TC_startEvent__endEvent.java")).isTrue();
+    assertThat(isFile.test("org/example/duplicatetestcasenames/TC_startEvent__endEvent.java")).isTrue();
+    assertThat(isFile.test("org/example/empty/TC_empty.java")).isFalse();
+    assertThat(isFile.test("org/example/happypath/TC_Happy_Path.java")).isTrue();
+    assertThat(isFile.test("org/example/incomplete/TC_incomplete.java")).isFalse();
+    assertThat(isFile.test("org/example/invalid/TC_startEvent__endEvent.java")).isFalse();
 
     // should not exist, since the BPMN process provides no test cases
-    assertThat(isFile.test("org/example/no_test_cases/TC_startEvent__endEvent.java")).isFalse();
+    assertThat(isFile.test("org/example/notestcases/TC_startEvent__endEvent.java")).isFalse();
 
     // API classes
     assertThat(isFile.test("org/camunda/community/bpmndt/api/AbstractJUnit5TestCase.java")).isTrue();
@@ -255,14 +241,14 @@ public class GeneratorTest {
     };
 
     // test cases
-    assertThat(isFile.test("org/example/duplicate_test_case_names/TC_startEvent__endEvent.java")).isTrue();
-    assertThat(isFile.test("org/example/empty/TC_empty.java")).isTrue();
-    assertThat(isFile.test("org/example/happy_path/TC_Happy_Path.java")).isTrue();
-    assertThat(isFile.test("org/example/incomplete/TC_incomplete.java")).isTrue();
-    assertThat(isFile.test("org/example/invalid/TC_startEvent__endEvent.java")).isTrue();
+    assertThat(isFile.test("org/example/duplicatetestcasenames/TC_startEvent__endEvent.java")).isTrue();
+    assertThat(isFile.test("org/example/empty/TC_empty.java")).isFalse();
+    assertThat(isFile.test("org/example/happypath/TC_Happy_Path.java")).isTrue();
+    assertThat(isFile.test("org/example/incomplete/TC_incomplete.java")).isFalse();
+    assertThat(isFile.test("org/example/invalid/TC_startEvent__endEvent.java")).isFalse();
 
     // should not exist, since the BPMN process provides no test cases
-    assertThat(isFile.test("org/example/no_test_cases/TC_startEvent__endEvent.java")).isFalse();
+    assertThat(isFile.test("org/example/notestcases/TC_startEvent__endEvent.java")).isFalse();
 
     // Spring configuration
     assertThat(isFile.test("org/example/BpmndtConfiguration.java")).isTrue();

@@ -7,10 +7,11 @@ import javax.lang.model.element.Modifier;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.community.bpmndt.GeneratorResult;
 import org.camunda.community.bpmndt.GeneratorStrategy;
-import org.camunda.community.bpmndt.TestCaseActivity;
-import org.camunda.community.bpmndt.TestCaseActivityType;
+import org.camunda.community.bpmndt.TestCaseContext;
 import org.camunda.community.bpmndt.api.MultiInstanceHandler;
 import org.camunda.community.bpmndt.api.TestCaseInstance;
+import org.camunda.community.bpmndt.model.TestCaseActivity;
+import org.camunda.community.bpmndt.model.TestCaseActivityType;
 import org.camunda.community.bpmndt.strategy.MultiInstanceStrategy;
 
 import com.squareup.javapoet.ClassName;
@@ -27,15 +28,17 @@ import com.squareup.javapoet.TypeSpec;
  */
 public class GenerateMultiInstanceHandler implements Consumer<TestCaseActivity> {
 
+  private final TestCaseContext ctx;
   private final GeneratorResult result;
 
-  public GenerateMultiInstanceHandler(GeneratorResult result) {
+  public GenerateMultiInstanceHandler(TestCaseContext ctx, GeneratorResult result) {
+    this.ctx = ctx;
     this.result = result;
   }
 
   @Override
   public void accept(TestCaseActivity activity) {
-    ClassName className = (ClassName) activity.getStrategy().getHandlerType();
+    ClassName className = (ClassName) ctx.getStrategy(activity.getId()).getHandlerType();
 
     // e.g. MyUserTaskHandler extends MultiInstanceHandler<MyUserTaskHandler, UserTaskHandler>
     TypeSpec.Builder classBuilder = TypeSpec.classBuilder(className)
@@ -44,7 +47,7 @@ public class GenerateMultiInstanceHandler implements Consumer<TestCaseActivity> 
         .addModifiers(Modifier.PUBLIC);
 
     if (hasSupportedBoundaryEventAttached(activity)) {
-      classBuilder.addField(activity.getNext().getStrategy().getHandlerType(), "boundaryEventHandler", Modifier.PRIVATE);
+      classBuilder.addField(ctx.getStrategy(activity.getNext().getId()).getHandlerType(), "boundaryEventHandler", Modifier.PRIVATE);
     }
 
     classBuilder.addMethod(buildConstructor(activity));
@@ -58,7 +61,7 @@ public class GenerateMultiInstanceHandler implements Consumer<TestCaseActivity> 
       classBuilder.addMethod(buildHandleBoundaryEvent(activity));
     }
 
-    if (!activity.getMultiInstance().isSequential()) {
+    if (activity.isMultiInstanceParallel()) {
       // override to return false, because it is parallel
       classBuilder.addMethod(buildIsSequential());
     }
@@ -123,7 +126,7 @@ public class GenerateMultiInstanceHandler implements Consumer<TestCaseActivity> 
       TestCaseActivity next = activity.getNext();
 
       builder.addCode("\n// $L: $L\n", next.getTypeName(), next.getId());
-      builder.addStatement("boundaryEventHandler = $L", next.getStrategy().initHandlerStatement());
+      builder.addStatement("boundaryEventHandler = $L", ctx.getStrategy(next.getId()).initHandlerStatement());
     }
 
     return builder.build();
@@ -147,7 +150,7 @@ public class GenerateMultiInstanceHandler implements Consumer<TestCaseActivity> 
     return MethodSpec.methodBuilder("handleBoundaryEvent")
         .addJavadoc("Returns the handler for $L: $L", next.getTypeName(), next.getId())
         .addModifiers(Modifier.PUBLIC)
-        .returns(next.getStrategy().getHandlerType())
+        .returns(ctx.getStrategy(next.getId()).getHandlerType())
         .addStatement("return boundaryEventHandler")
         .build();
   }
@@ -162,11 +165,11 @@ public class GenerateMultiInstanceHandler implements Consumer<TestCaseActivity> 
   }
 
   private GeneratorStrategy getEnclosedStrategy(TestCaseActivity activity) {
-    return ((MultiInstanceStrategy) activity.getStrategy()).getEnclosedStrategy();
+    return ((MultiInstanceStrategy) ctx.getStrategy(activity.getId())).getEnclosedStrategy();
   }
 
   protected TypeName getSuperClass(TestCaseActivity activity) {
-    TypeName multiInstanceType = activity.getStrategy().getHandlerType();
+    TypeName multiInstanceType = ctx.getStrategy(activity.getId()).getHandlerType();
     TypeName enclosedType = getEnclosedStrategy(activity).getHandlerType();
 
     // e.g. MultiInstanceHandler<MyUserTaskHandler, UserTaskHandler>

@@ -1,13 +1,17 @@
 package org.camunda.community.bpmndt.strategy;
 
-import org.camunda.community.bpmndt.TestCaseActivity;
-import org.camunda.community.bpmndt.TestCaseActivityType;
+import org.camunda.community.bpmndt.model.TestCaseActivity;
+import org.camunda.community.bpmndt.model.TestCaseActivityType;
 
 import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeName;
 
 public class ExternalTaskStrategy extends DefaultHandlerStrategy {
+
+  public ExternalTaskStrategy(TestCaseActivity activity) {
+    super(activity);
+  }
 
   @Override
   public TypeName getHandlerType() {
@@ -17,7 +21,7 @@ public class ExternalTaskStrategy extends DefaultHandlerStrategy {
   @Override
   public void initHandler(MethodSpec.Builder methodBuilder) {
     methodBuilder.addCode("\n// $L: $L\n", activity.getTypeName(), activity.getId());
-    methodBuilder.addCode("$L = ", activity.getLiteral());
+    methodBuilder.addCode("$L = ", literal);
     methodBuilder.addStatement(initHandlerStatement());
 
     if (!activity.hasNext()) {
@@ -30,9 +34,9 @@ public class ExternalTaskStrategy extends DefaultHandlerStrategy {
     }
 
     if (next.getType() == TestCaseActivityType.ERROR_BOUNDARY) {
-      methodBuilder.addStatement("$L.handleBpmnError($S, null)", activity.getLiteral(), next.getEventCode());
+      methodBuilder.addStatement("$L.handleBpmnError($S, null)", literal, next.getEventCode());
     } else {
-      methodBuilder.addStatement("$L.waitForBoundaryEvent()", activity.getLiteral());
+      methodBuilder.addStatement("$L.waitForBoundaryEvent()", literal);
     }
   }
 

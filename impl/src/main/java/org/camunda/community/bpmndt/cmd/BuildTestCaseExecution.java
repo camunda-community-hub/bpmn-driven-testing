@@ -4,25 +4,32 @@ import java.util.List;
 import java.util.function.BiConsumer;
 
 import org.camunda.community.bpmndt.GeneratorStrategy;
-import org.camunda.community.bpmndt.TestCaseActivity;
-import org.camunda.community.bpmndt.TestCaseActivityType;
+import org.camunda.community.bpmndt.TestCaseContext;
+import org.camunda.community.bpmndt.model.TestCaseActivity;
+import org.camunda.community.bpmndt.model.TestCaseActivityType;
 
 import com.squareup.javapoet.MethodSpec;
 
-public class BuildTestCaseExecution implements BiConsumer<List<TestCaseActivity>, MethodSpec.Builder> {
+public class BuildTestCaseExecution implements BiConsumer<List<GeneratorStrategy>, MethodSpec.Builder> {
+
+  private final TestCaseContext ctx;
+
+  public BuildTestCaseExecution(TestCaseContext ctx) {
+    this.ctx = ctx;
+  }
 
   @Override
-  public void accept(List<TestCaseActivity> activities, MethodSpec.Builder builder) {
-    for (int i = 0; i < activities.size(); i++) {
-      TestCaseActivity activity = activities.get(i);
+  public void accept(List<GeneratorStrategy> strategies, MethodSpec.Builder builder) {
+    for (int i = 0; i < strategies.size(); i++) {
+      GeneratorStrategy strategy = strategies.get(i);
+
+      TestCaseActivity activity = strategy.getActivity();
 
       if (i != 0) {
         builder.addCode("\n");
       }
 
       builder.addCode("// $L: $L\n", activity.getTypeName(), activity.getId());
-
-      GeneratorStrategy strategy = activity.getStrategy();
 
       if (strategy.shouldHandleBefore()) {
         strategy.applyHandlerBefore(builder);
@@ -34,25 +41,25 @@ public class BuildTestCaseExecution implements BiConsumer<List<TestCaseActivity>
         strategy.applyHandlerAfter(builder);
       }
 
-      if (activity.hasPrev(TestCaseActivityType.EVENT_BASED_GATEWAY)) {
+      if (activity.hasPrevious(TestCaseActivityType.EVENT_BASED_GATEWAY)) {
         // assert that event based gateway has been passed
-        activity.getPrev().getStrategy().hasPassed(builder);
+        ctx.getStrategy(activity.getPrevious().getId()).hasPassed(builder);
       }
 
       if (activity.getType() == TestCaseActivityType.EVENT_BASED_GATEWAY) {
-        activity.getStrategy().isWaitingAt(builder);
+        strategy.isWaitingAt(builder);
       } else if (activity.getType() == TestCaseActivityType.LINK_THROW) {
         // since there is no activity for an intermediate link throw event
         // a process instance will not pass and will never wait at such an activity
       } else if ((activity.hasNext()) || activity.isProcessEnd()) {
-        activity.getStrategy().hasPassed(builder);
-      } else if (activity.getParent() != null) {
-        activity.getStrategy().hasPassed(builder);
+        strategy.hasPassed(builder);
+      } else if (activity.getType() == TestCaseActivityType.SCOPE) {
+        strategy.hasPassed(builder);
       } else {
         // assert that process instance is waiting at the test case's last activity
         // which is not the process end
         // see BpmndtParseListener#instrumentEndActivity
-        activity.getStrategy().isWaitingAt(builder);
+        strategy.isWaitingAt(builder);
       }
     }
   }

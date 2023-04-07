@@ -68,7 +68,7 @@ public class MultiTestCaseTest {
 
     // verify annotation deployment works
     assertThat(ProcessEngineTests.processDefinition("empty")).isNull();
-    assertThat(ProcessEngineTests.processDefinition("no-test-cases")).isNotNull();
+    assertThat(ProcessEngineTests.processDefinition("noTestCases")).isNotNull();
   }
 
   private class TestCase1 extends AbstractJUnit5TestCase<TestCase1> {

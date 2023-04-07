@@ -39,12 +39,4 @@ public class TestPaths {
   public static Path simple(String fileName) {
     return simple().resolve(fileName);
   }
-
-  public static Path resources() {
-    return Paths.get("./src/test/resources/bpmn");
-  }
-
-  public static Path resources(String fileName) {
-    return resources().resolve(fileName);
-  }
 }

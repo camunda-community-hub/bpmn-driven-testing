@@ -1,30 +1,18 @@
 package org.camunda.community.bpmndt.cmd;
 
-import java.util.HashMap;
+import java.nio.file.Path;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.Locale;
 import java.util.Set;
-import java.util.function.BiFunction;
+import java.util.function.Function;
 
-import org.apache.commons.lang3.StringUtils;
-import org.camunda.bpm.model.bpmn.instance.BoundaryEvent;
-import org.camunda.bpm.model.bpmn.instance.Error;
-import org.camunda.bpm.model.bpmn.instance.Escalation;
-import org.camunda.bpm.model.bpmn.instance.IntermediateCatchEvent;
-import org.camunda.bpm.model.bpmn.instance.IntermediateThrowEvent;
-import org.camunda.bpm.model.bpmn.instance.Message;
-import org.camunda.bpm.model.bpmn.instance.MultiInstanceLoopCharacteristics;
-import org.camunda.bpm.model.bpmn.instance.ReceiveTask;
-import org.camunda.bpm.model.bpmn.instance.Signal;
-import org.camunda.community.bpmndt.BpmnEventSupport;
-import org.camunda.community.bpmndt.BpmnSupport;
+import org.camunda.community.bpmndt.Generator;
 import org.camunda.community.bpmndt.GeneratorContext;
-import org.camunda.community.bpmndt.TestCaseActivity;
-import org.camunda.community.bpmndt.TestCaseActivityScope;
-import org.camunda.community.bpmndt.TestCaseActivityType;
+import org.camunda.community.bpmndt.GeneratorStrategy;
 import org.camunda.community.bpmndt.TestCaseContext;
 import org.camunda.community.bpmndt.model.TestCase;
+import org.camunda.community.bpmndt.model.TestCaseActivity;
+import org.camunda.community.bpmndt.model.TestCaseActivityScope;
 import org.camunda.community.bpmndt.strategy.BoundaryEventStrategy;
 import org.camunda.community.bpmndt.strategy.BoundaryJobStrategy;
 import org.camunda.community.bpmndt.strategy.CallActivityStrategy;
@@ -36,268 +24,107 @@ import org.camunda.community.bpmndt.strategy.MultiInstanceScopeStrategy;
 import org.camunda.community.bpmndt.strategy.MultiInstanceStrategy;
 import org.camunda.community.bpmndt.strategy.UserTaskStrategy;
 
-import com.squareup.javapoet.ClassName;
-
 /**
  * Builds a new test case context, used for code generation. An instance of this class needs to be
- * reused for all test cases of one BPMN file.
+ * reused for all test cases of one BPMN process.
  */
-public class BuildTestCaseContext implements BiFunction<TestCase, Integer, TestCaseContext> {
+public class BuildTestCaseContext implements Function<TestCase, TestCaseContext> {
 
   private final GeneratorContext gCtx;
-  private final BpmnSupport bpmnSupport;
-
-  private final Map<String, TestCaseActivityScope> scopes;
+  private final Path bpmnFile;
 
   private final Set<String> testCaseNames;
 
-  public BuildTestCaseContext(GeneratorContext gCtx, BpmnSupport bpmnSupport) {
+  public BuildTestCaseContext(GeneratorContext gCtx, Path bpmnFile) {
     this.gCtx = gCtx;
-    this.bpmnSupport = bpmnSupport;
+    this.bpmnFile = bpmnFile;
 
-    scopes = new HashMap<>();
     testCaseNames = new HashSet<>();
   }
 
   @Override
-  public TestCaseContext apply(TestCase testCase, Integer index) {
-    scopes.clear();
+  public TestCaseContext apply(TestCase testCase) {
+    // build test case name
+    String name;
+    if (testCase.getName() != null) {
+      name = Generator.toLiteral(testCase.getName());
+    } else {
+      String a = Generator.toLiteral(testCase.getStartActivity().getId());
+      String b = Generator.toLiteral(testCase.getEndActivity().getId());
 
-    TestCaseContext ctx = new TestCaseContext(bpmnSupport, testCase);
+      name = String.format("%s__%s", a, b);
+    }
 
-    if (testCaseNames.contains(ctx.getName())) {
+    String packageName = Generator.toJavaLiteral(testCase.getProcessId().toLowerCase(Locale.ENGLISH));
+
+    TestCaseContext ctx = new TestCaseContext();
+    ctx.setClassName(String.format("TC_%s", name));
+    ctx.setName(name);
+    ctx.setPackageName(String.format("%s.%s", gCtx.getPackageName(), packageName));
+    ctx.setResourceName(gCtx.getMainResourcePath().relativize(bpmnFile).toString().replace('\\', '/'));
+    ctx.setTestCase(testCase);
+
+    if (testCaseNames.contains(name)) {
       ctx.setDuplicateName(true);
       return ctx;
     } else {
-      testCaseNames.add(ctx.getName());
+      testCaseNames.add(name);
     }
 
-    List<String> flowNodeIds = testCase.getPath().getFlowNodeIds();
-    for (int i = 0; i < flowNodeIds.size(); i++) {
-      String flowNodeId = flowNodeIds.get(i);
+    int nestingLevel = testCase.getStartActivity().getNestingLevel();
 
-      if (!bpmnSupport.has(flowNodeId)) {
-        ctx.addInvalidFlowNodeId(flowNodeId);
+    // add strategies
+    for (TestCaseActivity activity : testCase.getActivities()) {
+      GeneratorStrategy strategy = createStrategy(activity);
+      if (activity.isMultiInstance()) {
+        strategy = new MultiInstanceStrategy(strategy, ctx);
+        ctx.addMultiInstanceActivity(activity);
+      }
+
+      ctx.addStrategy(strategy);
+
+      if (activity.getNestingLevel() == nestingLevel) {
         continue;
       }
 
-      TestCaseActivity activity = new TestCaseActivity(bpmnSupport.get(flowNodeId), bpmnSupport.getMultiInstance(flowNodeId));
-
-      if (bpmnSupport.isCallActivity(flowNodeId)) {
-        activity.setType(TestCaseActivityType.CALL_ACTIVITY);
-      } else if (bpmnSupport.isEventBasedGateway(flowNodeId)) {
-        activity.setType(TestCaseActivityType.EVENT_BASED_GATEWAY);
-      } else if (bpmnSupport.isExternalTask(flowNodeId)) {
-        activity.setType(TestCaseActivityType.EXTERNAL_TASK);
-        activity.setTopicName(bpmnSupport.getTopicName(flowNodeId));
-      } else if (bpmnSupport.isUserTask(flowNodeId)) {
-        activity.setType(TestCaseActivityType.USER_TASK);
-      } else if (bpmnSupport.isIntermediateCatchEvent(flowNodeId)) {
-        handleIntermediateCatchEvent(activity, flowNodeId);
-      } else if (bpmnSupport.isBoundaryEvent(flowNodeId)) {
-        handleBoundaryEvent(activity, flowNodeId);
-      } else if (bpmnSupport.isReceiveTask(flowNodeId)) {
-        // handle receive task as message catch event
-        Message message = activity.as(ReceiveTask.class).getMessage();
-
-        activity.setType(TestCaseActivityType.MESSAGE_CATCH);
-        activity.setEventName(message != null ? message.getName() : null);
-      } else if (bpmnSupport.isIntermediateThrowEvent(flowNodeId)) {
-        handleIntermediateThrowEvent(activity, flowNodeId);
+      if (activity.getNestingLevel() > nestingLevel && activity.hasMultiInstanceParent()) {
+        TestCaseActivityScope scope = activity.getParent();
+        ctx.addMultiInstanceScope(scope);
+        ctx.addStrategy(new MultiInstanceScopeStrategy(scope, ctx));
       }
 
-      DefaultStrategy strategy = getStrategy(activity);
-      if (strategy != null) {
-        strategy.setActivity(activity);
-        activity.setStrategy(strategy);
-      }
-      if (strategy != null && activity.isMultiInstance()) {
-        handleMultiInstance(ctx, activity);
-      }
-
-      if (i == flowNodeIds.size() - 1) {
-        activity.setProcessEnd(bpmnSupport.isProcessEnd(flowNodeId));
-      }
-
-      addActivity(ctx, activity);
-    }
-
-    // handle multi instance scopes
-    for (TestCaseActivityScope scope : scopes.values()) {
-      if (scope.isMultiInstance()) {
-        handleMultiInstanceScope(ctx, index, scope);
-      }
+      nestingLevel = activity.getNestingLevel();
     }
 
     return ctx;
   }
 
-  private void addActivity(TestCaseContext ctx, TestCaseActivity next) {
-    String parentElementId = bpmnSupport.getParentElementId(next.getId());
-
-    // if next activity has process element as parent
-    if (parentElementId == null || ctx.getProcessId().equals(parentElementId)) {
-      ctx.addActivity(next);
-      return;
-    }
-
-    TestCaseActivityScope scope = scopes.get(parentElementId);
-    if (scope == null) {
-      MultiInstanceLoopCharacteristics multiInstance = bpmnSupport.getMultiInstance(parentElementId);
-      if (multiInstance == null) {
-        scope = addActivityScope(ctx, parentElementId);
-      } else {
-        scope = addMultiInstanceActivityScope(ctx, parentElementId, multiInstance);
-      }
-      
-      scopes.put(scope.getId(), scope);
-    }
-
-    scope.addActivity(next);
-  }
-
-  private TestCaseActivityScope addActivityScope(TestCaseContext ctx, String scopeId) {
-    String parentElementId = bpmnSupport.getParentElementId(scopeId);
-    
-    List<TestCaseActivity> activities;
-    if (ctx.getProcessId().equals(parentElementId)) {
-      activities = ctx.getActivities();
-    } else {
-      activities = scopes.get(parentElementId).getActivities();
-    }
-
-    return new TestCaseActivityScope(bpmnSupport.get(scopeId), activities);
-  }
-
-  private TestCaseActivityScope addMultiInstanceActivityScope(TestCaseContext ctx, String scopeId, MultiInstanceLoopCharacteristics multiInstance) {
-    TestCaseActivityScope scope = new TestCaseActivityScope(bpmnSupport.get(scopeId), multiInstance);
-
-    String parentElementId = bpmnSupport.getParentElementId(scope.getId());
-    if (ctx.getProcessId().equals(parentElementId)) {
-      ctx.addActivity(scope);
-    } else {
-      scopes.get(parentElementId).addActivity(scope);
-    }
-
-    return scope;
-  }
-
-  protected DefaultStrategy getStrategy(TestCaseActivity current) {
-    switch (current.getType()) {
+  private GeneratorStrategy createStrategy(TestCaseActivity activity) {
+    switch (activity.getType()) {
       case CALL_ACTIVITY:
-        return new CallActivityStrategy();
+        return new CallActivityStrategy(activity);
       case CONDITIONAL_BOUNDARY:
-        return new BoundaryEventStrategy();
+        return new BoundaryEventStrategy(activity);
       case CONDITIONAL_CATCH:
-        return new EventStrategy();
+        return new EventStrategy(activity);
       case EXTERNAL_TASK:
-        return new ExternalTaskStrategy();
+        return new ExternalTaskStrategy(activity);
       case MESSAGE_BOUNDARY:
-        return new BoundaryEventStrategy();
+        return new BoundaryEventStrategy(activity);
       case MESSAGE_CATCH:
-        return new EventStrategy();
+        return new EventStrategy(activity);
       case SIGNAL_BOUNDARY:
-        return new BoundaryEventStrategy();
+        return new BoundaryEventStrategy(activity);
       case SIGNAL_CATCH:
-        return new EventStrategy();
+        return new EventStrategy(activity);
       case TIMER_BOUNDARY:
-        return new BoundaryJobStrategy();
+        return new BoundaryJobStrategy(activity);
       case TIMER_CATCH:
-        return new JobStrategy();
+        return new JobStrategy(activity);
       case USER_TASK:
-        return new UserTaskStrategy();
+        return new UserTaskStrategy(activity);
       default:
-        return new DefaultStrategy();
-    }
-  }
-
-  protected void handleBoundaryEvent(TestCaseActivity activity, String flowNodeId) {
-    BoundaryEvent event = activity.as(BoundaryEvent.class);
-
-    activity.setAttachedTo(event.getAttachedTo().getId());
-
-    BpmnEventSupport eventSupport = new BpmnEventSupport(event);
-
-    if (eventSupport.isConditional()) {
-      activity.setType(TestCaseActivityType.CONDITIONAL_BOUNDARY);
-    } else if (eventSupport.isError()) {
-      Error error = eventSupport.getError();
-
-      activity.setType(TestCaseActivityType.ERROR_BOUNDARY);
-      activity.setEventCode(error != null ? error.getErrorCode() : null);
-    } else if (eventSupport.isEscalation()) {
-      Escalation escalation = eventSupport.getEscalation();
-
-      activity.setType(TestCaseActivityType.ESCALATION_BOUNDARY);
-      activity.setEventCode(escalation != null ? escalation.getEscalationCode() : null);
-    } else if (eventSupport.isMessage()) {
-      Message message = eventSupport.getMessage();
-
-      activity.setType(TestCaseActivityType.MESSAGE_BOUNDARY);
-      activity.setEventName(message != null ? message.getName() : null);
-    } else if (eventSupport.isSignal()) {
-      Signal signal = eventSupport.getSignal();
-
-      activity.setType(TestCaseActivityType.SIGNAL_BOUNDARY);
-      activity.setEventName(signal != null ? signal.getName() : null);
-    } else if (eventSupport.isTimer()) {
-      activity.setType(TestCaseActivityType.TIMER_BOUNDARY);
-    }
-  }
-
-  protected void handleIntermediateCatchEvent(TestCaseActivity activity, String flowNodeId) {
-    IntermediateCatchEvent event = activity.as(IntermediateCatchEvent.class);
-
-    BpmnEventSupport eventSupport = new BpmnEventSupport(event);
-
-    if (eventSupport.isConditional()) {
-      activity.setType(TestCaseActivityType.CONDITIONAL_CATCH);
-    } else if (eventSupport.isMessage()) {
-      Message message = eventSupport.getMessage();
-
-      activity.setType(TestCaseActivityType.MESSAGE_CATCH);
-      activity.setEventName(message != null ? message.getName() : null);
-    } else if (eventSupport.isSignal()) {
-      Signal signal = eventSupport.getSignal();
-
-      activity.setType(TestCaseActivityType.SIGNAL_CATCH);
-      activity.setEventName(signal != null ? signal.getName() : null);
-    } else if (eventSupport.isTimer()) {
-      activity.setType(TestCaseActivityType.TIMER_CATCH);
-    }
-  }
-
-  protected void handleIntermediateThrowEvent(TestCaseActivity activity, String flowNodeId) {
-    IntermediateThrowEvent event = activity.as(IntermediateThrowEvent.class);
-
-    BpmnEventSupport eventSupport = new BpmnEventSupport(event);
-
-    if (eventSupport.isLink()) {
-      activity.setType(TestCaseActivityType.LINK_THROW);
-    }
-  }
-
-  protected void handleMultiInstance(TestCaseContext ctx, TestCaseActivity activity) {
-    String packageName = String.format("%s.%s", gCtx.getPackageName(), ctx.getPackageName());
-    String name = String.format("%sHandler", StringUtils.capitalize(activity.getLiteral()));
-
-    MultiInstanceStrategy multiInstanceStrategy = new MultiInstanceStrategy(activity.getStrategy(), ClassName.get(packageName, name));
-    multiInstanceStrategy.setActivity(activity);
-    activity.setStrategy(multiInstanceStrategy);
-  }
-
-  protected void handleMultiInstanceScope(TestCaseContext ctx, int index, TestCaseActivityScope scope) {
-    String packageName = String.format("%s.%s", gCtx.getPackageName(), ctx.getPackageName());
-    String name = String.format("%sHandler%d", StringUtils.capitalize(scope.getLiteral()), index + 1);
-    ClassName handlerType = ClassName.get(packageName, name);
-
-    MultiInstanceScopeStrategy multiInstanceScopeStrategy = new MultiInstanceScopeStrategy(handlerType);
-    multiInstanceScopeStrategy.setActivity(scope);
-    scope.setStrategy(multiInstanceScopeStrategy);
-    scope.setType(TestCaseActivityType.SCOPE);
-
-    for (TestCaseActivity activity : scope.getActivities()) {
-      activity.setParent(scope);
+        return new DefaultStrategy(activity);
     }
   }
 }

@@ -59,7 +59,7 @@ public class AbstractTestCaseTest {
   @Deployment(resources = "bpmn/noTestCases.bpmn")
   public void testDeploymentAnnotation() {
     ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery()
-        .processDefinitionKey("no-test-cases")
+        .processDefinitionKey("noTestCases")
         .singleResult();
 
     assertThat(processDefinition).isNotNull();

@@ -67,7 +67,6 @@ Assert Test Code Generation
   Should contain  ${result.stdout}  Adding test source directory:
 
   # BPMN files found
-  Should contain  ${result.stdout}  Found BPMN file: noTestCases.bpmn
   Should contain  ${result.stdout}  Found BPMN file: simple.bpmn
   Should contain  ${result.stdout}  Found BPMN file: simpleAsync.bpmn
   Should contain  ${result.stdout}  Found BPMN file: simpleCallActivity.bpmn
@@ -81,8 +80,30 @@ Assert Test Code Generation
   Should contain  ${result.stdout}  Found BPMN file: simpleSubProcess.bpmn
   Should contain  ${result.stdout}  Found BPMN file: simpleTimerCatchEvent.bpmn
   Should contain  ${result.stdout}  Found BPMN file: simpleUserTask.bpmn
+  Should contain  ${result.stdout}  Found BPMN file: special/duplicateTestCaseNames.bpmn
+  Should contain  ${result.stdout}  Found BPMN file: special/empty.bpmn
+  Should contain  ${result.stdout}  Found BPMN file: special/happyPath.bpmn
+  Should contain  ${result.stdout}  Found BPMN file: special/incomplete.bpmn
+  Should contain  ${result.stdout}  Found BPMN file: special/invalid.bpmn
+  Should contain  ${result.stdout}  Found BPMN file: special/noTestCases.bpmn
 
   # test cases generated
+  Should contain  ${result.stdout}  Process: duplicateTestCaseNames
+  Should contain  ${result.stdout}  Generating test case 'startEvent__endEvent'
+  Should contain  ${result.stdout}  Skipping test case #2: Name must be unique
+
+  Should contain  ${result.stdout}  Process: empty
+  Should contain  ${result.stdout}  Test case #1 has an empty path
+
+  Should contain  ${result.stdout}  Process: happyPath
+  Should contain  ${result.stdout}  Generating test case 'Happy_Path'
+
+  Should contain  ${result.stdout}  Process: incomplete
+  Should contain  ${result.stdout}  Test case #1 has an incomplete path
+
+  Should contain  ${result.stdout}  Process: invalid
+  Should contain  ${result.stdout}  Test case #1 has an invalid path - invalid flow node IDs: [a, b]
+
   Should contain  ${result.stdout}  Process: noTestCases
   Should contain  ${result.stdout}  No test cases defined
 
@@ -108,6 +129,8 @@ Assert Test Code Generation
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/simplesubprocessnested/TC_startEvent__endEvent.java
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/simpletimercatchevent/TC_startEvent__endEvent.java
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/simpleusertask/TC_startEvent__endEvent.java
+  Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/duplicatetestcasenames/TC_startEvent__endEvent.java
+  Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/happypath/TC_Happy_Path.java
 
   File should exist  ${testSources}/generated/simple/TC_startEvent__endEvent.java
   File should exist  ${testSources}/generated/simpleasync/TC_startEvent__endEvent.java
@@ -126,6 +149,8 @@ Assert Test Code Generation
   File should exist  ${testSources}/generated/simplesubprocessnested/TC_startEvent__endEvent.java
   File should exist  ${testSources}/generated/simpletimercatchevent/TC_startEvent__endEvent.java
   File should exist  ${testSources}/generated/simpleusertask/TC_startEvent__endEvent.java
+  File should exist  ${testSources}/generated/duplicatetestcasenames/TC_startEvent__endEvent.java
+  File should exist  ${testSources}/generated/happypath/TC_Happy_Path.java
 
   # API classes written
   Should contain  ${result.stdout}  Writing API classes
