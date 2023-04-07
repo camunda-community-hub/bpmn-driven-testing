@@ -1,7 +1,7 @@
-package org.camunda.community.bpmndt.model;
+package org.camunda.community.bpmndt.model.element;
 
-import static org.camunda.community.bpmndt.Constants.ELEMENT_DESCRIPTION;
-import static org.camunda.community.bpmndt.Constants.NS;
+import static org.camunda.community.bpmndt.model.BpmnExtension.ELEMENT_DESCRIPTION;
+import static org.camunda.community.bpmndt.model.BpmnExtension.NS;
 
 import org.camunda.bpm.model.bpmn.impl.instance.BpmnModelElementInstanceImpl;
 import org.camunda.bpm.model.xml.ModelBuilder;
@@ -9,19 +9,19 @@ import org.camunda.bpm.model.xml.impl.instance.ModelTypeInstanceContext;
 import org.camunda.bpm.model.xml.type.ModelElementTypeBuilder;
 
 /**
- * Test case description.
+ * Test case description element.
  */
-public class Description extends BpmnModelElementInstanceImpl {
+public class DescriptionElement extends BpmnModelElementInstanceImpl {
 
   public static void registerType(ModelBuilder modelBuilder) {
-    ModelElementTypeBuilder typeBuilder = modelBuilder.defineType(Description.class, ELEMENT_DESCRIPTION)
+    ModelElementTypeBuilder typeBuilder = modelBuilder.defineType(DescriptionElement.class, ELEMENT_DESCRIPTION)
         .namespaceUri(NS)
-        .instanceProvider(Description::new);
+        .instanceProvider(DescriptionElement::new);
 
     typeBuilder.build();
   }
 
-  public Description(ModelTypeInstanceContext instanceContext) {
+  public DescriptionElement(ModelTypeInstanceContext instanceContext) {
     super(instanceContext);
   }
 

@@ -1,4 +1,4 @@
-package org.camunda.community.bpmndt;
+package org.camunda.community.bpmndt.model;
 
 import static org.camunda.bpm.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_CONDITIONAL_EVENT_DEFINITION;
 import static org.camunda.bpm.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_END_EVENT;
@@ -27,8 +27,8 @@ import org.camunda.bpm.model.bpmn.instance.ThrowEvent;
 import org.camunda.bpm.model.bpmn.instance.TimerEventDefinition;
 
 /**
- * BPMN event support allows easier working with {@link EventDefinition}s (conditional, error,
- * escalation, message, signal or timer) of {@link CatchEvent} or {@link ThrowEvent} instances.
+ * BPMN event support allows easier working with {@link EventDefinition}s of {@link CatchEvent} or
+ * {@link ThrowEvent} nodes.
  */
 public class BpmnEventSupport {
 
@@ -46,7 +46,7 @@ public class BpmnEventSupport {
     throwEvent = event;
   }
 
-  protected BpmnEventSupport(Collection<EventDefinition> eventDefinitions) {
+  private BpmnEventSupport(Collection<EventDefinition> eventDefinitions) {
     eventDefinition = eventDefinitions.stream().findFirst().orElse(null);
   }
 
@@ -90,7 +90,7 @@ public class BpmnEventSupport {
     return (TimerEventDefinition) eventDefinition;
   }
 
-  protected boolean is(String typeName) {
+  private boolean is(String typeName) {
     if (eventDefinition != null) {
       return eventDefinition.getElementType().getTypeName().equals(typeName);
     } else {

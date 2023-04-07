@@ -1,4 +1,4 @@
-package org.camunda.community.bpmndt;
+package org.camunda.community.bpmndt.model;
 
 import java.util.EnumSet;
 import java.util.Set;
@@ -18,7 +18,6 @@ public enum TestCaseActivityType {
   LINK_THROW,
   MESSAGE_BOUNDARY,
   MESSAGE_CATCH,
-  SCOPE,
   SIGNAL_BOUNDARY,
   SIGNAL_CATCH,
   TIMER_BOUNDARY,
@@ -26,7 +25,10 @@ public enum TestCaseActivityType {
   USER_TASK,
 
   /** Other activities, which need no special handling (e.g. start event or service task). */
-  OTHER;
+  OTHER,
+
+  /** Special type for handling scopes (e.g. embedded sub processes) as activities. */
+  SCOPE;
 
   private static final Set<TestCaseActivityType> BOUNDARY_EVENT_TYPES;
   private static final Set<TestCaseActivityType> WAIT_STATE_TYPES;
@@ -50,10 +52,20 @@ public enum TestCaseActivityType {
     WAIT_STATE_TYPES.add(USER_TASK);
   }
 
+  /**
+   * Determines if the type refers to an BPMN boundary event element.
+   * 
+   * @return {@code true}, if the type is a boundary event. Otherwise {@code false}.
+   */
   public boolean isBoundaryEvent() {
     return BOUNDARY_EVENT_TYPES.contains(this);
   }
 
+  /**
+   * Determines if the type refers to an BPMN element that causes a process instance to wait.
+   * 
+   * @return {@code true}, if the type is a wait state. Otherwise {@code false}.
+   */
   public boolean isWaitState() {
     return WAIT_STATE_TYPES.contains(this);
   }
