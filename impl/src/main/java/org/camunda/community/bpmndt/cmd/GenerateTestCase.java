@@ -6,17 +6,18 @@ import java.util.function.Consumer;
 
 import javax.lang.model.element.Modifier;
 
-import org.camunda.bpm.engine.ActivityTypes;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.test.assertions.ProcessEngineTests;
 import org.camunda.community.bpmndt.GeneratorContext;
 import org.camunda.community.bpmndt.GeneratorResult;
 import org.camunda.community.bpmndt.GeneratorStrategy;
-import org.camunda.community.bpmndt.TestCaseActivity;
 import org.camunda.community.bpmndt.TestCaseContext;
 import org.camunda.community.bpmndt.api.AbstractJUnit4TestCase;
 import org.camunda.community.bpmndt.api.AbstractJUnit5TestCase;
 import org.camunda.community.bpmndt.api.AbstractTestCase;
+import org.camunda.community.bpmndt.model.TestCase;
+import org.camunda.community.bpmndt.model.TestCaseActivity;
+import org.camunda.community.bpmndt.model.TestCaseActivityType;
 
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.CodeBlock;
@@ -44,15 +45,17 @@ public class GenerateTestCase implements Consumer<TestCaseContext> {
 
   @Override
   public void accept(TestCaseContext ctx) {
+    List<GeneratorStrategy> strategies = new GetStrategies().apply(ctx, ctx.getTestCase().getActivities());
+
     TypeSpec.Builder classBuilder = TypeSpec.classBuilder(ctx.getClassName())
         .addJavadoc(buildJavadoc(ctx))
         .superclass(getSuperClass(ctx))
         .addModifiers(Modifier.PUBLIC);
 
-    addHandlerFields(ctx, classBuilder);
+    addHandlerFields(strategies, classBuilder);
 
-    classBuilder.addMethod(buildBeforeEach(ctx));
-    classBuilder.addMethod(buildExecute(ctx));
+    classBuilder.addMethod(buildBeforeEach(strategies));
+    classBuilder.addMethod(buildExecute(ctx, strategies));
 
     classBuilder.addMethod(buildGetBpmnResourceName(gCtx, ctx));
     classBuilder.addMethod(buildGetEnd(ctx));
@@ -64,7 +67,7 @@ public class GenerateTestCase implements Consumer<TestCaseContext> {
 
     classBuilder.addMethod(buildGetStart(ctx));
 
-    if (ctx.isValid() && !ctx.getEndActivity().isProcessEnd()) {
+    if (!ctx.getTestCase().getEndActivity().isProcessEnd()) {
       classBuilder.addMethod(buildIsProcessEnd());
     }
 
@@ -72,11 +75,9 @@ public class GenerateTestCase implements Consumer<TestCaseContext> {
       classBuilder.addMethod(buildIsSpringEnabled());
     }
 
-    addHandlerMethods(ctx, classBuilder);
+    addHandlerMethods(strategies, classBuilder);
 
-    String packageName = String.format("%s.%s", gCtx.getPackageName(), ctx.getPackageName());
-
-    JavaFile javaFile = JavaFile.builder(packageName, classBuilder.build())
+    JavaFile javaFile = JavaFile.builder(ctx.getPackageName(), classBuilder.build())
         .addStaticImport(ProcessEngineTests.class, "assertThat")
         .skipJavaLangImports(true)
         .build();
@@ -84,14 +85,8 @@ public class GenerateTestCase implements Consumer<TestCaseContext> {
     result.addFile(javaFile);
   }
 
-  protected void addHandlerFields(TestCaseContext ctx, TypeSpec.Builder classBuilder) {
-    if (!ctx.isValid()) {
-      return;
-    }
-
-    for (TestCaseActivity activity : ctx.getActivities()) {
-      GeneratorStrategy strategy = activity.getStrategy();
-
+  protected void addHandlerFields(List<GeneratorStrategy> strategies, TypeSpec.Builder classBuilder) {
+    for (GeneratorStrategy strategy : strategies) {
       if (strategy.shouldHandleBefore()) {
         strategy.addHandlerFieldBefore(classBuilder);
       }
@@ -104,15 +99,13 @@ public class GenerateTestCase implements Consumer<TestCaseContext> {
     }
   }
 
-  protected void addHandlerMethods(TestCaseContext ctx, TypeSpec.Builder classBuilder) {
-    if (!ctx.isValid()) {
-      return;
-    }
-    
-    for (TestCaseActivity activity : ctx.getActivities()) {
-      GeneratorStrategy strategy = activity.getStrategy();
+  protected void addHandlerMethods(List<GeneratorStrategy> strategies, TypeSpec.Builder classBuilder) {
+    for (GeneratorStrategy strategy : strategies) {
+      TestCaseActivity activity = strategy.getActivity();
 
-      if (activity.isAsyncBefore()) {
+      // since the async before of a call activity is instrumented
+      // the handler method should not be generated
+      if (strategy.shouldHandleBefore() && activity.getType() != TestCaseActivityType.CALL_ACTIVITY) {
         strategy.addHandlerMethodBefore(classBuilder);
       }
 
@@ -130,7 +123,7 @@ public class GenerateTestCase implements Consumer<TestCaseContext> {
    * 
    * @return The {@code beforeEach} method.
    */
-  protected MethodSpec buildBeforeEach(TestCaseContext ctx) {
+  protected MethodSpec buildBeforeEach(List<GeneratorStrategy> strategies) {
     MethodSpec.Builder builder = MethodSpec.methodBuilder("beforeEach")
         .addAnnotation(Override.class)
         .addModifiers(Modifier.PROTECTED);
@@ -138,15 +131,7 @@ public class GenerateTestCase implements Consumer<TestCaseContext> {
     // call #beforeEach of superclass
     builder.addStatement("super.$L()", "beforeEach");
 
-    // handle possible test case errors
-    if (!ctx.isValid()) {
-      handleTestCaseErrors(ctx, builder);
-      return builder.build();
-    }
-
-    for (TestCaseActivity activity : ctx.getActivities()) {
-      GeneratorStrategy strategy = activity.getStrategy();
-
+    for (GeneratorStrategy strategy : strategies) {
       if (strategy.shouldHandleBefore()) {
         strategy.initHandlerBefore(builder);
       }
@@ -161,15 +146,13 @@ public class GenerateTestCase implements Consumer<TestCaseContext> {
     return builder.build();
   }
 
-  protected MethodSpec buildExecute(TestCaseContext ctx) {
+  protected MethodSpec buildExecute(TestCaseContext ctx, List<GeneratorStrategy> strategies) {
     MethodSpec.Builder builder = MethodSpec.methodBuilder("execute")
         .addAnnotation(Override.class)
         .addModifiers(Modifier.PROTECTED)
         .addParameter(ProcessInstance.class, "pi");
 
-    if (ctx.isValid()) {
-      new BuildTestCaseExecution().accept(ctx.getActivities(), builder);
-    }
+    new BuildTestCaseExecution(ctx).accept(strategies, builder);
 
     return builder.build();
   }
@@ -179,56 +162,38 @@ public class GenerateTestCase implements Consumer<TestCaseContext> {
         .addAnnotation(Override.class)
         .addModifiers(Modifier.PROTECTED)
         .returns(String.class)
-        .addStatement("return $S", testCaseContext.getResourceName(ctx.getMainResourcePath()))
+        .addStatement("return $S", testCaseContext.getResourceName())
         .build();
   }
 
   protected MethodSpec buildGetEnd(TestCaseContext ctx) {
-    TestCaseActivity end = ctx.getEndActivity();
-
-    String endId;
-    if (end == null) {
-      endId = null;
-    } else if (end.isScope() && end.isMultiInstance()) {
-      endId = String.format("%s#%s", end.getId(), ActivityTypes.MULTI_INSTANCE_BODY);
-    } else {
-      endId = end.getId();
-    }
+    TestCaseActivity end = ctx.getTestCase().getEndActivity();
 
     return MethodSpec.methodBuilder("getEnd")
         .addAnnotation(Override.class)
         .addModifiers(Modifier.PUBLIC)
         .returns(String.class)
-        .addStatement("return $S", endId)
+        .addStatement("return $S", end.getId())
         .build();
   }
 
-  protected MethodSpec buildGetProcessDefinitionKey(TestCaseContext testCaseContext) {
+  protected MethodSpec buildGetProcessDefinitionKey(TestCaseContext ctx) {
     return MethodSpec.methodBuilder("getProcessDefinitionKey")
         .addAnnotation(Override.class)
         .addModifiers(Modifier.PUBLIC)
         .returns(String.class)
-        .addStatement("return $S", testCaseContext.getProcessId())
+        .addStatement("return $S", ctx.getTestCase().getProcessId())
         .build();
   }
 
   protected MethodSpec buildGetStart(TestCaseContext ctx) {
-    TestCaseActivity start = ctx.getStartActivity();
-
-    String startId;
-    if (start == null) {
-      startId = null;
-    } else if (start.isScope() && start.isMultiInstance()) {
-      startId = String.format("%s#%s", start.getId(), ActivityTypes.MULTI_INSTANCE_BODY);
-    } else {
-      startId = start.getId();
-    }
+    TestCaseActivity start = ctx.getTestCase().getStartActivity();
 
     return MethodSpec.methodBuilder("getStart")
         .addAnnotation(Override.class)
         .addModifiers(Modifier.PUBLIC)
         .returns(String.class)
-        .addStatement("return $S", startId)
+        .addStatement("return $S", start.getId())
         .build();
   }
 
@@ -253,24 +218,23 @@ public class GenerateTestCase implements Consumer<TestCaseContext> {
   protected CodeBlock buildJavadoc(TestCaseContext ctx) {
     CodeBlock.Builder builder = CodeBlock.builder();
 
-    if (ctx.getDescription() != null) {
-      builder.add(ctx.getDescription());
+    TestCase testCase = ctx.getTestCase();
+    if (testCase.getDescription() != null) {
+      builder.add(testCase.getDescription());
       builder.add("\n<br>\n");
     }
 
-    if (ctx.isValid()) {
-      TestCaseActivity a = ctx.getStartActivity();
-      TestCaseActivity b = ctx.getEndActivity();
+    TestCaseActivity a = ctx.getTestCase().getStartActivity();
+    TestCaseActivity b = ctx.getTestCase().getEndActivity();
 
-      List<Object> args = new LinkedList<>();
-      args.add(a.getTypeName());
-      args.add(a.getId());
-      args.add(b.getTypeName());
-      args.add(b.getId());
-      args.add(ctx.getActivities().size());
+    List<Object> args = new LinkedList<>();
+    args.add(a.getTypeName());
+    args.add(a.getId());
+    args.add(b.getTypeName());
+    args.add(b.getId());
+    args.add(testCase.getFlowNodeIds().size());
 
-      builder.add("From: $L: $L, To: $L: $L, Length: $L", args.toArray(new Object[0]));
-    }
+    builder.add("From: $L: $L, To: $L: $L, Length: $L", args.toArray(new Object[0]));
 
     return builder.build();
   }
@@ -285,21 +249,5 @@ public class GenerateTestCase implements Consumer<TestCaseContext> {
 
     // e.g. AbstractJUnit4TestCase<TC_startEvent__endEvent>
     return ParameterizedTypeName.get(rawType, ClassName.bestGuess(ctx.getClassName()));
-  }
-
-  protected void handleTestCaseErrors(TestCaseContext ctx, MethodSpec.Builder builder) {
-    if (ctx.isPathEmpty()) {
-      builder.addStatement("throw new $T($S)", RuntimeException.class, "Path is empty").build();
-    } else if (ctx.isPathIncomplete()) {
-      builder.addStatement("throw new $T($S)", RuntimeException.class, "Path is incomplete").build();
-    } else if (ctx.isPathInvalid()) {
-      builder.addCode("\n// Not existing flow nodes:\n");
-
-      for (String flowNodeId : ctx.getInvalidFlowNodeIds()) {
-        builder.addCode("// $L\n", flowNodeId);
-      }
-
-      builder.addStatement("throw new $T($S)", RuntimeException.class, "Path is invalid").build();
-    }
   }
 }

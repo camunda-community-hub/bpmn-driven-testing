@@ -1,6 +1,7 @@
 package org.camunda.community.bpmndt;
 
 import org.camunda.community.bpmndt.api.JobHandler;
+import org.camunda.community.bpmndt.model.TestCaseActivity;
 
 import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.MethodSpec;
@@ -134,6 +135,13 @@ public interface GeneratorStrategy {
   void applyHandlerBefore(MethodSpec.Builder methodBuilder);
 
   /**
+   * Returns the underlying activity.
+   * 
+   * @return The test case activity.
+   */
+  TestCaseActivity getActivity();
+
+  /**
    * Returns code for getting a handler field reference. Normally a handler field is references using
    * {@link TestCaseActivity#getLiteral()}, but in case of a multi instance scope a specific
    * {@code getHandler} method must be called.<br>
@@ -206,6 +214,13 @@ public interface GeneratorStrategy {
    * @return The handler type name e.g. {@code TypeName.get(UserTaskHandler.class)}.
    */
   TypeName getHandlerType();
+
+  /**
+   * Gets the ID of the underlying activity as a literal.
+   * 
+   * @return The activity ID literal.
+   */
+  String getLiteral();
 
   /**
    * Adds code, which asserts that the process instance has passed an activity.
@@ -292,6 +307,14 @@ public interface GeneratorStrategy {
    * @param methodBuilder The method builder to use.
    */
   void isWaitingAt(MethodSpec.Builder methodBuilder);
+
+  /**
+   * Set the multi instance parent indicator.
+   * 
+   * @param multiInstanceParent {@code true}, if the strategy is applied on a multi instane scope
+   *        handler. Otherwise {@code} false.
+   */
+  void setMultiInstanceParent(boolean multiInstanceParent);
 
   /**
    * Determines if an asynchronous continuation after the activity should be handled or not.

@@ -1,11 +1,15 @@
 package org.camunda.community.bpmndt.strategy;
 
-import org.camunda.community.bpmndt.TestCaseActivity;
+import org.camunda.community.bpmndt.model.TestCaseActivity;
 
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeName;
 
 public class UserTaskStrategy extends DefaultHandlerStrategy {
+
+  public UserTaskStrategy(TestCaseActivity activity) {
+    super(activity);
+  }
 
   @Override
   public TypeName getHandlerType() {
@@ -27,13 +31,13 @@ public class UserTaskStrategy extends DefaultHandlerStrategy {
 
     switch (next.getType()) {
       case ERROR_BOUNDARY:
-        methodBuilder.addStatement("$L.handleBpmnError($S, null)", activity.getLiteral(), next.getEventCode());
+        methodBuilder.addStatement("$L.handleBpmnError($S, null)", literal, next.getEventCode());
         break;
       case ESCALATION_BOUNDARY:
-        methodBuilder.addStatement("$L.handleEscalation($S)", activity.getLiteral(), next.getEventCode());
+        methodBuilder.addStatement("$L.handleEscalation($S)", literal, next.getEventCode());
         break;
       default:
-        methodBuilder.addStatement("$L.waitForBoundaryEvent()", activity.getLiteral());
+        methodBuilder.addStatement("$L.waitForBoundaryEvent()", literal);
         break;
     }
   }

@@ -1,6 +1,7 @@
 package org.camunda.community.bpmndt.cmd;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -11,15 +12,16 @@ import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.test.assertions.ProcessEngineTests;
 import org.camunda.bpm.model.bpmn.instance.FlowNode;
 import org.camunda.bpm.model.bpmn.instance.ThrowEvent;
-import org.camunda.community.bpmndt.BpmnEventSupport;
 import org.camunda.community.bpmndt.GeneratorResult;
 import org.camunda.community.bpmndt.GeneratorStrategy;
-import org.camunda.community.bpmndt.TestCaseActivity;
-import org.camunda.community.bpmndt.TestCaseActivityScope;
-import org.camunda.community.bpmndt.TestCaseActivityType;
+import org.camunda.community.bpmndt.TestCaseContext;
 import org.camunda.community.bpmndt.api.JobHandler;
 import org.camunda.community.bpmndt.api.MultiInstanceScopeHandler;
 import org.camunda.community.bpmndt.api.TestCaseInstance;
+import org.camunda.community.bpmndt.model.BpmnEventSupport;
+import org.camunda.community.bpmndt.model.TestCaseActivity;
+import org.camunda.community.bpmndt.model.TestCaseActivityScope;
+import org.camunda.community.bpmndt.model.TestCaseActivityType;
 
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.CodeBlock;
@@ -29,37 +31,42 @@ import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
-public class GenerateMultiInstanceScopeHandler implements Consumer<TestCaseActivity> {
+public class GenerateMultiInstanceScopeHandler implements Consumer<TestCaseActivityScope> {
 
   private static final String SUFFIX_AFTER = "After";
   private static final String SUFFIX_BEFORE = "Before";
 
+  private final TestCaseContext ctx;
   private final GeneratorResult result;
 
-  public GenerateMultiInstanceScopeHandler(GeneratorResult result) {
+  public GenerateMultiInstanceScopeHandler(TestCaseContext ctx, GeneratorResult result) {
+    this.ctx = ctx;
     this.result = result;
   }
 
   @Override
-  public void accept(TestCaseActivity activity) {
-    TestCaseActivityScope scope = (TestCaseActivityScope) activity;
+  public void accept(TestCaseActivityScope scope) {
+    List<GeneratorStrategy> strategies = new GetStrategies().apply(ctx, scope.getActivities());
+    for (GeneratorStrategy strategy : strategies) {
+      strategy.setMultiInstanceParent(true);
+    }
 
-    ClassName className = (ClassName) scope.getStrategy().getHandlerType();
+    ClassName className = (ClassName) ctx.getStrategy(scope.getId()).getHandlerType();
 
-    // e.g. MyScopeHandler extends MultiInstanceScopeHandler<MyScopeHandler>
+    // e.g. TC_HappyPath_MyScopeHandler extends MultiInstanceScopeHandler<TC_HappyPath_MyScopeHandler>
     TypeSpec.Builder classBuilder = TypeSpec.classBuilder(className)
-        .addJavadoc("Multi instance scope handler for $L: $L", activity.getTypeName(), activity.getId())
+        .addJavadoc("Multi instance scope handler for $L: $L", scope.getTypeName(), scope.getId())
         .superclass(getSuperClass(scope))
         .addModifiers(Modifier.PUBLIC);
 
-    addHandlerFields(scope, classBuilder);
+    addHandlerFields(strategies, classBuilder);
 
-    classBuilder.addMethod(buildConstructor(scope));
-    classBuilder.addMethod(buildApply(scope));
+    classBuilder.addMethod(buildConstructor(strategies));
+    classBuilder.addMethod(buildApply(scope, strategies));
 
-    addHandlerMethods(scope, classBuilder);
+    addHandlerMethods(strategies, classBuilder);
 
-    if (!activity.getMultiInstance().isSequential()) {
+    if (scope.isMultiInstanceParallel()) {
       // override to return false, because it is parallel
       classBuilder.addMethod(buildIsSequential());
     }
@@ -72,18 +79,20 @@ public class GenerateMultiInstanceScopeHandler implements Consumer<TestCaseActiv
     result.addFile(javaFile);
   }
 
-  protected void addHandlerFields(TestCaseActivityScope scope, TypeSpec.Builder classBuilder) {
-    for (TestCaseActivity activity : scope.getActivities()) {
-      if (activity.getStrategy().shouldHandleBefore()) {
-        addHandlerField(classBuilder, String.format("%sHandlersBefore", activity.getLiteral()), TypeName.get(JobHandler.class));
+  protected void addHandlerFields(List<GeneratorStrategy> strategies, TypeSpec.Builder classBuilder) {
+    for (GeneratorStrategy strategy : strategies) {
+      TestCaseActivity activity = strategy.getActivity();
+
+      if (strategy.shouldHandleBefore()) {
+        addHandlerField(classBuilder, String.format("%sHandlersBefore", strategy.getLiteral()), TypeName.get(JobHandler.class));
       }
 
       if (activity.getType() != TestCaseActivityType.OTHER) {
-        addHandlerField(classBuilder, String.format("%sHandlers", activity.getLiteral()), activity.getStrategy().getHandlerType());
+        addHandlerField(classBuilder, String.format("%sHandlers", strategy.getLiteral()), strategy.getHandlerType());
       }
 
-      if (activity.getStrategy().shouldHandleAfter()) {
-        addHandlerField(classBuilder, String.format("%sHandlersAfter", activity.getLiteral()), TypeName.get(JobHandler.class));
+      if (strategy.shouldHandleAfter()) {
+        addHandlerField(classBuilder, String.format("%sHandlersAfter", strategy.getLiteral()), TypeName.get(JobHandler.class));
       }
     }
   }
@@ -92,10 +101,12 @@ public class GenerateMultiInstanceScopeHandler implements Consumer<TestCaseActiv
     classBuilder.addField(ParameterizedTypeName.get(ClassName.get(Map.class), TypeName.get(Integer.class), typeName), name, Modifier.PRIVATE, Modifier.FINAL);
   }
 
-  protected void addHandlerMethods(TestCaseActivityScope scope, TypeSpec.Builder classBuilder) {
+  protected void addHandlerMethods(List<GeneratorStrategy> strategies, TypeSpec.Builder classBuilder) {
     // createHandler
-    for (TestCaseActivity activity : scope.getActivities()) {
-      if (activity.getStrategy().shouldHandleBefore()) {
+    for (GeneratorStrategy strategy : strategies) {
+      TestCaseActivity activity = strategy.getActivity();
+
+      if (strategy.shouldHandleBefore()) {
         classBuilder.addMethod(buildCreateHandler(activity, SUFFIX_BEFORE));
       }
 
@@ -103,14 +114,16 @@ public class GenerateMultiInstanceScopeHandler implements Consumer<TestCaseActiv
         classBuilder.addMethod(buildCreateHandler(activity, StringUtils.EMPTY));
       }
 
-      if (activity.getStrategy().shouldHandleAfter()) {
+      if (strategy.shouldHandleAfter()) {
         classBuilder.addMethod(buildCreateHandler(activity, SUFFIX_AFTER));
       }
     }
 
     // getHandler
-    for (TestCaseActivity activity : scope.getActivities()) {
-      if (activity.getStrategy().shouldHandleBefore()) {
+    for (GeneratorStrategy strategy : strategies) {
+      TestCaseActivity activity = strategy.getActivity();
+
+      if (strategy.shouldHandleBefore()) {
         classBuilder.addMethod(buildGetHandler(activity, SUFFIX_BEFORE));
       }
 
@@ -118,14 +131,16 @@ public class GenerateMultiInstanceScopeHandler implements Consumer<TestCaseActiv
         classBuilder.addMethod(buildGetHandler(activity, StringUtils.EMPTY));
       }
 
-      if (activity.getStrategy().shouldHandleAfter()) {
+      if (strategy.shouldHandleAfter()) {
         classBuilder.addMethod(buildGetHandler(activity, SUFFIX_AFTER));
       }
     }
 
     // handle
-    for (TestCaseActivity activity : scope.getActivities()) {
-      if (activity.getStrategy().shouldHandleBefore()) {
+    for (GeneratorStrategy strategy : strategies) {
+      TestCaseActivity activity = strategy.getActivity();
+
+      if (strategy.shouldHandleBefore()) {
         classBuilder.addMethod(buildHandleDefault(activity, SUFFIX_BEFORE));
         classBuilder.addMethod(buildHandle(activity, SUFFIX_BEFORE));
       }
@@ -135,14 +150,14 @@ public class GenerateMultiInstanceScopeHandler implements Consumer<TestCaseActiv
         classBuilder.addMethod(buildHandle(activity, StringUtils.EMPTY));
       }
 
-      if (activity.getStrategy().shouldHandleAfter()) {
+      if (strategy.shouldHandleAfter()) {
         classBuilder.addMethod(buildHandleDefault(activity, SUFFIX_AFTER));
         classBuilder.addMethod(buildHandle(activity, SUFFIX_AFTER));
       }
     }
   }
 
-  protected MethodSpec buildApply(TestCaseActivityScope scope) {
+  protected MethodSpec buildApply(TestCaseActivityScope scope, List<GeneratorStrategy> strategies) {
     MethodSpec.Builder builder = MethodSpec.methodBuilder("apply")
         .addAnnotation(Override.class)
         .addModifiers(Modifier.PROTECTED)
@@ -150,15 +165,16 @@ public class GenerateMultiInstanceScopeHandler implements Consumer<TestCaseActiv
         .addParameter(ProcessInstance.class, "pi")
         .addParameter(TypeName.INT, "loopIndex");
 
-    for (TestCaseActivity activity : scope.getActivities()) {
+    for (GeneratorStrategy strategy : strategies) {
+      TestCaseActivity activity = strategy.getActivity();
       if (activity.getType() == TestCaseActivityType.CALL_ACTIVITY) {
         builder.addCode("// $L: $L\n", activity.getTypeName(), activity.getId());
-        builder.addStatement("registerCallActivityHandler($S, get$LHandler(loopIndex))", activity.getId(), StringUtils.capitalize(activity.getLiteral()));
+        builder.addStatement("registerCallActivityHandler($S, get$LHandler(loopIndex))", activity.getId(), StringUtils.capitalize(strategy.getLiteral()));
         builder.addCode("\n");
       }
     }
 
-    new BuildTestCaseExecution().accept(scope.getActivities(), builder);
+    new BuildTestCaseExecution(ctx).accept(strategies, builder);
 
     builder.addCode("\n");
     builder.addStatement("return $L", hasNoneEndEvent(scope));
@@ -167,7 +183,7 @@ public class GenerateMultiInstanceScopeHandler implements Consumer<TestCaseActiv
   }
 
   protected MethodSpec buildCreateHandler(TestCaseActivity activity, String suffix) {
-    GeneratorStrategy strategy = activity.getStrategy();
+    GeneratorStrategy strategy = ctx.getStrategy(activity.getId());
 
     CodeBlock initHandlerStatement;
     if (suffix.isEmpty()) {
@@ -178,7 +194,7 @@ public class GenerateMultiInstanceScopeHandler implements Consumer<TestCaseActiv
       initHandlerStatement = strategy.initHandlerBeforeStatement();
     }
 
-    return MethodSpec.methodBuilder(String.format("create%sHandler%s", StringUtils.capitalize(activity.getLiteral()), suffix))
+    return MethodSpec.methodBuilder(String.format("create%sHandler%s", StringUtils.capitalize(strategy.getLiteral()), suffix))
         .addModifiers(Modifier.PROTECTED)
         .returns(suffix.isEmpty() ? strategy.getHandlerType() : TypeName.get(JobHandler.class))
         .addParameter(TypeName.INT, "loopIndex")
@@ -186,28 +202,30 @@ public class GenerateMultiInstanceScopeHandler implements Consumer<TestCaseActiv
         .build();
   }
 
-  protected MethodSpec buildConstructor(TestCaseActivityScope scope) {
+  protected MethodSpec buildConstructor(List<GeneratorStrategy> strategies) {
     MethodSpec.Builder builder = MethodSpec.constructorBuilder()
         .addModifiers(Modifier.PUBLIC)
         .addParameter(TestCaseInstance.class, "instance")
         .addParameter(String.class, "activityId")
         .addStatement("super(instance, activityId)");
 
-    for (TestCaseActivity activity : scope.getActivities()) {
-      GeneratorStrategy strategy = activity.getStrategy();
+    for (GeneratorStrategy strategy : strategies) {
+      TestCaseActivity activity = strategy.getActivity();
 
-      builder.addCode("\n// $L: $L\n", activity.getTypeName(), activity.getId());
+      if (strategy.shouldHandleBefore() || activity.getType() != TestCaseActivityType.OTHER || strategy.shouldHandleAfter()) {
+        builder.addCode("\n// $L: $L\n", activity.getTypeName(), activity.getId());
+      }
 
       if (strategy.shouldHandleBefore()) {
-        builder.addStatement("$LHandlersBefore = new $T<>()", activity.getLiteral(), HashMap.class);
+        builder.addStatement("$LHandlersBefore = new $T<>()", strategy.getLiteral(), HashMap.class);
       }
 
       if (activity.getType() != TestCaseActivityType.OTHER) {
-        builder.addStatement("$LHandlers = new $T<>()", activity.getLiteral(), HashMap.class);
+        builder.addStatement("$LHandlers = new $T<>()", strategy.getLiteral(), HashMap.class);
       }
 
       if (strategy.shouldHandleAfter()) {
-        builder.addStatement("$LHandlersAfter = new $T<>()", activity.getLiteral(), HashMap.class);
+        builder.addStatement("$LHandlersAfter = new $T<>()", strategy.getLiteral(), HashMap.class);
       }
     }
 
@@ -215,7 +233,9 @@ public class GenerateMultiInstanceScopeHandler implements Consumer<TestCaseActiv
   }
 
   protected MethodSpec buildGetHandler(TestCaseActivity activity, String suffix) {
-    String capitalizedLiteral = StringUtils.capitalize(activity.getLiteral());
+    GeneratorStrategy strategy = ctx.getStrategy(activity.getId());
+
+    String capitalizedLiteral = StringUtils.capitalize(strategy.getLiteral());
 
     String handleMethodName;
     if (suffix.isEmpty()) {
@@ -226,14 +246,16 @@ public class GenerateMultiInstanceScopeHandler implements Consumer<TestCaseActiv
 
     return MethodSpec.methodBuilder(String.format("get%sHandler%s", capitalizedLiteral, suffix))
         .addModifiers(Modifier.PROTECTED)
-        .returns(suffix.isEmpty() ? activity.getStrategy().getHandlerType() : TypeName.get(JobHandler.class))
+        .returns(suffix.isEmpty() ? strategy.getHandlerType() : TypeName.get(JobHandler.class))
         .addParameter(TypeName.INT, "loopIndex")
-        .addStatement("return $LHandlers$L.getOrDefault(loopIndex, $L())", activity.getLiteral(), suffix, handleMethodName)
+        .addStatement("return $LHandlers$L.getOrDefault(loopIndex, $L())", strategy.getLiteral(), suffix, handleMethodName)
         .build();
   }
 
   protected MethodSpec buildHandle(TestCaseActivity activity, String suffix) {
-    String capitalizedLiteral = StringUtils.capitalize(activity.getLiteral());
+    GeneratorStrategy strategy = ctx.getStrategy(activity.getId());
+
+    String capitalizedLiteral = StringUtils.capitalize(strategy.getLiteral());
 
     String createHandlerMethodName;
     String handleMethodName;
@@ -248,14 +270,16 @@ public class GenerateMultiInstanceScopeHandler implements Consumer<TestCaseActiv
     return MethodSpec.methodBuilder(handleMethodName)
         .addJavadoc("Returns a loop specific handler for $L: $L", activity.getTypeName(), activity.getId())
         .addModifiers(Modifier.PUBLIC)
-        .returns(suffix.isEmpty() ? activity.getStrategy().getHandlerType() : TypeName.get(JobHandler.class))
+        .returns(suffix.isEmpty() ? strategy.getHandlerType() : TypeName.get(JobHandler.class))
         .addParameter(TypeName.INT, "loopIndex")
-        .addStatement("return $LHandlers$L.computeIfAbsent(loopIndex, this::$L)", activity.getLiteral(), suffix, createHandlerMethodName)
+        .addStatement("return $LHandlers$L.computeIfAbsent(loopIndex, this::$L)", strategy.getLiteral(), suffix, createHandlerMethodName)
         .build();
   }
 
   protected MethodSpec buildHandleDefault(TestCaseActivity activity, String suffix) {
-    String capitalizedLiteral = StringUtils.capitalize(activity.getLiteral());
+    GeneratorStrategy strategy = ctx.getStrategy(activity.getId());
+
+    String capitalizedLiteral = StringUtils.capitalize(strategy.getLiteral());
 
     String handleMethodName;
     if (suffix.isEmpty()) {
@@ -267,7 +291,7 @@ public class GenerateMultiInstanceScopeHandler implements Consumer<TestCaseActiv
     return MethodSpec.methodBuilder(handleMethodName)
         .addJavadoc("Returns the default handler for $L: $L", activity.getTypeName(), activity.getId())
         .addModifiers(Modifier.PUBLIC)
-        .returns(suffix.isEmpty() ? activity.getStrategy().getHandlerType() : TypeName.get(JobHandler.class))
+        .returns(suffix.isEmpty() ? strategy.getHandlerType() : TypeName.get(JobHandler.class))
         .addStatement("return $L(-1)", handleMethodName)
         .build();
   }
@@ -282,8 +306,10 @@ public class GenerateMultiInstanceScopeHandler implements Consumer<TestCaseActiv
   }
 
   protected TypeName getSuperClass(TestCaseActivityScope scope) {
+    GeneratorStrategy strategy = ctx.getStrategy(scope.getId());
+
     // e.g. MultiInstanceScopeHandler<MyScopeHandler>
-    return ParameterizedTypeName.get(ClassName.get(MultiInstanceScopeHandler.class), scope.getStrategy().getHandlerType());
+    return ParameterizedTypeName.get(ClassName.get(MultiInstanceScopeHandler.class), strategy.getHandlerType());
   }
 
   private boolean hasNoneEndEvent(TestCaseActivityScope scope) {
@@ -296,7 +322,7 @@ public class GenerateMultiInstanceScopeHandler implements Consumer<TestCaseActiv
       return false;
     }
 
-    FlowNode flowNode = activity.as(FlowNode.class);
+    FlowNode flowNode = activity.getFlowNode();
     if (!(flowNode instanceof ThrowEvent)) {
       return false;
     }

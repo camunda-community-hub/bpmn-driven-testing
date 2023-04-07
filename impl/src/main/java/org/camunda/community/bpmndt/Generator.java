@@ -4,9 +4,11 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.function.Consumer;
+
+import javax.lang.model.SourceVersion;
 
 import org.camunda.community.bpmndt.api.AbstractJUnit4TestCase;
 import org.camunda.community.bpmndt.api.AbstractJUnit5TestCase;
@@ -34,6 +36,7 @@ import org.camunda.community.bpmndt.cmd.GenerateTestCase;
 import org.camunda.community.bpmndt.cmd.WriteJavaFile;
 import org.camunda.community.bpmndt.cmd.WriteJavaType;
 import org.camunda.community.bpmndt.model.TestCase;
+import org.camunda.community.bpmndt.model.TestCases;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,6 +47,65 @@ import org.slf4j.LoggerFactory;
 public class Generator {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(Generator.class);
+
+  /**
+   * Converts the given BPMN element ID into a Java literal, which can be used when generating source
+   * code. The convertion lowers all characters and retains letters as well as digits. All other
+   * characters are converted into underscores. If the literal starts with a digit, an additional
+   * underscore is prepended.
+   * 
+   * @param id The ID of a specific flow node or process.
+   * 
+   * @return A Java conform literal.
+   */
+  public static String toJavaLiteral(String id) {
+    if (id == null) {
+      throw new IllegalArgumentException("id is null");
+    }
+
+    String literal = toLiteral(id).toLowerCase(Locale.ENGLISH);
+
+    if (Character.isDigit(literal.charAt(0))) {
+      return String.format("_%s", literal);
+    } else if (SourceVersion.isKeyword(literal)) {
+      return String.format("_%s", literal);
+    } else {
+      return literal;
+    }
+  }
+
+  /**
+   * Converts the given BPMN element ID into a literal, which can be used when generating source code.
+   * The convertion retains letters and digits. All other characters are converted into underscores.
+   * Moreover upper case is also retained.
+   * 
+   * @param id The ID of a specific flow node or process.
+   * 
+   * @return A conform literal.
+   */
+  public static String toLiteral(String id) {
+    if (id == null) {
+      throw new IllegalArgumentException("id is null");
+    }
+
+    String trimmedId = id.trim();
+    if (trimmedId.isEmpty()) {
+      throw new IllegalArgumentException("id is empty");
+    }
+
+    StringBuilder sb = new StringBuilder(trimmedId.length());
+    for (int i = 0; i < trimmedId.length(); i++) {
+      char c = trimmedId.charAt(i);
+
+      if (Character.isLetterOrDigit(c)) {
+        sb.append(c);
+      } else {
+        sb.append('_');
+      }
+    }
+
+    return sb.toString();
+  }
 
   private final GeneratorResult result;
 
@@ -61,7 +123,7 @@ public class Generator {
     Collection<Path> bpmnFiles = new CollectBpmnFiles().apply(ctx.getMainResourcePath());
     for (Path bpmnFile : bpmnFiles) {
       String relativePath = ctx.getMainResourcePath().relativize(bpmnFile).toString().replace('\\', '/');
-      LOGGER.info(String.format("Found BPMN file: %s", relativePath));
+      LOGGER.info("Found BPMN file: {}", relativePath);
     }
 
     // generate test cases for each BPMN file
@@ -130,46 +192,67 @@ public class Generator {
     apiClasses.forEach(writeJavaType);
   }
 
+  protected void generateMultiInstanceHandlers(TestCaseContext ctx) {
+    GenerateMultiInstanceHandler generate = new GenerateMultiInstanceHandler(ctx, result);
+    ctx.getMultiInstanceActivities().forEach(generate);
+  }
+
+  protected void generateMultiInstanceScopeHandlers(TestCaseContext ctx) {
+    GenerateMultiInstanceScopeHandler generate = new GenerateMultiInstanceScopeHandler(ctx, result);
+    ctx.getMultiInstanceScopes().forEach(generate);
+  }
+
   protected void generateSpringConfiguration(GeneratorContext ctx) {
     LOGGER.info("Generating Spring configuration");
     new GenerateSpringConfiguration(result).accept(ctx);
   }
 
-  protected void generateMultiInstanceHandlers(TestCaseContext ctx) {
-    ctx.getActivities(activity -> activity.isMultiInstance() && !activity.isScope()).forEach(new GenerateMultiInstanceHandler(result));
-  }
-
-  protected void generateMultiInstanceScopeHandlers(TestCaseContext ctx) {
-    ctx.getActivities(activity -> activity.isMultiInstance() && activity.isScope()).forEach(new GenerateMultiInstanceScopeHandler(result));
-  }
-
   protected void generateTestCases(GeneratorContext gCtx, Path bpmnFile) {
-    BpmnSupport bpmnSupport = BpmnSupport.of(bpmnFile);
-    LOGGER.info(String.format("Process: %s", bpmnSupport.getProcessId()));
-
     // get test cases from BPMN model
-    List<TestCase> testCases = bpmnSupport.getTestCases();
+    TestCases testCases = TestCases.of(bpmnFile);
+
+    for (String processId : testCases.getProcessIds()) {
+      LOGGER.info("Process: {}", processId);
+
+      generateTestCases(gCtx, bpmnFile, testCases.get(processId));
+    }
+  }
+
+  protected void generateTestCases(GeneratorContext gCtx, Path bpmnFile, List<TestCase> testCases) {
     if (testCases.isEmpty()) {
       LOGGER.info("No test cases defined");
       return;
     }
 
-    Consumer<TestCaseContext> generate = new GenerateTestCase(gCtx, result);
+    GenerateTestCase generate = new GenerateTestCase(gCtx, result);
 
-    BuildTestCaseContext ctxBuilder = new BuildTestCaseContext(gCtx, bpmnSupport);
-
+    BuildTestCaseContext buildTestCaseContext = new BuildTestCaseContext(gCtx, bpmnFile);
     for (int i = 0; i < testCases.size(); i++) {
-      TestCaseContext ctx = ctxBuilder.apply(testCases.get(i), i);
+      TestCase testCase = testCases.get(i);
 
-      String testCaseName = ctx.getName();
-
-      // check for duplicate test case names
-      if (ctx.hasDuplicateName()) {
-        LOGGER.warn(String.format("Skipping test case '%s': Name must be unique", testCaseName));
+      // check for invalid test cases
+      if (testCase.hasEmptyPath()) {
+        LOGGER.error("Test case #{} has an empty path", i + 1);
+        continue;
+      }
+      if (testCase.hasIncompletePath()) {
+        LOGGER.error("Test case #{} has an incomplete path", i + 1);
+        continue;
+      }
+      if (testCase.hasInvalidPath()) {
+        LOGGER.error("Test case #{} has an invalid path - invalid flow node IDs: {}", i + 1, testCase.getInvalidFlowNodeIds());
         continue;
       }
 
-      LOGGER.info(String.format("Generating test case '%s'", testCaseName));
+      TestCaseContext ctx = buildTestCaseContext.apply(testCases.get(i));
+
+      // check for duplicate test case names
+      if (ctx.hasDuplicateName()) {
+        LOGGER.warn("Skipping test case #{}: Name must be unique", i + 1, ctx.getName());
+        continue;
+      }
+
+      LOGGER.info("Generating test case '{}'", ctx.getName());
       generate.accept(ctx);
       generateMultiInstanceHandlers(ctx);
       generateMultiInstanceScopeHandlers(ctx);

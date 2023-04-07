@@ -1,12 +1,16 @@
 package org.camunda.community.bpmndt.strategy;
 
-import org.camunda.community.bpmndt.TestCaseActivity;
+import org.camunda.community.bpmndt.model.TestCaseActivity;
 
 import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeName;
 
 public class CallActivityStrategy extends DefaultHandlerStrategy {
+
+  public CallActivityStrategy(TestCaseActivity activity) {
+    super(activity);
+  }
 
   @Override
   public TypeName getHandlerType() {
@@ -16,7 +20,7 @@ public class CallActivityStrategy extends DefaultHandlerStrategy {
   @Override
   public void initHandler(MethodSpec.Builder methodBuilder) {
     methodBuilder.addCode("\n// $L: $L\n", activity.getTypeName(), activity.getId());
-    methodBuilder.addCode("$L = ", activity.getLiteral());
+    methodBuilder.addCode("$L = ", literal);
     methodBuilder.addStatement(initHandlerStatement());
 
     if (!activity.hasNext()) {
@@ -30,13 +34,13 @@ public class CallActivityStrategy extends DefaultHandlerStrategy {
 
     switch (next.getType()) {
       case ERROR_BOUNDARY:
-        methodBuilder.addStatement("$L.simulateBpmnError($S, null)", activity.getLiteral(), next.getEventCode());
+        methodBuilder.addStatement("$L.simulateBpmnError($S, null)", literal, next.getEventCode());
         break;
       case ESCALATION_BOUNDARY:
-        methodBuilder.addStatement("$L.simulateEscalation($S)", activity.getLiteral(), next.getEventCode());
+        methodBuilder.addStatement("$L.simulateEscalation($S)", literal, next.getEventCode());
         break;
       default:
-        methodBuilder.addStatement("$L.waitForBoundaryEvent()", activity.getLiteral());
+        methodBuilder.addStatement("$L.waitForBoundaryEvent()", literal);
         break;
     }
   }

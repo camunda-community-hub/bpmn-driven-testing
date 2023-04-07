@@ -3,8 +3,9 @@ package org.camunda.community.bpmndt.strategy;
 import javax.lang.model.element.Modifier;
 
 import org.apache.commons.lang3.StringUtils;
-import org.camunda.community.bpmndt.TestCaseActivity;
-import org.camunda.community.bpmndt.TestCaseActivityType;
+import org.camunda.community.bpmndt.Generator;
+import org.camunda.community.bpmndt.model.TestCaseActivity;
+import org.camunda.community.bpmndt.model.TestCaseActivityType;
 
 import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.MethodSpec;
@@ -15,18 +16,22 @@ import com.squareup.javapoet.TypeSpec;
  */
 public class DefaultHandlerStrategy extends DefaultStrategy {
 
+  public DefaultHandlerStrategy(TestCaseActivity activity) {
+    super(activity);
+  }
+
   @Override
   public void addHandlerField(TypeSpec.Builder classBuilder) {
-    classBuilder.addField(getHandlerType(), activity.getLiteral(), Modifier.PRIVATE);
+    classBuilder.addField(getHandlerType(), literal, Modifier.PRIVATE);
   }
 
   @Override
   public void addHandlerMethod(TypeSpec.Builder classBuilder) {
-    MethodSpec method = MethodSpec.methodBuilder(buildHandlerMethodName(activity.getLiteral()))
+    MethodSpec method = MethodSpec.methodBuilder(buildHandlerMethodName(literal))
         .addJavadoc(buildHandlerMethodJavadoc())
         .addModifiers(Modifier.PUBLIC)
         .returns(getHandlerType())
-        .addStatement("return $L", activity.getLiteral())
+        .addStatement("return $L", literal)
         .build();
 
     classBuilder.addMethod(method);
@@ -38,7 +43,7 @@ public class DefaultHandlerStrategy extends DefaultStrategy {
 
   @Override
   public void applyHandler(MethodSpec.Builder methodBuilder) {
-    if (activity.hasPrev(TestCaseActivityType.EVENT_BASED_GATEWAY)) {
+    if (activity.hasPrevious(TestCaseActivityType.EVENT_BASED_GATEWAY)) {
       // if an event or job is part of an event based gateway
       // the process instance is waiting at the gateway and not at the event or job itself
       methodBuilder.addStatement("instance.apply($L)", getHandler());
@@ -61,7 +66,7 @@ public class DefaultHandlerStrategy extends DefaultStrategy {
       case MESSAGE_BOUNDARY:
       case SIGNAL_BOUNDARY:
       case TIMER_BOUNDARY:
-        methodBuilder.addStatement("instance.apply($L)", next.getLiteral());
+        methodBuilder.addStatement("instance.apply($L)", Generator.toLiteral(next.getId()));
         break;
       default:
         break;
@@ -70,17 +75,17 @@ public class DefaultHandlerStrategy extends DefaultStrategy {
 
   @Override
   public CodeBlock getHandler() {
-    if (activity.hasMultiInstanceParent()) {
-      return CodeBlock.of("get$LHandler(loopIndex)", StringUtils.capitalize(activity.getLiteral()));
+    if (multiInstanceParent) {
+      return CodeBlock.of("get$LHandler(loopIndex)", StringUtils.capitalize(literal));
     } else {
-      return CodeBlock.of(activity.getLiteral());
+      return CodeBlock.of(literal);
     }
   }
 
   @Override
   public void initHandler(MethodSpec.Builder methodBuilder) {
     methodBuilder.addCode("\n// $L: $L\n", activity.getTypeName(), activity.getId());
-    methodBuilder.addCode("$L = ", activity.getLiteral());
+    methodBuilder.addCode("$L = ", literal);
     methodBuilder.addStatement(initHandlerStatement());
   }
 

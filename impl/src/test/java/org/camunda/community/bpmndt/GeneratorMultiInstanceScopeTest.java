@@ -59,33 +59,9 @@ public class GeneratorMultiInstanceScopeTest {
 
     TypeSpec typeSpec;
 
-    TypeName multiInstanceScopeHandlerType = ClassName.get("org.example.scopeerrorendevent", "SubProcessHandler1");
+    ClassName multiInstanceScopeHandlerType1 = ClassName.get("org.example.scopeerrorendevent", "TC_Error__SubProcessHandler");
 
     typeSpec = result.getFiles().get(0).typeSpec;
-    assertThat(typeSpec).hasFields(1);
-    assertThat(typeSpec).hasMethods(7);
-
-    assertThat(typeSpec.fieldSpecs.get(0)).hasName("subProcess");
-    assertThat(typeSpec.fieldSpecs.get(0)).hasType(multiInstanceScopeHandlerType);
-
-    assertThat(typeSpec.methodSpecs.get(6)).hasJavaDoc();
-    assertThat(typeSpec.methodSpecs.get(6)).hasName("handleSubProcess");
-    assertThat(typeSpec.methodSpecs.get(6)).hasReturnType(multiInstanceScopeHandlerType);
-
-    typeSpec = result.getFiles().get(1).typeSpec;
-    assertThat(typeSpec).hasFields(0);
-    assertThat(typeSpec).hasMethods(2);
-    assertThat(typeSpec).hasName("SubProcessHandler1");
-
-    assertThat(typeSpec.methodSpecs.get(1)).hasAnnotation(Override.class);
-    assertThat(typeSpec.methodSpecs.get(1)).hasName("apply");
-    assertThat(typeSpec.methodSpecs.get(1)).hasParameters("pi", "loopIndex");
-    assertThat(typeSpec.methodSpecs.get(1)).isProtected();
-    assertThat(typeSpec.methodSpecs.get(1)).containsCode("return false");
-
-    TypeName multiInstanceScopeHandlerType1 = ClassName.get("org.example.scopeerrorendevent", "SubProcessHandler2");
-
-    typeSpec = result.getFiles().get(2).typeSpec;
     assertThat(typeSpec).hasFields(1);
     assertThat(typeSpec).hasMethods(7);
 
@@ -96,51 +72,111 @@ public class GeneratorMultiInstanceScopeTest {
     assertThat(typeSpec.methodSpecs.get(6)).hasName("handleSubProcess");
     assertThat(typeSpec.methodSpecs.get(6)).hasReturnType(multiInstanceScopeHandlerType1);
 
+    typeSpec = result.getFiles().get(1).typeSpec;
+    assertThat(typeSpec).hasFields(0);
+    assertThat(typeSpec).hasMethods(2);
+    assertThat(typeSpec).hasName(multiInstanceScopeHandlerType1.simpleName());
+
+    assertThat(typeSpec.methodSpecs.get(1)).hasAnnotation(Override.class);
+    assertThat(typeSpec.methodSpecs.get(1)).hasName("apply");
+    assertThat(typeSpec.methodSpecs.get(1)).hasParameters("pi", "loopIndex");
+    assertThat(typeSpec.methodSpecs.get(1)).isProtected();
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("return false");
+
+    ClassName multiInstanceScopeHandlerType2 = ClassName.get("org.example.scopeerrorendevent", "TC_None__SubProcessHandler");
+
+    typeSpec = result.getFiles().get(2).typeSpec;
+    assertThat(typeSpec).hasFields(1);
+    assertThat(typeSpec).hasMethods(7);
+
+    assertThat(typeSpec.fieldSpecs.get(0)).hasName("subProcess");
+    assertThat(typeSpec.fieldSpecs.get(0)).hasType(multiInstanceScopeHandlerType2);
+
+    assertThat(typeSpec.methodSpecs.get(6)).hasJavaDoc();
+    assertThat(typeSpec.methodSpecs.get(6)).hasName("handleSubProcess");
+    assertThat(typeSpec.methodSpecs.get(6)).hasReturnType(multiInstanceScopeHandlerType2);
+
     typeSpec = result.getFiles().get(3).typeSpec;
     assertThat(typeSpec).hasFields(0);
     assertThat(typeSpec).hasMethods(2);
-    assertThat(typeSpec).hasName("SubProcessHandler2");
+    assertThat(typeSpec).hasName(multiInstanceScopeHandlerType2.simpleName());
   }
 
   @Test
   public void testNested() {
     generator.generateTestCases(ctx, bpmnFile);
-    assertThat(result.getFiles()).hasSize(3);
+    assertThat(result.getFiles()).hasSize(6);
+    assertThat(result.getFiles().get(0).typeSpec.name).isEqualTo("TC_startEvent__endEvent");
+    assertThat(result.getFiles().get(1).typeSpec.name).isEqualTo("TC_startEvent__endEvent__SubProcessHandler");
+    assertThat(result.getFiles().get(2).typeSpec.name).isEqualTo("TC_startEvent__endEvent__NestedSubProcessHandler");
+    assertThat(result.getFiles().get(3).typeSpec.name).isEqualTo("TC_subProcessStartEvent__endEvent");
+    assertThat(result.getFiles().get(4).typeSpec.name).isEqualTo("TC_subProcessStartEvent__endEvent__NestedSubProcessHandler");
+    assertThat(result.getFiles().get(5).typeSpec.name).isEqualTo("TC_nestedSubProcessStartEvent__endEvent");
+  }
+
+  @Test
+  public void testNestedSubProcess() {
+    generator.generateTestCases(ctx, bpmnFile);
+    assertThat(result.getFiles()).hasSize(2);
+
+    TypeSpec typeSpec = result.getFiles().get(0).typeSpec;
+    assertThat(typeSpec).hasFields(1);
+    assertThat(typeSpec.fieldSpecs.get(0).type).isEqualTo(ClassName.get("org.example.scopenestedsubprocess", "TC_startEvent__endEvent__SubProcessHandler"));
   }
 
   @Test
   public void testInner() {
     generator.generateTestCases(ctx, bpmnFile);
-    assertThat(result.getFiles()).hasSize(6);
+    assertThat(result.getFiles()).hasSize(4); // TC_startEvent__subProcessEndEvent__SubProcessHandler is created, but not needed
 
     TypeSpec typeSpec;
 
-    TypeName multiInstanceScopeHandlerType = ClassName.get("org.example.scopeinner", "SubProcessHandler1");
-
+    // inner
     typeSpec = result.getFiles().get(0).typeSpec;
-    assertThat(typeSpec).hasFields(1);
-    assertThat(typeSpec).hasMethods(8);
+    assertThat(typeSpec).hasFields(0);
+    assertThat(typeSpec).hasMethods(7);
 
     assertThat(typeSpec.methodSpecs.get(3)).hasName("getEnd");
     assertThat(typeSpec.methodSpecs.get(3)).isPublic();
-    assertThat(typeSpec.methodSpecs.get(3)).containsCode("return \"subProcess#multiInstanceBody\"");
+    assertThat(typeSpec.methodSpecs.get(3)).containsCode("return \"subProcessEndEvent\"");
 
     assertThat(typeSpec.methodSpecs.get(5)).hasName("getStart");
     assertThat(typeSpec.methodSpecs.get(5)).isPublic();
-    assertThat(typeSpec.methodSpecs.get(5)).containsCode("return \"subProcess#multiInstanceBody\"");
+    assertThat(typeSpec.methodSpecs.get(5)).containsCode("return \"subProcessStartEvent\"");
 
     assertThat(typeSpec.methodSpecs.get(6)).hasName("isProcessEnd");
     assertThat(typeSpec.methodSpecs.get(6)).isProtected();
     assertThat(typeSpec.methodSpecs.get(6)).containsCode("return false");
 
-    assertThat(typeSpec.methodSpecs.get(7)).hasJavaDoc();
-    assertThat(typeSpec.methodSpecs.get(7)).hasName("handleSubProcess");
-    assertThat(typeSpec.methodSpecs.get(7)).hasReturnType(multiInstanceScopeHandlerType);
-
+    // inner end
     typeSpec = result.getFiles().get(1).typeSpec;
     assertThat(typeSpec).hasFields(0);
-    assertThat(typeSpec).hasMethods(2);
-    assertThat(typeSpec).hasName("SubProcessHandler1");
+    assertThat(typeSpec).hasMethods(7);
+
+    assertThat(typeSpec.methodSpecs.get(3)).hasName("getEnd");
+    assertThat(typeSpec.methodSpecs.get(3)).isPublic();
+    assertThat(typeSpec.methodSpecs.get(3)).containsCode("return \"subProcessEndEvent\"");
+
+    assertThat(typeSpec.methodSpecs.get(5)).hasName("getStart");
+    assertThat(typeSpec.methodSpecs.get(5)).isPublic();
+    assertThat(typeSpec.methodSpecs.get(5)).containsCode("return \"startEvent\"");
+
+    assertThat(typeSpec.methodSpecs.get(6)).hasName("isProcessEnd");
+    assertThat(typeSpec.methodSpecs.get(6)).isProtected();
+    assertThat(typeSpec.methodSpecs.get(6)).containsCode("return false");
+
+    // inner start
+    typeSpec = result.getFiles().get(3).typeSpec;
+    assertThat(typeSpec).hasFields(0);
+    assertThat(typeSpec).hasMethods(6);
+
+    assertThat(typeSpec.methodSpecs.get(3)).hasName("getEnd");
+    assertThat(typeSpec.methodSpecs.get(3)).isPublic();
+    assertThat(typeSpec.methodSpecs.get(3)).containsCode("return \"endEvent\"");
+
+    assertThat(typeSpec.methodSpecs.get(5)).hasName("getStart");
+    assertThat(typeSpec.methodSpecs.get(5)).isPublic();
+    assertThat(typeSpec.methodSpecs.get(5)).containsCode("return \"subProcessStartEvent\"");
   }
 
   @Test
@@ -150,7 +186,7 @@ public class GeneratorMultiInstanceScopeTest {
 
     TypeSpec typeSpec;
 
-    TypeName multiInstanceScopeHandlerType = ClassName.get("org.example.scopesequential", "MultiInstanceScopeHandler1");
+    ClassName multiInstanceScopeHandlerType = ClassName.get("org.example.scopesequential", "TC_startEvent__endEvent__MultiInstanceScopeHandler");
 
     typeSpec = result.getFiles().get(0).typeSpec;
     assertThat(typeSpec).hasFields(1);
@@ -166,7 +202,7 @@ public class GeneratorMultiInstanceScopeTest {
     typeSpec = result.getFiles().get(1).typeSpec;
     assertThat(typeSpec).hasFields(6);
     assertThat(typeSpec).hasMethods(26);
-    assertThat(typeSpec).hasName("MultiInstanceScopeHandler1");
+    assertThat(typeSpec).hasName(multiInstanceScopeHandlerType.simpleName());
 
     ParameterizedTypeName parameterizedTypeName;
 

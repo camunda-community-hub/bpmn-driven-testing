@@ -3,15 +3,16 @@ package org.camunda.community.bpmndt.strategy;
 import javax.lang.model.element.Modifier;
 
 import org.apache.commons.lang3.StringUtils;
+import org.camunda.community.bpmndt.Generator;
 import org.camunda.community.bpmndt.GeneratorStrategy;
-import org.camunda.community.bpmndt.TestCaseActivity;
-import org.camunda.community.bpmndt.TestCaseActivityType;
 import org.camunda.community.bpmndt.api.CallActivityHandler;
 import org.camunda.community.bpmndt.api.EventHandler;
 import org.camunda.community.bpmndt.api.ExternalTaskHandler;
 import org.camunda.community.bpmndt.api.JobHandler;
 import org.camunda.community.bpmndt.api.UserTaskHandler;
 import org.camunda.community.bpmndt.api.cfg.BpmndtParseListener;
+import org.camunda.community.bpmndt.model.TestCaseActivity;
+import org.camunda.community.bpmndt.model.TestCaseActivityType;
 
 import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.MethodSpec;
@@ -32,7 +33,20 @@ public class DefaultStrategy implements GeneratorStrategy {
   protected static TypeName OTHER = TypeName.get(Void.class);
   protected static TypeName USER_TASK = TypeName.get(UserTaskHandler.class);
 
-  protected TestCaseActivity activity;
+  protected final TestCaseActivity activity;
+  protected final String literal;
+
+  /**
+   * Indicates if the strategy is applied on a multi instance scope handler or not - see
+   * {@link #setMultiInstanceParent(boolean)}
+   */
+  protected boolean multiInstanceParent = false;
+
+  public DefaultStrategy(TestCaseActivity activity) {
+    this.activity = activity;
+
+    literal = Generator.toLiteral(activity.getId());
+  }
 
   @Override
   public void addHandlerField(TypeSpec.Builder classBuilder) {
@@ -100,6 +114,24 @@ public class DefaultStrategy implements GeneratorStrategy {
   }
 
   @Override
+  public boolean equals(Object obj) {
+    if (obj == this) {
+      return true;
+    }
+    if (!(obj instanceof GeneratorStrategy)) {
+      return false;
+    }
+
+    GeneratorStrategy strategy = (GeneratorStrategy) obj;
+    return strategy.getActivity().getId().equals(activity.getId());
+  }
+
+  @Override
+  public TestCaseActivity getActivity() {
+    return activity;
+  }
+
+  @Override
   public CodeBlock getHandler() {
     // nothing to return
     return null;
@@ -107,8 +139,8 @@ public class DefaultStrategy implements GeneratorStrategy {
 
   @Override
   public CodeBlock getHandlerAfter() {
-    if (activity.hasMultiInstanceParent()) {
-      return CodeBlock.of("get$LHandlerAfter(loopIndex)", StringUtils.capitalize(activity.getLiteral()));
+    if (multiInstanceParent) {
+      return CodeBlock.of("get$LHandlerAfter(loopIndex)", StringUtils.capitalize(literal));
     } else {
       return CodeBlock.of(getLiteralAfter());
     }
@@ -116,8 +148,8 @@ public class DefaultStrategy implements GeneratorStrategy {
 
   @Override
   public CodeBlock getHandlerBefore() {
-    if (activity.hasMultiInstanceParent()) {
-      return CodeBlock.of("get$LHandlerBefore(loopIndex)", StringUtils.capitalize(activity.getLiteral()));
+    if (multiInstanceParent) {
+      return CodeBlock.of("get$LHandlerBefore(loopIndex)", StringUtils.capitalize(literal));
     } else {
       return CodeBlock.of(getLiteralBefore());
     }
@@ -128,12 +160,22 @@ public class DefaultStrategy implements GeneratorStrategy {
     return OTHER;
   }
 
+  @Override
+  public String getLiteral() {
+    return literal;
+  }
+
   protected String getLiteralAfter() {
-    return String.format("%sAfter", activity.getLiteral());
+    return String.format("%sAfter", literal);
   }
 
   protected String getLiteralBefore() {
-    return String.format("%sBefore", activity.getLiteral());
+    return String.format("%sBefore", literal);
+  }
+
+  @Override
+  public int hashCode() {
+    return activity.getId().hashCode();
   }
 
   @Override
@@ -180,8 +222,9 @@ public class DefaultStrategy implements GeneratorStrategy {
     methodBuilder.addStatement("assertThat(pi).isWaitingAt($S)", activity.getId());
   }
 
-  public void setActivity(TestCaseActivity activity) {
-    this.activity = activity;
+  @Override
+  public void setMultiInstanceParent(boolean multiInstanceParent) {
+    this.multiInstanceParent = multiInstanceParent;
   }
 
   /**
