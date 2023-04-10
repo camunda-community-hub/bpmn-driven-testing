@@ -7,12 +7,14 @@ import org.camunda.bpm.engine.impl.core.model.BaseCallableElement.CallableElemen
  */
 public class CallActivityDefinition {
 
-  private CallableElementBinding binding;
-  private String businessKey;
-  private String definitionKey;
-  private String definitionTenantId;
-  private Integer version;
-  private String versionTag;
+  protected CallableElementBinding binding;
+  protected String businessKey;
+  protected String definitionKey;
+  protected String definitionTenantId;
+  protected boolean inputs;
+  protected boolean outputs;
+  protected Integer version;
+  protected String versionTag;
 
   public CallableElementBinding getBinding() {
     return binding != null ? binding : CallableElementBinding.LATEST;
@@ -38,27 +40,21 @@ public class CallActivityDefinition {
     return versionTag;
   }
 
-  protected void setBinding(CallableElementBinding binding) {
-    this.binding = binding;
+  /**
+   * Determines if the call activity defines a mapping under "In mapping" in tab "Variables".
+   * 
+   * @return {@code true}, if input variables are mapped. Otherwise {@code false}.
+   */
+  public boolean hasInputs() {
+    return inputs;
   }
 
-  protected void setBusinessKey(String businessKey) {
-    this.businessKey = businessKey;
-  }
-
-  protected void setDefinitionKey(String definitionKey) {
-    this.definitionKey = definitionKey;
-  }
-
-  protected void setDefinitionTenantId(String definitionTenantId) {
-    this.definitionTenantId = definitionTenantId;
-  }
-
-  protected void setVersion(Integer version) {
-    this.version = version;
-  }
-
-  protected void setVersionTag(String versionTag) {
-    this.versionTag = versionTag;
+  /**
+   * Determines if the call activity defines a mapping under "Out mapping" in tab "Variables".
+   * 
+   * @return {@code true}, if output variables are mapped. Otherwise {@code false}.
+   */
+  public boolean hasOutputs() {
+    return outputs;
   }
 }

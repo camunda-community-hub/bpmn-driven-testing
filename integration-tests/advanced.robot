@@ -20,6 +20,7 @@ mvn clean test
   Should contain  ${result.stdout}  Running org.example.it.CallActivityMessageTest
   Should contain  ${result.stdout}  Running org.example.it.CallActivitySignalTest
   Should contain  ${result.stdout}  Running org.example.it.CallActivityTimerTest
+  Should contain  ${result.stdout}  Running org.example.it.CallActivityVariablesTest
   Should contain  ${result.stdout}  Running org.example.it.CallActivityWithMappingTest
   Should contain  ${result.stdout}  Running org.example.it.CallActivityWithoutMappingTest
   Should contain  ${result.stdout}  Running org.example.it.ExternalTaskErrorTest

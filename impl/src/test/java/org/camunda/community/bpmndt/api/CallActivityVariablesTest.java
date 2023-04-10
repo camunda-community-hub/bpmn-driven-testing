@@ -1,13 +1,13 @@
 package org.camunda.community.bpmndt.api;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 
-import org.camunda.bpm.engine.RuntimeService;
-import org.camunda.bpm.engine.runtime.EventSubscription;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.test.assertions.ProcessEngineTests;
 import org.camunda.bpm.engine.test.assertions.bpmn.ProcessInstanceAssert;
@@ -16,7 +16,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class CallActivityMessageTest {
+public class CallActivityVariablesTest {
 
   @RegisterExtension
   public TestCase tc = new TestCase();
@@ -26,42 +26,49 @@ public class CallActivityMessageTest {
   @BeforeEach
   public void setUp() {
     handler = new CallActivityHandler(tc.instance, "callActivity");
-    handler.waitForBoundaryEvent();
   }
 
   @Test
   public void testExecute() {
-    tc.createExecutor().execute();
+    handler.verify((pi, callActivity) -> {
+      pi.variables().containsEntry("x", 1);
+
+      assertThat(callActivity.hasInputs()).isTrue();
+      assertThat(callActivity.hasOutputs()).isTrue();
+    }).verifyInput(variables -> {
+      assertThat(variables.hasVariable("y")).isTrue();
+      assertThat(variables.getVariable("y")).isEqualTo(1);
+
+      variables.setVariable("y", 2);
+    }).verifyOutput(variables -> {
+      assertThat(variables.hasVariable("z")).isTrue();
+      assertThat(variables.getVariable("z")).isEqualTo(2);
+    });
+
+    tc.createExecutor()
+        .withVariable("x", 1)
+        .execute();
   }
 
   private class TestCase extends AbstractJUnit5TestCase<TestCase> {
 
     @Override
     protected void execute(ProcessInstance pi) {
-      assertThat(pi).isNotNull();
+      assertThat(pi, notNullValue());
 
       ProcessInstanceAssert piAssert = ProcessEngineTests.assertThat(pi);
 
       piAssert.hasPassed("startEvent").isWaitingAt("callActivity");
 
-      // async before
       ProcessEngineTests.execute(ProcessEngineTests.job());
 
-      piAssert.isWaitingAt("callActivity");
-
-      RuntimeService runtimeService = tc.getProcessEngine().getRuntimeService();
-
-      EventSubscription eventSubscription = runtimeService.createEventSubscriptionQuery().singleResult();
-
-      runtimeService.messageEventReceived(eventSubscription.getEventName(), eventSubscription.getExecutionId());
-
-      piAssert.hasPassed("callActivity", "messageBoundaryEvent", "endEvent").isEnded();
+      piAssert.hasPassed("callActivity", "endEvent").isEnded();
     }
 
     @Override
     protected InputStream getBpmnResource() {
       try {
-        return Files.newInputStream(TestPaths.advanced("callActivityMessage.bpmn"));
+        return Files.newInputStream(TestPaths.advanced("callActivityVariables.bpmn"));
       } catch (IOException e) {
         return null;
       }
@@ -69,7 +76,7 @@ public class CallActivityMessageTest {
 
     @Override
     public String getProcessDefinitionKey() {
-      return "callActivityMessage";
+      return "callActivityVariables";
     }
 
     @Override

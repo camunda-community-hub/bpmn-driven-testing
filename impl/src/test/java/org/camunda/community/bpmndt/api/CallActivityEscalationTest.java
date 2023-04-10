@@ -24,12 +24,11 @@ public class CallActivityEscalationTest {
   @BeforeEach
   public void setUp() {
     handler = new CallActivityHandler(tc.instance, "callActivity");
+    handler.simulateEscalation("callActivityEscalation");
   }
 
   @Test
   public void testExecute() {
-    handler.simulateEscalation("callActivityEscalation");
-
     tc.createExecutor().execute();
   }
 

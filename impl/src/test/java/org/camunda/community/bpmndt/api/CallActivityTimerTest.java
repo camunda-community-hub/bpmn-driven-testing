@@ -13,30 +13,29 @@ import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.test.assertions.ProcessEngineTests;
 import org.camunda.bpm.engine.test.assertions.bpmn.ProcessInstanceAssert;
 import org.camunda.community.bpmndt.test.TestPaths;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 public class CallActivityTimerTest {
 
-  @Rule
+  @RegisterExtension
   public TestCase tc = new TestCase();
 
   private CallActivityHandler handler;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     handler = new CallActivityHandler(tc.instance, "callActivity");
+    handler.waitForBoundaryEvent();
   }
 
   @Test
   public void testExecute() {
-    handler.waitForBoundaryEvent();
-
     tc.createExecutor().execute();
   }
 
-  private class TestCase extends AbstractJUnit4TestCase<TestCase> {
+  private class TestCase extends AbstractJUnit5TestCase<TestCase> {
 
     @Override
     protected void execute(ProcessInstance pi) {
