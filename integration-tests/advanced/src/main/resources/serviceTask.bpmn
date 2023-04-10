@@ -11,7 +11,7 @@
         </bpmndt:testCase>
       </bpmndt:testCases>
     </bpmn:extensionElements>
-    <bpmn:startEvent id="startEvent">
+    <bpmn:startEvent id="startEvent" camunda:asyncAfter="true">
       <bpmn:outgoing>Flow_11u2y9h</bpmn:outgoing>
     </bpmn:startEvent>
     <bpmn:sequenceFlow id="Flow_11u2y9h" sourceRef="startEvent" targetRef="doA" />
@@ -31,17 +31,17 @@
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="serviceTask">
-      <bpmndi:BPMNEdge id="Flow_11u2y9h_di" bpmnElement="Flow_11u2y9h">
-        <di:waypoint x="215" y="117" />
-        <di:waypoint x="270" y="117" />
+      <bpmndi:BPMNEdge id="Flow_0hfzo5y_di" bpmnElement="Flow_0hfzo5y">
+        <di:waypoint x="530" y="117" />
+        <di:waypoint x="592" y="117" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0f0210z_di" bpmnElement="Flow_0f0210z">
         <di:waypoint x="370" y="117" />
         <di:waypoint x="430" y="117" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0hfzo5y_di" bpmnElement="Flow_0hfzo5y">
-        <di:waypoint x="530" y="117" />
-        <di:waypoint x="592" y="117" />
+      <bpmndi:BPMNEdge id="Flow_11u2y9h_di" bpmnElement="Flow_11u2y9h">
+        <di:waypoint x="215" y="117" />
+        <di:waypoint x="270" y="117" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="startEvent">
         <dc:Bounds x="179" y="99" width="36" height="36" />

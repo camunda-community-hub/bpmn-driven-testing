@@ -3,14 +3,14 @@ package org.camunda.community.bpmndt.api;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 import org.camunda.bpm.engine.ProcessEngine;
-import org.camunda.bpm.engine.RepositoryService;
 import org.camunda.bpm.engine.impl.bpmn.behavior.CallActivityBehavior;
 import org.camunda.bpm.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.camunda.bpm.engine.impl.pvm.delegate.ActivityExecution;
-import org.camunda.bpm.engine.repository.Deployment;
+import org.camunda.bpm.engine.repository.DeploymentBuilder;
+import org.camunda.bpm.engine.repository.DeploymentWithDefinitions;
+import org.camunda.bpm.engine.repository.ProcessDefinition;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.community.bpmndt.api.cfg.BpmndtParseListener;
 
@@ -26,20 +26,19 @@ public class TestCaseInstance {
 
   private final Map<String, CallActivityHandler> callActivityHandlerMap;
 
-  private ProcessEngine processEngine;
-
+  protected String end;
   /** Key of the test case related process definition. */
-  private String processDefinitionKey;
-
-  private String start;
-  private String end;
-
-  private boolean processEnd;
+  protected String processDefinitionKey;
+  protected boolean processEnd;
+  protected ProcessEngine processEngine;
+  protected String start;
+  protected String tenantId;
 
   /** ID of BPMN resource deployment. */
   private String deploymentId;
 
-  private String tenantId;
+  /** ID of the deployed process definition. */
+  private String processDefinitionId;
 
   private ProcessInstance pi;
 
@@ -72,33 +71,41 @@ public class TestCaseInstance {
   }
 
   protected void deploy(String deploymentName, InputStream bpmnResource) {
-    this.register();
+    DeploymentBuilder deploymentBuilder = processEngine.getRepositoryService().createDeployment()
+        .addInputStream(String.format("%s.bpmn", getProcessDefinitionKey()), bpmnResource);
 
-    RepositoryService repositoryService = processEngine.getRepositoryService();
-
-    Deployment deployment = repositoryService.createDeployment()
-        .name(deploymentName)
-        .addInputStream(String.format("%s.bpmn", getProcessDefinitionKey()), bpmnResource)
-        .enableDuplicateFiltering(false)
-        .tenantId(tenantId)
-        .deploy();
-
-    deploymentId = deployment.getId();
+    deploy(deploymentBuilder, deploymentName);
   }
 
   protected void deploy(String deploymentName, String bpmnResourceName) {
-    this.register();
+    DeploymentBuilder deploymentBuilder = processEngine.getRepositoryService().createDeployment()
+        .addClasspathResource(bpmnResourceName);
 
-    RepositoryService repositoryService = processEngine.getRepositoryService();
+    deploy(deploymentBuilder, deploymentName);
+  }
 
-    Deployment deployment = repositoryService.createDeployment()
-        .name(deploymentName)
-        .addClasspathResource(bpmnResourceName)
+  private void deploy(DeploymentBuilder deploymentBuilder, String deploymentName) {
+    BpmndtParseListener parseListener = findParseListener();
+
+    // register instance at BpmndtParseListener,
+    // used for instrumentation of the process definition during BPMN model parsing
+    parseListener.setInstance(this);
+
+    DeploymentWithDefinitions deployment = deploymentBuilder.name(deploymentName)
         .enableDuplicateFiltering(false)
         .tenantId(tenantId)
-        .deploy();
+        .deployWithResult();
+
+    // deregister instance
+    parseListener.setInstance(null);
 
     deploymentId = deployment.getId();
+
+    processDefinitionId = deployment.getDeployedProcessDefinitions().stream()
+        .filter(pd -> pd.getKey().equals(processDefinitionKey))
+        .map(ProcessDefinition::getId)
+        .findFirst()
+        .get();
   }
 
   /**
@@ -128,14 +135,15 @@ public class TestCaseInstance {
     }
   }
 
-  private Optional<BpmndtParseListener> findParseListener() {
+  private BpmndtParseListener findParseListener() {
     ProcessEngineConfigurationImpl processEngineConfiguration =
         (ProcessEngineConfigurationImpl) processEngine.getProcessEngineConfiguration();
 
     return processEngineConfiguration.getCustomPostBPMNParseListeners().stream()
         .filter((parseListener) -> (parseListener instanceof BpmndtParseListener))
         .map(BpmndtParseListener.class::cast)
-        .findFirst();
+        .findFirst()
+        .get();
   }
 
   public String getDeploymentId() {
@@ -144,6 +152,10 @@ public class TestCaseInstance {
 
   public String getEnd() {
     return end;
+  }
+
+  public String getProcessDefinitionId() {
+    return processDefinitionId;
   }
 
   public String getProcessDefinitionKey() {
@@ -162,50 +174,15 @@ public class TestCaseInstance {
     return processEnd;
   }
 
-  /**
-   * Registers the test case instance by providing a reference to the {@link BpmndtParseListener} that
-   * is used during BPMN model parsing.
-   */
-  protected void register() {
-    findParseListener().ifPresent((parseListener) -> parseListener.setInstance(this));
-  }
-
   protected void registerCallActivityHandler(String activityId, CallActivityHandler handler) {
     callActivityHandlerMap.put(activityId, handler);
-  }
-
-  protected void setEnd(String end) {
-    this.end = end;
-  }
-
-  protected void setProcessDefinitionKey(String processDefinitionKey) {
-    this.processDefinitionKey = processDefinitionKey;
-  }
-
-  protected void setProcessEnd(boolean processEnd) {
-    this.processEnd = processEnd;
-  }
-
-  protected void setProcessEngine(ProcessEngine processEngine) {
-    this.processEngine = processEngine;
   }
 
   protected void setProcessInstance(ProcessInstance pi) {
     this.pi = pi;
   }
 
-  protected void setStart(String start) {
-    this.start = start;
-  }
-
-  protected void setTenantId(String tenantId) {
-    this.tenantId = tenantId;
-  }
-
   protected void undeploy() {
-    // deregister instance
-    findParseListener().ifPresent((parseListener) -> parseListener.setInstance(null));
-
     callActivityHandlerMap.clear();
 
     if (deploymentId == null) {

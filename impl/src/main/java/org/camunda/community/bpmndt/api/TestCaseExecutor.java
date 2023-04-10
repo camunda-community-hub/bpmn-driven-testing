@@ -5,7 +5,7 @@ import java.util.function.Consumer;
 
 import org.camunda.bpm.engine.ProcessEngineException;
 import org.camunda.bpm.engine.RuntimeService;
-import org.camunda.bpm.engine.repository.ProcessDefinition;
+import org.camunda.bpm.engine.migration.MigrationPlan;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.test.assertions.ProcessEngineTests;
 import org.camunda.bpm.engine.test.assertions.bpmn.ProcessInstanceAssert;
@@ -60,14 +60,9 @@ public class TestCaseExecutor {
    * @return The newly created process instance.
    */
   public ProcessInstance execute() {
-    // find process definition of related deployment
-    ProcessDefinition pd = instance.getProcessEngine().getRepositoryService()
-        .createProcessDefinitionQuery()
-        .deploymentId(instance.getDeploymentId())
-        .processDefinitionKey(instance.getProcessDefinitionKey())
-        .singleResult();
+    RuntimeService runtimeService = instance.getProcessEngine().getRuntimeService();
 
-    ProcessInstance pi = instance.getProcessEngine().getRuntimeService().createProcessInstanceById(pd.getId())
+    ProcessInstance pi = runtimeService.createProcessInstanceById(instance.getProcessDefinitionId())
         .businessKey(businessKey)
         .setVariables(variables)
         .startBeforeActivity(instance.getStart())
@@ -86,7 +81,14 @@ public class TestCaseExecutor {
    */
   public void execute(ProcessInstance pi) {
     if (pi == null) {
-      throw new IllegalArgumentException("The given process instance is null");
+      throw new IllegalArgumentException("process instance is null");
+    }
+
+    if (!pi.getProcessDefinitionId().equals(instance.getProcessDefinitionId())) {
+      // migrate process instance, if it was started with another process definition
+      // this can happen, when the process instance is started with #startProcessInstanceByKey
+      // and multiple test cases deployed different instrumented versions of a process
+      migrate(pi);
     }
 
     // announce process instance
@@ -113,12 +115,15 @@ public class TestCaseExecutor {
    */
   public ProcessInstance execute(String processInstanceId) {
     if (processInstanceId == null) {
-      throw new IllegalArgumentException("The given process instance ID is null");
+      throw new IllegalArgumentException("process instance ID is null");
     }
 
     RuntimeService runtimeService = instance.getProcessEngine().getRuntimeService();
 
-    ProcessInstance pi = runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
+    ProcessInstance pi = runtimeService.createProcessInstanceQuery()
+        .processInstanceId(processInstanceId)
+        .singleResult();
+
     if (pi == null) {
       throw new IllegalArgumentException("No process instance found for the given ID");
     }
@@ -126,6 +131,22 @@ public class TestCaseExecutor {
     execute(pi);
 
     return pi;
+  }
+
+  protected void migrate(ProcessInstance pi) {
+    RuntimeService runtimeService = instance.getProcessEngine().getRuntimeService();
+
+    String source = pi.getProcessDefinitionId();
+    String target = instance.getProcessDefinitionId();
+
+    MigrationPlan migrationPlan = runtimeService.createMigrationPlan(source, target)
+        .mapEqualActivities()
+        .setVariables(runtimeService.getVariables(pi.getId()))
+        .build();
+
+    runtimeService.newMigration(migrationPlan)
+        .processInstanceIds(pi.getId())
+        .execute();
   }
 
   /**
