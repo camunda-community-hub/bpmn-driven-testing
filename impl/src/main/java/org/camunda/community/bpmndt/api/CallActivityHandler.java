@@ -87,16 +87,19 @@ public class CallActivityHandler {
     CallableElement callableElement = behavior.getCallableElement();
 
     CallActivityDefinition callActivityDefinition = new CallActivityDefinition();
-    callActivityDefinition.setBinding(callableElement.getBinding());
-    callActivityDefinition.setBusinessKey(callableElement.getBusinessKey(execution));
-    callActivityDefinition.setDefinitionKey(callableElement.getDefinitionKey(execution));
-    callActivityDefinition.setDefinitionTenantId(getDefinitionTenantId(pi, execution, callableElement));
-    callActivityDefinition.setVersion(callableElement.getVersion(execution));
-    callActivityDefinition.setVersionTag(callableElement.getVersionTag(execution));
+    callActivityDefinition.binding = callableElement.getBinding();
+    callActivityDefinition.businessKey = callableElement.getBusinessKey(execution);
+    callActivityDefinition.definitionKey = callableElement.getDefinitionKey(execution);
+    callActivityDefinition.definitionTenantId = getDefinitionTenantId(pi, execution, callableElement);
+    callActivityDefinition.inputs = !callableElement.getInputs().isEmpty();
+    callActivityDefinition.outputs = !callableElement.getOutputs().isEmpty() || !callableElement.getOutputsLocal().isEmpty();
+    callActivityDefinition.version = callableElement.getVersion(execution);
+    callActivityDefinition.versionTag = callableElement.getVersionTag(execution);
 
     verify(pi, callActivityDefinition);
 
-    VariableMap subVariables = Variables.createVariables();
+    // input
+    VariableMap subVariables = callableElement.getInputVariables(execution);
 
     DelegateVariableMapping variableMapping = (DelegateVariableMapping) behavior.resolveDelegateClass(execution);
     if (variableMapping != null) {
@@ -106,6 +109,13 @@ public class CallActivityHandler {
     VariableScope subInstance = new CallActivityVariableScope(subVariables);
 
     verifyInput(subInstance);
+
+    // output
+    VariableMap outputVariables = callableElement.getOutputVariables(subInstance);
+    VariableMap outputVariablesLocal = callableElement.getOutputVariablesLocal(subInstance);
+
+    execution.setVariables(outputVariables);
+    execution.setVariablesLocal(outputVariablesLocal);
 
     if (variableMapping != null) {
       variableMapping.mapOutputVariables(execution, subInstance);

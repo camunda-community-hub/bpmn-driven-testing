@@ -26,12 +26,11 @@ public class CallActivitySignalTest {
   @BeforeEach
   public void setUp() {
     handler = new CallActivityHandler(tc.instance, "callActivity");
+    handler.waitForBoundaryEvent();
   }
 
   @Test
   public void testExecute() {
-    handler.waitForBoundaryEvent();
-
     tc.createExecutor().execute();
   }
 

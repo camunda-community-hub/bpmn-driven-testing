@@ -29,6 +29,8 @@ public class CallActivityWithMappingTest {
       assertThat(callActivity.getDefinitionTenantId(), equalTo("tenant-1"));
       assertThat(callActivity.getVersion(), is(1));
       assertThat(callActivity.getVersionTag(), nullValue());
+      assertThat(callActivity.hasInputs(), is(false));
+      assertThat(callActivity.hasOutputs(), is(false));
     }).verifyInput(variables -> {
       assertThat(variables.getVariable("a"), equalTo("b"));
       assertThat(variables.getVariable("x"), equalTo("y"));

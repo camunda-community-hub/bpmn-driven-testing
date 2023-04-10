@@ -1,5 +1,6 @@
 package org.camunda.community.bpmndt.api;
 
+import static com.google.common.truth.Truth.assertThat;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -21,20 +22,20 @@ import org.camunda.bpm.engine.test.assertions.ProcessEngineTests;
 import org.camunda.bpm.engine.test.assertions.bpmn.ProcessInstanceAssert;
 import org.camunda.bpm.engine.variable.VariableMap;
 import org.camunda.community.bpmndt.test.TestPaths;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 public class CallActivityTest {
 
-  @Rule
+  @RegisterExtension
   public TestCase tc = new TestCase().withTenantId("tenant-x");
 
   private CallActivityHandler handler;
 
   private TestCaseExecutor executor;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     handler = new CallActivityHandler(tc.instance, "callActivity");
 
@@ -63,6 +64,8 @@ public class CallActivityTest {
       assertThat(callActivity.getVersion(), nullValue());
       assertThat(callActivity.getVersion(), nullValue());
       assertThat(callActivity.getVersionTag(), nullValue());
+      assertThat(callActivity.hasInputs()).isFalse();
+      assertThat(callActivity.hasOutputs()).isFalse();
     }).verifyInput(variables -> {
       assertThat(variables.getVariable("a"), equalTo("b"));
       assertThat(variables.getVariable("x"), equalTo("y"));
@@ -91,7 +94,7 @@ public class CallActivityTest {
     assertThat(e.getMessage(), containsString("it passed [startEvent]"));
   }
 
-  private class TestCase extends AbstractJUnit4TestCase<TestCase> {
+  private class TestCase extends AbstractJUnit5TestCase<TestCase> {
 
     @Override
     protected void execute(ProcessInstance pi) {
