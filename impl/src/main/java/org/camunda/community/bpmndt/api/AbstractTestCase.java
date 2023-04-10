@@ -65,12 +65,12 @@ public abstract class AbstractTestCase<T extends AbstractTestCase<?>> {
     ProcessEngineTests.init(processEngine);
 
     instance = new TestCaseInstance();
-    instance.setEnd(getEnd());
-    instance.setProcessDefinitionKey(getProcessDefinitionKey());
-    instance.setProcessEnd(isProcessEnd());
-    instance.setProcessEngine(processEngine);
-    instance.setStart(getStart());
-    instance.setTenantId(tenantId);
+    instance.end = getEnd();
+    instance.processDefinitionKey = getProcessDefinitionKey();
+    instance.processEnd = isProcessEnd();
+    instance.processEngine = processEngine;
+    instance.start = getStart();
+    instance.tenantId = tenantId;
 
     String deploymentName = this.getClass().getSimpleName();
 
