@@ -24,12 +24,11 @@ public class UserTaskErrorTest {
   @BeforeEach
   public void setUp() {
     handler = new UserTaskHandler(tc.getProcessEngine(), "userTask");
+    handler.handleBpmnError("userTaskError", null);
   }
 
   @Test
   public void testExecute() {
-    handler.handleBpmnError("userTaskError", null);
-
     tc.createExecutor().execute();
   }
 

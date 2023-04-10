@@ -1,5 +1,6 @@
 package org.camunda.community.bpmndt.api;
 
+import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -84,17 +85,24 @@ public class EventHandler {
   }
 
   /**
-   * Executes a custom action that handles the intermediate catch event.
+   * Executes a custom action that handles the intermediate catch event, when the process instance is
+   * waiting at the corresponding activity.
    * 
    * @param action A specific action that accepts an {@link EventSubscription}.
+   * 
+   * @throws IllegalArgumentException if action is {@code null}.
    */
   public void execute(Consumer<EventSubscription> action) {
+    if (action == null) {
+      throw new IllegalArgumentException("action is null");
+    }
     this.action = action;
   }
 
   /**
    * Continues the waiting execution with an action that calls {@code messageEventReceived},
-   * {@code signalEventReceived} or {@code setVariables} (depending on the actual event type).
+   * {@code signalEventReceived} or {@code setVariables} (depending on the actual event type). Please
+   * note: this is the default behavior.
    * 
    * @see RuntimeService#messageEventReceived(String, String, java.util.Map)
    * @see RuntimeService#signalEventReceived(String, String, java.util.Map)
@@ -133,7 +141,7 @@ public class EventHandler {
   }
 
   /**
-   * Sets a variable, which is passed to the execution when the default action is used.
+   * Sets a variable, which is passed to the execution when the default behavior is used.
    * 
    * @param name The name of the variable.
    * 
@@ -147,7 +155,19 @@ public class EventHandler {
   }
 
   /**
-   * Sets a typed variable, which is passed to the execution when the default action is used.
+   * Sets variables, which are passed to the execution when the default behavior is used.
+   * 
+   * @param variables A map of variables to set.
+   * 
+   * @return The handler.
+   */
+  public EventHandler withVariables(Map<String, Object> variables) {
+    this.variables.putAll(variables);
+    return this;
+  }
+
+  /**
+   * Sets a typed variable, which is passed to the execution when the default behavior is used.
    * 
    * @param name The name of the variable.
    * 

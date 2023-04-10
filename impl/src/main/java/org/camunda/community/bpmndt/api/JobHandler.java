@@ -89,7 +89,8 @@ public class JobHandler {
   }
 
   /**
-   * Executes the job with an action that calls {@code executeJob}.
+   * Executes the job with an action that calls {@code executeJob}, when the process instance is
+   * waiting at the corresponding activity. Please note: this is the default behavior.
    * 
    * @see ManagementService#executeJob(String)
    */
@@ -98,11 +99,17 @@ public class JobHandler {
   }
 
   /**
-   * Executes a custom action that handles the job.
+   * Executes a custom action that handles the job, when the process instance is waiting at the
+   * corresponding activity.
    * 
    * @param action A specific action that accepts the related {@link Job}.
+   * 
+   * @throws IllegalArgumentException if action is {@code null}.
    */
   public void execute(Consumer<Job> action) {
+    if (action == null) {
+      throw new IllegalArgumentException("action is null");
+    }
     this.action = action;
   }
 

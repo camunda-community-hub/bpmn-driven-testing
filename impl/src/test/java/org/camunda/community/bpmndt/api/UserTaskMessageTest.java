@@ -26,12 +26,11 @@ public class UserTaskMessageTest {
   @BeforeEach
   public void setUp() {
     handler = new UserTaskHandler(tc.getProcessEngine(), "userTask");
+    handler.waitForBoundaryEvent();
   }
 
   @Test
   public void testExecute() {
-    handler.execute(task -> {});
-
     tc.createExecutor().execute();
   }
 
