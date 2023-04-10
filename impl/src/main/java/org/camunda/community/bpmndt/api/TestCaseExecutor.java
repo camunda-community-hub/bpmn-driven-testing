@@ -1,5 +1,6 @@
 package org.camunda.community.bpmndt.api;
 
+import java.util.Map;
 import java.util.function.Consumer;
 
 import org.camunda.bpm.engine.ProcessEngineException;
@@ -198,6 +199,18 @@ public class TestCaseExecutor {
    */
   public TestCaseExecutor withVariable(String name, Object value) {
     variables.putValue(name, value);
+    return this;
+  }
+
+  /**
+   * Sets variables on the process instance that will be created.
+   * 
+   * @param variables A map of variables to set.
+   * 
+   * @return The executor.
+   */
+  public TestCaseExecutor withVariables(Map<String, Object> variables) {
+    this.variables.putAll(variables);
     return this;
   }
 

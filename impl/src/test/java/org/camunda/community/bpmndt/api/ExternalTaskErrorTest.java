@@ -24,12 +24,11 @@ public class ExternalTaskErrorTest {
   @BeforeEach
   public void setUp() {
     handler = new ExternalTaskHandler(tc.getProcessEngine(), "externalTask", "test-topic");
+    handler.handleBpmnError("externalTaskError", "externalTaskErrorMessage");
   }
 
   @Test
   public void testExecute() {
-    handler.handleBpmnError("externalTaskError", "externalTaskErrorMessage");
-
     tc.createExecutor().execute();
   }
 

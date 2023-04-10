@@ -1,5 +1,6 @@
 package org.camunda.community.bpmndt.api;
 
+import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -54,7 +55,8 @@ public class UserTaskHandler {
   }
 
   /**
-   * Completes the user task with an action that calls {@code complete}.
+   * Completes the user task with an action that calls {@code complete}, when the process instance is
+   * waiting at the corresponding activity. Please note: this is the default behavior.
    * 
    * @see TaskService#complete(String, java.util.Map)
    */
@@ -86,7 +88,8 @@ public class UserTaskHandler {
   }
 
   /**
-   * Executes a custom action that handles the user task.
+   * Executes a custom action that handles the user task, when the process instance is waiting at the
+   * corresponding activity.
    * 
    * @param action A specific action that accepts the related {@link Task}.
    */
@@ -96,7 +99,7 @@ public class UserTaskHandler {
 
   /**
    * Continues the execution with an action that calls {@code handleBpmnError} using the given error
-   * code and message.
+   * code and message, when the process instance is waiting at the corresponding activity.
    * 
    * @param errorCode The error code of the attached boundary error event.
    * 
@@ -117,7 +120,7 @@ public class UserTaskHandler {
 
   /**
    * Continues the execution with an action that calls {@code handleEscalation} using the given
-   * escalation code.
+   * escalation code, when the process instance is waiting at the corresponding activity.
    * 
    * @param escalationCode The escalation code of the attached boundary escalation event.
    * 
@@ -166,7 +169,7 @@ public class UserTaskHandler {
 
   /**
    * Sets the error message, which is used when the next activity is an error boundary event - in this
-   * case the handler's default action is {@code handleBpmnError}.
+   * case the handler's action is {@code handleBpmnError}.
    * 
    * @param errorMessage An error message or {@code null}.
    * 
@@ -178,15 +181,18 @@ public class UserTaskHandler {
   }
 
   /**
-   * Sets a variable, which is passed to the execution when a default action is used
-   * ({@link #complete()}, {@link #handleBpmnError(String, String)} or
-   * {@link #handleEscalation(String)}).
+   * Sets a variable, which is passed to the execution when a predefined behavior ({@code complete},
+   * {@code handleBpmnError}, or {@code handleEscalation}) is used.
    * 
    * @param name The name of the variable.
    * 
    * @param value The variable's value.
    * 
    * @return The handler.
+   * 
+   * @see #complete()
+   * @see #handleBpmnError(String, String)
+   * @see #handleEscalation(String)
    */
   public UserTaskHandler withVariable(String name, Object value) {
     variables.putValue(name, value);
@@ -194,15 +200,35 @@ public class UserTaskHandler {
   }
 
   /**
-   * Sets a typed variable, which is passed to the execution when a default action is used
-   * ({@link #complete()}, {@link #handleBpmnError(String, String)} or
-   * {@link #handleEscalation(String)}).
+   * Sets variables, which are passed to the execution when a predefined behavior ({@code complete},
+   * {@code handleBpmnError}, or {@code handleEscalation}) is used.
+   * 
+   * @param variables A map of variables to set.
+   * 
+   * @return The handler.
+   * 
+   * @see #complete()
+   * @see #handleBpmnError(String, String)
+   * @see #handleEscalation(String)
+   */
+  public UserTaskHandler withVariables(Map<String, Object> variables) {
+    this.variables.putAll(variables);
+    return this;
+  }
+
+  /**
+   * Sets a typed variable, which is passed to the execution when a predefined behavior
+   * ({@code complete}, {@code handleBpmnError}, or {@code handleEscalation}) is used.
    * 
    * @param name The name of the variable.
    * 
    * @param value The variable's typed value.
    * 
    * @return The handler.
+   * 
+   * @see #complete()
+   * @see #handleBpmnError(String, String)
+   * @see #handleEscalation(String)
    */
   public UserTaskHandler withVariableTyped(String name, TypedValue value) {
     variables.putValueTyped(name, value);

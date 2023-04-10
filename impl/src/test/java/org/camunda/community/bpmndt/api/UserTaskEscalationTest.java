@@ -24,12 +24,11 @@ public class UserTaskEscalationTest {
   @BeforeEach
   public void setUp() {
     handler = new UserTaskHandler(tc.getProcessEngine(), "userTask");
+    handler.handleEscalation("userTaskEscalation");
   }
 
   @Test
   public void testExecute() {
-    handler.handleEscalation("userTaskEscalation");
-
     tc.createExecutor().execute();
   }
 

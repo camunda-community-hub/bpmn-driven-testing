@@ -26,12 +26,11 @@ public class ExternalTaskMessageTest {
   @BeforeEach
   public void setUp() {
     handler = new ExternalTaskHandler(tc.getProcessEngine(), "externalTask", "test-topic");
+    handler.waitForBoundaryEvent();
   }
 
   @Test
   public void testExecute() {
-    handler.execute(task -> {});
-
     tc.createExecutor().execute();
   }
 
