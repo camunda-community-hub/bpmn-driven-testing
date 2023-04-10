@@ -28,7 +28,7 @@ The extension consists of:
   - Automatic handling of wait states
   - Call activity stubbing for isolated testing - see [test](integration-tests/advanced/src/test/java/org/example/it/CallActivityWithMappingTest.java)
   - [Fluent API](impl/src/main/java/org/camunda/community/bpmndt/api) to override default behavior
-  - Multi instance activity / embedded subprocess support - see [integration tests](integration-tests/advanced-multi-instance/src/test/java/org/example/it)
+  - Multi instance (activity/embedded subprocess) support - see [integration tests](integration-tests/advanced-multi-instance/src/test/java/org/example/it)
 - Spring test support - see [integration tests](integration-tests/advanced-spring/)
 - Spring Boot test support - see [integration tests](integration-tests/advanced-spring-boot/)
 - Testing of arbitrary paths through a BPMN process

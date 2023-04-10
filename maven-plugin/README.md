@@ -23,7 +23,7 @@ Right click on `target/bpmndt` > `Mark Directory as` > `Test Sources Root`
 </plugin>
 ```
 
-Please see [Maven Central](https://search.maven.org/artifact/org.camunda.community/bpmn-driven-testing-maven-plugin) to get a specific version.
+Please see [Maven Central](https://central.sonatype.com/artifact/org.camunda.community/bpmn-driven-testing-maven-plugin/0.7.0/versions) to get a specific version.
 
 ## Configuration
 Available parameters for the plugin's `generator` goal:

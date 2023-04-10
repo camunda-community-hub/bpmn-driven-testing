@@ -54,7 +54,7 @@ plugins {
 }
 ```
 
-Please see [Maven Central](https://search.maven.org/artifact/org.camunda.community/bpmn-driven-testing-gradle-plugin) to get a specific version.
+Please see [Maven Central](https://central.sonatype.com/artifact/org.camunda.community/bpmn-driven-testing-gradle-plugin/0.7.0/versions) to get a specific version.
 
 ## Configuration
 Available properties:

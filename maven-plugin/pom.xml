@@ -161,4 +161,6 @@
       </plugins>
     </pluginManagement>
   </build>
+
+  <url>https://github.com/camunda-community-hub/bpmn-driven-testing/maven-plugin</url>
 </project>
