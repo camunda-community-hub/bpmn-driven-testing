@@ -6,10 +6,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import org.camunda.bpm.model.bpmn.Bpmn;
@@ -58,7 +58,7 @@ class TestCasesImpl implements TestCases {
 
   protected final BpmnModelInstance modelInstance;
 
-  private final Set<Process> processes;
+  private final Set<String> processIds;
   private final List<TestCase> testCases;
 
   private BpmnSupport bpmnSupport;
@@ -66,7 +66,7 @@ class TestCasesImpl implements TestCases {
   TestCasesImpl(BpmnModelInstance modelInstance) {
     this.modelInstance = modelInstance;
 
-    processes = new HashSet<>();
+    processIds = new TreeSet<>();
     testCases = new LinkedList<>();
   }
 
@@ -125,7 +125,7 @@ class TestCasesImpl implements TestCases {
 
   @Override
   public Set<String> getProcessIds() {
-    return processes.stream().map(Process::getId).collect(Collectors.toSet());
+    return processIds;
   }
 
   protected List<TestCaseElement> getTestCaseElements(Process process) {
@@ -218,20 +218,22 @@ class TestCasesImpl implements TestCases {
     return testCases.isEmpty();
   }
 
+  /**
+   * Finds and maps the test cases of each process.
+   * 
+   * @return The test cases.
+   */
   private TestCasesImpl map() {
-    // find process
-    Process process = (Process) modelInstance.getDefinitions().getUniqueChildElementByType(Process.class);
-    if (process == null) {
-      throw new IllegalArgumentException("Model instance has no process definition");
-    }
+    modelInstance.getDefinitions().getChildElementsByType(Process.class).forEach(this::map);
+    return this;
+  }
 
-    processes.add(process);
+  private void map(Process process) {
+    processIds.add(process.getId());
 
     bpmnSupport = new BpmnSupport(process);
     getTestCaseElements(process).stream().map(this::mapTestCase).forEach(testCases::add);
     bpmnSupport = null;
-
-    return this;
   }
 
   /**

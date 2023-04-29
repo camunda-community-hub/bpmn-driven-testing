@@ -178,10 +178,6 @@ export default class Plugin {
 
   _loadTestCases = () => {
     const { testCaseModdle } = this;
-    if (!testCaseModdle.findProcess()) {
-      // if process element could not be found
-      return;
-    }
 
     this.testCases = testCaseModdle.getTestCases();
 

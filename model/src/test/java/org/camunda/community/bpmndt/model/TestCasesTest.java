@@ -40,6 +40,26 @@ public class TestCasesTest {
   }
 
   @Test
+  public void testCollaboration() {
+    testCases = TestCases.of(TestPaths.advanced("collaboration.bpmn"));
+    assertThat(testCases.get()).hasSize(4);
+    assertThat(testCases.get("processA")).hasSize(1);
+    assertThat(testCases.get("processB")).hasSize(0);
+    assertThat(testCases.get("processC")).hasSize(3);
+    assertThat(testCases.getProcessIds()).containsExactly("processA", "processB", "processC").inOrder();
+
+    testCase = testCases.get("processA").get(0);
+    assertThat(testCase.getActivities()).hasSize(4);
+    assertThat(testCase.getEndActivity().getId()).isEqualTo("endEventA");
+    assertThat(testCase.getStartActivity().getId()).isEqualTo("startEventA");
+
+    testCase = testCases.get("processC").get(1);
+    assertThat(testCase.getActivities()).hasSize(3);
+    assertThat(testCase.getEndActivity().getId()).isEqualTo("subProcessEndC");
+    assertThat(testCase.getStartActivity().getId()).isEqualTo("startEventC");
+  }
+
+  @Test
   public void testHappyPath() {
     testCases = TestCases.of(TestPaths.simple("special/happyPath.bpmn"));
     assertThat(testCases.get()).hasSize(1);

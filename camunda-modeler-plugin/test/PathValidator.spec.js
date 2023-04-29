@@ -22,9 +22,7 @@ const moddle = new BpmnModdle({
 });
 
 function createTestCaseModdle(modelInstance) {
-  const testCaseModdle = new TestCaseModdle(new ElementRegistry(modelInstance), null, moddle);
-  testCaseModdle.findProcess();
-  return testCaseModdle;
+  return new TestCaseModdle(new ElementRegistry(modelInstance), null, moddle);
 }
 
 function createPathValidator(modelInstance) {
