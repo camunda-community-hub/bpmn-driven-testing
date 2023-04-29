@@ -22,7 +22,7 @@ The extension consists of:
 - Automatic path finding with
   - Support for embedded sub processes
   - Support for boundary events
-  - BPMN collaborations with one expanded participant
+  - BPMN collaborations with multiple expanded participants
   - Loop detection
 - Generated test cases provide
   - Automatic handling of wait states
