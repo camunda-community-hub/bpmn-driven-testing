@@ -2,8 +2,8 @@
 [![](https://img.shields.io/badge/Community%20Extension-An%20open%20source%20community%20maintained%20project-FF4700)](https://github.com/camunda-community-hub/community)
 [![](https://img.shields.io/badge/Lifecycle-Incubating-blue)](https://github.com/Camunda-Community-Hub/community/blob/main/extension-lifecycle.md#incubating-)
 ![Compatible with: Camunda Platform 7](https://img.shields.io/badge/Compatible%20with-Camunda%20Platform%207-26d07c)
-[![Maven plugin](https://img.shields.io/maven-central/v/org.camunda.community/bpmn-driven-testing-maven-plugin.svg?label=Maven%20plugin)](https://central.sonatype.com/artifact/org.camunda.community/bpmn-driven-testing-maven-plugin/0.7.0/versions)
-[![Gradle plugin](https://img.shields.io/maven-central/v/org.camunda.community/bpmn-driven-testing-gradle-plugin.svg?label=Gradle%20plugin)](https://central.sonatype.com/artifact/org.camunda.community/bpmn-driven-testing-gradle-plugin/0.7.0/versions)
+[![Maven plugin](https://img.shields.io/maven-central/v/org.camunda.community/bpmn-driven-testing-maven-plugin.svg?label=Maven%20plugin)](https://central.sonatype.com/artifact/org.camunda.community/bpmn-driven-testing-maven-plugin/0.8.0/versions)
+[![Gradle plugin](https://img.shields.io/maven-central/v/org.camunda.community/bpmn-driven-testing-gradle-plugin.svg?label=Gradle%20plugin)](https://central.sonatype.com/artifact/org.camunda.community/bpmn-driven-testing-gradle-plugin/0.8.0/versions)
 
 [Camunda Platform 7](https://docs.camunda.org/manual/latest/) extension, which is able to generate test code based on an extended BPMN model.
 
