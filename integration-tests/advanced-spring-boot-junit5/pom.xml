@@ -15,7 +15,7 @@
     <camunda.bpm.assert.version>15.0.0</camunda.bpm.assert.version>
     <spring.boot.version>2.7.9</spring.boot.version>
 
-    <plugin.version>0.8.0-SNAPSHOT</plugin.version>
+    <plugin.version>0.9.0-SNAPSHOT</plugin.version>
   </properties>
 
   <repositories>
