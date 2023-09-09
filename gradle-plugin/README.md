@@ -82,10 +82,10 @@ Add dependencies, which are required to execute the generated test code:
 
 ```groovy
 dependencies {
-  implementation 'org.camunda.bpm:camunda-engine:7.18.0'
+  implementation 'org.camunda.bpm:camunda-engine:7.19.0'
 
   testImplementation 'junit:junit:4.13.2'
-  testImplementation 'com.h2database:h2:2.1.214'
+  testImplementation 'com.h2database:h2:2.2.220'
   testImplementation 'org.camunda.bpm.assert:camunda-bpm-assert:15.0.0'
   testImplementation 'org.assertj:assertj-core:3.24.2'
 }
@@ -95,9 +95,9 @@ For **JUnit 5** replace the `junit:junit` dependency and enable the JUnit platfo
 
 ```groovy
 dependencies {
-  testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
+  testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.3'
 
-  testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
+  testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.3'
 }
 
 test {
@@ -109,12 +109,12 @@ For **Spring** based testing, additional dependencies are required:
 
 ```groovy
 dependencies {
-  implementation 'org.camunda.bpm:camunda-engine-spring:7.18.0'
-  implementation 'org.springframework:spring-beans:5.3.25'
-  implementation 'org.springframework:spring-context:5.3.25'
-  implementation 'org.springframework:spring-jdbc:5.3.25'
+  implementation 'org.camunda.bpm:camunda-engine-spring:7.19.0'
+  implementation 'org.springframework:spring-beans:5.3.29'
+  implementation 'org.springframework:spring-context:5.3.29'
+  implementation 'org.springframework:spring-jdbc:5.3.29'
 
-  testImplementation 'org.springframework:spring-test:5.3.25'
+  testImplementation 'org.springframework:spring-test:5.3.29'
 }
 ```
 
@@ -122,10 +122,10 @@ For **Spring Boot** based testing, additional dependencies are required:
 
 ```groovy
 dependencies {
-  implementation 'org.camunda.bpm.springboot:camunda-bpm-spring-boot-starter:7.18.0'
+  implementation 'org.camunda.bpm.springboot:camunda-bpm-spring-boot-starter:7.19.0'
 
-  testImplementation 'org.springframework.boot:spring-boot-starter-test:2.7.9'
-  testImplementation 'org.junit.vintage:junit-vintage-engine:5.8.2' // allows usage of JUnit 4
+  testImplementation 'org.springframework.boot:spring-boot-starter-test:2.7.15'
+  testImplementation 'org.junit.vintage:junit-vintage-engine:5.9.3' // allows usage of JUnit 4
 }
 ```
 
@@ -133,13 +133,13 @@ Recommended versions:
 
 | Dependency         | Version |
 |:-------------------|:--------|
-| Camunda BPM        | 7.18.0  |
+| Camunda BPM        | 7.19.0  |
 | Camunda BPM Assert | 15.0.0  |
 | JUnit 4            | 4.13.2  |
-| JUnit 5 (Jupiter)  | 5.8.2   |
+| JUnit 5 (Jupiter)  | 5.9.3   |
 | Assertj            | 3.24.2  |
-| Spring Framework   | 5.3.25  |
-| Spring Boot        | 2.7.9   |
+| Spring Framework   | 5.3.29  |
+| Spring Boot        | 2.7.15  |
 
 ## Development
 :warning: This and the subsequent sections are only important for Gradle plugin development!

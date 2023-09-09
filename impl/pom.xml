@@ -15,7 +15,7 @@
     <camunda.bpm.assert.version>15.0.0</camunda.bpm.assert.version>
     <javapoet.version>1.13.0</javapoet.version>
     <junit.version>4.13.2</junit.version>
-    <spring.version>5.3.25</spring.version>
+    <spring.version>5.3.29</spring.version>
   </properties>
 
   <dependencies>

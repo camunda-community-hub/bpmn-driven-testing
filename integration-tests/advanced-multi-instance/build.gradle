@@ -9,11 +9,11 @@ repositories {
 }
 
 dependencies {
-  implementation 'org.camunda.bpm:camunda-engine:7.18.0'
+  implementation 'org.camunda.bpm:camunda-engine:7.19.0'
 
-  testImplementation 'org.slf4j:slf4j-log4j12:1.7.32'
+  testImplementation 'org.slf4j:slf4j-log4j12:1.7.36'
   testImplementation 'junit:junit:4.13.2'
-  testImplementation 'com.h2database:h2:2.1.214'
+  testImplementation 'com.h2database:h2:2.2.220'
   testImplementation 'org.camunda.bpm.assert:camunda-bpm-assert:15.0.0'
   testImplementation 'org.assertj:assertj-core:3.24.2'
 }

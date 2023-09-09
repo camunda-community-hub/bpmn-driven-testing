@@ -2,7 +2,7 @@
 
 ## Installation
 
-1. Ensure that Camunda Modeler 4.4.0 (or higher) or 5.7.0 is installed
+1. Ensure that Camunda Modeler 4.4.0+ or 5.7.0+ is installed
 2. [Download](https://github.com/camunda-community-hub/bpmn-driven-testing/releases/latest/download/bpmn-driven-testing-plugin.zip) latest Camunda Modeler plugin release
 3. Unpackage downloaded ZIP file to the `resources/plugins/` directory of the Camunda Modeler installation
 4. Start Camunda Modeler

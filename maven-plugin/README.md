@@ -54,7 +54,7 @@ Add dependencies, which are required to execute the generated test code:
 <dependency>
   <groupId>com.h2database</groupId>
   <artifactId>h2</artifactId>
-  <version>2.1.214</version>
+  <version>${h2.version}</version>
   <scope>test</scope>
 </dependency>
 
@@ -148,13 +148,13 @@ Recommended versions:
 
 | Dependency         | Version |
 |:-------------------|:--------|
-| Camunda BPM        | 7.18.0  |
+| Camunda BPM        | 7.19.0  |
 | Camunda BPM Assert | 15.0.0  |
 | JUnit 4            | 4.13.2  |
-| JUnit 5 (Jupiter)  | 5.8.2   |
+| JUnit 5 (Jupiter)  | 5.9.3   |
 | Assertj            | 3.24.2  |
-| Spring Framework   | 5.3.25  |
-| Spring Boot        | 2.7.9   |
+| Spring Framework   | 5.3.29  |
+| Spring Boot        | 2.7.15  |
 
 ## Testing
 :warning: This section is only important for Maven plugin development!
