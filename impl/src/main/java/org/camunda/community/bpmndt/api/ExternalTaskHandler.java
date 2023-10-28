@@ -13,6 +13,7 @@ import org.camunda.bpm.engine.externaltask.ExternalTask;
 import org.camunda.bpm.engine.externaltask.LockedExternalTask;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.test.assertions.ProcessEngineTests;
+import org.camunda.bpm.engine.test.assertions.bpmn.ExternalTaskAssert;
 import org.camunda.bpm.engine.test.assertions.bpmn.ProcessInstanceAssert;
 import org.camunda.bpm.engine.variable.VariableMap;
 import org.camunda.bpm.engine.variable.Variables;
@@ -36,6 +37,7 @@ public class ExternalTaskHandler {
   private String errorMessage;
 
   private BiConsumer<ProcessInstanceAssert, String> verifier;
+  private BiConsumer<ExternalTaskAssert, Map<String, Object>> taskVerifier;
 
   private Consumer<String> action;
   private Consumer<ExternalTask> taskAction;
@@ -54,6 +56,13 @@ public class ExternalTaskHandler {
   protected void apply(ProcessInstance pi) {
     if (verifier != null) {
       verifier.accept(ProcessEngineTests.assertThat(pi), topicName);
+    }
+    if (taskVerifier != null) {
+      ExternalTask task = query(pi);
+
+      Map<String, Object> localVariables = processEngine.getRuntimeService().getVariablesLocal(task.getExecutionId());
+
+      taskVerifier.accept(ProcessEngineTests.assertThat(task), localVariables);
     }
 
     if (action != null) {
@@ -169,7 +178,7 @@ public class ExternalTaskHandler {
     return action == null && taskAction == null;
   }
 
-  private ExternalTask queryAndLock(ProcessInstance pi) {
+  private ExternalTask query(ProcessInstance pi) {
     ExternalTaskService externalTaskService = processEngine.getExternalTaskService();
 
     ExternalTask externalTask = externalTaskService.createExternalTaskQuery()
@@ -182,6 +191,14 @@ public class ExternalTaskHandler {
       String msg = String.format("Expected exactly one external task for activity '%s' and topic '%s'", activityId, topicName);
       throw new AssertionError(msg);
     }
+
+    return externalTask;
+  }
+
+  private ExternalTask queryAndLock(ProcessInstance pi) {
+    ExternalTask externalTask = query(pi);
+
+    ExternalTaskService externalTaskService = processEngine.getExternalTaskService();
 
     try {
       externalTaskService.lock(externalTask.getId(), WORKER_ID, TimeUnit.SECONDS.toMillis(60L));
@@ -206,6 +223,19 @@ public class ExternalTaskHandler {
    */
   public ExternalTaskHandler verify(BiConsumer<ProcessInstanceAssert, String> verifier) {
     this.verifier = verifier;
+    return this;
+  }
+
+  /**
+   * Verifies the external task's waiting state.
+   * 
+   * @param taskVerifier Verifier that accepts an {@link ExternalTaskAssert} instance and the task's
+   *        local variables.
+   * 
+   * @return The handler.
+   */
+  public ExternalTaskHandler verifyTask(BiConsumer<ExternalTaskAssert, Map<String, Object>> taskVerifier) {
+    this.taskVerifier = taskVerifier;
     return this;
   }
 
