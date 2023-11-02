@@ -11,21 +11,18 @@ import org.camunda.bpm.engine.impl.cfg.CompositeProcessEnginePlugin;
 import org.camunda.bpm.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.camunda.bpm.engine.impl.cfg.ProcessEnginePlugin;
 import org.camunda.community.bpmndt.api.cfg.BpmndtProcessEnginePlugin;
-import org.example.app.ExampleApp;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.example.ExampleApp;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import generated.advancedspringboot.TC_startEvent__endEvent;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = {ExampleApp.class, AdvancedTestConfiguration.class}, webEnvironment = WebEnvironment.NONE)
-public class AdvancedTest {
+@SpringBootTest(classes = {ExampleApp.class, BpmndtConfiguration.class}, webEnvironment = WebEnvironment.NONE)
+public class ExampleTest {
 
-  @Rule
+  @RegisterExtension
   public TC_startEvent__endEvent tc = new TC_startEvent__endEvent();
 
   @Test
