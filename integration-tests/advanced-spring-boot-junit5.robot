@@ -17,7 +17,7 @@ mvn clean test
   Assert Test Code Generation  ${result}  target
 
   # tests executed
-  Should contain  ${result.stdout}  Running org.example.it.AdvancedTest
+  Should contain  ${result.stdout}  Running org.example.it.ExampleTest
   # tests executed successfully
   Should contain  ${result.stdout}  Failures: 0, Errors: 0, Skipped: 0
 
