@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:bpmndt="http://camunda.org/schema/extension/bpmn-driven-testing" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_07m9v4h" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.4.0">
+  <bpmn:process id="example" isExecutable="true">
+    <bpmn:extensionElements>
+      <bpmndt:testCases>
+        <bpmndt:testCase>
+          <bpmndt:name>A</bpmndt:name>
+          <bpmndt:path>
+            <bpmndt:node>startEvent</bpmndt:node>
+            <bpmndt:node>fork</bpmndt:node>
+            <bpmndt:node>eventA</bpmndt:node>
+            <bpmndt:node>join</bpmndt:node>
+            <bpmndt:node>endEvent</bpmndt:node>
+          </bpmndt:path>
+        </bpmndt:testCase>
+        <bpmndt:testCase>
+          <bpmndt:name>B</bpmndt:name>
+          <bpmndt:path>
+            <bpmndt:node>startEvent</bpmndt:node>
+            <bpmndt:node>fork</bpmndt:node>
+            <bpmndt:node>eventB</bpmndt:node>
+            <bpmndt:node>join</bpmndt:node>
+            <bpmndt:node>endEvent</bpmndt:node>
+          </bpmndt:path>
+        </bpmndt:testCase>
+        <bpmndt:testCase>
+          <bpmndt:name>C</bpmndt:name>
+          <bpmndt:path>
+            <bpmndt:node>startEvent</bpmndt:node>
+            <bpmndt:node>fork</bpmndt:node>
+            <bpmndt:node>eventC</bpmndt:node>
+            <bpmndt:node>join</bpmndt:node>
+            <bpmndt:node>endEvent</bpmndt:node>
+          </bpmndt:path>
+        </bpmndt:testCase>
+      </bpmndt:testCases>
+    </bpmn:extensionElements>
+    <bpmn:startEvent id="startEvent">
+      <bpmn:outgoing>Flow_050eadf</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:exclusiveGateway id="fork" default="Flow_04buioh">
+      <bpmn:incoming>Flow_050eadf</bpmn:incoming>
+      <bpmn:outgoing>Flow_04buioh</bpmn:outgoing>
+      <bpmn:outgoing>Flow_0kju9wf</bpmn:outgoing>
+      <bpmn:outgoing>Flow_187cunb</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="Flow_050eadf" sourceRef="startEvent" targetRef="fork" />
+    <bpmn:intermediateThrowEvent id="eventA">
+      <bpmn:incoming>Flow_04buioh</bpmn:incoming>
+      <bpmn:outgoing>Flow_0adbv0z</bpmn:outgoing>
+    </bpmn:intermediateThrowEvent>
+    <bpmn:sequenceFlow id="Flow_04buioh" sourceRef="fork" targetRef="eventA" />
+    <bpmn:exclusiveGateway id="join">
+      <bpmn:incoming>Flow_0adbv0z</bpmn:incoming>
+      <bpmn:incoming>Flow_1cg8y7u</bpmn:incoming>
+      <bpmn:incoming>Flow_1cw2vtv</bpmn:incoming>
+      <bpmn:outgoing>Flow_1a9zsda</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="Flow_0adbv0z" sourceRef="eventA" targetRef="join" />
+    <bpmn:intermediateThrowEvent id="eventB">
+      <bpmn:incoming>Flow_0kju9wf</bpmn:incoming>
+      <bpmn:outgoing>Flow_1cg8y7u</bpmn:outgoing>
+    </bpmn:intermediateThrowEvent>
+    <bpmn:sequenceFlow id="Flow_0kju9wf" sourceRef="fork" targetRef="eventB">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${branch == 'b'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_1cg8y7u" sourceRef="eventB" targetRef="join" />
+    <bpmn:endEvent id="endEvent">
+      <bpmn:incoming>Flow_1a9zsda</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_1a9zsda" sourceRef="join" targetRef="endEvent" />
+    <bpmn:intermediateThrowEvent id="eventC">
+      <bpmn:incoming>Flow_187cunb</bpmn:incoming>
+      <bpmn:outgoing>Flow_1cw2vtv</bpmn:outgoing>
+    </bpmn:intermediateThrowEvent>
+    <bpmn:sequenceFlow id="Flow_187cunb" sourceRef="fork" targetRef="eventC">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${branch == 'c'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_1cw2vtv" sourceRef="eventC" targetRef="join" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="example">
+      <bpmndi:BPMNEdge id="Flow_050eadf_di" bpmnElement="Flow_050eadf">
+        <di:waypoint x="215" y="107" />
+        <di:waypoint x="265" y="107" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_04buioh_di" bpmnElement="Flow_04buioh">
+        <di:waypoint x="315" y="107" />
+        <di:waypoint x="372" y="107" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0adbv0z_di" bpmnElement="Flow_0adbv0z">
+        <di:waypoint x="408" y="107" />
+        <di:waypoint x="465" y="107" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0kju9wf_di" bpmnElement="Flow_0kju9wf">
+        <di:waypoint x="290" y="132" />
+        <di:waypoint x="290" y="220" />
+        <di:waypoint x="372" y="220" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1cg8y7u_di" bpmnElement="Flow_1cg8y7u">
+        <di:waypoint x="408" y="220" />
+        <di:waypoint x="490" y="220" />
+        <di:waypoint x="490" y="132" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1a9zsda_di" bpmnElement="Flow_1a9zsda">
+        <di:waypoint x="515" y="107" />
+        <di:waypoint x="572" y="107" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_187cunb_di" bpmnElement="Flow_187cunb">
+        <di:waypoint x="290" y="132" />
+        <di:waypoint x="290" y="330" />
+        <di:waypoint x="372" y="330" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1cw2vtv_di" bpmnElement="Flow_1cw2vtv">
+        <di:waypoint x="408" y="330" />
+        <di:waypoint x="490" y="330" />
+        <di:waypoint x="490" y="132" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="startEvent">
+        <dc:Bounds x="179" y="89" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0mlop5m_di" bpmnElement="fork" isMarkerVisible="true">
+        <dc:Bounds x="265" y="82" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1wv8tps_di" bpmnElement="eventA">
+        <dc:Bounds x="372" y="89" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_1m92o14_di" bpmnElement="join" isMarkerVisible="true">
+        <dc:Bounds x="465" y="82" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_16z0ytr_di" bpmnElement="eventB">
+        <dc:Bounds x="372" y="202" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1y3pj3f_di" bpmnElement="endEvent">
+        <dc:Bounds x="572" y="89" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1u1mkzw_di" bpmnElement="eventC">
+        <dc:Bounds x="372" y="312" width="36" height="36" />
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
