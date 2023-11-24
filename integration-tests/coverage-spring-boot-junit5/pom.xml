@@ -14,7 +14,7 @@
     <camunda.bpm.version>7.19.0</camunda.bpm.version>
     <camunda.bpm.assert.version>15.0.0</camunda.bpm.assert.version>
     <camunda.process.test.coverage.version>2.3.0</camunda.process.test.coverage.version>
-    <h2.version>2.2.220</h2.version>
+    <h2.version>2.2.224</h2.version>
     <spring.boot.version>2.7.15</spring.boot.version>
 
     <plugin.version>0.9.0-SNAPSHOT</plugin.version>

@@ -14,7 +14,7 @@
     <camunda.bpm.version>7.19.0</camunda.bpm.version>
     <camunda.bpm.assert.version>15.0.0</camunda.bpm.assert.version>
     <camunda.process.test.coverage.version>2.3.0</camunda.process.test.coverage.version>
-    <h2.version>2.2.220</h2.version>
+    <h2.version>2.2.224</h2.version>
     <junit.jupiter.version>5.9.3</junit.jupiter.version>
     <slf4j.version>1.7.36</slf4j.version>
 
