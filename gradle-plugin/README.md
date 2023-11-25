@@ -110,11 +110,11 @@ For **Spring** based testing, additional dependencies are required:
 ```groovy
 dependencies {
   implementation 'org.camunda.bpm:camunda-engine-spring:7.19.0'
-  implementation 'org.springframework:spring-beans:5.3.29'
-  implementation 'org.springframework:spring-context:5.3.29'
-  implementation 'org.springframework:spring-jdbc:5.3.29'
+  implementation 'org.springframework:spring-beans:5.3.31'
+  implementation 'org.springframework:spring-context:5.3.31'
+  implementation 'org.springframework:spring-jdbc:5.3.31'
 
-  testImplementation 'org.springframework:spring-test:5.3.29'
+  testImplementation 'org.springframework:spring-test:5.3.31'
 }
 ```
 
@@ -124,7 +124,7 @@ For **Spring Boot** based testing, additional dependencies are required:
 dependencies {
   implementation 'org.camunda.bpm.springboot:camunda-bpm-spring-boot-starter:7.19.0'
 
-  testImplementation 'org.springframework.boot:spring-boot-starter-test:2.7.15'
+  testImplementation 'org.springframework.boot:spring-boot-starter-test:2.7.18'
   testImplementation 'org.junit.vintage:junit-vintage-engine:5.9.3' // allows usage of JUnit 4
 }
 ```
@@ -138,8 +138,8 @@ Recommended versions:
 | JUnit 4            | 4.13.2  |
 | JUnit 5 (Jupiter)  | 5.9.3   |
 | Assertj            | 3.24.2  |
-| Spring Framework   | 5.3.29  |
-| Spring Boot        | 2.7.15  |
+| Spring Framework   | 5.3.31  |
+| Spring Boot        | 2.7.18  |
 
 ## Development
 :warning: This and the subsequent sections are only important for Gradle plugin development!

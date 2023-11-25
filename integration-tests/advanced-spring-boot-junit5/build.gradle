@@ -17,7 +17,7 @@ dependencies {
   testImplementation 'com.h2database:h2:2.2.220'
   testImplementation 'org.camunda.bpm.assert:camunda-bpm-assert:15.0.0'
   testImplementation 'org.assertj:assertj-core:3.24.2'
-  testImplementation 'org.springframework.boot:spring-boot-starter-test:2.7.15'
+  testImplementation 'org.springframework.boot:spring-boot-starter-test:2.7.18'
   testImplementation 'org.junit.vintage:junit-vintage-engine:5.9.3'
 
   testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.3'
