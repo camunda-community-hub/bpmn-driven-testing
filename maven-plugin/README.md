@@ -12,7 +12,7 @@ Right click on `target/bpmndt` > `Mark Directory as` > `Test Sources Root`
 <plugin>
   <groupId>org.camunda.community</groupId>
   <artifactId>bpmn-driven-testing-maven-plugin</artifactId>
-  <version>0.8.0</version>
+  <version>0.9.0</version>
   <executions>
     <execution>
       <goals>
@@ -23,7 +23,7 @@ Right click on `target/bpmndt` > `Mark Directory as` > `Test Sources Root`
 </plugin>
 ```
 
-Please see [Maven Central](https://central.sonatype.com/artifact/org.camunda.community/bpmn-driven-testing-maven-plugin/0.8.0/versions) to get a specific version.
+Please see [Maven Central](https://central.sonatype.com/artifact/org.camunda.community/bpmn-driven-testing-maven-plugin/0.9.0/versions) to get a specific version.
 
 ## Configuration
 Available parameters for the plugin's `generator` goal:
@@ -153,8 +153,8 @@ Recommended versions:
 | JUnit 4            | 4.13.2  |
 | JUnit 5 (Jupiter)  | 5.9.3   |
 | Assertj            | 3.24.2  |
-| Spring Framework   | 5.3.29  |
-| Spring Boot        | 2.7.15  |
+| Spring Framework   | 5.3.31  |
+| Spring Boot        | 2.7.18  |
 
 ## Testing
 :warning: This section is only important for Maven plugin development!
