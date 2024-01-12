@@ -16,4 +16,5 @@ mvn install:install-file \
 -Dversion=${GRADLE_VERSION} \
 -Dpackaging=jar \
 -Dfile=${GRADLE_HOME}/${sub_directory}/${artifact_id}-${GRADLE_VERSION}.jar \
+-DcreateChecksum=true \
 -DlocalRepositoryPath=.
