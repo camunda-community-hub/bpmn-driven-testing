@@ -12,7 +12,6 @@ import java.util.function.Predicate;
 
 import org.apache.commons.lang3.StringUtils;
 import org.camunda.bpm.engine.impl.cfg.ProcessEnginePlugin;
-import org.camunda.community.bpmndt.api.AbstractJUnit4TestCase;
 import org.camunda.community.bpmndt.api.AbstractJUnit5TestCase;
 import org.camunda.community.bpmndt.api.cfg.SpringConfiguration;
 import org.camunda.community.bpmndt.test.TestPaths;
@@ -114,28 +113,6 @@ public class GeneratorTest {
     TypeSpec typeSpec = result.getFiles().get(0).typeSpec;
     assertThat(typeSpec).hasName("TC_Happy_Path");
 
-    ClassName rawType = ClassName.get(AbstractJUnit4TestCase.class);
-    ClassName typeArgument = ClassName.bestGuess(typeSpec.name);
-
-    assertThat(typeSpec.superclass).isInstanceOf(ParameterizedTypeName.class);
-    assertThat(((ParameterizedTypeName) typeSpec.superclass).rawType).isEqualTo(rawType);
-    assertThat(((ParameterizedTypeName) typeSpec.superclass).typeArguments.get(0)).isEqualTo(typeArgument);
-  }
-
-  @Test
-  public void testHappyPathJUnit5Enabled() {
-    ctx.setJUnit5Enabled(true);
-
-    // overridde auto built BPMN file path
-    bpmnFile = ctx.getMainResourcePath().resolve("happyPath.bpmn");
-
-    generator.generateTestCases(ctx, bpmnFile);
-    assertThat(result.getFiles()).hasSize(1);
-    assertThat(result.getFiles().get(0).packageName).isEqualTo("org.example.happypath");
-
-    TypeSpec typeSpec = result.getFiles().get(0).typeSpec;
-    assertThat(typeSpec).hasName("TC_Happy_Path");
-
     ClassName rawType = ClassName.get(AbstractJUnit5TestCase.class);
     ClassName typeArgument = ClassName.bestGuess(typeSpec.name);
 
@@ -151,49 +128,10 @@ public class GeneratorTest {
   }
 
   /**
-   * Tests the complete generation for JUnit 4.
-   */
-  @Test
-  public void testGenerate() {
-    generator.generate(ctx);
-
-    Predicate<String> isFile = (className) -> {
-      return Files.isRegularFile(ctx.getTestSourcePath().resolve(className));
-    };
-
-    // test cases
-    assertThat(isFile.test("org/example/duplicatetestcasenames/TC_startEvent__endEvent.java")).isTrue();
-    assertThat(isFile.test("org/example/empty/TC_empty.java")).isFalse();
-    assertThat(isFile.test("org/example/happypath/TC_Happy_Path.java")).isTrue();
-    assertThat(isFile.test("org/example/incomplete/TC_incomplete.java")).isFalse();
-    assertThat(isFile.test("org/example/invalid/TC_startEvent__endEvent.java")).isFalse();
-
-    // should not exist, since the BPMN process provides no test cases
-    assertThat(isFile.test("org/example/notestcases/TC_startEvent__endEvent.java")).isFalse();
-
-    // API classes
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/AbstractJUnit4TestCase.java")).isTrue();
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/AbstractTestCase.java")).isTrue();
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/CallActivityDefinition.java")).isTrue();
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/CallActivityHandler.java")).isTrue();
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/EventHandler.java")).isTrue();
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/ExternalTaskHandler.java")).isTrue();
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/JobHandler.java")).isTrue();
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/MultiInstanceHandler.java")).isTrue();
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/TestCaseInstance.java")).isTrue();
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/TestCaseExecutor.java")).isTrue();
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/UserTaskHandler.java")).isTrue();
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/cfg/BpmndtParseListener.java")).isTrue();
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/cfg/BpmndtProcessEnginePlugin.java")).isTrue();
-  }
-
-  /**
    * Tests the complete generation for JUnit 5.
    */
   @Test
-  public void testGenerateJUnit5Enabled() {
-    ctx.setJUnit5Enabled(true);
-
+  public void testGenerate() {
     generator.generate(ctx);
 
     Predicate<String> isFile = (className) -> {
@@ -219,7 +157,6 @@ public class GeneratorTest {
     assertThat(isFile.test("org/camunda/community/bpmndt/api/ExternalTaskHandler.java")).isTrue();
     assertThat(isFile.test("org/camunda/community/bpmndt/api/JobHandler.java")).isTrue();
     assertThat(isFile.test("org/camunda/community/bpmndt/api/MultiInstanceHandler.java")).isTrue();
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/MultiInstanceScopeHandler.java")).isTrue();
     assertThat(isFile.test("org/camunda/community/bpmndt/api/TestCaseInstance.java")).isTrue();
     assertThat(isFile.test("org/camunda/community/bpmndt/api/TestCaseExecutor.java")).isTrue();
     assertThat(isFile.test("org/camunda/community/bpmndt/api/UserTaskHandler.java")).isTrue();
@@ -254,7 +191,7 @@ public class GeneratorTest {
     assertThat(isFile.test("org/example/BpmndtConfiguration.java")).isTrue();
 
     // API classes
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/AbstractJUnit4TestCase.java")).isTrue();
+    assertThat(isFile.test("org/camunda/community/bpmndt/api/AbstractJUnit5TestCase.java")).isTrue();
     assertThat(isFile.test("org/camunda/community/bpmndt/api/AbstractTestCase.java")).isTrue();
     assertThat(isFile.test("org/camunda/community/bpmndt/api/CallActivityDefinition.java")).isTrue();
     assertThat(isFile.test("org/camunda/community/bpmndt/api/CallActivityHandler.java")).isTrue();

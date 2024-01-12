@@ -12,7 +12,6 @@ import org.camunda.community.bpmndt.GeneratorContext;
 import org.camunda.community.bpmndt.GeneratorResult;
 import org.camunda.community.bpmndt.GeneratorStrategy;
 import org.camunda.community.bpmndt.TestCaseContext;
-import org.camunda.community.bpmndt.api.AbstractJUnit4TestCase;
 import org.camunda.community.bpmndt.api.AbstractJUnit5TestCase;
 import org.camunda.community.bpmndt.api.AbstractTestCase;
 import org.camunda.community.bpmndt.model.TestCase;
@@ -30,7 +29,6 @@ import com.squareup.javapoet.TypeSpec;
 /**
  * Generates a test case, using a test framework (JUnit 4 or 5) specific superclass.
  * 
- * @see AbstractJUnit4TestCase
  * @see AbstractJUnit5TestCase
  */
 public class GenerateTestCase implements Consumer<TestCaseContext> {
@@ -240,14 +238,9 @@ public class GenerateTestCase implements Consumer<TestCaseContext> {
   }
 
   protected TypeName getSuperClass(TestCaseContext ctx) {
-    ClassName rawType;
-    if (gCtx.isJUnit5Enabled()) {
-      rawType = ClassName.get(AbstractJUnit5TestCase.class);
-    } else {
-      rawType = ClassName.get(AbstractJUnit4TestCase.class);
-    }
+    ClassName rawType = ClassName.get(AbstractJUnit5TestCase.class);
 
-    // e.g. AbstractJUnit4TestCase<TC_startEvent__endEvent>
+    // e.g. AbstractJUnit5TestCase<TC_startEvent__endEvent>
     return ParameterizedTypeName.get(rawType, ClassName.bestGuess(ctx.getClassName()));
   }
 }

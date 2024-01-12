@@ -154,7 +154,7 @@ Assert Test Code Generation
 
   # API classes written
   Should contain  ${result.stdout}  Writing API classes
-  Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/org/camunda/community/bpmndt/api/AbstractJUnit4TestCase.java
+  Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/org/camunda/community/bpmndt/api/AbstractJUnit5TestCase.java
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/org/camunda/community/bpmndt/api/AbstractTestCase.java
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/org/camunda/community/bpmndt/api/CallActivityDefinition.java
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/org/camunda/community/bpmndt/api/CallActivityHandler.java
@@ -169,7 +169,7 @@ Assert Test Code Generation
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/org/camunda/community/bpmndt/api/cfg/BpmndtParseListener.java
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/org/camunda/community/bpmndt/api/cfg/BpmndtProcessEnginePlugin.java
 
-  File should exist  ${testSources}/org/camunda/community/bpmndt/api/AbstractJUnit4TestCase.java
+  File should exist  ${testSources}/org/camunda/community/bpmndt/api/AbstractJUnit5TestCase.java
   File should exist  ${testSources}/org/camunda/community/bpmndt/api/AbstractTestCase.java
   File should exist  ${testSources}/org/camunda/community/bpmndt/api/CallActivityDefinition.java
   File should exist  ${testSources}/org/camunda/community/bpmndt/api/CallActivityHandler.java

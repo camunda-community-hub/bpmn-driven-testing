@@ -61,7 +61,6 @@ Available properties:
 
 | Parameter            | Type         | Description                                                                | Default value |
 |:---------------------|:-------------|:---------------------------------------------------------------------------|:--------------|
-| junit5Enabled        | Boolean      | Enables JUnit 5 based test case generation | false |
 | packageName          | String       | Package name, used for the generated test sources | generated     |
 | processEnginePlugins | List<String> | List of process engine plugins to register at the process engine (not required for Spring Boot, since process engine plugins must be exposed as beans) | -             |
 | springEnabled        | Boolean      | Enables Spring based testing (not required for Spring Boot, since here only the [BpmndtProcessEnginePlugin](../impl/src/main/java/org/camunda/community/bpmndt/api/cfg/BpmndtProcessEnginePlugin.java) must be exposed as a bean) | false |
@@ -70,7 +69,6 @@ The plugin's configuration is done in `build.gradle` within the `bpmndt` extensi
 
 ```groovy
 bpmndt {
-  junit5Enabled = false
   packageName = 'generated'
   processEnginePlugins = []
   springEnabled = false
@@ -84,17 +82,9 @@ Add dependencies, which are required to execute the generated test code:
 dependencies {
   implementation 'org.camunda.bpm:camunda-engine:7.19.0'
 
-  testImplementation 'junit:junit:4.13.2'
   testImplementation 'com.h2database:h2:2.2.220'
-  testImplementation 'org.camunda.bpm.assert:camunda-bpm-assert:15.0.0'
   testImplementation 'org.assertj:assertj-core:3.24.2'
-}
-```
-
-For **JUnit 5** replace the `junit:junit` dependency and enable the JUnit platform:
-
-```groovy
-dependencies {
+  testImplementation 'org.camunda.bpm.assert:camunda-bpm-assert:15.0.0'
   testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.3'
 
   testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.3'
@@ -125,7 +115,6 @@ dependencies {
   implementation 'org.camunda.bpm.springboot:camunda-bpm-spring-boot-starter:7.19.0'
 
   testImplementation 'org.springframework.boot:spring-boot-starter-test:2.7.18'
-  testImplementation 'org.junit.vintage:junit-vintage-engine:5.9.3' // allows usage of JUnit 4
 }
 ```
 
@@ -135,7 +124,6 @@ Recommended versions:
 |:-------------------|:--------|
 | Camunda BPM        | 7.19.0  |
 | Camunda BPM Assert | 15.0.0  |
-| JUnit 4            | 4.13.2  |
 | JUnit 5 (Jupiter)  | 5.9.3   |
 | Assertj            | 3.24.2  |
 | Spring Framework   | 5.3.31  |

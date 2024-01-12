@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.example.it</groupId>
-  <artifactId>bpmndt-coverage-spring-boot-junit5</artifactId>
+  <artifactId>bpmndt-coverage-spring</artifactId>
   <version>1</version>
 
   <properties>
@@ -15,7 +15,9 @@
     <camunda.bpm.assert.version>15.0.0</camunda.bpm.assert.version>
     <camunda.process.test.coverage.version>2.3.1</camunda.process.test.coverage.version>
     <h2.version>2.2.220</h2.version>
-    <spring.boot.version>2.7.18</spring.boot.version>
+    <junit.jupiter.version>5.9.3</junit.jupiter.version>
+    <slf4j.version>1.7.36</slf4j.version>
+    <spring.version>5.3.31</spring.version>
 
     <plugin.version>1.0.0-SNAPSHOT</plugin.version>
   </properties>
@@ -37,33 +39,53 @@
         <type>pom</type>
         <scope>import</scope>
       </dependency>
-
-      <dependency>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-dependencies</artifactId>
-        <version>${spring.boot.version}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
     </dependencies>
   </dependencyManagement>
 
   <dependencies>
     <dependency>
-      <groupId>org.camunda.bpm.springboot</groupId>
-      <artifactId>camunda-bpm-spring-boot-starter</artifactId>
+      <groupId>org.camunda.bpm</groupId>
+      <artifactId>camunda-engine</artifactId>
     </dependency>
-
     <dependency>
       <groupId>org.camunda.bpm</groupId>
       <artifactId>camunda-engine-plugin-spin</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.camunda.spin</groupId>
-      <artifactId>camunda-spin-dataformat-json-jackson</artifactId>
+      <groupId>org.camunda.bpm</groupId>
+      <artifactId>camunda-engine-spring</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-beans</artifactId>
+      <version>${spring.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-context</artifactId>
+      <version>${spring.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-jdbc</artifactId>
+      <version>${spring.version}</version>
     </dependency>
 
     <!-- Test -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+      <version>${slf4j.version}</version>
+      <scope>test</scope>
+    </dependency>
+    
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <version>${junit.jupiter.version}</version>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>com.h2database</groupId>
       <artifactId>h2</artifactId>
@@ -85,14 +107,15 @@
     </dependency>
 
     <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-test</artifactId>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-test</artifactId>
+      <version>${spring.version}</version>
       <scope>test</scope>
     </dependency>
 
     <dependency>
       <groupId>org.camunda.community.process_test_coverage</groupId>
-      <artifactId>camunda-process-test-coverage-starter-platform-7</artifactId>
+      <artifactId>camunda-process-test-coverage-spring-test-platform-7</artifactId>
       <version>${camunda.process.test.coverage.version}</version>
       <scope>test</scope>
     </dependency>
@@ -127,9 +150,10 @@
           </execution>
         </executions>
         <configuration>
-          <jUnit5Enabled>true</jUnit5Enabled>
-          <!-- not required for Spring Boot, since only the BpmndtProcessEnginePlugin must be exposed as a bean -->
-          <springEnabled>false</springEnabled>
+          <processEnginePlugins>
+            <processEnginePlugin>org.camunda.spin.plugin.impl.SpinProcessEnginePlugin</processEnginePlugin>
+          </processEnginePlugins>
+          <springEnabled>true</springEnabled>
         </configuration>
       </plugin>
     </plugins>

@@ -30,7 +30,6 @@ Available parameters for the plugin's `generator` goal:
 
 | Parameter            | Type         | Description                                                                | Default value |
 |:---------------------|:-------------|:---------------------------------------------------------------------------|:--------------|
-| jUnit5Enabled        | Boolean      | Enables JUnit 5 based test case generation | false |
 | packageName          | String       | Package name, used for the generated test sources | generated     |
 | processEnginePlugins | List<String> | List of process engine plugins to register at the process engine (not required for Spring Boot, since process engine plugins must be exposed as beans) | -             |
 | springEnabled        | Boolean      | Enables Spring based testing (not required for Spring Boot, since here only the [BpmndtProcessEnginePlugin](../impl/src/main/java/org/camunda/community/bpmndt/api/cfg/BpmndtProcessEnginePlugin.java) must be exposed as a bean) | false |
@@ -46,9 +45,9 @@ Add dependencies, which are required to execute the generated test code:
 
 <!-- Test -->
 <dependency>
-  <groupId>junit</groupId>
-  <artifactId>junit</artifactId>
-  <version>${junit.version}</version>
+  <groupId>org.junit.jupiter</groupId>
+  <artifactId>junit-jupiter-api</artifactId>
+  <version>${junit.jupiter.version}</version>
   <scope>test</scope>
 </dependency>
 <dependency>
@@ -69,16 +68,6 @@ Add dependencies, which are required to execute the generated test code:
   <artifactId>assertj-core</artifactId>
   <version>${assertj.version}</version>
   <scope>test</scope>
-</dependency>
-```
-
-For **JUnit 5** replace the `junit:junit` dependency with:
-
-```xml
-<dependency>
-  <groupId>org.junit.jupiter</groupId>
-  <artifactId>junit-jupiter-api</artifactId>
-  <version>${junit.jupiter.version}</version>
 </dependency>
 ```
 
@@ -129,19 +118,6 @@ For **Spring Boot** based testing, additional dependencies are required:
   <artifactId>spring-boot-starter-test</artifactId>
   <scope>test</scope>
 </dependency>
-
-<!-- Allows usage of JUnit 4 -->
-<dependency>
-  <groupId>org.junit.vintage</groupId>
-  <artifactId>junit-vintage-engine</artifactId>
-  <scope>test</scope>
-  <exclusions>
-    <exclusion>
-      <groupId>org.hamcrest</groupId>
-      <artifactId>hamcrest-core</artifactId>
-    </exclusion>
-  </exclusions>
-</dependency>
 ```
 
 Recommended versions:
@@ -150,7 +126,6 @@ Recommended versions:
 |:-------------------|:--------|
 | Camunda BPM        | 7.19.0  |
 | Camunda BPM Assert | 15.0.0  |
-| JUnit 4            | 4.13.2  |
 | JUnit 5 (Jupiter)  | 5.9.3   |
 | Assertj            | 3.24.2  |
 | Spring Framework   | 5.3.31  |

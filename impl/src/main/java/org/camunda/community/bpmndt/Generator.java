@@ -10,7 +10,6 @@ import java.util.TreeSet;
 
 import javax.lang.model.SourceVersion;
 
-import org.camunda.community.bpmndt.api.AbstractJUnit4TestCase;
 import org.camunda.community.bpmndt.api.AbstractJUnit5TestCase;
 import org.camunda.community.bpmndt.api.AbstractTestCase;
 import org.camunda.community.bpmndt.api.CallActivityDefinition;
@@ -175,11 +174,7 @@ public class Generator {
     apiClasses.add(BpmndtParseListener.class);
     apiClasses.add(BpmndtProcessEnginePlugin.class);
 
-    if (ctx.isJUnit5Enabled()) {
-      apiClasses.add(AbstractJUnit5TestCase.class);
-    } else {
-      apiClasses.add(AbstractJUnit4TestCase.class);
-    }
+    apiClasses.add(AbstractJUnit5TestCase.class);
 
     if (ctx.isSpringEnabled()) {
       apiClasses.add(SpringConfiguration.class);

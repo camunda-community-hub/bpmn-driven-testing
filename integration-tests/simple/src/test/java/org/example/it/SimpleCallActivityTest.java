@@ -4,17 +4,17 @@ import org.camunda.bpm.engine.delegate.DelegateExecution;
 import org.camunda.bpm.engine.delegate.DelegateVariableMapping;
 import org.camunda.bpm.engine.delegate.VariableScope;
 import org.camunda.bpm.engine.variable.VariableMap;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import generated.simplecallactivity.TC_startEvent__callActivity;
 import generated.simplecallactivity.TC_startEvent__endEvent;
 
 public class SimpleCallActivityTest {
 
-  @Rule
+  @RegisterExtension
   public TC_startEvent__endEvent tc = new TC_startEvent__endEvent();
-  @Rule
+  @RegisterExtension
   public TC_startEvent__callActivity tcWaitAfter = new TC_startEvent__callActivity();
 
   @Test

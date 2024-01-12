@@ -9,13 +9,6 @@ import org.gradle.api.provider.Property;
 public interface GradleExtension {
 
   /**
-   * Provides the property, which determines if JUnit 5 based test case generation is enabled or not.
-   * 
-   * @return {@code true}, if JUnit 5 is enabled. Otherwise {@code false}.
-   */
-  Property<Boolean> getJunit5Enabled(); // getJUnit5Enabled (with uppercased 'U') did not worked
-
-  /**
    * Returns the package name of the generated Java test case files.
    * 
    * @return The package name for the generated test code.

@@ -17,15 +17,19 @@ dependencies {
   implementation 'org.springframework:spring-jdbc:5.3.31'
 
   testImplementation 'org.slf4j:slf4j-log4j12:1.7.36'
-  testImplementation 'junit:junit:4.13.2'
+  testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.3'
   testImplementation 'org.hamcrest:hamcrest-core:2.2'
   testImplementation 'com.h2database:h2:2.2.220'
   testImplementation 'org.camunda.bpm.assert:camunda-bpm-assert:15.0.0'
   testImplementation 'org.assertj:assertj-core:3.24.2'
   testImplementation 'org.springframework:spring-test:5.3.31'
+
+  testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.3'
 }
 
 test {
+  useJUnitPlatform()
+
   testLogging {
     afterSuite { desc, result ->
       if (!desc.parent) {

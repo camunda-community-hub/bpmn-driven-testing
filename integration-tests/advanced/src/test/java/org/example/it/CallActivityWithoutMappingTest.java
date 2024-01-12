@@ -6,14 +6,14 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import org.camunda.bpm.engine.impl.core.model.BaseCallableElement.CallableElementBinding;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import generated.callactivitywithoutmapping.TC_startEvent__endEvent;
 
 public class CallActivityWithoutMappingTest {
 
-  @Rule
+  @RegisterExtension
   public TC_startEvent__endEvent tc = new TC_startEvent__endEvent();
 
   @Test

@@ -1,13 +1,7 @@
 package org.camunda.community.bpmndt.api;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -53,25 +47,25 @@ public class CallActivityTest {
   @Test
   public void testVerify() {
     handler.verify((pi, callActivity) -> {
-      assertThat(pi, notNullValue());
+      assertThat(pi).isNotNull();
       pi.isNotEnded();
       pi.variables().containsEntry("super", true);
 
-      assertThat(callActivity.getBinding(), is(CallableElementBinding.DEPLOYMENT));
-      assertThat(callActivity.getBusinessKey(), equalTo("simpleKey"));
-      assertThat(callActivity.getDefinitionKey(), equalTo("simple"));
-      assertThat(callActivity.getDefinitionTenantId(), equalTo("tenant-x"));
-      assertThat(callActivity.getVersion(), nullValue());
-      assertThat(callActivity.getVersion(), nullValue());
-      assertThat(callActivity.getVersionTag(), nullValue());
+      assertThat(callActivity.getBinding()).isEqualTo(CallableElementBinding.DEPLOYMENT);
+      assertThat(callActivity.getBusinessKey()).isEqualTo("simpleKey");
+      assertThat(callActivity.getDefinitionKey()).isEqualTo("simple");
+      assertThat(callActivity.getDefinitionTenantId()).isEqualTo("tenant-x");
+      assertThat(callActivity.getVersion()).isNull();
+      assertThat(callActivity.getVersion()).isNull();
+      assertThat(callActivity.getVersionTag()).isNull();
       assertThat(callActivity.hasInputs()).isFalse();
       assertThat(callActivity.hasOutputs()).isFalse();
     }).verifyInput(variables -> {
-      assertThat(variables.getVariable("a"), equalTo("b"));
-      assertThat(variables.getVariable("x"), equalTo("y"));
+      assertThat(variables.getVariable("a")).isEqualTo("b");
+      assertThat(variables.getVariable("x")).isEqualTo("y");
     }).verifyOutput(variables -> {
-      assertThat(variables.getVariable("a"), equalTo("y"));
-      assertThat(variables.getVariable("x"), equalTo("b"));
+      assertThat(variables.getVariable("a")).isEqualTo("y");
+      assertThat(variables.getVariable("x")).isEqualTo("b");
     });
 
     executor.execute();
@@ -82,23 +76,23 @@ public class CallActivityTest {
    */
   @Test
   public void testWaitForBoundaryEvent() {
-    assertThat(handler.isWaitingForBoundaryEvent(), is(false));
+    assertThat(handler.isWaitingForBoundaryEvent()).isFalse();
     handler.waitForBoundaryEvent();
-    assertThat(handler.isWaitingForBoundaryEvent(), is(true));
+    assertThat(handler.isWaitingForBoundaryEvent()).isTrue();
 
     AssertionError e = assertThrows(AssertionError.class, () -> {
       executor.execute();
     });
 
     // has passed start event, but not call activity
-    assertThat(e.getMessage(), containsString("it passed [startEvent]"));
+    assertThat(e.getMessage()).contains("it passed [startEvent]");
   }
 
   private class TestCase extends AbstractJUnit5TestCase<TestCase> {
 
     @Override
     protected void execute(ProcessInstance pi) {
-      assertThat(pi, notNullValue());
+      assertThat(pi).isNotNull();
 
       ProcessInstanceAssert piAssert = ProcessEngineTests.assertThat(pi);
 
@@ -138,8 +132,8 @@ public class CallActivityTest {
 
     @Override
     public void mapInputVariables(DelegateExecution superExecution, VariableMap subVariables) {
-      assertThat(superExecution.hasVariable("super"), is(true));
-      assertThat(subVariables.isEmpty(), is(true));
+      assertThat(superExecution.hasVariable("super")).isTrue();
+      assertThat(subVariables.isEmpty()).isTrue();
 
       subVariables.put("a", "b");
       subVariables.put("x", "y");
@@ -147,8 +141,8 @@ public class CallActivityTest {
 
     @Override
     public void mapOutputVariables(DelegateExecution superExecution, VariableScope subInstance) {
-      assertThat(superExecution.hasVariable("super"), is(true));
-      assertThat(subInstance.hasVariable("super"), is(false));
+      assertThat(superExecution.hasVariable("super")).isTrue();
+      assertThat(subInstance.hasVariable("super")).isFalse();
 
       Object a = subInstance.getVariable("a");
       Object x = subInstance.getVariable("x");

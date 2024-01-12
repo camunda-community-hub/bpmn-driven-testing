@@ -14,7 +14,7 @@
     <camunda.bpm.version>7.19.0</camunda.bpm.version>
     <camunda.bpm.assert.version>15.0.0</camunda.bpm.assert.version>
     <h2.version>2.2.220</h2.version>
-    <junit.version>4.13.2</junit.version>
+    <junit.jupiter.version>5.9.3</junit.jupiter.version>
     <slf4j.version>1.7.36</slf4j.version>
     <spring.version>5.3.31</spring.version>
 
@@ -80,9 +80,9 @@
     </dependency>
     
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>${junit.version}</version>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <version>${junit.jupiter.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -128,6 +128,12 @@
           <source>1.8</source>
           <target>1.8</target>
         </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.0.0-M6</version>
       </plugin>
 
       <plugin>
