@@ -1,8 +1,8 @@
 package org.example.it;
 
 import org.camunda.bpm.engine.test.assertions.bpmn.ProcessInstanceAssert;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import generated.processa.TC_startEventA__endEventA;
 import generated.processc.TC_startEventC__endEventC;
@@ -11,14 +11,14 @@ import generated.processc.TC_subProcessStartC__endEventC;
 
 public class CollaborationTest {
 
-  @Rule
+  @RegisterExtension
   public TC_startEventA__endEventA tcA = new TC_startEventA__endEventA();
 
-  @Rule
+  @RegisterExtension
   public TC_startEventC__endEventC tcC = new TC_startEventC__endEventC();
-  @Rule
+  @RegisterExtension
   public TC_startEventC__subProcessEndC tcSubprocessEndC = new TC_startEventC__subProcessEndC();
-  @Rule
+  @RegisterExtension
   public TC_subProcessStartC__endEventC tcSubprocessStartC = new TC_subProcessStartC__endEventC();
 
   @Test

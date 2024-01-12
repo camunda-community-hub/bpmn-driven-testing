@@ -2,14 +2,14 @@ package org.example.it;
 
 import org.camunda.bpm.engine.delegate.DelegateExecution;
 import org.camunda.bpm.engine.delegate.JavaDelegate;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import generated.servicetask.TC_startEvent__doA;
 
 public class ServiceTaskTest {
 
-  @Rule
+  @RegisterExtension
   public TC_startEvent__doA tc = new TC_startEvent__doA();
 
   @Test

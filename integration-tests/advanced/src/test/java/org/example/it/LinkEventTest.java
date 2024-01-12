@@ -1,16 +1,16 @@
 package org.example.it;
 
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import generated.linkevent.TC_forkA__linkCatchEventA;
 import generated.linkevent.TC_forkB__linkCatchEventB;
 
 public class LinkEventTest {
 
-  @Rule
+  @RegisterExtension
   public TC_forkA__linkCatchEventA tcA = new TC_forkA__linkCatchEventA();
-  @Rule
+  @RegisterExtension
   public TC_forkB__linkCatchEventB tcB = new TC_forkB__linkCatchEventB();
 
   @Test

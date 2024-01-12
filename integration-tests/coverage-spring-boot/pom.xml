@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.example.it</groupId>
-  <artifactId>bpmndt-advanced-spring-junit5</artifactId>
+  <artifactId>bpmndt-coverage-spring-boot</artifactId>
   <version>1</version>
 
   <properties>
@@ -13,10 +13,9 @@
     <assertj.version>3.24.2</assertj.version>
     <camunda.bpm.version>7.19.0</camunda.bpm.version>
     <camunda.bpm.assert.version>15.0.0</camunda.bpm.assert.version>
+    <camunda.process.test.coverage.version>2.3.1</camunda.process.test.coverage.version>
     <h2.version>2.2.220</h2.version>
-    <junit.jupiter.version>5.9.3</junit.jupiter.version>
-    <slf4j.version>1.7.36</slf4j.version>
-    <spring.version>5.3.31</spring.version>
+    <spring.boot.version>2.7.18</spring.boot.version>
 
     <plugin.version>1.0.0-SNAPSHOT</plugin.version>
   </properties>
@@ -38,59 +37,33 @@
         <type>pom</type>
         <scope>import</scope>
       </dependency>
+
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-dependencies</artifactId>
+        <version>${spring.boot.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
   <dependencies>
     <dependency>
-      <groupId>org.camunda.bpm</groupId>
-      <artifactId>camunda-engine</artifactId>
+      <groupId>org.camunda.bpm.springboot</groupId>
+      <artifactId>camunda-bpm-spring-boot-starter</artifactId>
     </dependency>
+
     <dependency>
       <groupId>org.camunda.bpm</groupId>
       <artifactId>camunda-engine-plugin-spin</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.camunda.bpm</groupId>
-      <artifactId>camunda-engine-spring</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-beans</artifactId>
-      <version>${spring.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-context</artifactId>
-      <version>${spring.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-jdbc</artifactId>
-      <version>${spring.version}</version>
+      <groupId>org.camunda.spin</groupId>
+      <artifactId>camunda-spin-dataformat-json-jackson</artifactId>
     </dependency>
 
     <!-- Test -->
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-log4j12</artifactId>
-      <version>${slf4j.version}</version>
-      <scope>test</scope>
-    </dependency>
-    
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-api</artifactId>
-      <version>${junit.jupiter.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.hamcrest</groupId>
-      <artifactId>hamcrest-core</artifactId>
-      <version>2.2</version>
-      <scope>test</scope>
-    </dependency>
     <dependency>
       <groupId>com.h2database</groupId>
       <artifactId>h2</artifactId>
@@ -112,9 +85,15 @@
     </dependency>
 
     <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-test</artifactId>
-      <version>${spring.version}</version>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.camunda.community.process_test_coverage</groupId>
+      <artifactId>camunda-process-test-coverage-starter-platform-7</artifactId>
+      <version>${camunda.process.test.coverage.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -148,11 +127,8 @@
           </execution>
         </executions>
         <configuration>
-          <jUnit5Enabled>true</jUnit5Enabled>
-          <processEnginePlugins>
-            <processEnginePlugin>org.camunda.spin.plugin.impl.SpinProcessEnginePlugin</processEnginePlugin>
-          </processEnginePlugins>
-          <springEnabled>true</springEnabled>
+          <!-- not required for Spring Boot, since only the BpmndtProcessEnginePlugin must be exposed as a bean -->
+          <springEnabled>false</springEnabled>
         </configuration>
       </plugin>
     </plugins>

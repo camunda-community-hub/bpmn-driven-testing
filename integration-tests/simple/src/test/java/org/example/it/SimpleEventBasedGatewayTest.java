@@ -1,7 +1,7 @@
 package org.example.it;
 
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import generated.simpleeventbasedgateway.TC_Message;
 import generated.simpleeventbasedgateway.TC_Timer;
@@ -9,11 +9,11 @@ import generated.simpleeventbasedgateway.TC_startEvent__eventBasedGateway;
 
 public class SimpleEventBasedGatewayTest {
 
-  @Rule
+  @RegisterExtension
   public TC_startEvent__eventBasedGateway tc = new TC_startEvent__eventBasedGateway();
-  @Rule
+  @RegisterExtension
   public TC_Message tcMessage = new TC_Message();
-  @Rule
+  @RegisterExtension
   public TC_Timer tcTimer = new TC_Timer();
 
   @Test

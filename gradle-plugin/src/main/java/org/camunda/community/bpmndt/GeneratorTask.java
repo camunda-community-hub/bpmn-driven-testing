@@ -27,14 +27,12 @@ public class GeneratorTask extends DefaultTask {
 
   @TaskAction
   public void generate() {
-    boolean jUnit5Enabled = extension.getJunit5Enabled().getOrElse(Boolean.FALSE);
     String packageName = extension.getPackageName().getOrElse("generated");
     List<String> processEnginePlugins = extension.getProcessEnginePlugins().getOrElse(Collections.emptyList());
     boolean springEnabled = extension.getSpringEnabled().getOrElse(Boolean.FALSE);
 
     GeneratorContext ctx = new GeneratorContext();
     ctx.setBasePath(getProject().getProjectDir().toPath());
-    ctx.setJUnit5Enabled(jUnit5Enabled);
     ctx.setMainResourcePath(mainResourcePath);
     ctx.setPackageName(packageName);
     ctx.setProcessEnginePluginNames(processEnginePlugins);

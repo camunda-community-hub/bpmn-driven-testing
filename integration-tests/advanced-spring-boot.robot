@@ -50,6 +50,6 @@ Assert Test Code Generation
   ${testSources}  Set variable  ${CURDIR}/advanced-spring-boot/${buildDir}/bpmndt
 
   # Spring specific API classes written
-  Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/org/camunda/community/bpmndt/api/AbstractJUnit4TestCase.java
+  Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/org/camunda/community/bpmndt/api/AbstractJUnit5TestCase.java
 
-  File should exist  ${testSources}/org/camunda/community/bpmndt/api/AbstractJUnit4TestCase.java
+  File should exist  ${testSources}/org/camunda/community/bpmndt/api/AbstractJUnit5TestCase.java

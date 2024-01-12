@@ -14,7 +14,6 @@
     <assertj.version>3.24.2</assertj.version>
     <camunda.bpm.assert.version>15.0.0</camunda.bpm.assert.version>
     <javapoet.version>1.13.0</javapoet.version>
-    <junit.version>4.13.2</junit.version>
     <spring.version>5.3.31</spring.version>
   </properties>
 
@@ -94,11 +93,6 @@
     </dependency>
 
     <!-- JUnit -->
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>${junit.version}</version>
-    </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>

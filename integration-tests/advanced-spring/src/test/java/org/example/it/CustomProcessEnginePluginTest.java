@@ -7,20 +7,20 @@ import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import org.camunda.bpm.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.camunda.community.bpmndt.api.cfg.BpmndtProcessEnginePlugin;
 import org.example.it.CustomProcessEnginePluginTestConfiguration.CustomProcessEnginePlugin;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import generated.BpmndtConfiguration;
 import generated.advancedspring.TC_startEvent__endEvent;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {BpmndtConfiguration.class, CustomProcessEnginePluginTestConfiguration.class})
 public class CustomProcessEnginePluginTest {
 
-  @Rule
+  @RegisterExtension
   public TC_startEvent__endEvent tc = new TC_startEvent__endEvent();
 
   @Test

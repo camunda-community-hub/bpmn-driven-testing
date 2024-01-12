@@ -1,8 +1,6 @@
 package org.camunda.community.bpmndt.api;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -54,7 +52,7 @@ public class CallActivityVariablesTest {
 
     @Override
     protected void execute(ProcessInstance pi) {
-      assertThat(pi, notNullValue());
+      assertThat(pi).isNotNull();
 
       ProcessInstanceAssert piAssert = ProcessEngineTests.assertThat(pi);
 

@@ -1,13 +1,13 @@
 package org.example.it;
 
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import generated.callactivitymessage.TC_startEvent__endEvent;
 
 public class CallActivityMessageTest {
 
-  @Rule
+  @RegisterExtension
   public TC_startEvent__endEvent tc = new TC_startEvent__endEvent();
 
   @Test

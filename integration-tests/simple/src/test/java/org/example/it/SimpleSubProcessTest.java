@@ -1,16 +1,16 @@
 package org.example.it;
 
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import generated.simplesubprocess.TC_startEvent__endEvent;
 import generated.simplesubprocess.TC_startEvent__subProcessEndEvent;
 
 public class SimpleSubProcessTest {
 
-  @Rule
+  @RegisterExtension
   public TC_startEvent__endEvent tc = new TC_startEvent__endEvent();
-  @Rule
+  @RegisterExtension
   public TC_startEvent__subProcessEndEvent tcWaitAfter = new TC_startEvent__subProcessEndEvent();
 
   @Test

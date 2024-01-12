@@ -19,9 +19,13 @@ dependencies {
   testImplementation 'org.assertj:assertj-core:3.24.2'
   testImplementation 'org.springframework.boot:spring-boot-starter-test:2.7.18'
   testImplementation 'org.junit.vintage:junit-vintage-engine:5.9.3'
+
+  testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.3'
 }
 
 test {
+  useJUnitPlatform()
+
   testLogging {
     afterSuite { desc, result ->
       if (!desc.parent) {

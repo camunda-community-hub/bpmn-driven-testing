@@ -7,7 +7,6 @@ import java.util.List;
 public class GeneratorContext {
 
   private Path basePath;
-  private boolean jUnit5Enabled;
   private Path mainResourcePath;
   private String packageName;
   private List<String> processEnginePluginNames;
@@ -45,20 +44,12 @@ public class GeneratorContext {
     return testSourcePath;
   }
 
-  public boolean isJUnit5Enabled() {
-    return jUnit5Enabled;
-  }
-
   public boolean isSpringEnabled() {
     return springEnabled;
   }
 
   public void setBasePath(Path basePath) {
     this.basePath = basePath;
-  }
-
-  public void setJUnit5Enabled(boolean jUnit5Enabled) {
-    this.jUnit5Enabled = jUnit5Enabled;
   }
 
   public void setMainResourcePath(Path mainResourcePath) {

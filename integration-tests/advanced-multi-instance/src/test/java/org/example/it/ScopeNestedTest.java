@@ -1,7 +1,7 @@
 package org.example.it;
 
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import generated.scopenested.TC_nestedSubProcessStartEvent__endEvent;
 import generated.scopenested.TC_startEvent__endEvent;
@@ -9,11 +9,11 @@ import generated.scopenested.TC_subProcessStartEvent__endEvent;
 
 public class ScopeNestedTest {
 
-  @Rule
+  @RegisterExtension
   public TC_startEvent__endEvent tc = new TC_startEvent__endEvent();
-  @Rule
+  @RegisterExtension
   public TC_subProcessStartEvent__endEvent tcSubProcessStart = new TC_subProcessStartEvent__endEvent();
-  @Rule
+  @RegisterExtension
   public TC_nestedSubProcessStartEvent__endEvent tcNestedSubProcessStart = new TC_nestedSubProcessStartEvent__endEvent();
 
   @Test

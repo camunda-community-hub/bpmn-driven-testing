@@ -1,17 +1,17 @@
 package org.example.it;
 
 import org.camunda.bpm.engine.test.assertions.bpmn.ProcessInstanceAssert;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import generated.scopeerrorendevent.TC_Error;
 import generated.scopeerrorendevent.TC_None;
 
 public class ScopeErrorEndEventTest {
 
-  @Rule
+  @RegisterExtension
   public TC_Error tcError = new TC_Error();
-  @Rule
+  @RegisterExtension
   public TC_None tcNone = new TC_None();
 
   @Test

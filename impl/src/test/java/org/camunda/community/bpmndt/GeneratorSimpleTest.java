@@ -11,7 +11,7 @@ import java.util.function.Predicate;
 
 import org.apache.commons.lang3.StringUtils;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
-import org.camunda.community.bpmndt.api.AbstractJUnit4TestCase;
+import org.camunda.community.bpmndt.api.AbstractJUnit5TestCase;
 import org.camunda.community.bpmndt.api.CallActivityHandler;
 import org.camunda.community.bpmndt.api.EventHandler;
 import org.camunda.community.bpmndt.api.ExternalTaskHandler;
@@ -76,7 +76,7 @@ public class GeneratorSimpleTest {
     TypeSpec typeSpec = javaFile.typeSpec;
     assertThat(typeSpec).hasName("TC_startEvent__endEvent");
 
-    ClassName rawType = ClassName.get(AbstractJUnit4TestCase.class);
+    ClassName rawType = ClassName.get(AbstractJUnit5TestCase.class);
     ClassName typeArgument = ClassName.bestGuess(typeSpec.name);
 
     assertThat(typeSpec.superclass).isInstanceOf(ParameterizedTypeName.class);
@@ -122,7 +122,7 @@ public class GeneratorSimpleTest {
     TypeSpec typeSpec = javaFile.typeSpec;
     assertThat(typeSpec).hasName("TC_startEvent__endEvent");
 
-    ClassName rawType = ClassName.get(AbstractJUnit4TestCase.class);
+    ClassName rawType = ClassName.get(AbstractJUnit5TestCase.class);
     ClassName typeArgument = ClassName.bestGuess(typeSpec.name);
 
     assertThat(typeSpec.superclass).isInstanceOf(ParameterizedTypeName.class);

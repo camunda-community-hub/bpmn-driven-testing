@@ -1,7 +1,7 @@
 package org.example.it;
 
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import generated.callactivityerror.TC_startEvent__callActivity;
 import generated.callactivityerror.TC_startEvent__endEvent;
@@ -9,11 +9,11 @@ import generated.callactivityerror.TC_startEvent__errorBoundaryEvent;
 
 public class CallActivityErrorTest {
 
-  @Rule
+  @RegisterExtension
   public TC_startEvent__endEvent tc = new TC_startEvent__endEvent();
-  @Rule
+  @RegisterExtension
   public TC_startEvent__callActivity tcCallActivity = new TC_startEvent__callActivity();
-  @Rule
+  @RegisterExtension
   public TC_startEvent__errorBoundaryEvent tcErrorBoundaryEvent = new TC_startEvent__errorBoundaryEvent();
 
   @Test

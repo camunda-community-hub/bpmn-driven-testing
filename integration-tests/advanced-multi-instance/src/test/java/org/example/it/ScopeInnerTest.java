@@ -1,7 +1,7 @@
 package org.example.it;
 
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import generated.scopeinner.TC_startEvent__subProcessEndEvent;
 import generated.scopeinner.TC_subProcessStartEvent__endEvent;
@@ -9,11 +9,11 @@ import generated.scopeinner.TC_subProcessStartEvent__subProcessEndEvent;
 
 public class ScopeInnerTest {
 
-  @Rule
+  @RegisterExtension
   public TC_subProcessStartEvent__subProcessEndEvent tcInner = new TC_subProcessStartEvent__subProcessEndEvent();
-  @Rule
+  @RegisterExtension
   public TC_startEvent__subProcessEndEvent tcInnerEnd = new TC_startEvent__subProcessEndEvent();
-  @Rule
+  @RegisterExtension
   public TC_subProcessStartEvent__endEvent tcInnerStart = new TC_subProcessStartEvent__endEvent();
 
   @Test
