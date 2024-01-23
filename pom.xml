@@ -1,11 +1,12 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
     <groupId>org.camunda.community</groupId>
     <artifactId>community-hub-release-parent</artifactId>
     <version>1.4.4</version>
-    <relativePath />
+    <relativePath/>
   </parent>
 
   <artifactId>bpmn-driven-testing-root</artifactId>
@@ -15,17 +16,19 @@
   <modules>
     <module>gradle-plugin</module>
     <module>impl</module>
+    <module>impl-8</module>
     <module>maven-plugin</module>
     <module>model</module>
   </modules>
 
   <properties>
-    <version.java>1.8</version.java>
+    <version.java>17</version.java>
 
     <!-- Versions -->
     <camunda.bpm.version>7.19.0</camunda.bpm.version>
     <google.truth.version>1.1.5</google.truth.version>
-    <junit.jupiter.version>5.9.3</junit.jupiter.version>
+    <javapoet.version>1.13.0</javapoet.version>
+    <junit.jupiter.version>5.10.1</junit.jupiter.version>
     <robotframework.version>4.1.2</robotframework.version>
     <slf4j.version>1.7.36</slf4j.version>
   </properties>
@@ -58,6 +61,12 @@
         <version>${camunda.bpm.version}</version>
         <type>pom</type>
         <scope>import</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>com.squareup</groupId>
+        <artifactId>javapoet</artifactId>
+        <version>${javapoet.version}</version>
       </dependency>
 
       <!-- Test -->
