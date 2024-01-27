@@ -225,11 +225,11 @@ public class TestCaseExecutor {
   /**
    * Sets variables that are used for the process instance creation.
    *
-   * @param variables A map of variables.
+   * @param variableMap A map of variables.
    * @return The executor.
    */
-  public TestCaseExecutor withVariableMap(Map<String, Object> variables) {
-    this.variableMap.putAll(variables);
+  public TestCaseExecutor withVariableMap(Map<String, Object> variableMap) {
+    this.variableMap.putAll(variableMap);
     return this;
   }
 

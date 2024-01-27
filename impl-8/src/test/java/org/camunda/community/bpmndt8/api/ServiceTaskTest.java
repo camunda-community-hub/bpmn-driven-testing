@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.camunda.community.bpmndt8.test.TestPaths;
@@ -15,6 +16,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.camunda.zeebe.client.ZeebeClient;
 import io.camunda.zeebe.process.test.api.ZeebeTestEngine;
+import io.camunda.zeebe.process.test.assertions.ProcessInstanceAssert;
 import io.camunda.zeebe.process.test.extension.ZeebeProcessTest;
 
 @ZeebeProcessTest
@@ -40,7 +42,7 @@ public class ServiceTaskTest {
     );
 
     try (var ignored = workerBuilder.open()) {
-      tc.createExecutor(engine).execute();
+      tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
     }
   }
 
@@ -62,6 +64,7 @@ public class ServiceTaskTest {
       tc.createExecutor(engine)
           .withVariable("x", "test")
           .withVariableMap(Map.of("y", 1, "z", true))
+          .verify(ProcessInstanceAssert::isCompleted)
           .execute();
     }
   }
@@ -85,6 +88,7 @@ public class ServiceTaskTest {
 
       tc.createExecutor(engine)
           .withVariables(variables)
+          .verify(ProcessInstanceAssert::isCompleted)
           .execute();
     }
   }
@@ -107,7 +111,7 @@ public class ServiceTaskTest {
     handler.verifyEvaluatedType("serviceTaskType");
 
     try (var ignored = workerBuilder.open()) {
-      tc.createExecutor(engine).execute();
+      tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
     }
   }
 
@@ -129,7 +133,7 @@ public class ServiceTaskTest {
     handler.verifyType("= \"serviceTaskType\"");
 
     try (var ignored = workerBuilder.open()) {
-      tc.createExecutor(engine).execute();
+      tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
     }
   }
 
@@ -139,7 +143,45 @@ public class ServiceTaskTest {
         client.newCompleteCommand(job).send()
     );
 
-    tc.createExecutor(engine).execute();
+    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+  }
+
+  @Test
+  public void testExecuteActionWithVariables() {
+    var variables = new TestVariables();
+    variables.setX("test");
+    variables.setY(1);
+    variables.setZ(true);
+
+    handler.withVariables(variables).execute();
+
+    tc.createExecutor(engine).verify(piAssert -> {
+      piAssert.isCompleted();
+
+      piAssert.hasVariableWithValue("x", "test");
+      piAssert.hasVariableWithValue("y", 1);
+      piAssert.hasVariableWithValue("z", true);
+    }).execute();
+  }
+
+  @Test
+  public void testExecuteActionWithVariableMap() {
+    var variableMap = new HashMap<String, Object>();
+    variableMap.put("y", 1);
+    variableMap.put("z", true);
+
+    handler
+        .withVariable("x", "test")
+        .withVariableMap(variableMap)
+        .execute();
+
+    tc.createExecutor(engine).verify(piAssert -> {
+      piAssert.isCompleted();
+
+      piAssert.hasVariableWithValue("x", "test");
+      piAssert.hasVariableWithValue("y", 1);
+      piAssert.hasVariableWithValue("z", true);
+    }).execute();
   }
 
   private class TestCase extends AbstractJUnit5TestCase {
