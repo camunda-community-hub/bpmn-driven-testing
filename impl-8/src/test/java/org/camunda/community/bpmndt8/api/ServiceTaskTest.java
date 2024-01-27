@@ -21,10 +21,10 @@ import io.camunda.zeebe.process.test.extension.ZeebeProcessTest;
 public class ServiceTaskTest {
 
   @RegisterExtension
-  public TestCase tc = new TestCase();
+  TestCase tc = new TestCase();
 
-  private ZeebeTestEngine engine;
-  private ZeebeClient client;
+  ZeebeTestEngine engine;
+  ZeebeClient client;
 
   private JobHandler handler;
 
@@ -35,11 +35,11 @@ public class ServiceTaskTest {
 
   @Test
   public void testExecute() {
-    var workerBuilder = client.newWorker().jobType("serviceTaskType").handler((client, job) -> {
-      client.newCompleteCommand(job).variable("test", "123").send();
-    });
+    var workerBuilder = client.newWorker().jobType("serviceTaskType").handler((client, job) ->
+        client.newCompleteCommand(job).variable("test", "123").send()
+    );
 
-    try (var worker = workerBuilder.open()) {
+    try (var ignored = workerBuilder.open()) {
       tc.createExecutor(engine).execute();
     }
   }
@@ -58,7 +58,7 @@ public class ServiceTaskTest {
       client.newCompleteCommand(job).send();
     });
 
-    try (var worker = workerBuilder.open()) {
+    try (var ignored = workerBuilder.open()) {
       tc.createExecutor(engine)
           .withVariable("x", "test")
           .withVariableMap(Map.of("y", 1, "z", true))
@@ -77,7 +77,7 @@ public class ServiceTaskTest {
       client.newCompleteCommand(job).send();
     });
 
-    try (var worker = workerBuilder.open()) {
+    try (var ignored = workerBuilder.open()) {
       var variables = new TestVariables();
       variables.setX("test");
       variables.setY(1);
@@ -91,16 +91,14 @@ public class ServiceTaskTest {
 
   @Test
   public void testVerifyEvaluatedType() {
-    var workerBuilder = client.newWorker().jobType("serviceTaskType").handler((client, job) -> {
-      client.newCompleteCommand(job).send();
-    });
+    var workerBuilder = client.newWorker().jobType("serviceTaskType").handler((client, job) ->
+        client.newCompleteCommand(job).send()
+    );
 
     handler.verifyEvaluatedType("wrongType");
 
-    try (var worker = workerBuilder.open()) {
-      var e = assertThrows(AssertionError.class, () -> {
-        tc.createExecutor(engine).execute();
-      });
+    try (var ignored = workerBuilder.open()) {
+      var e = assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
 
       assertThat(e).hasMessageThat().contains("wrongType");
       assertThat(e).hasMessageThat().contains("serviceTaskType");
@@ -108,23 +106,21 @@ public class ServiceTaskTest {
 
     handler.verifyEvaluatedType("serviceTaskType");
 
-    try (var worker = workerBuilder.open()) {
+    try (var ignored = workerBuilder.open()) {
       tc.createExecutor(engine).execute();
     }
   }
 
   @Test
   public void testVerifyType() {
-    var workerBuilder = client.newWorker().jobType("serviceTaskType").handler((client, job) -> {
-      client.newCompleteCommand(job).send();
-    });
+    var workerBuilder = client.newWorker().jobType("serviceTaskType").handler((client, job) ->
+        client.newCompleteCommand(job).send()
+    );
 
     handler.verifyType("wrongType");
 
-    try (var worker = workerBuilder.open()) {
-      var e = assertThrows(AssertionError.class, () -> {
-        tc.createExecutor(engine).execute();
-      });
+    try (var ignored = workerBuilder.open()) {
+      var e = assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
 
       assertThat(e).hasMessageThat().contains("wrongType");
       assertThat(e).hasMessageThat().contains("= \"serviceTaskType\"");
@@ -132,16 +128,16 @@ public class ServiceTaskTest {
 
     handler.verifyType("= \"serviceTaskType\"");
 
-    try (var worker = workerBuilder.open()) {
+    try (var ignored = workerBuilder.open()) {
       tc.createExecutor(engine).execute();
     }
   }
 
   @Test
   public void testExecuteAction() {
-    handler.execute((client, job) -> {
-      client.newCompleteCommand(job).send();
-    });
+    handler.execute((client, job) ->
+        client.newCompleteCommand(job).send()
+    );
 
     tc.createExecutor(engine).execute();
   }

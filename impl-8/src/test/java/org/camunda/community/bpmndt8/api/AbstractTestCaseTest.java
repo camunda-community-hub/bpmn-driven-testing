@@ -9,19 +9,22 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.camunda.zeebe.process.test.api.ZeebeTestEngine;
+import io.camunda.zeebe.process.test.assertions.ProcessInstanceAssert;
 import io.camunda.zeebe.process.test.extension.ZeebeProcessTest;
 
 @ZeebeProcessTest
 public class AbstractTestCaseTest {
 
   @RegisterExtension
-  public TestCase tc = new TestCase();
+  TestCase tc = new TestCase();
 
-  private ZeebeTestEngine engine;
+  ZeebeTestEngine engine;
 
   @Test
   public void testExecute() {
-    tc.createExecutor(engine).execute();
+    tc.createExecutor(engine)
+        .verify(ProcessInstanceAssert::isCompleted)
+        .execute();
   }
 
   private static class TestCase extends AbstractJUnit5TestCase {

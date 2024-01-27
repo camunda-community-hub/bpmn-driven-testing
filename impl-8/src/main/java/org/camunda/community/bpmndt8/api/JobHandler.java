@@ -27,15 +27,13 @@ public class JobHandler {
       throw new AssertionError("expected job %s to be of type %s, but was %s".formatted(bpmnElementId, expectedType, type));
     }
 
-    if (expectedEvaluatedType != null) {
-      instance.hasJobType(processInstanceKey, bpmnElementId, expectedEvaluatedType);
+    var evaluatedType = instance.getJobType(processInstanceKey, bpmnElementId);
+    if (expectedEvaluatedType != null && !expectedEvaluatedType.equals(evaluatedType)) {
+      throw new AssertionError("expected job %s to be of evaluated type %s, but was %s".formatted(bpmnElementId, expectedEvaluatedType, evaluatedType));
     }
 
     if (action != null) {
-      var client = instance.client;
-      var jobType = instance.getJobType(processInstanceKey, bpmnElementId);
-
-      try (var worker = client.newWorker().jobType(jobType).handler(action).open()) {
+      try (var ignored = instance.client.newWorker().jobType(evaluatedType).handler(action).open()) {
         instance.hasPassed(processInstanceKey, bpmnElementId);
       }
     }

@@ -1,23 +1,18 @@
 package org.camunda.community.bpmndt8.api;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 import io.camunda.zeebe.client.ZeebeClient;
 import io.camunda.zeebe.process.test.api.ZeebeTestEngine;
 import io.camunda.zeebe.process.test.filters.RecordStream;
 import io.camunda.zeebe.protocol.record.Record;
-import io.camunda.zeebe.protocol.record.RecordType;
-import io.camunda.zeebe.protocol.record.ValueType;
 import io.camunda.zeebe.protocol.record.intent.JobIntent;
 import io.camunda.zeebe.protocol.record.intent.ProcessInstanceIntent;
-import io.camunda.zeebe.protocol.record.value.BpmnElementType;
-import io.camunda.zeebe.protocol.record.value.JobRecordValue;
-import io.camunda.zeebe.protocol.record.value.ProcessInstanceRecordValue;
 
 /**
  * Link between a test case and its execution, utilizing a process instance that was instantiated by a {@link TestCaseExecutor} and handlers (e.g.
@@ -32,8 +27,8 @@ public class TestCaseInstance implements AutoCloseable {
 
   private Future<?> consumeRecordStreamTask;
 
-  private volatile Assertion currentAssertion;
-  private volatile Selection currentSelection;
+  private volatile SelectTask<?> selectTask;
+  private volatile SelectAndTestTask selectAndTestTask;
 
   TestCaseInstance(ZeebeTestEngine engine, ZeebeClient client) {
     this.engine = engine;
@@ -64,10 +59,77 @@ public class TestCaseInstance implements AutoCloseable {
     handler.apply(this, processInstanceKey);
   }
 
-  void consumeRecordStream() {
+  String getJobType(long processInstanceKey, String bpmnElementId) {
+    return select(memo -> {
+      var processInstance = memo.processInstances.get(processInstanceKey);
+      if (processInstance == null) {
+        throw new IllegalStateException("process instance %d could not be found".formatted(processInstanceKey));
+      }
+
+      var jobMemo = processInstance.jobs.get(bpmnElementId);
+      if (jobMemo == null) {
+        throw new IllegalStateException("job %s could not be found".formatted(bpmnElementId));
+      }
+
+      return jobMemo.type;
+    });
+  }
+
+  void hasPassed(long processInstanceKey, String bpmnElementId) {
+    boolean hasPassed = selectAndTest(memo -> {
+      var processInstance = memo.processInstances.get(processInstanceKey);
+      if (processInstance == null) {
+        return false;
+      }
+
+      var element = processInstance.elements.get(bpmnElementId);
+      return element != null && element.state == ProcessInstanceIntent.ELEMENT_COMPLETED;
+    });
+
+    if (!hasPassed) {
+      throw new AssertionError("expected process instance %d to has passed BPMN element %s, but was not".formatted(processInstanceKey, bpmnElementId));
+    }
+  }
+
+  void isCompleted(long processInstanceKey) {
+    boolean isCompleted = selectAndTest(memo -> {
+      var processInstance = memo.processInstances.get(processInstanceKey);
+      if (processInstance == null) {
+        return false;
+      }
+
+      return processInstance.state == ProcessInstanceIntent.ELEMENT_COMPLETED;
+    });
+
+    if (!isCompleted) {
+      throw new AssertionError("expected process instance %d to be completed, but was not".formatted(processInstanceKey));
+    }
+  }
+
+  void isWaitingAt(long processInstanceKey, String bpmnElementId) {
+    boolean isWaitingAt = selectAndTest(memo -> {
+      var processInstance = memo.processInstances.get(processInstanceKey);
+      if (processInstance == null) {
+        return false;
+      }
+
+      var job = processInstance.jobs.get(bpmnElementId);
+      if (job == null) {
+        return false;
+      }
+
+      return job.state == JobIntent.CREATED;
+    });
+
+    if (!isWaitingAt) {
+      throw new AssertionError("expected process instance %d to be waiting at %s, but was not".formatted(processInstanceKey, bpmnElementId));
+    }
+  }
+
+  private void consumeRecordStream() {
     var recordStream = RecordStream.of(engine.getRecordStreamSource());
 
-    var memos = new HashMap<Long, ProcessInstanceMemo>();
+    var memo = new TestCaseInstanceMemo();
 
     int recordCount = 0;
     while (true) {
@@ -82,70 +144,29 @@ public class TestCaseInstance implements AutoCloseable {
 
         recordCount++;
 
-        if (record.getRecordType() != RecordType.EVENT) {
-          continue;
-        }
+        memo.apply(record);
+      }
 
-        if (record.getValueType() == ValueType.JOB) {
-          var recordValue = (JobRecordValue) record.getValue();
+      if (selectTask != null) {
+        var task = selectTask;
 
-          if (record.getIntent() == JobIntent.CREATED) {
-            var jobMemo = new JobMemo();
-            jobMemo.id = recordValue.getElementId();
-            jobMemo.state = JobIntent.CREATED;
-            jobMemo.type = recordValue.getType();
+        selectTask = null;
 
-            var memo = memos.get(recordValue.getProcessInstanceKey());
-            memo.jobs.put(jobMemo.id, jobMemo);
-          }
-        }
-
-        if (record.getValueType() == ValueType.PROCESS_INSTANCE) {
-          var recordValue = (ProcessInstanceRecordValue) record.getValue();
-
-          if (record.getIntent() == ProcessInstanceIntent.ELEMENT_ACTIVATED) {
-            if (recordValue.getBpmnElementType() == BpmnElementType.PROCESS) {
-              var memo = new ProcessInstanceMemo();
-              memo.key = recordValue.getProcessInstanceKey();
-              memo.state = ProcessInstanceIntent.ELEMENT_ACTIVATED;
-              memos.put(memo.key, memo);
-            }
-          }
-
-          if (record.getIntent() == ProcessInstanceIntent.ELEMENT_COMPLETED || record.getIntent() == ProcessInstanceIntent.ELEMENT_TERMINATED) {
-            var state = (ProcessInstanceIntent) record.getIntent();
-
-            if (recordValue.getBpmnElementType() == BpmnElementType.PROCESS) {
-              var memo = memos.get(recordValue.getProcessInstanceKey());
-              memo.state = state;
-            } else {
-              var elementMemo = new ElementMemo();
-              elementMemo.id = recordValue.getElementId();
-              elementMemo.state = state;
-
-              var memo = memos.get(recordValue.getProcessInstanceKey());
-              memo.elements.put(elementMemo.id, elementMemo);
-            }
-          }
+        synchronized (task) {
+          task.select(memo);
+          task.notify();
         }
       }
 
-      var assertion = currentAssertion;
-      if (assertion != null && assertion.test(memos)) {
-        currentAssertion = null;
+      if (selectAndTestTask != null) {
+        var task = selectAndTestTask;
 
-        synchronized (assertion) {
-          assertion.notify();
-        }
-      }
+        if (task.selectAndTest(memo)) {
+          selectAndTestTask = null;
 
-      var selection = currentSelection;
-      if (selection != null) {
-        currentSelection = null;
-
-        synchronized (selection) {
-          selection.select(memos);
-          selection.notify();
+          synchronized (task) {
+            task.notify();
+          }
         }
       }
 
@@ -157,202 +178,59 @@ public class TestCaseInstance implements AutoCloseable {
     }
   }
 
-  String getJobType(long processInstanceKey, String bpmnElementId) {
-    return submitSelection(new GetJobType(processInstanceKey, bpmnElementId));
-  }
+  private <T> T select(Function<TestCaseInstanceMemo, T> selector) {
+    var task = new SelectTask<>(selector);
 
-  void hasJobType(long processInstanceKey, String bpmnElementId, String expectedType) {
-    submitAssertion(new HasJobType(processInstanceKey, bpmnElementId, expectedType));
-  }
-
-  void hasPassed(long processInstanceKey, String bpmnElementId) {
-    submitAssertion(new HasPassed(processInstanceKey, bpmnElementId));
-  }
-
-  void isCompleted(long processInstanceKey) {
-    submitAssertion(new IsCompleted(processInstanceKey));
-  }
-
-  void isWaitingAt(long processInstanceKey, String bpmnElementId) {
-    submitAssertion(new IsWaitingAt(processInstanceKey, bpmnElementId));
-  }
-
-  private void submitAssertion(Assertion assertion) {
-    currentAssertion = assertion;
-
+    selectTask = task;
     try {
-      synchronized (currentAssertion) {
-        currentAssertion.wait(5000);
+      synchronized (selectTask) {
+        task.wait(5000);
       }
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
     }
 
-    if (currentAssertion != null) {
-      throw new AssertionError(assertion.errorMessage());
-    }
+    return task.result;
   }
 
-  private <T> T submitSelection(Selection<T> selection) {
-    currentSelection = selection;
+  private boolean selectAndTest(Predicate<TestCaseInstanceMemo> predicate) {
+    selectAndTestTask = new SelectAndTestTask(predicate);
     try {
-      synchronized (currentSelection) {
-        currentSelection.wait(5000);
+      synchronized (selectAndTestTask) {
+        selectAndTestTask.wait(5000);
       }
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
     }
 
-    return selection.result;
+    return selectAndTestTask == null;
   }
 
-  private interface Assertion {
+  private static class SelectTask<T> {
 
-    String errorMessage();
-
-    boolean test(Map<Long, ProcessInstanceMemo> memos);
-  }
-
-  private static abstract class Selection<T> {
+    final Function<TestCaseInstanceMemo, T> selector;
 
     T result;
 
-    abstract void select(Map<Long, ProcessInstanceMemo> memos);
-  }
-
-  private static class ElementMemo {
-
-    String id;
-    ProcessInstanceIntent state;
-  }
-
-  private static class JobMemo {
-
-    String id;
-    JobIntent state;
-    String type;
-  }
-
-  private static class ProcessInstanceMemo {
-
-    final Map<String, ElementMemo> elements = new HashMap<>();
-    final Map<String, JobMemo> jobs = new HashMap<>();
-
-    long key;
-    ProcessInstanceIntent state;
-  }
-
-  private static class GetJobType extends Selection<String> {
-
-    final long processInstanceKey;
-    final String bpmnElementId;
-
-    GetJobType(long processInstanceKey, String bpmnElementId) {
-      this.processInstanceKey = processInstanceKey;
-      this.bpmnElementId = bpmnElementId;
+    SelectTask(Function<TestCaseInstanceMemo, T> selector) {
+      this.selector = selector;
     }
 
-    @Override
-    void select(Map<Long, ProcessInstanceMemo> memos) {
-      var memo = memos.get(processInstanceKey);
-      if (memo == null) {
-        throw new IllegalStateException("process instance %d could not be found".formatted(processInstanceKey));
-      }
-
-      var jobMemo = memo.jobs.get(bpmnElementId);
-      if (jobMemo == null) {
-        throw new IllegalStateException("job %s could not be found".formatted(bpmnElementId));
-      }
-
-      result = jobMemo.type;
+    void select(TestCaseInstanceMemo memo) {
+      result = selector.apply(memo);
     }
   }
 
-  private static class HasJobType implements Assertion {
+  private static class SelectAndTestTask {
 
-    final long processInstanceKey;
-    final String bpmnElementId;
-    final String expectedType;
+    final Predicate<TestCaseInstanceMemo> predicate;
 
-    String actualType;
-
-    HasJobType(long processInstanceKey, String bpmnElementId, String expectedType) {
-      this.processInstanceKey = processInstanceKey;
-      this.bpmnElementId = bpmnElementId;
-      this.expectedType = expectedType;
+    SelectAndTestTask(Predicate<TestCaseInstanceMemo> predicate) {
+      this.predicate = predicate;
     }
 
-    @Override
-    public String errorMessage() {
-      return "expected job %s to be of type %s, but was %s".formatted(bpmnElementId, expectedType, actualType);
-    }
-
-    @Override
-    public boolean test(Map<Long, ProcessInstanceMemo> memos) {
-      var memo = memos.get(processInstanceKey);
-      if (memo == null) {
-        return false;
-      }
-
-      var jobMemo = memo.jobs.get(bpmnElementId);
-      if (jobMemo == null) {
-        return false;
-      }
-
-      actualType = jobMemo.type;
-      return expectedType.equals(actualType);
-    }
-  }
-
-  private record HasPassed(long processInstanceKey, String bpmnElementId) implements Assertion {
-
-    @Override
-    public String errorMessage() {
-      return "expected process instance %d to has passed BPMN element %s, but was not".formatted(processInstanceKey, bpmnElementId);
-    }
-
-    @Override
-    public boolean test(Map<Long, ProcessInstanceMemo> memos) {
-      var memo = memos.get(processInstanceKey);
-      if (memo == null) {
-        return false;
-      }
-
-      var elementMemo = memo.elements.get(bpmnElementId);
-      return elementMemo != null && elementMemo.state == ProcessInstanceIntent.ELEMENT_COMPLETED;
-    }
-  }
-
-  private record IsCompleted(long processInstanceKey) implements Assertion {
-
-    @Override
-    public String errorMessage() {
-      return "expected process instance %d to be completed, but was not".formatted(processInstanceKey);
-    }
-
-    @Override
-    public boolean test(Map<Long, ProcessInstanceMemo> memos) {
-      var memo = memos.get(processInstanceKey);
-      return memo != null && memo.state == ProcessInstanceIntent.ELEMENT_COMPLETED;
-    }
-  }
-
-  private record IsWaitingAt(long processInstanceKey, String bpmnElementId) implements Assertion {
-
-    @Override
-    public String errorMessage() {
-      return "expected process instance %d to be waiting at %s, but was not".formatted(processInstanceKey, bpmnElementId);
-    }
-
-    @Override
-    public boolean test(Map<Long, ProcessInstanceMemo> memos) {
-      var memo = memos.get(processInstanceKey);
-      if (memo == null) {
-        return false;
-      }
-
-      var jobMemo = memo.jobs.get(bpmnElementId);
-      return jobMemo != null && jobMemo.state == JobIntent.CREATED;
+    boolean selectAndTest(TestCaseInstanceMemo memo) {
+      return predicate.test(memo);
     }
   }
 }

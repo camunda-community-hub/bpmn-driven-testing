@@ -30,17 +30,16 @@ public class TestCaseExecutor {
   private final AbstractTestCase testCase;
   private final ZeebeTestEngine engine;
 
+  private final Map<String, Object> variableMap = new HashMap<>();
+
   private ObjectMapper objectMapper;
   private String tenantId;
   private Object variables;
-  private Map<String, Object> variableMap;
   private Consumer<ProcessInstanceAssert> verifier;
 
   public TestCaseExecutor(AbstractTestCase testCase, ZeebeTestEngine engine) {
     this.testCase = testCase;
     this.engine = engine;
-
-    variableMap = new HashMap<>();
 
     BpmnAssert.initRecordStream(RecordStream.of(engine.getRecordStreamSource()));
   }

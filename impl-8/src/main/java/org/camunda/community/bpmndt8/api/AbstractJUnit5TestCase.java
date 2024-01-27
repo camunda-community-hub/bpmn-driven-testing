@@ -9,7 +9,7 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 public abstract class AbstractJUnit5TestCase extends AbstractTestCase implements BeforeEachCallback {
 
   @Override
-  public void beforeEach(ExtensionContext context) throws Exception {
+  public void beforeEach(ExtensionContext context) {
     testClass = context.getRequiredTestClass();
     testMethodName = context.getRequiredTestMethod().getName();
   }
