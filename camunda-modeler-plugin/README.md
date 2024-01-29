@@ -2,7 +2,7 @@
 
 ## Installation
 
-1. Ensure that Camunda Modeler 4.4.0+ or 5.7.0+ is installed
+1. Ensure that Camunda Modeler 5.9.0+ is installed
 2. [Download](https://github.com/camunda-community-hub/bpmn-driven-testing/releases/latest/download/bpmn-driven-testing-plugin.zip) latest Camunda Modeler plugin release
 3. Unpackage downloaded ZIP file to the `resources/plugins/` directory of the Camunda Modeler installation
 4. Start Camunda Modeler
@@ -11,13 +11,13 @@
 ## Development
 :warning: This and the subsequent sections are only important for plugin development!
 
-For the plugin development a [NodeJS 14.x](https://nodejs.org/download/release/latest-v14.x/) installation is required.
+For the plugin development a [NodeJS 20.x](https://nodejs.org/download/release/latest-v20.x/) installation is required.
 
 1. Link the `camunda-modeler-plugin/` directory as Camunda Modeler plugin
 
 Under Windows, run as administrator:
 
-```
+```bat
 mklink /d <camunda-modeler>\resources\plugins\bpmn-driven-testing <repository>\camunda-modeler-plugin
 ```
 
@@ -25,19 +25,19 @@ mklink /d <camunda-modeler>\resources\plugins\bpmn-driven-testing <repository>\c
 
 Under Unix:
 
-```
+```sh
 ln -s <repository>/camunda-modeler-plugin <camunda-modeler>/resources/plugins/bpmn-driven-testing
 ```
 
 2. Install dependencies
 
-```
+```sh
 npm install
 ```
 
 3. Run webpack to build the plugin on the fly, when code changes are saved to file
 
-```
+```sh
 npm run dev
 ```
 
@@ -48,14 +48,14 @@ npm run dev
 ## Testing
 Tests are performed using [mocha](https://mochajs.org/) and [chai](https://www.chaijs.com/).
 
-```
+```sh
 npm run test-watch
 ```
 
 ## Releasing
 When creating a release, run:
 
-```
+```sh
 npm run build && npm run zip
 ```
 
