@@ -1,7 +1,10 @@
 # Gradle Plugin
+
 The plugin `org.camunda.community.bpmndt` registers the Gradle task `generateTestCases`.
-It generates the test code under `build/bpmndt` and adds this directory as test source directory, which is automatically compiled before the `compileTestJava` task of Gradle's Java plugin.
-The compilation results (test cases and [API classes](../impl/src/main/java/org/camunda/community/bpmndt/api)) will be available in the test classpath afterwards.
+It generates the test code under `build/bpmndt` and adds this directory as test source directory, which is automatically compiled before the `compileTestJava`
+task of Gradle's Java plugin.
+The compilation results (test cases and [API classes](../impl/src/main/java/org/camunda/community/bpmndt/platform7/api)) will be available in the test classpath
+afterwards.
 
 :warning: Within **Eclipse**, the Gradle task `generateTestCases` must be executed manually to generate the test cases:
 
@@ -10,7 +13,8 @@ The compilation results (test cases and [API classes](../impl/src/main/java/org/
 3. Add the `generateTestCases` task
 4. Run the Gradle task configuration
 
-:warning: Within **IntelliJ IDEA**, the Gradle task `generateTestCases` must be executed manually to generate the test cases - see [Run Gradle tasks](https://www.jetbrains.com/help/idea/work-with-gradle-tasks.html#gradle_tasks):
+:warning: Within **IntelliJ IDEA**, the Gradle task `generateTestCases` must be executed manually to generate the test cases -
+see [Run Gradle tasks](https://www.jetbrains.com/help/idea/work-with-gradle-tasks.html#gradle_tasks):
 
 1. Type
 
@@ -54,16 +58,18 @@ plugins {
 }
 ```
 
-Please see [Maven Central](https://central.sonatype.com/artifact/org.camunda.community/bpmn-driven-testing-gradle-plugin/0.9.0/versions) to get a specific version.
+Please see [Maven Central](https://central.sonatype.com/artifact/org.camunda.community/bpmn-driven-testing-gradle-plugin/0.9.0/versions) to get a specific
+version.
 
 ## Configuration
+
 Available properties:
 
-| Parameter            | Type         | Description                                                                | Default value |
-|:---------------------|:-------------|:---------------------------------------------------------------------------|:--------------|
-| packageName          | String       | Package name, used for the generated test sources | generated     |
-| processEnginePlugins | List<String> | List of process engine plugins to register at the process engine (not required for Spring Boot, since process engine plugins must be exposed as beans) | -             |
-| springEnabled        | Boolean      | Enables Spring based testing (not required for Spring Boot, since here only the [BpmndtProcessEnginePlugin](../impl/src/main/java/org/camunda/community/bpmndt/api/cfg/BpmndtProcessEnginePlugin.java) must be exposed as a bean) | false |
+| Parameter            | Type         | Description                                                                                                                                                                                                                                 | Default value |
+|:---------------------|:-------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:--------------|
+| packageName          | String       | Package name, used for the generated test sources                                                                                                                                                                                           | generated     |
+| processEnginePlugins | List<String> | List of process engine plugins to register at the process engine (not required for Spring Boot, since process engine plugins must be exposed as beans)                                                                                      | -             |
+| springEnabled        | Boolean      | Enables Spring based testing (not required for Spring Boot, since here only the [BpmndtProcessEnginePlugin](../impl/src/main/java/org/camunda/community/bpmndt/platform7/api/cfg/BpmndtProcessEnginePlugin.java) must be exposed as a bean) | false         |
 
 The plugin's configuration is done in `build.gradle` within the `bpmndt` extension element:
 
@@ -76,22 +82,23 @@ bpmndt {
 ```
 
 ## Dependencies
+
 Add dependencies, which are required to execute the generated test code:
 
 ```groovy
 dependencies {
-  implementation 'org.camunda.bpm:camunda-engine:7.19.0'
+    implementation 'org.camunda.bpm:camunda-engine:7.19.0'
 
-  testImplementation 'com.h2database:h2:2.2.220'
-  testImplementation 'org.assertj:assertj-core:3.24.2'
-  testImplementation 'org.camunda.bpm.assert:camunda-bpm-assert:15.0.0'
-  testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.3'
+    testImplementation 'com.h2database:h2:2.2.220'
+    testImplementation 'org.assertj:assertj-core:3.24.2'
+    testImplementation 'org.camunda.bpm.assert:camunda-bpm-assert:15.0.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.3'
 
-  testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.3'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.3'
 }
 
 test {
-  useJUnitPlatform()
+    useJUnitPlatform()
 }
 ```
 
@@ -130,6 +137,7 @@ Recommended versions:
 | Spring Boot        | 2.7.18  |
 
 ## Development
+
 :warning: This and the subsequent sections are only important for Gradle plugin development!
 
 Since the latest Gradle dependencies are not available via Maven Central or other remote repositories,
@@ -139,6 +147,7 @@ For the development within an IDE, it is recommended to add the `lib/` directory
 The development is done with Gradle in version `7.5.1`.
 
 ## Testing
+
 Beside unit tests, a set of [integration tests](../integration-tests) exist,
 which verify that the Gradle plugin works correctly when executed within a Gradle build.
 The integration tests are implemented using the [Robot Framework](https://robotframework.org/) (Java implementation).

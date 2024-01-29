@@ -1,7 +1,7 @@
 package org.camunda.community.bpmndt.model.element;
 
-import static org.camunda.community.bpmndt.model.BpmnExtension.ELEMENT_NODE;
-import static org.camunda.community.bpmndt.model.BpmnExtension.NS;
+import static org.camunda.community.bpmndt.model.Constants.ELEMENT_NODE;
+import static org.camunda.community.bpmndt.model.Constants.NS;
 
 import org.camunda.bpm.model.bpmn.impl.instance.BpmnModelElementInstanceImpl;
 import org.camunda.bpm.model.xml.ModelBuilder;
@@ -27,7 +27,7 @@ public class PathNodeElement extends BpmnModelElementInstanceImpl {
 
   /**
    * Returns the flow node ID of the test path node.
-   * 
+   *
    * @return The flow node ID.
    */
   public String getId() {

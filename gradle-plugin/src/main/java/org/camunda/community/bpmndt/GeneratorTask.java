@@ -4,6 +4,8 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 
+import org.camunda.community.bpmndt.platform7.Generator;
+import org.camunda.community.bpmndt.platform7.GeneratorContext;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.TaskAction;
@@ -13,7 +15,9 @@ import org.gradle.api.tasks.TaskAction;
  */
 public class GeneratorTask extends DefaultTask {
 
-  /** Name of the task, used for registration. */
+  /**
+   * Name of the task, used for registration.
+   */
   protected static final String NAME = "generateTestCases";
 
   @Internal

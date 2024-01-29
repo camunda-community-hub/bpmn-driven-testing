@@ -1,7 +1,7 @@
 package org.camunda.community.bpmndt.model.element;
 
-import static org.camunda.community.bpmndt.model.BpmnExtension.ELEMENT_NAME;
-import static org.camunda.community.bpmndt.model.BpmnExtension.NS;
+import static org.camunda.community.bpmndt.model.Constants.ELEMENT_NAME;
+import static org.camunda.community.bpmndt.model.Constants.NS;
 
 import org.camunda.bpm.model.bpmn.impl.instance.BpmnModelElementInstanceImpl;
 import org.camunda.bpm.model.xml.ModelBuilder;
@@ -27,7 +27,7 @@ public class NameElement extends BpmnModelElementInstanceImpl {
 
   /**
    * Returns the name as text value.
-   * 
+   *
    * @return The value.
    */
   public String getValue() {

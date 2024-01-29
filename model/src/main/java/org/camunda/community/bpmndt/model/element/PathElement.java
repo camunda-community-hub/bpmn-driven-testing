@@ -1,7 +1,7 @@
 package org.camunda.community.bpmndt.model.element;
 
-import static org.camunda.community.bpmndt.model.BpmnExtension.ELEMENT_PATH;
-import static org.camunda.community.bpmndt.model.BpmnExtension.NS;
+import static org.camunda.community.bpmndt.model.Constants.ELEMENT_PATH;
+import static org.camunda.community.bpmndt.model.Constants.NS;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -21,17 +21,17 @@ import org.camunda.bpm.model.xml.type.child.ChildElementCollection;
 public class PathElement extends BpmnModelElementInstanceImpl {
 
   protected static ChildElementCollection<PathNodeElement> nodeCollection;
-  
+
   public static void registerType(ModelBuilder modelBuilder) {
     ModelElementTypeBuilder typeBuilder = modelBuilder.defineType(PathElement.class, ELEMENT_PATH)
         .namespaceUri(NS)
         .instanceProvider(PathElement::new);
 
     nodeCollection = typeBuilder.sequence().elementCollection(PathNodeElement.class).build();
-    
+
     typeBuilder.build();
   }
-  
+
   private final List<String> flowNodeIds;
 
   public PathElement(ModelTypeInstanceContext instanceContext) {
@@ -47,7 +47,7 @@ public class PathElement extends BpmnModelElementInstanceImpl {
 
   /**
    * Returns a list of flow node IDs, that define the test case's path.
-   * 
+   *
    * @return A list of flow node IDs - can be empty.
    */
   public List<String> getFlowNodeIds() {

@@ -10,10 +10,17 @@
   <artifactId>bpmn-driven-testing-model</artifactId>
 
   <dependencies>
-    <!-- Camunda -->
+    <!-- Camunda Platform 7 -->
     <dependency>
       <groupId>org.camunda.bpm.model</groupId>
       <artifactId>camunda-bpmn-model</artifactId>
+      <optional>true</optional>
+    </dependency>
+
+    <!-- Camunda Platform 8 -->
+    <dependency>
+      <groupId>io.camunda</groupId>
+      <artifactId>zeebe-bpmn-model</artifactId>
       <optional>true</optional>
     </dependency>
 
@@ -37,7 +44,7 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
       </plugin>
-      
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>

@@ -1,7 +1,7 @@
 package org.camunda.community.bpmndt.model.element;
 
-import static org.camunda.community.bpmndt.model.BpmnExtension.ELEMENT_TEST_CASES;
-import static org.camunda.community.bpmndt.model.BpmnExtension.NS;
+import static org.camunda.community.bpmndt.model.Constants.ELEMENT_TEST_CASES;
+import static org.camunda.community.bpmndt.model.Constants.NS;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -35,7 +35,7 @@ public class TestCasesElement extends BpmnModelElementInstanceImpl {
 
   /**
    * Returns the defined test cases.
-   * 
+   *
    * @return A list of test cases.
    */
   public List<TestCaseElement> getTestCases() {

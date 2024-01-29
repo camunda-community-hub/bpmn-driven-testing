@@ -1,0 +1,68 @@
+package org.camunda.community.bpmndt.platform7.api;
+
+import static com.google.common.truth.Truth.assertThat;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+
+import org.camunda.bpm.engine.runtime.ProcessInstance;
+import org.camunda.bpm.engine.test.assertions.ProcessEngineTests;
+import org.camunda.bpm.engine.test.assertions.bpmn.ProcessInstanceAssert;
+import org.camunda.community.bpmndt.test.Platform7TestPaths;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+
+public class CallActivityEscalationTest {
+
+  @RegisterExtension
+  TestCase tc = new TestCase();
+
+  @Test
+  public void testExecute() {
+    var handler = new CallActivityHandler(tc.instance, "callActivity");
+    handler.simulateEscalation("callActivityEscalation");
+
+    tc.createExecutor().execute();
+  }
+
+  private static class TestCase extends AbstractJUnit5TestCase<TestCase> {
+
+    @Override
+    protected void execute(ProcessInstance pi) {
+      assertThat(pi).isNotNull();
+
+      ProcessInstanceAssert piAssert = ProcessEngineTests.assertThat(pi);
+
+      piAssert.hasPassed("startEvent").isWaitingAt("callActivity");
+
+      ProcessEngineTests.execute(ProcessEngineTests.job());
+
+      piAssert.hasPassed("callActivity", "escalationBoundaryEvent", "endEvent").isEnded();
+    }
+
+    @Override
+    protected InputStream getBpmnResource() {
+      try {
+        return Files.newInputStream(Platform7TestPaths.advanced("callActivityEscalation.bpmn"));
+      } catch (IOException e) {
+        return null;
+      }
+    }
+
+    @Override
+    public String getProcessDefinitionKey() {
+      return "callActivityEscalation";
+    }
+
+    @Override
+    public String getStart() {
+      return "startEvent";
+    }
+
+    @Override
+    public String getEnd() {
+      return "endEvent";
+    }
+  }
+}

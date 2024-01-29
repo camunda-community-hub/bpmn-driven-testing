@@ -1,7 +1,11 @@
 # Maven Plugin
-The plugin's `generator` goal runs within Maven's default lifecycle in phase `generate-test-sources` (run `mvn generate-test-sources` to see the generator's log).
-It generates the test code under `target/bpmndt` and adds this directory as test source directory, which is automatically compiled during the `test-compile` phase.
-The compilation results (test cases and [API classes](../impl/src/main/java/org/camunda/community/bpmndt/api)) will be available in the test classpath afterwards.
+
+The plugin's `generator` goal runs within Maven's default lifecycle in phase `generate-test-sources` (run `mvn generate-test-sources` to see the generator's
+log).
+It generates the test code under `target/bpmndt` and adds this directory as test source directory, which is automatically compiled during the `test-compile`
+phase.
+The compilation results (test cases and [API classes](../impl/src/main/java/org/camunda/community/bpmndt/platform7/api)) will be available in the test classpath
+afterwards.
 
 :warning: Within **IntelliJ IDEA**, [add the additional test source directory manually](https://www.jetbrains.com/help/idea/testing.html#add-test-root).
 Right click on `target/bpmndt` > `Mark Directory as` > `Test Sources Root`
@@ -23,51 +27,55 @@ Right click on `target/bpmndt` > `Mark Directory as` > `Test Sources Root`
 </plugin>
 ```
 
-Please see [Maven Central](https://central.sonatype.com/artifact/org.camunda.community/bpmn-driven-testing-maven-plugin/0.9.0/versions) to get a specific version.
+Please see [Maven Central](https://central.sonatype.com/artifact/org.camunda.community/bpmn-driven-testing-maven-plugin/0.9.0/versions) to get a specific
+version.
 
 ## Configuration
+
 Available parameters for the plugin's `generator` goal:
 
-| Parameter            | Type         | Description                                                                | Default value |
-|:---------------------|:-------------|:---------------------------------------------------------------------------|:--------------|
-| packageName          | String       | Package name, used for the generated test sources | generated     |
-| processEnginePlugins | List<String> | List of process engine plugins to register at the process engine (not required for Spring Boot, since process engine plugins must be exposed as beans) | -             |
-| springEnabled        | Boolean      | Enables Spring based testing (not required for Spring Boot, since here only the [BpmndtProcessEnginePlugin](../impl/src/main/java/org/camunda/community/bpmndt/api/cfg/BpmndtProcessEnginePlugin.java) must be exposed as a bean) | false |
+| Parameter            | Type         | Description                                                                                                                                                                                                                                 | Default value |
+|:---------------------|:-------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:--------------|
+| packageName          | String       | Package name, used for the generated test sources                                                                                                                                                                                           | generated     |
+| processEnginePlugins | List<String> | List of process engine plugins to register at the process engine (not required for Spring Boot, since process engine plugins must be exposed as beans)                                                                                      | -             |
+| springEnabled        | Boolean      | Enables Spring based testing (not required for Spring Boot, since here only the [BpmndtProcessEnginePlugin](../impl/src/main/java/org/camunda/community/bpmndt/platform7/api/cfg/BpmndtProcessEnginePlugin.java) must be exposed as a bean) | false         |
 
 ## Dependencies
+
 Add dependencies, which are required to execute the generated test code:
 
 ```xml
+
 <dependency>
   <groupId>org.camunda.bpm</groupId>
   <artifactId>camunda-engine</artifactId>
 </dependency>
 
-<!-- Test -->
+  <!-- Test -->
 <dependency>
-  <groupId>org.junit.jupiter</groupId>
-  <artifactId>junit-jupiter-api</artifactId>
-  <version>${junit.jupiter.version}</version>
-  <scope>test</scope>
+<groupId>org.junit.jupiter</groupId>
+<artifactId>junit-jupiter-api</artifactId>
+<version>${junit.jupiter.version}</version>
+<scope>test</scope>
 </dependency>
 <dependency>
-  <groupId>com.h2database</groupId>
-  <artifactId>h2</artifactId>
-  <version>${h2.version}</version>
-  <scope>test</scope>
+<groupId>com.h2database</groupId>
+<artifactId>h2</artifactId>
+<version>${h2.version}</version>
+<scope>test</scope>
 </dependency>
 
 <dependency>
-  <groupId>org.camunda.bpm.assert</groupId>
-  <artifactId>camunda-bpm-assert</artifactId>
-  <version>${camunda.bpm.assert.version}</version>
-  <scope>test</scope>
+<groupId>org.camunda.bpm.assert</groupId>
+<artifactId>camunda-bpm-assert</artifactId>
+<version>${camunda.bpm.assert.version}</version>
+<scope>test</scope>
 </dependency>
 <dependency>
-  <groupId>org.assertj</groupId>
-  <artifactId>assertj-core</artifactId>
-  <version>${assertj.version}</version>
-  <scope>test</scope>
+<groupId>org.assertj</groupId>
+<artifactId>assertj-core</artifactId>
+<version>${assertj.version}</version>
+<scope>test</scope>
 </dependency>
 ```
 
@@ -132,6 +140,7 @@ Recommended versions:
 | Spring Boot        | 2.7.18  |
 
 ## Testing
+
 :warning: This section is only important for Maven plugin development!
 
 Beside unit tests, a set of [integration tests](../integration-tests) exist,

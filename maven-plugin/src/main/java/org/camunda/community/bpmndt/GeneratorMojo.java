@@ -11,6 +11,8 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.camunda.community.bpmndt.platform7.Generator;
+import org.camunda.community.bpmndt.platform7.GeneratorContext;
 
 /**
  * Maven plugin goal, which runs a {@link Generator}.
@@ -21,15 +23,21 @@ public class GeneratorMojo extends AbstractMojo {
   @Parameter(defaultValue = "${project}", required = true, readonly = true)
   protected MavenProject project;
 
-  /** Package name of the generated Java test case files. */
+  /**
+   * Package name of the generated Java test case files.
+   */
   @Parameter(defaultValue = "generated", required = true)
   protected String packageName;
 
-  /** List of process engine plugins to register at the process engine. */
+  /**
+   * List of process engine plugins to register at the process engine.
+   */
   @Parameter
   protected List<String> processEnginePlugins;
 
-  /** Determines if Spring based testing is enabled or not. */
+  /**
+   * Determines if Spring based testing is enabled or not.
+   */
   @Parameter(defaultValue = "false", required = true)
   protected boolean springEnabled;
 

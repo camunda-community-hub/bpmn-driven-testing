@@ -1,7 +1,7 @@
 package org.camunda.community.bpmndt.model.element;
 
-import static org.camunda.community.bpmndt.model.BpmnExtension.ELEMENT_TEST_CASE;
-import static org.camunda.community.bpmndt.model.BpmnExtension.NS;
+import static org.camunda.community.bpmndt.model.Constants.ELEMENT_TEST_CASE;
+import static org.camunda.community.bpmndt.model.Constants.NS;
 
 import org.camunda.bpm.model.bpmn.impl.instance.BpmnModelElementInstanceImpl;
 import org.camunda.bpm.model.xml.ModelBuilder;
@@ -47,7 +47,7 @@ public class TestCaseElement extends BpmnModelElementInstanceImpl {
 
   /**
    * Returns the test case's description.
-   * 
+   *
    * @return The description or {@code null}, if not specified.
    */
   public String getDescription() {
@@ -56,7 +56,7 @@ public class TestCaseElement extends BpmnModelElementInstanceImpl {
 
   /**
    * Returns the test case's name.
-   * 
+   *
    * @return The name or {@code null}, if not specified.
    */
   public String getName() {
@@ -65,7 +65,7 @@ public class TestCaseElement extends BpmnModelElementInstanceImpl {
 
   /**
    * Provides the path that should be tested.
-   * 
+   *
    * @return The test path.
    */
   public PathElement getPath() {

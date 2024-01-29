@@ -1,0 +1,45 @@
+package org.camunda.community.bpmndt.platform7.cmd;
+
+import java.util.function.Consumer;
+
+import javax.lang.model.element.Modifier;
+
+import org.camunda.community.bpmndt.platform7.GeneratorContext;
+import org.camunda.community.bpmndt.platform7.GeneratorResult;
+import org.camunda.community.bpmndt.platform7.api.cfg.SpringConfiguration;
+import org.springframework.context.annotation.Configuration;
+
+import com.squareup.javapoet.JavaFile;
+import com.squareup.javapoet.TypeSpec;
+
+/**
+ * Generates a Spring test configuration, which is required for Spring based test code.
+ *
+ * @see SpringConfiguration
+ */
+public class GenerateSpringConfiguration implements Consumer<GeneratorContext> {
+
+  private final GeneratorResult result;
+
+  public GenerateSpringConfiguration(GeneratorResult result) {
+    this.result = result;
+  }
+
+  @Override
+  public void accept(GeneratorContext ctx) {
+    TypeSpec.Builder builder = TypeSpec.classBuilder("BpmndtConfiguration")
+        .superclass(SpringConfiguration.class)
+        .addAnnotation(Configuration.class)
+        .addModifiers(Modifier.PUBLIC);
+
+    if (!ctx.getProcessEnginePluginNames().isEmpty()) {
+      builder.addMethod(new BuildGetProcessEnginePlugins().apply(ctx));
+    }
+
+    JavaFile javaFile = JavaFile.builder(ctx.getPackageName(), builder.build())
+        .skipJavaLangImports(true)
+        .build();
+
+    result.addAdditionalFile(javaFile);
+  }
+}

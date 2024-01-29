@@ -1,0 +1,94 @@
+package org.camunda.community.bpmndt.platform7.api;
+
+import static com.google.common.truth.Truth.assertThat;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+
+import org.camunda.bpm.engine.runtime.ProcessInstance;
+import org.camunda.bpm.engine.test.assertions.ProcessEngineTests;
+import org.camunda.bpm.engine.test.assertions.bpmn.ProcessInstanceAssert;
+import org.camunda.bpm.engine.variable.Variables;
+import org.camunda.community.bpmndt.test.Platform7TestPaths;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+
+public class MessageCatchEventTest {
+
+  @RegisterExtension
+  TestCase tc = new TestCase();
+
+  private EventHandler handler;
+
+  @BeforeEach
+  public void setUp() {
+    handler = new EventHandler(tc.getProcessEngine(), "messageCatchEvent", "simpleMessage");
+  }
+
+  @Test
+  public void testExecute() {
+    tc.createExecutor().execute();
+  }
+
+  @Test
+  public void testVerify() {
+    handler.verify((pi, eventSubscription) -> {
+      assertThat(pi).isNotNull();
+      assertThat(eventSubscription).isNotNull();
+    });
+
+    tc.createExecutor().execute();
+  }
+
+  @Test
+  public void testWithVariables() {
+    handler.withVariable("a", "b").withVariableTyped("x", Variables.stringValue("y")).eventReceived();
+
+    tc.createExecutor().verify(pi -> {
+      pi.variables().containsEntry("a", "b");
+      pi.variables().containsEntry("x", "y");
+    }).execute();
+  }
+
+  private class TestCase extends AbstractJUnit5TestCase<TestCase> {
+
+    @Override
+    protected void execute(ProcessInstance pi) {
+      assertThat(pi).isNotNull();
+
+      ProcessInstanceAssert piAssert = ProcessEngineTests.assertThat(pi);
+
+      piAssert.hasPassed("startEvent").isWaitingAt("messageCatchEvent");
+
+      instance.apply(handler);
+
+      piAssert.hasPassed("messageCatchEvent", "endEvent").isEnded();
+    }
+
+    @Override
+    protected InputStream getBpmnResource() {
+      try {
+        return Files.newInputStream(Platform7TestPaths.simple("simpleMessageCatchEvent.bpmn"));
+      } catch (IOException e) {
+        return null;
+      }
+    }
+
+    @Override
+    public String getProcessDefinitionKey() {
+      return "simpleMessageCatchEvent";
+    }
+
+    @Override
+    public String getStart() {
+      return "startEvent";
+    }
+
+    @Override
+    public String getEnd() {
+      return "endEvent";
+    }
+  }
+}

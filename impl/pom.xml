@@ -22,7 +22,7 @@
       <artifactId>bpmn-driven-testing-model</artifactId>
     </dependency>
 
-    <!-- Camunda -->
+    <!-- Camunda Platform 7 -->
     <dependency>
       <groupId>org.camunda.bpm.model</groupId>
       <artifactId>camunda-bpmn-model</artifactId>
@@ -30,6 +30,12 @@
     <dependency>
       <groupId>org.camunda.bpm</groupId>
       <artifactId>camunda-engine</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>org.camunda.feel</groupId>
+          <artifactId>feel-engine</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.camunda.bpm</groupId>
@@ -50,6 +56,13 @@
       <groupId>org.assertj</groupId>
       <artifactId>assertj-core</artifactId>
       <version>${assertj.version}</version>
+    </dependency>
+
+    <!-- Camunda Platform 8 -->
+    <dependency>
+      <groupId>io.camunda</groupId>
+      <artifactId>zeebe-process-test-extension</artifactId>
+      <version>${camunda.zeebe.version}</version>
     </dependency>
 
     <!-- Spring -->
@@ -129,8 +142,12 @@
 
       <!-- Add API classes as resources, since those are needed to run generated test code -->
       <resource>
-        <directory>${project.basedir}/src/main/java/org/camunda/community/bpmndt/api</directory>
-        <targetPath>${project.build.outputDirectory}/org/camunda/community/bpmndt/api</targetPath>
+        <directory>src/main/java/org/camunda/community/bpmndt/platform7/api</directory>
+        <targetPath>${project.build.outputDirectory}/org/camunda/community/bpmndt/platform7/api</targetPath>
+      </resource>
+      <resource>
+        <directory>src/main/java/org/camunda/community/bpmndt/platform8/api</directory>
+        <targetPath>${project.build.outputDirectory}/org/camunda/community/bpmndt/platform8/api</targetPath>
       </resource>
     </resources>
 

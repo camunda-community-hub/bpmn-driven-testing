@@ -8,7 +8,7 @@ import java.nio.file.Path;
 import java.util.function.Consumer;
 
 import org.camunda.community.bpmndt.Constants;
-import org.camunda.community.bpmndt.GeneratorContext;
+import org.camunda.community.bpmndt.platform7.GeneratorContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
