@@ -1,5 +1,5 @@
 import React from "react";
-import ReactDOM from "react-dom";
+import { createRoot } from "react-dom/client";
 
 import {
   MODE_EDIT,
@@ -43,6 +43,7 @@ export default class Plugin {
     this.styleElement = document.createElement("style");
     document.head.appendChild(this.styleElement);
 
+    this.root = null;
     this.rootElement = document.createElement("div");
     this.rootElement.className = "bpmndt";
 
@@ -65,12 +66,13 @@ export default class Plugin {
   hide() {
     const { pathMarker, rootElement, styleElement } = this;
 
-    if (styleElement.childNodes.length !== 0) {
+    if (this.root !== null) {
       // show diagram elements
       styleElement.firstChild.remove();
 
       // unmount view
-      ReactDOM.unmountComponentAtNode(rootElement);
+      this.root.unmount();
+      this.root = null;
       // remove root element
       rootElement.remove();
     }
@@ -125,7 +127,8 @@ export default class Plugin {
       // append root node
       parent.appendChild(rootElement);
       // render view
-      ReactDOM.render(<PluginView plugin={this} />, rootElement);
+      this.root = createRoot(rootElement);
+      this.root.render(<PluginView plugin={this} />);
     }
 
     this.visible = true;
