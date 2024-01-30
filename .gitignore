@@ -18,8 +18,8 @@ pom.xml.versionsBackup
 build/
 
 # camunda-modeler-plugin
+camunda-modeler-plugin/coverage/
 .nyc_output/
-coverage/
 bpmn-driven-testing-plugin.zip
 dist/
 node_modules/

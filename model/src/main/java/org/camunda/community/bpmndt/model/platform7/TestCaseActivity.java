@@ -18,7 +18,7 @@ public interface TestCaseActivity {
   /**
    * Returns the name of the related message or signal event.
    *
-   * @return The event name or {@code null}, if the test activity is not related to an message or signal event.
+   * @return The event name or {@code null}, if the test activity is not related to a message or signal event.
    */
   String getEventName();
 
@@ -117,7 +117,7 @@ public interface TestCaseActivity {
   boolean hasMultiInstanceParent();
 
   /**
-   * Determins if the activity has a successor.
+   * Determines if the activity has a successor.
    *
    * @return {@code true}, if the activity has a successor. Otherwise {@code false}.
    */
@@ -131,7 +131,7 @@ public interface TestCaseActivity {
   boolean hasParent();
 
   /**
-   * Determins if the activity has a predecessor.
+   * Determines if the activity has a predecessor.
    *
    * @return {@code true}, if the activity has a predecessor. Otherwise {@code false}.
    */
@@ -191,16 +191,16 @@ public interface TestCaseActivity {
   boolean isMultiInstanceSequential();
 
   /**
-   * Returns {@code true}, if the activity is a start activity of the process.
+   * Returns {@code true}, if the activity is an end activity of the process.
    *
-   * @return {@code true}, if the activity starts the process. Otherwise {@code false}.
+   * @return {@code true}, if the activity ends the process. Otherwise {@code false}.
    */
   boolean isProcessEnd();
 
   /**
-   * Returns {@code true}, if the activity is an end activity of the process.
+   * Returns {@code true}, if the activity is a start activity of the process.
    *
-   * @return {@code true}, if the activity ends the process. Otherwise {@code false}.
+   * @return {@code true}, if the activity starts the process. Otherwise {@code false}.
    */
   boolean isProcessStart();
 }

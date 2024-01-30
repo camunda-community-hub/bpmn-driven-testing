@@ -1,21 +1,21 @@
-package org.camunda.community.bpmndt.model.platform7;
+package org.camunda.community.bpmndt.model.platform8;
 
 import java.util.List;
 
-import org.camunda.bpm.model.bpmn.instance.FlowNode;
-import org.camunda.bpm.model.bpmn.instance.SubProcess;
+import io.camunda.zeebe.model.bpmn.instance.FlowNode;
+import io.camunda.zeebe.model.bpmn.instance.SubProcess;
 
 /**
- * Scope (embedded sub process) of one or more test case activities.
+ * Scope (embedded sub process) of one or more BPMN elements.
  */
-public interface TestCaseActivityScope {
+public interface BpmnElementScope {
 
   /**
-   * Gets the scope's activities.
+   * Gets the scope's BPMN elements.
    *
-   * @return A list of activities that have the scope as parent.
+   * @return A list of elements that have the scope as parent.
    */
-  List<TestCaseActivity> getActivities();
+  List<BpmnElement> getElements();
 
   /**
    * Gets the underlying flow node.
@@ -62,7 +62,7 @@ public interface TestCaseActivityScope {
    * @throws IllegalStateException If the scope has no parent.
    * @see #hasParent()
    */
-  TestCaseActivityScope getParent();
+  BpmnElementScope getParent();
 
   /**
    * Returns the name of the flow node element type.

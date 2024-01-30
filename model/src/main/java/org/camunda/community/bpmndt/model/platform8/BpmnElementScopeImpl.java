@@ -1,33 +1,28 @@
-package org.camunda.community.bpmndt.model.platform7;
+package org.camunda.community.bpmndt.model.platform8;
 
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 
-import org.camunda.bpm.model.bpmn.instance.FlowNode;
-import org.camunda.bpm.model.bpmn.instance.MultiInstanceLoopCharacteristics;
-import org.camunda.bpm.model.bpmn.instance.SubProcess;
+import io.camunda.zeebe.model.bpmn.instance.FlowNode;
+import io.camunda.zeebe.model.bpmn.instance.MultiInstanceLoopCharacteristics;
+import io.camunda.zeebe.model.bpmn.instance.SubProcess;
 
-class TestCaseActivityScopeImpl implements TestCaseActivityScope {
+class BpmnElementScopeImpl implements BpmnElementScope {
 
-  protected FlowNode flowNode;
-  protected MultiInstanceLoopCharacteristics multiInstanceLoopCharacteristics;
+  FlowNode flowNode;
+  MultiInstanceLoopCharacteristics multiInstanceLoopCharacteristics;
 
-  protected TestCaseActivityScope parent;
+  BpmnElementScope parent;
 
-  private final List<TestCaseActivity> activities = new LinkedList<>();
-
-  protected void addActivity(TestCaseActivityImpl next) {
-    activities.add(next);
-    next.parent = this;
-  }
+  private final List<BpmnElement> elements = new LinkedList<>();
 
   @Override
   public boolean equals(Object obj) {
     if (obj == this) {
       return true;
     }
-    if (!(obj instanceof TestCaseActivityScope scope)) {
+    if (!(obj instanceof BpmnElementScope scope)) {
       return false;
     }
 
@@ -35,8 +30,8 @@ class TestCaseActivityScopeImpl implements TestCaseActivityScope {
   }
 
   @Override
-  public List<TestCaseActivity> getActivities() {
-    return activities;
+  public List<BpmnElement> getElements() {
+    return elements;
   }
 
   @Override
@@ -65,7 +60,7 @@ class TestCaseActivityScopeImpl implements TestCaseActivityScope {
   }
 
   @Override
-  public TestCaseActivityScope getParent() {
+  public BpmnElementScope getParent() {
     return parent;
   }
 
@@ -100,5 +95,10 @@ class TestCaseActivityScopeImpl implements TestCaseActivityScope {
       throw new IllegalStateException("scope is not a multi instance");
     }
     return multiInstanceLoopCharacteristics.isSequential();
+  }
+
+  void addElement(BpmnElementImpl next) {
+    elements.add(next);
+    next.parent = this;
   }
 }

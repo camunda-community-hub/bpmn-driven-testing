@@ -31,6 +31,11 @@
       <groupId>org.camunda.bpm</groupId>
       <artifactId>camunda-engine</artifactId>
       <exclusions>
+        <!-- must be excluded, otherwise Platform 7 and Platform 8 cannot be on the same classpath -->
+        <exclusion>
+          <groupId>org.camunda.bpm.dmn</groupId>
+          <artifactId>camunda-engine-feel-scala</artifactId>
+        </exclusion>
         <exclusion>
           <groupId>org.camunda.feel</groupId>
           <artifactId>feel-engine</artifactId>
@@ -46,7 +51,6 @@
       <artifactId>camunda-engine-spring</artifactId>
     </dependency>
 
-    <!-- Camunda BPM Assert -->
     <dependency>
       <groupId>org.camunda.bpm.assert</groupId>
       <artifactId>camunda-bpm-assert</artifactId>
@@ -59,6 +63,10 @@
     </dependency>
 
     <!-- Camunda Platform 8 -->
+    <dependency>
+      <groupId>io.camunda</groupId>
+      <artifactId>zeebe-bpmn-model</artifactId>
+    </dependency>
     <dependency>
       <groupId>io.camunda</groupId>
       <artifactId>zeebe-process-test-extension</artifactId>
@@ -101,6 +109,19 @@
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
       <version>3.12.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.immutables</groupId>
+      <artifactId>annotate</artifactId>
+      <version>2.10.0</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.immutables</groupId>
+      <artifactId>value-annotations</artifactId>
+      <version>2.10.0</version>
+      <scope>provided</scope>
     </dependency>
 
     <!-- JUnit -->

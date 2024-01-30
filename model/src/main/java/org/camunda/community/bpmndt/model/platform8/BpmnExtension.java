@@ -15,11 +15,6 @@ import io.camunda.zeebe.model.bpmn.Bpmn;
  */
 public class BpmnExtension extends Bpmn {
 
-  /**
-   * Reusable instance.
-   */
-  public static final BpmnExtension INSTANCE = new BpmnExtension();
-
   @Override
   protected void doRegisterTypes(ModelBuilder modelBuilder) {
     super.doRegisterTypes(modelBuilder);
@@ -31,4 +26,6 @@ public class BpmnExtension extends Bpmn {
     PathElement.registerType(modelBuilder);
     PathNodeElement.registerType(modelBuilder);
   }
+
+
 }
