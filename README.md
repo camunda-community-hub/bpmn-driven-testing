@@ -28,14 +28,14 @@ The extension consists of:
     - Loop detection
 - Generated test cases provide
     - Automatic handling of wait states
-    - Call activity stubbing for isolated testing - see [test](integration-tests/advanced/src/test/java/org/example/it/CallActivityWithMappingTest.java)
-    - [Fluent API](impl/src/main/java/org/camunda/community/bpmndt/api) to override default behavior
-    - Multi instance (activity/embedded subprocess) support - see [integration tests](integration-tests/advanced-multi-instance/src/test/java/org/example/it)
+    - Call activity stubbing for isolated testing - see [test](integration-tests/platform7/advanced/src/test/java/org/example/it/CallActivityWithMappingTest.java)
+    - [Fluent API](impl/src/main/java/org/camunda/community/bpmndt/platform7/api) to override default behavior
+    - Multi instance (activity/embedded subprocess) support - see [integration tests](integration-tests/platform7/advanced-multi-instance/src/test/java/org/example/it)
 - Spring/Spring Boot test support - see `advanced-spring*` under [integration tests](integration-tests/)
 - Testing of arbitrary paths through a BPMN process
 - Test case validation and migration, when a BPMN process was changed - see [docs](docs/test-case-validation-and-migration.md)
 - [camunda-process-test-coverage](https://github.com/camunda-community-hub/camunda-process-test-coverage) extension support - see `coverage-*`
-  under [integration tests](integration-tests/)
+  under [integration tests](integration-tests/platform7)
 
 ## How does it work?
 
@@ -151,10 +151,10 @@ A developer can solely focus on the actual implementation!
 
 ## More screenshots
 
-| ![order-fulfillment-canceled-by-customer.png](docs/order-fulfillment-canceled-by-customer.png) | 
-|:----------------------------------------------------------------------------------------------:| 
+| ![order-fulfillment-canceled-by-customer.png](docs/order-fulfillment-canceled-by-customer.png) |
+|:----------------------------------------------------------------------------------------------:|
 |                                       *Arbitrary paths*                                        |
 
-| ![order-fulfillment-invalid-path.png](docs/order-fulfillment-invalid-path.png) | 
-|:------------------------------------------------------------------------------:| 
+| ![order-fulfillment-invalid-path.png](docs/order-fulfillment-invalid-path.png) |
+|:------------------------------------------------------------------------------:|
 |                             *Test case validation*                             |

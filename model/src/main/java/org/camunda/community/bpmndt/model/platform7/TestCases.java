@@ -78,4 +78,11 @@ public interface TestCases {
    * @return {@code true}, if no test cases are defined. Otherwise {@code false}.
    */
   boolean isEmpty();
+
+  /**
+   * Determines if the BPMN model is a Camunda Platform 7 model.
+   *
+   * @return {@code true}, if the model is designed for Camunda Platform 7. Otherwise {@code false}.
+   */
+  boolean isPlatform7();
 }

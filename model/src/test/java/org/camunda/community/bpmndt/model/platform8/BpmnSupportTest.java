@@ -1,15 +1,16 @@
-package org.camunda.community.bpmndt.model.platform7;
+package org.camunda.community.bpmndt.model.platform8;
 
 import static com.google.common.truth.Truth.assertThat;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import org.camunda.bpm.model.bpmn.Bpmn;
-import org.camunda.bpm.model.bpmn.instance.Process;
-import org.camunda.community.bpmndt.test.Platform7TestPaths;
+import org.camunda.community.bpmndt.test.Platform8TestPaths;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import io.camunda.zeebe.model.bpmn.Bpmn;
+import io.camunda.zeebe.model.bpmn.instance.Process;
 
 public class BpmnSupportTest {
 
@@ -19,9 +20,9 @@ public class BpmnSupportTest {
 
   @BeforeEach
   public void setUp() {
-    advanced = Platform7TestPaths.advanced();
-    advancedMultiInstance = Platform7TestPaths.advancedMultiInstance();
-    simple = Platform7TestPaths.simple();
+    advanced = Platform8TestPaths.advanced();
+    advancedMultiInstance = Platform8TestPaths.advancedMultiInstance();
+    simple = Platform8TestPaths.simple();
   }
 
   @Test
@@ -53,12 +54,6 @@ public class BpmnSupportTest {
   public void testIsEventBasedGateway() {
     var bpmnSupport = of(simple.resolve("simpleEventBasedGateway.bpmn"));
     assertThat(bpmnSupport.isEventBasedGateway("eventBasedGateway")).isTrue();
-  }
-
-  @Test
-  public void testIsExternalTask() {
-    var bpmnSupport = of(simple.resolve("simpleExternalTask.bpmn"));
-    assertThat(bpmnSupport.isExternalTask("externalTask")).isTrue();
   }
 
   @Test

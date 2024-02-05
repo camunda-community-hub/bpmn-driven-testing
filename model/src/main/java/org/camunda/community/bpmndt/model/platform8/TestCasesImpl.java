@@ -5,7 +5,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -13,9 +12,11 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import org.camunda.bpm.model.xml.ModelParseException;
-import org.camunda.community.bpmndt.model.element.TestCaseElement;
-import org.camunda.community.bpmndt.model.element.TestCasesElement;
+import org.camunda.community.bpmndt.model.Constants;
+import org.camunda.community.bpmndt.model.platform8.element.TestCaseElement;
+import org.camunda.community.bpmndt.model.platform8.element.TestCasesElement;
 
+import io.camunda.zeebe.model.bpmn.Bpmn;
 import io.camunda.zeebe.model.bpmn.BpmnModelInstance;
 import io.camunda.zeebe.model.bpmn.instance.BoundaryEvent;
 import io.camunda.zeebe.model.bpmn.instance.IntermediateCatchEvent;
@@ -25,9 +26,14 @@ import io.camunda.zeebe.model.bpmn.instance.ReceiveTask;
 
 class TestCasesImpl implements TestCases {
 
+  static {
+    // register custom types
+    BpmnExtension.registerTypes();
+  }
+
   static TestCasesImpl of(InputStream stream) {
     try {
-      return of(BpmnExtension.readModelFromStream(stream));
+      return of(Bpmn.readModelFromStream(stream));
     } catch (ModelParseException e) {
       throw new RuntimeException("BPMN model could not be parsed", e);
     }
@@ -86,14 +92,29 @@ class TestCasesImpl implements TestCases {
     return testCases.isEmpty();
   }
 
+  @Override
+  public boolean isPlatform8() {
+    if (modelInstance.getDefinitions() == null) {
+      return false;
+    }
+
+    var definitions = modelInstance.getDefinitions();
+    if (definitions.getDomElement() == null) {
+      return false;
+    }
+
+    var modelerExecutionPlatform = definitions.getDomElement().getAttribute(Constants.MODELER_NS, Constants.MODELER_EXECUTION_PLATFORM_ATTRIBUTE);
+    return Constants.MODELER_EXECUTION_PLATFORM.equals(modelerExecutionPlatform);
+  }
+
   List<TestCaseElement> getTestCaseElements(Process process) {
     if (process.getExtensionElements() == null) {
-      return Collections.emptyList();
+      return List.of();
     }
 
     var testCasesElement = (TestCasesElement) process.getExtensionElements().getUniqueChildElementByType(TestCasesElement.class);
     if (testCasesElement == null) {
-      return Collections.emptyList();
+      return List.of();
     }
 
     return testCasesElement.getTestCases();
@@ -190,7 +211,7 @@ class TestCasesImpl implements TestCases {
   }
 
   private void handleIntermediateThrowEvent(BpmnElementImpl element) {
-    var event = activity.getFlowNode(IntermediateThrowEvent.class);
+    var event = element.getFlowNode(IntermediateThrowEvent.class);
     var eventSupport = new BpmnEventSupport(event);
 
     if (eventSupport.isLink()) {
@@ -221,19 +242,19 @@ class TestCasesImpl implements TestCases {
   /**
    * Maps the given test case element on a test case, using the current BPMN support.
    *
-   * @param element A test case, defined within {@code bpmndt} extension element.
+   * @param testCaseElement A test case, defined within {@code bpmndt} extension element.
    * @return The mapped test case.
    */
-  private TestCase mapTestCase(TestCaseElement element) {
+  private TestCase mapTestCase(TestCaseElement testCaseElement) {
     var testCase = new TestCaseImpl();
-    testCase.element = element;
+    testCase.element = testCaseElement;
     testCase.process = bpmnSupport.getProcess();
 
-    if (element.getPath() == null) {
+    if (testCaseElement.getPath() == null) {
       return testCase;
     }
 
-    var flowNodeIds = element.getPath().getFlowNodeIds();
+    var flowNodeIds = testCaseElement.getPath().getFlowNodeIds();
     for (int i = 0; i < flowNodeIds.size(); i++) {
       var flowNodeId = flowNodeIds.get(i);
 

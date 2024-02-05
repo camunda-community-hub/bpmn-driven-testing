@@ -5,18 +5,16 @@ import static com.google.common.truth.Truth.assertThat;
 import java.util.List;
 
 import org.camunda.bpm.model.bpmn.instance.Process;
-import org.camunda.community.bpmndt.model.element.PathElement;
-import org.camunda.community.bpmndt.model.element.TestCaseElement;
+import org.camunda.community.bpmndt.model.platform7.element.PathElement;
+import org.camunda.community.bpmndt.model.platform7.element.TestCaseElement;
 import org.camunda.community.bpmndt.test.Platform7TestPaths;
 import org.junit.jupiter.api.Test;
 
 public class TestCasesImplTest {
 
-  private TestCasesImpl testCases;
-
   @Test
   public void testGetTestCaseElements() {
-    testCases = TestCasesImpl.of(Platform7TestPaths.simple("simple.bpmn"));
+    var testCases = TestCasesImpl.of(Platform7TestPaths.simple("simple.bpmn"));
 
     Process process = (Process) testCases.modelInstance.getDefinitions().getUniqueChildElementByType(Process.class);
 
@@ -30,7 +28,7 @@ public class TestCasesImplTest {
 
   @Test
   public void testGetTestCaseElementsIncludingNameAndDescription() {
-    testCases = TestCasesImpl.of(Platform7TestPaths.simple("special/happyPath.bpmn"));
+    var testCases = TestCasesImpl.of(Platform7TestPaths.simple("special/happyPath.bpmn"));
 
     Process process = (Process) testCases.modelInstance.getDefinitions().getUniqueChildElementByType(Process.class);
 
@@ -49,7 +47,7 @@ public class TestCasesImplTest {
 
   @Test
   public void testGetTestCaseElementsWhenNotDefined() {
-    testCases = TestCasesImpl.of(Platform7TestPaths.simple("special/noTestCases.bpmn"));
+    var testCases = TestCasesImpl.of(Platform7TestPaths.simple("special/noTestCases.bpmn"));
 
     Process process = (Process) testCases.modelInstance.getDefinitions().getUniqueChildElementByType(Process.class);
 

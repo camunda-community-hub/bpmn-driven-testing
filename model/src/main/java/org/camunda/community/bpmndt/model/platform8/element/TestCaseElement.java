@@ -1,14 +1,15 @@
-package org.camunda.community.bpmndt.model.element;
+package org.camunda.community.bpmndt.model.platform8.element;
 
 import static org.camunda.community.bpmndt.model.Constants.ELEMENT_TEST_CASE;
 import static org.camunda.community.bpmndt.model.Constants.NS;
 
-import org.camunda.bpm.model.bpmn.impl.instance.BpmnModelElementInstanceImpl;
 import org.camunda.bpm.model.xml.ModelBuilder;
 import org.camunda.bpm.model.xml.impl.instance.ModelTypeInstanceContext;
 import org.camunda.bpm.model.xml.type.ModelElementTypeBuilder;
 import org.camunda.bpm.model.xml.type.child.ChildElement;
 import org.camunda.bpm.model.xml.type.child.SequenceBuilder;
+
+import io.camunda.zeebe.model.bpmn.impl.instance.BpmnModelElementInstanceImpl;
 
 /**
  * Test case element.

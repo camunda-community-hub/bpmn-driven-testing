@@ -16,6 +16,8 @@ class BpmnElementImpl implements BpmnElement {
   BpmnElementType type;
 
   String attachedTo;
+  String eventCode;
+  String eventName;
 
   boolean processEnd;
   boolean processStart;
@@ -30,6 +32,16 @@ class BpmnElementImpl implements BpmnElement {
     }
 
     return element.getId().equals(getId());
+  }
+
+  @Override
+  public String getEventCode() {
+    return eventCode;
+  }
+
+  @Override
+  public String getEventName() {
+    return eventName;
   }
 
   @Override

@@ -1,0 +1,126 @@
+package org.camunda.community.bpmndt.model.platform8;
+
+import static io.camunda.zeebe.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_END_EVENT;
+import static io.camunda.zeebe.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_ERROR_EVENT_DEFINITION;
+import static io.camunda.zeebe.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_ESCALATION_EVENT_DEFINITION;
+import static io.camunda.zeebe.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_LINK_EVENT_DEFINITION;
+import static io.camunda.zeebe.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_MESSAGE_EVENT_DEFINITION;
+import static io.camunda.zeebe.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_SIGNAL_EVENT_DEFINITION;
+import static io.camunda.zeebe.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_TIMER_EVENT_DEFINITION;
+
+import java.util.Collection;
+
+import io.camunda.zeebe.model.bpmn.impl.BpmnModelConstants;
+import io.camunda.zeebe.model.bpmn.instance.CatchEvent;
+import io.camunda.zeebe.model.bpmn.instance.Error;
+import io.camunda.zeebe.model.bpmn.instance.ErrorEventDefinition;
+import io.camunda.zeebe.model.bpmn.instance.Escalation;
+import io.camunda.zeebe.model.bpmn.instance.EscalationEventDefinition;
+import io.camunda.zeebe.model.bpmn.instance.EventDefinition;
+import io.camunda.zeebe.model.bpmn.instance.Message;
+import io.camunda.zeebe.model.bpmn.instance.MessageEventDefinition;
+import io.camunda.zeebe.model.bpmn.instance.Signal;
+import io.camunda.zeebe.model.bpmn.instance.SignalEventDefinition;
+import io.camunda.zeebe.model.bpmn.instance.ThrowEvent;
+
+/**
+ * BPMN event support allows easier working with {@link EventDefinition}s of {@link CatchEvent} or {@link ThrowEvent} nodes.
+ */
+public class BpmnEventSupport {
+
+  private final EventDefinition eventDefinition;
+
+  private ThrowEvent throwEvent;
+
+  public BpmnEventSupport(CatchEvent event) {
+    this(event.getEventDefinitions());
+  }
+
+  public BpmnEventSupport(ThrowEvent event) {
+    this(event.getEventDefinitions());
+
+    throwEvent = event;
+  }
+
+  private BpmnEventSupport(Collection<EventDefinition> eventDefinitions) {
+    eventDefinition = eventDefinitions.stream().findFirst().orElse(null);
+  }
+
+  public Error getError() {
+    return getErrorDefinition().getError();
+  }
+
+  public ErrorEventDefinition getErrorDefinition() {
+    return (ErrorEventDefinition) eventDefinition;
+  }
+
+  public Escalation getEscalation() {
+    return getEscalationDefinition().getEscalation();
+  }
+
+  public EscalationEventDefinition getEscalationDefinition() {
+    return (EscalationEventDefinition) eventDefinition;
+  }
+
+  public Message getMessage() {
+    return getMessageDefinition().getMessage();
+  }
+
+  public MessageEventDefinition getMessageDefinition() {
+    return (MessageEventDefinition) eventDefinition;
+  }
+
+  public Signal getSignal() {
+    return getSignalDefinition().getSignal();
+  }
+
+  public SignalEventDefinition getSignalDefinition() {
+    return (SignalEventDefinition) eventDefinition;
+  }
+
+  private boolean is(String typeName) {
+    if (eventDefinition != null) {
+      return eventDefinition.getElementType().getTypeName().equals(typeName);
+    } else {
+      return false;
+    }
+  }
+
+  public boolean isError() {
+    return is(BPMN_ELEMENT_ERROR_EVENT_DEFINITION);
+  }
+
+  public boolean isEscalation() {
+    return is(BPMN_ELEMENT_ESCALATION_EVENT_DEFINITION);
+  }
+
+  public boolean isLink() {
+    return is(BPMN_ELEMENT_LINK_EVENT_DEFINITION);
+  }
+
+  public boolean isMessage() {
+    return is(BPMN_ELEMENT_MESSAGE_EVENT_DEFINITION);
+  }
+
+  /**
+   * Determines if the given event is a none end event. This is the case if the event has no event definition and is a throw event of type
+   * {@link BpmnModelConstants#BPMN_ELEMENT_END_EVENT}.
+   *
+   * @return {@code true}, if it is a none end event. Otherwise {@code false}.
+   */
+  public boolean isNoneEnd() {
+    if (eventDefinition != null) {
+      return false;
+    } else {
+      return throwEvent != null && throwEvent.getElementType().getTypeName().equals(BPMN_ELEMENT_END_EVENT);
+    }
+  }
+
+  public boolean isSignal() {
+    return is(BPMN_ELEMENT_SIGNAL_EVENT_DEFINITION);
+  }
+
+  public boolean isTimer() {
+    return is(BPMN_ELEMENT_TIMER_EVENT_DEFINITION);
+  }
+}

@@ -58,7 +58,7 @@ public interface BpmnElementScope {
   /**
    * Return the parent scope, if the scope is not a direct child of the related BPMN process element.
    *
-   * @return The parent test case activity scope.
+   * @return The parent element scope.
    * @throws IllegalStateException If the scope has no parent.
    * @see #hasParent()
    */

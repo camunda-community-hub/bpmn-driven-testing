@@ -1,23 +1,21 @@
 package org.camunda.community.bpmndt.model.platform8;
 
-import org.camunda.bpm.model.xml.ModelBuilder;
-import org.camunda.community.bpmndt.model.element.DescriptionElement;
-import org.camunda.community.bpmndt.model.element.NameElement;
-import org.camunda.community.bpmndt.model.element.PathElement;
-import org.camunda.community.bpmndt.model.element.PathNodeElement;
-import org.camunda.community.bpmndt.model.element.TestCaseElement;
-import org.camunda.community.bpmndt.model.element.TestCasesElement;
+import org.camunda.community.bpmndt.model.platform8.element.DescriptionElement;
+import org.camunda.community.bpmndt.model.platform8.element.NameElement;
+import org.camunda.community.bpmndt.model.platform8.element.PathElement;
+import org.camunda.community.bpmndt.model.platform8.element.PathNodeElement;
+import org.camunda.community.bpmndt.model.platform8.element.TestCaseElement;
+import org.camunda.community.bpmndt.model.platform8.element.TestCasesElement;
 
 import io.camunda.zeebe.model.bpmn.Bpmn;
 
 /**
- * Extended {@link Bpmn} instance, which registers additional types that are required to read the {@code bpmndt} extension elements.
+ * Customizes the {@link Bpmn} instance by registering additional types that are required to read the {@code bpmndt} extension elements.
  */
 public class BpmnExtension extends Bpmn {
 
-  @Override
-  protected void doRegisterTypes(ModelBuilder modelBuilder) {
-    super.doRegisterTypes(modelBuilder);
+  public static void registerTypes() {
+    var modelBuilder = Bpmn.INSTANCE.getBpmnModelBuilder();
 
     TestCasesElement.registerType(modelBuilder);
     TestCaseElement.registerType(modelBuilder);
@@ -25,7 +23,7 @@ public class BpmnExtension extends Bpmn {
     NameElement.registerType(modelBuilder);
     PathElement.registerType(modelBuilder);
     PathNodeElement.registerType(modelBuilder);
+
+    Bpmn.INSTANCE.setBpmnModel(modelBuilder.build());
   }
-
-
 }

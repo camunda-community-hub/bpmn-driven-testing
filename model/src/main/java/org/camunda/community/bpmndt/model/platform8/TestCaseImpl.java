@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import org.camunda.community.bpmndt.model.element.TestCaseElement;
+import org.camunda.community.bpmndt.model.platform8.element.TestCaseElement;
 
 import io.camunda.zeebe.model.bpmn.instance.Process;
 

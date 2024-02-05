@@ -6,7 +6,7 @@ import java.nio.file.Paths;
 /**
  * Paths to BPMN files within the Platform 7 integration tests.
  */
-public class Platform7TestPaths {
+public class Platform8TestPaths {
 
   public static Path advanced() {
     return of("advanced");
@@ -25,7 +25,7 @@ public class Platform7TestPaths {
   }
 
   public static Path of(String projectName) {
-    return Paths.get("../integration-tests/platform7").resolve(projectName).resolve("src/main/resources");
+    return Paths.get("../integration-tests/platform8").resolve(projectName).resolve("src/main/resources");
   }
 
   public static Path of(String projectName, String fileName) {

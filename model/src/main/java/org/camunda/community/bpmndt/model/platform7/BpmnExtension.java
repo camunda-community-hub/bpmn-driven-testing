@@ -2,12 +2,12 @@ package org.camunda.community.bpmndt.model.platform7;
 
 import org.camunda.bpm.model.bpmn.Bpmn;
 import org.camunda.bpm.model.xml.ModelBuilder;
-import org.camunda.community.bpmndt.model.element.DescriptionElement;
-import org.camunda.community.bpmndt.model.element.NameElement;
-import org.camunda.community.bpmndt.model.element.PathElement;
-import org.camunda.community.bpmndt.model.element.PathNodeElement;
-import org.camunda.community.bpmndt.model.element.TestCaseElement;
-import org.camunda.community.bpmndt.model.element.TestCasesElement;
+import org.camunda.community.bpmndt.model.platform7.element.DescriptionElement;
+import org.camunda.community.bpmndt.model.platform7.element.NameElement;
+import org.camunda.community.bpmndt.model.platform7.element.PathElement;
+import org.camunda.community.bpmndt.model.platform7.element.PathNodeElement;
+import org.camunda.community.bpmndt.model.platform7.element.TestCaseElement;
+import org.camunda.community.bpmndt.model.platform7.element.TestCasesElement;
 
 /**
  * Extended {@link Bpmn} instance, which registers additional types that are required to read the {@code bpmndt} extension elements.

@@ -11,6 +11,20 @@ import io.camunda.zeebe.model.bpmn.instance.IntermediateCatchEvent;
 public interface BpmnElement {
 
   /**
+   * Returns the code of the related error or escalation event.
+   *
+   * @return The event code or {@code null}, if the BPMN element is not an error or escalation event or the code is not specified.
+   */
+  String getEventCode();
+
+  /**
+   * Returns the name of the related message or signal event.
+   *
+   * @return The event name or {@code null}, if the BPMN element is not related to a message or signal event.
+   */
+  String getEventName();
+
+  /**
    * Gets the underlying flow node.
    *
    * @return The element's flow node.
@@ -129,7 +143,7 @@ public interface BpmnElement {
   /**
    * Checks if the BPMN element is a boundary event, that is attached to the given element.
    *
-   * @param activity A specific element.
+   * @param element A specific element.
    * @return {@code true}, if the element is attached to the given element. Otherwise {@code false}.
    */
   boolean isAttachedTo(BpmnElement element);
@@ -165,9 +179,9 @@ public interface BpmnElement {
   boolean isProcessEnd();
 
   /**
-   * Returns {@code true}, if the activity is a start activity of the process.
+   * Returns {@code true}, if the BPMN element is a start element of the process.
    *
-   * @return {@code true}, if the activity starts the process. Otherwise {@code false}.
+   * @return {@code true}, if the BPMN element starts the process. Otherwise {@code false}.
    */
   boolean isProcessStart();
 }

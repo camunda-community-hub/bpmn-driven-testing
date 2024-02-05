@@ -1,16 +1,17 @@
-package org.camunda.community.bpmndt.model.platform7;
+package org.camunda.community.bpmndt.model.platform8;
 
 import static com.google.common.truth.Truth.assertThat;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import org.camunda.bpm.model.bpmn.Bpmn;
-import org.camunda.bpm.model.bpmn.instance.Process;
-import org.camunda.bpm.model.bpmn.instance.ThrowEvent;
-import org.camunda.community.bpmndt.test.Platform7TestPaths;
+import org.camunda.community.bpmndt.test.Platform8TestPaths;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import io.camunda.zeebe.model.bpmn.Bpmn;
+import io.camunda.zeebe.model.bpmn.instance.Process;
+import io.camunda.zeebe.model.bpmn.instance.ThrowEvent;
 
 public class BpmnEventSupportTest {
 
@@ -18,7 +19,7 @@ public class BpmnEventSupportTest {
 
   @BeforeEach
   public void setUp() {
-    advancedMultiInstance = Platform7TestPaths.advancedMultiInstance();
+    advancedMultiInstance = Platform8TestPaths.advancedMultiInstance();
   }
 
   @Test

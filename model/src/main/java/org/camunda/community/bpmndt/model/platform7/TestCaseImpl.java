@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import org.camunda.bpm.model.bpmn.instance.Process;
-import org.camunda.community.bpmndt.model.element.TestCaseElement;
+import org.camunda.community.bpmndt.model.platform7.element.TestCaseElement;
 
 class TestCaseImpl implements TestCase {
 

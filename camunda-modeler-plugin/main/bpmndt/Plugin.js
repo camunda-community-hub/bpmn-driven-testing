@@ -1,5 +1,5 @@
 import React from "react";
-import ReactDOM from "react-dom";
+import { createRoot } from "react-dom/client";
 
 import {
   MODE_EDIT,
@@ -9,7 +9,6 @@ import {
   MODE_VIEW,
   PLUGIN_VIEW_PARENT_CLASS_NAME,
   PLUGIN_VIEW_STYLE,
-  SUPPORTED_TYPE,
   UNSUPPORTED_ELEMENT_TYPES
 } from "./constants";
 
@@ -43,6 +42,7 @@ export default class Plugin {
     this.styleElement = document.createElement("style");
     document.head.appendChild(this.styleElement);
 
+    this.root = null;
     this.rootElement = document.createElement("div");
     this.rootElement.className = "bpmndt";
 
@@ -65,12 +65,13 @@ export default class Plugin {
   hide() {
     const { pathMarker, rootElement, styleElement } = this;
 
-    if (styleElement.childNodes.length !== 0) {
+    if (this.root !== null) {
       // show diagram elements
       styleElement.firstChild.remove();
 
       // unmount view
-      ReactDOM.unmountComponentAtNode(rootElement);
+      this.root.unmount();
+      this.root = null;
       // remove root element
       rootElement.remove();
     }
@@ -98,11 +99,7 @@ export default class Plugin {
   }
 
   show() {
-    const { mode, testCases, type } = this;
-    if (type !== SUPPORTED_TYPE) {
-      // do not show in case of Camunda Platform 8 (type"cloud-bpmn")
-      return;
-    }
+    const { mode, testCases } = this;
 
     if (mode) {
       mode.updateMarkers();
@@ -125,7 +122,8 @@ export default class Plugin {
       // append root node
       parent.appendChild(rootElement);
       // render view
-      ReactDOM.render(<PluginView plugin={this} />, rootElement);
+      this.root = createRoot(rootElement);
+      this.root.render(<PluginView plugin={this} />);
     }
 
     this.visible = true;

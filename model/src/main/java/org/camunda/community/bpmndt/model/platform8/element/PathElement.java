@@ -1,4 +1,4 @@
-package org.camunda.community.bpmndt.model.element;
+package org.camunda.community.bpmndt.model.platform8.element;
 
 import static org.camunda.community.bpmndt.model.Constants.ELEMENT_PATH;
 import static org.camunda.community.bpmndt.model.Constants.NS;
@@ -9,11 +9,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import org.camunda.bpm.model.bpmn.impl.instance.BpmnModelElementInstanceImpl;
 import org.camunda.bpm.model.xml.ModelBuilder;
 import org.camunda.bpm.model.xml.impl.instance.ModelTypeInstanceContext;
 import org.camunda.bpm.model.xml.type.ModelElementTypeBuilder;
 import org.camunda.bpm.model.xml.type.child.ChildElementCollection;
+
+import io.camunda.zeebe.model.bpmn.impl.instance.BpmnModelElementInstanceImpl;
 
 /**
  * Path of a test case.

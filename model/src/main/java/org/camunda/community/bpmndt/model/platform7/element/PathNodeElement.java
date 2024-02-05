@@ -1,4 +1,4 @@
-package org.camunda.community.bpmndt.model.element;
+package org.camunda.community.bpmndt.model.platform7.element;
 
 import static org.camunda.community.bpmndt.model.Constants.ELEMENT_NODE;
 import static org.camunda.community.bpmndt.model.Constants.NS;
