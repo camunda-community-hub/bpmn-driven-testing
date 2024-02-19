@@ -21,6 +21,8 @@ class TestCaseInstanceMemo {
       return;
     }
 
+    System.out.println(record);
+
     if (record.getValueType() == ValueType.JOB) {
       var recordValue = (JobRecordValue) record.getValue();
 
@@ -29,6 +31,11 @@ class TestCaseInstanceMemo {
         job.id = recordValue.getElementId();
         job.state = JobIntent.CREATED;
         job.type = recordValue.getType();
+
+        if (recordValue.getCustomHeaders() != null) {
+          job.customHeaders = new HashMap<>();
+          job.customHeaders.putAll(recordValue.getCustomHeaders());
+        }
 
         var processInstance = processInstances.get(recordValue.getProcessInstanceKey());
         processInstance.jobs.put(job.id, job);
@@ -76,6 +83,16 @@ class TestCaseInstanceMemo {
     String id;
     JobIntent state;
     String type;
+
+    private Map<String, String> customHeaders;
+
+    String getCustomHeader(String key) {
+      return customHeaders != null ? customHeaders.get(key) : null;
+    }
+
+    boolean hasCustomHeader(String key) {
+      return customHeaders != null && customHeaders.containsKey(key);
+    }
   }
 
   static class ProcessInstanceMemo {

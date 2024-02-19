@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.camunda.community.bpmndt.platform8.api.TestCaseInstanceElement.JobElement;
 import org.camunda.community.bpmndt.test.Platform8TestPaths;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,7 +33,11 @@ public class ServiceTaskTest {
 
   @BeforeEach
   public void setUp() {
-    handler = new JobHandler("serviceTask", "= \"serviceTaskType\"");
+    var element = new JobElement();
+    element.setId("serviceTask");
+    element.setType("= \"serviceTaskType\"");
+
+    handler = new JobHandler(element);
   }
 
   @Test

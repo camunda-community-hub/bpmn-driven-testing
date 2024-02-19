@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
+import org.camunda.community.bpmndt.platform8.api.TestCaseInstanceElement.JobElement;
+
 import io.camunda.zeebe.client.api.response.ActivatedJob;
 import io.camunda.zeebe.client.api.worker.JobClient;
 
@@ -12,34 +14,33 @@ import io.camunda.zeebe.client.api.worker.JobClient;
  */
 public class JobHandler {
 
-  private final String bpmnElementId;
-  private final String type;
+  private final JobElement element;
 
   private final Map<String, Object> variableMap = new HashMap<>();
 
   private io.camunda.zeebe.client.api.worker.JobHandler action;
-  private String expectedEvaluatedType;
-  private String expectedType;
   private Object variables;
 
-  JobHandler(String bpmnElementId, String type) {
-    this.bpmnElementId = bpmnElementId;
-    this.type = type;
+  private String expectedEvaluatedType;
+  private String expectedType;
+
+  JobHandler(JobElement element) {
+    this.element = element;
   }
 
   void apply(TestCaseInstance instance, long processInstanceKey) {
-    if (expectedType != null && !expectedType.equals(type)) {
-      throw new AssertionError("expected job %s to be of type %s, but was %s".formatted(bpmnElementId, expectedType, type));
+    if (expectedType != null && !expectedType.equals(element.getType())) {
+      throw new AssertionError("expected job %s to be of type %s, but was %s".formatted(element.getId(), expectedType, element.getType()));
     }
 
-    var evaluatedType = instance.getJobType(processInstanceKey, bpmnElementId);
-    if (expectedEvaluatedType != null && !expectedEvaluatedType.equals(evaluatedType)) {
-      throw new AssertionError("expected job %s to be of evaluated type %s, but was %s".formatted(bpmnElementId, expectedEvaluatedType, evaluatedType));
+    var job = instance.getJob(processInstanceKey, element.getId());
+    if (expectedEvaluatedType != null && !expectedEvaluatedType.equals(job.type)) {
+      throw new AssertionError("expected job %s to be of evaluated type %s, but was %s".formatted(element.getId(), expectedEvaluatedType, job.type));
     }
 
     if (action != null) {
-      try (var ignored = instance.client.newWorker().jobType(evaluatedType).handler(action).open()) {
-        instance.hasPassed(processInstanceKey, bpmnElementId);
+      try (var ignored = instance.client.newWorker().jobType(job.type).handler(action).open()) {
+        instance.hasPassed(processInstanceKey, element.getId());
       }
     }
   }

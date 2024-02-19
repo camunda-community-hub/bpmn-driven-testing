@@ -1,3 +1,4 @@
+// needed to fulfill excluded org.camunda.bpm.dmn:camunda-engine-feel-scala dependency
 /*
  * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
  * under one or more contributor license agreements. See the NOTICE file
@@ -14,10 +15,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// needed to fulfill excluded org.camunda.bpm.dmn:camunda-engine-feel-scala dependency
 package org.camunda.bpm.dmn.feel.impl.scala.function;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 
@@ -25,45 +24,28 @@ import org.camunda.bpm.dmn.feel.impl.scala.function.builder.CustomFunctionBuilde
 
 public class CustomFunction {
 
-  protected List<String> params;
-  protected Function<List<Object>, Object> function;
-  protected boolean hasVarargs;
-
-  public CustomFunction() {
-    params = Collections.emptyList();
-  }
-
-  /**
-   * Creates a fluent builder to configure a custom function
-   *
-   * @return builder to apply configurations on
-   */
   public static CustomFunctionBuilder create() {
     return null;
   }
 
   public List<String> getParams() {
-    return params;
+    return null;
   }
 
   public void setParams(List<String> params) {
-    this.params = params;
   }
 
   public Function<List<Object>, Object> getFunction() {
-    return function;
+    return null;
   }
 
   public void setFunction(Function<List<Object>, Object> function) {
-    this.function = function;
   }
 
   public boolean hasVarargs() {
-    return hasVarargs;
+    return false;
   }
 
   public void setHasVarargs(boolean hasVarargs) {
-    this.hasVarargs = hasVarargs;
   }
-
 }

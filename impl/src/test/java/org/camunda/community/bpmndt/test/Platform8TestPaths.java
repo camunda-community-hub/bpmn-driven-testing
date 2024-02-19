@@ -9,7 +9,7 @@ import java.nio.file.Paths;
 public class Platform8TestPaths {
 
   public static Path of(String projectName) {
-    return Paths.get("../integration-tests-8").resolve(projectName).resolve("src/main/resources");
+    return Paths.get("../integration-tests/platform8").resolve(projectName).resolve("src/main/resources");
   }
 
   public static Path of(String projectName, String fileName) {

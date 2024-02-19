@@ -7,6 +7,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import org.camunda.community.bpmndt.platform8.api.TestCaseInstanceMemo.JobMemo;
+
 import io.camunda.zeebe.client.ZeebeClient;
 import io.camunda.zeebe.process.test.api.ZeebeTestEngine;
 import io.camunda.zeebe.process.test.filters.RecordStream;
@@ -59,7 +61,11 @@ public class TestCaseInstance implements AutoCloseable {
     handler.apply(this, processInstanceKey);
   }
 
-  String getJobType(long processInstanceKey, String bpmnElementId) {
+  void apply(long processInstanceKey, UserTaskHandler handler) {
+    handler.apply(this, processInstanceKey);
+  }
+
+  JobMemo getJob(long processInstanceKey, String bpmnElementId) {
     return select(memo -> {
       var processInstance = memo.processInstances.get(processInstanceKey);
       if (processInstance == null) {
@@ -71,7 +77,7 @@ public class TestCaseInstance implements AutoCloseable {
         throw new IllegalStateException("job %s could not be found".formatted(bpmnElementId));
       }
 
-      return jobMemo.type;
+      return jobMemo;
     });
   }
 

@@ -1,3 +1,4 @@
+// needed to fulfill excluded org.camunda.bpm.dmn:camunda-engine-feel-scala dependency
 /*
  * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
  * under one or more contributor license agreements. See the NOTICE file
@@ -14,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// needed to fulfill excluded org.camunda.bpm.dmn:camunda-engine-feel-scala dependency
 package org.camunda.bpm.dmn.feel.impl.scala;
 
 import java.util.List;
@@ -25,13 +25,10 @@ import org.camunda.bpm.dmn.feel.impl.scala.function.FeelCustomFunctionProvider;
 
 public class ScalaFeelEngineFactory implements FeelEngineFactory {
 
-  protected List<FeelCustomFunctionProvider> customFunctionProviders;
-
   public ScalaFeelEngineFactory() {
   }
 
   public ScalaFeelEngineFactory(List<FeelCustomFunctionProvider> customFunctionProviders) {
-    this.customFunctionProviders = customFunctionProviders;
   }
 
   public FeelEngine createInstance() {
@@ -39,11 +36,9 @@ public class ScalaFeelEngineFactory implements FeelEngineFactory {
   }
 
   public void setCustomFunctionProviders(List<FeelCustomFunctionProvider> customFunctionProviders) {
-    this.customFunctionProviders = customFunctionProviders;
   }
 
   public List<FeelCustomFunctionProvider> getCustomFunctionProviders() {
-    return customFunctionProviders;
+    return null;
   }
-
 }
