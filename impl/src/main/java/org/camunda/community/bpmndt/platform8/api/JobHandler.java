@@ -27,10 +27,11 @@ public class JobHandler {
   private io.camunda.zeebe.client.api.worker.JobHandler action;
   private Object variables;
 
-  private String expectedEvaluatedType;
-  private Consumer<String> expectedEvaluatedTypeConsumer;
+  private Consumer<String> typeExpressionConsumer;
+
   private String expectedType;
-  private Consumer<String> expectedTypeConsumer;
+
+  private Consumer<String> typeConsumer;
 
   JobHandler(JobElement element) {
     this.element = element;
@@ -41,25 +42,21 @@ public class JobHandler {
       verifier.accept(BpmnAssert.assertThat(processInstanceEvent));
     }
 
-    if (expectedType != null && !expectedType.equals(element.getType())) {
-      String message = "expected job %s to be of type '%s', but was '%s'";
-      throw new AssertionError(String.format(message, element.getId(), expectedType, element.getType()));
-    }
-    if (expectedTypeConsumer != null) {
-      expectedTypeConsumer.accept(element.getType());
+    if (typeExpressionConsumer != null) {
+      typeExpressionConsumer.accept(element.getType());
     }
 
     JobMemo job = instance.getJob(processInstanceEvent, element.getId());
-    if (expectedEvaluatedType != null && !expectedEvaluatedType.equals(job.type)) {
-      String message = "expected job %s to be of evaluated type '%s', but was '%s'";
-      throw new AssertionError(String.format(message, element.getId(), expectedEvaluatedType, job.type));
+    if (expectedType != null && !expectedType.equals(job.type)) {
+      String message = "expected job %s to be of type '%s', but was '%s'";
+      throw new AssertionError(String.format(message, element.getId(), expectedType, job.type));
     }
-    if (expectedEvaluatedTypeConsumer != null) {
-      expectedEvaluatedTypeConsumer.accept(job.type);
+    if (typeConsumer != null) {
+      typeConsumer.accept(job.type);
     }
 
     if (action != null) {
-      try (JobWorker worker = instance.client.newWorker().jobType(job.type).handler(action).open()) {
+      try (JobWorker ignored = instance.client.newWorker().jobType(job.type).handler(action).open()) {
         instance.hasPassed(processInstanceEvent, element.getId());
       }
     }
@@ -123,29 +120,7 @@ public class JobHandler {
   }
 
   /**
-   * Verifies that the job is of the given evaluated type (an evaluated FEEL expression specified in the task definition).
-   *
-   * @param expectedEvaluatedType The expected type.
-   * @return The handler.
-   */
-  public JobHandler verifyEvaluatedType(String expectedEvaluatedType) {
-    this.expectedEvaluatedType = expectedEvaluatedType;
-    return this;
-  }
-
-  /**
-   * Verifies that the job is of the given evaluated type (an evaluated FEEL expression specified in the task definition), using a consumer function.
-   *
-   * @param expectedEvaluatedTypeConsumer A consumer asserting the evaluated type.
-   * @return The handler.
-   */
-  public JobHandler verifyEvaluatedType(Consumer<String> expectedEvaluatedTypeConsumer) {
-    this.expectedEvaluatedTypeConsumer = expectedEvaluatedTypeConsumer;
-    return this;
-  }
-
-  /**
-   * Verifies that the job is of the given type (a static value or FEEL expression specified in the task definition).
+   * Verifies that the job is of the given type.
    *
    * @param expectedType The expected type.
    * @return The handler.
@@ -156,13 +131,24 @@ public class JobHandler {
   }
 
   /**
-   * Verifies that the job is of the given type (a static value or FEEL expression specified in the task definition), using a consumer function.
+   * Verifies that the job is of the given type.
    *
-   * @param expectedTypeConsumer A consumer asserting the type.
+   * @param typeConsumer A consumer asserting the type.
    * @return The handler.
    */
-  public JobHandler verifyType(Consumer<String> expectedTypeConsumer) {
-    this.expectedTypeConsumer = expectedTypeConsumer;
+  public JobHandler verifyType(Consumer<String> typeConsumer) {
+    this.typeConsumer = typeConsumer;
+    return this;
+  }
+
+  /**
+   * Verifies that the job has a specific type FEEL expression (see "Task definition" section), using a consumer function.
+   *
+   * @param typeExpressionConsumer A consumer asserting the type expression.
+   * @return The handler.
+   */
+  public JobHandler verifyTypeExpression(Consumer<String> typeExpressionConsumer) {
+    this.typeExpressionConsumer = typeExpressionConsumer;
     return this;
   }
 

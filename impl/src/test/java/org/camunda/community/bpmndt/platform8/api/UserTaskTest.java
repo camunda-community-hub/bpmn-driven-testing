@@ -1,5 +1,8 @@
 package org.camunda.community.bpmndt.platform8.api;
 
+import static com.google.common.truth.Truth.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -30,6 +33,12 @@ public class UserTaskTest {
   @BeforeEach
   public void setUp() {
     UserTaksElement element = new UserTaksElement();
+    element.setAssignee("=\"simpleAssignee\"");
+    element.setCandidateGroups("=[\"simpleGroupA\", \"simpleGroupB\"]");
+    element.setCandidateUsers("=[\"simpleUserA\", \"simpleUserB\"]");
+    element.setDueDate("=\"2023-02-17T00:00:00Z\"");
+    element.setFollowUpDate("=\"2023-02-18T00:00:00Z\"");
+    element.setFormKey("simpleFormKey");
     element.setId("userTask");
 
     handler = new UserTaskHandler(element);
@@ -37,6 +46,31 @@ public class UserTaskTest {
 
   @Test
   public void testExecute() {
+    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+  }
+
+  @Test
+  public void testVerify() {
+    handler.verify(processInstanceAssert -> {
+      processInstanceAssert.hasVariableWithValue("x", "test");
+    });
+
+    tc.createExecutor(engine)
+        .withVariable("x", "test")
+        .verify(ProcessInstanceAssert::isCompleted)
+        .execute();
+  }
+
+  @Test
+  public void testVerifyAssignee() {
+    handler.verifyAssigneeExpression(assignee -> assertThat(assignee).isEqualTo("wrong assignee expression"));
+
+    AssertionError e = assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
+    assertThat(e).hasMessageThat().contains("wrong assignee expression");
+    assertThat(e).hasMessageThat().contains("=\"simpleAssignee\"");
+
+    handler.verifyAssigneeExpression(assignee -> assertThat(assignee).isEqualTo("=\"simpleAssignee\""));
+
     tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
   }
 

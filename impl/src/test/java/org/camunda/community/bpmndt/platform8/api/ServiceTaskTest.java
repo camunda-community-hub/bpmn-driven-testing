@@ -38,7 +38,7 @@ public class ServiceTaskTest {
   public void setUp() {
     JobElement element = new JobElement();
     element.setId("serviceTask");
-    element.setType("= \"serviceTaskType\"");
+    element.setType("=\"serviceTaskType\"");
 
     handler = new JobHandler(element);
   }
@@ -68,12 +68,6 @@ public class ServiceTaskTest {
       client.newCompleteCommand(job).send();
     });
 
-    handler.verify(processInstanceAssert -> {
-      processInstanceAssert.hasVariableWithValue("x", "test");
-      processInstanceAssert.hasVariableWithValue("y", 1);
-      processInstanceAssert.hasVariableWithValue("z", true);
-    });
-
     Map<String, Object> variableMap = new HashMap<>();
     variableMap.put("y", 1);
     variableMap.put("z", true);
@@ -98,12 +92,6 @@ public class ServiceTaskTest {
       client.newCompleteCommand(job).send();
     });
 
-    handler.verify(processInstanceAssert -> {
-      processInstanceAssert.hasVariableWithValue("x", "test");
-      processInstanceAssert.hasVariableWithValue("y", 1);
-      processInstanceAssert.hasVariableWithValue("z", true);
-    });
-
     try (JobWorker ignored = workerBuilder.open()) {
       TestVariables variables = new TestVariables();
       variables.setX("test");
@@ -118,25 +106,24 @@ public class ServiceTaskTest {
   }
 
   @Test
-  public void testVerifyEvaluatedType() {
-    JobWorkerBuilderStep3 workerBuilder = client.newWorker().jobType("serviceTaskType").handler((client, job) ->
-        client.newCompleteCommand(job).send()
-    );
+  public void testVerify() {
+    handler.verify(processInstanceAssert -> {
+      processInstanceAssert.hasVariableWithValue("x", "test");
+      processInstanceAssert.hasVariableWithValue("y", 1);
+      processInstanceAssert.hasVariableWithValue("z", true);
+    });
 
-    handler.verifyEvaluatedType("wrongType");
+    handler.execute();
 
-    try (JobWorker ignored = workerBuilder.open()) {
-      AssertionError e = assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
-      assertThat(e).hasMessageThat().contains("wrongType");
-      assertThat(e).hasMessageThat().contains("serviceTaskType");
-    }
+    TestVariables variables = new TestVariables();
+    variables.setX("test");
+    variables.setY(1);
+    variables.setZ(true);
 
-    handler.verifyEvaluatedType("serviceTaskType");
-    handler.verifyEvaluatedType(evaluatedType -> assertThat(evaluatedType).isEqualTo("serviceTaskType"));
-
-    try (JobWorker ignored = workerBuilder.open()) {
-      tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
-    }
+    tc.createExecutor(engine)
+        .withVariables(variables)
+        .verify(ProcessInstanceAssert::isCompleted)
+        .execute();
   }
 
   @Test
@@ -145,16 +132,37 @@ public class ServiceTaskTest {
         client.newCompleteCommand(job).send()
     );
 
-    handler.verifyType("wrongType");
+    handler.verifyType("wrong type");
 
     try (JobWorker ignored = workerBuilder.open()) {
       AssertionError e = assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
-      assertThat(e).hasMessageThat().contains("wrongType");
-      assertThat(e).hasMessageThat().contains("= \"serviceTaskType\"");
+      assertThat(e).hasMessageThat().contains("wrong type");
+      assertThat(e).hasMessageThat().contains("serviceTaskType");
     }
 
-    handler.verifyType("= \"serviceTaskType\"");
-    handler.verifyType(type -> assertThat(type).isEqualTo("= \"serviceTaskType\""));
+    handler.verifyType("serviceTaskType");
+    handler.verifyType(type -> assertThat(type).isEqualTo("serviceTaskType"));
+
+    try (JobWorker ignored = workerBuilder.open()) {
+      tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+    }
+  }
+
+  @Test
+  public void testVerifyTypeExpression() {
+    JobWorkerBuilderStep3 workerBuilder = client.newWorker().jobType("serviceTaskType").handler((client, job) ->
+        client.newCompleteCommand(job).send()
+    );
+
+    handler.verifyTypeExpression(type -> assertThat(type).isEqualTo("wrong type expression"));
+
+    try (JobWorker ignored = workerBuilder.open()) {
+      AssertionError e = assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
+      assertThat(e).hasMessageThat().contains("wrong type expression");
+      assertThat(e).hasMessageThat().contains("=\"serviceTaskType\"");
+    }
+
+    handler.verifyTypeExpression(type -> assertThat(type).isEqualTo("=\"serviceTaskType\""));
 
     try (JobWorker ignored = workerBuilder.open()) {
       tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();

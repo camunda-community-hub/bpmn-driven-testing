@@ -1,6 +1,5 @@
 package org.camunda.community.bpmndt.platform8.api;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -8,9 +7,6 @@ import java.util.function.Consumer;
 
 import org.camunda.community.bpmndt.platform8.api.TestCaseInstanceElement.UserTaksElement;
 import org.camunda.community.bpmndt.platform8.api.TestCaseInstanceMemo.JobMemo;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.type.TypeFactory;
 
 import io.camunda.zeebe.client.api.response.ActivatedJob;
 import io.camunda.zeebe.client.api.response.ProcessInstanceEvent;
@@ -30,29 +26,26 @@ public class UserTaskHandler {
   private io.camunda.zeebe.client.api.worker.JobHandler action;
   private Object variables;
 
-  private String expectedAssignee;
-  private Consumer<String> expectedAssigneeConsumer;
-  private String expectedCandidateGroups;
-  private Consumer<String> expectedCandidateGroupsConsumer;
-  private String expectedCandidateUsers;
-  private Consumer<String> expectedCandidateUsersConsumer;
-  private String expectedDueDate;
-  private Consumer<String> expectedDueDateConsumer;
-  private String expectedFollowUpDate;
-  private Consumer<String> expectedFollowUpDateConsumer;
-  private String expectedFormKey;
-  private Consumer<String> expectedFormKeyConsumer;
+  private Consumer<String> assigneeExpressionConsumer;
+  private Consumer<String> candidateGroupsExpressionConsumer;
+  private Consumer<String> candidateUsersExpressionConsumer;
+  private Consumer<String> dueDateExpressionConsumer;
+  private Consumer<String> followUpDateExpressionConsumer;
 
-  private String expectedEvaluatedAssignee;
-  private Consumer<String> expectedEvaluatedAssigneeConsumer;
-  private List<String> expectedEvaluatedCandidateGroups;
-  private Consumer<List<String>> expectedEvaluatedCandidateGroupsConsumer;
-  private List<String> expectedEvaluatedCandidateUsers;
-  private Consumer<List<String>> expectedEvaluatedCandidateUsersConsumer;
-  private String expectedEvaluatedDueDate;
-  private Consumer<String> expectedEvaluatedDueDateConsumer;
-  private String expectedEvaluatedFollowUpDate;
-  private Consumer<String> expectedEvaluatedFollowUpDateConsumer;
+  private String expectedAssignee;
+  private List<String> expectedCandidateGroups;
+  private List<String> expectedCandidateUsers;
+  private String expectedDueDate;
+  private String expectedFollowUpDate;
+  private String expectedFormKey;
+
+  private Consumer<String> assigneeConsumer;
+  private Consumer<List<String>> candidateGroupsConsumer;
+  private Consumer<List<String>> candidateUsersConsumer;
+  private Consumer<String> dueDateConsumer;
+  private Consumer<String> followUpDateConsumer;
+  private Consumer<String> formKeyConsumer;
+
 
   UserTaskHandler(UserTaksElement element) {
     this.element = element;
@@ -71,52 +64,37 @@ public class UserTaskHandler {
       verifier.accept(BpmnAssert.assertThat(processInstanceEvent));
     }
 
-    if (expectedAssignee != null && !expectedAssignee.equals(element.getAssignee())) {
-      String message = "expected user task %s assignee to be '%s', but was '%s'";
+    if (assigneeExpressionConsumer != null) {
+      assigneeExpressionConsumer.accept(element.getAssignee());
+    }
+    if (candidateGroupsExpressionConsumer != null) {
+      candidateGroupsExpressionConsumer.accept(element.getCandidateGroups());
+    }
+    if (candidateUsersExpressionConsumer != null) {
+      candidateUsersExpressionConsumer.accept(element.getCandidateUsers());
+    }
+    if (dueDateExpressionConsumer != null) {
+      dueDateExpressionConsumer.accept(element.getDueDate());
+    }
+    if (followUpDateExpressionConsumer != null) {
+      followUpDateExpressionConsumer.accept(element.getFollowUpDate());
+    }
+
+    String assignee = job.getCustomHeader(Protocol.USER_TASK_ASSIGNEE_HEADER_NAME);
+    if (expectedAssignee != null && !expectedAssignee.equals(assignee)) {
+      String message = "expected user task %s to have assignee '%s', but was '%s'";
       throw new AssertionError(String.format(message, element.getId(), expectedAssignee, element.getAssignee()));
     }
-    if (expectedAssigneeConsumer != null) {
-      expectedAssigneeConsumer.accept(element.getAssignee());
-    }
-
-    if (expectedCandidateGroups != null && !expectedCandidateGroups.equals(element.getCandidateGroups())) {
-      String message = "expected user task %s candidate groups to be '%s', but was '%s'";
-      throw new AssertionError(String.format(message, element.getId(), expectedCandidateGroups, element.getCandidateGroups()));
-    }
-    if (expectedCandidateGroupsConsumer != null) {
-      expectedCandidateGroupsConsumer.accept(element.getCandidateGroups());
-    }
-
-    if (expectedCandidateUsers != null && !expectedCandidateUsers.equals(element.getCandidateUsers())) {
-      String message = "expected user task %s candidate users to be '%s', but was '%s'";
-      throw new AssertionError(String.format(message, element.getId(), expectedCandidateUsers, element.getCandidateUsers()));
-    }
-    if (expectedCandidateUsersConsumer != null) {
-      expectedCandidateUsersConsumer.accept(element.getCandidateUsers());
-    }
-
-    if (expectedDueDate != null && !expectedDueDate.equals(element.getDueDate())) {
-      String message = "expected user task %s due date to be '%s', but was '%s'";
-      throw new AssertionError(String.format(message, element.getId(), expectedDueDate, element.getDueDate()));
-    }
-    if (expectedDueDateConsumer != null) {
-      expectedDueDateConsumer.accept(element.getDueDate());
-    }
-
-    if (expectedFollowUpDate != null && !expectedFollowUpDate.equals(element.getFollowUpDate())) {
-      String message = "expected user task %s follow-up date to be '%s', but was '%s'";
-      throw new AssertionError(String.format(message, element.getId(), expectedFollowUpDate, element.getFollowUpDate()));
-    }
-    if (expectedFollowUpDateConsumer != null) {
-      expectedFollowUpDateConsumer.accept(element.getFollowUpDate());
+    if (assigneeConsumer != null) {
+      assigneeConsumer.accept(assignee);
     }
 
     if (expectedFormKey != null && !expectedFormKey.equals(element.getFormKey())) {
-      String message = "expected user task %s follow-up date to be '%s', but was '%s'";
+      String message = "expected user task %s to have follow-up date '%s', but was '%s'";
       throw new AssertionError(String.format(message, element.getId(), expectedFormKey, element.getFormKey()));
     }
-    if (expectedFormKeyConsumer != null) {
-      expectedFormKeyConsumer.accept(element.getFormKey());
+    if (formKeyConsumer != null) {
+      formKeyConsumer.accept(element.getFormKey());
     }
 
     if (action != null) {
@@ -132,14 +110,12 @@ public class UserTaskHandler {
     System.out.println(job.getCustomHeader(Protocol.USER_TASK_DUE_DATE_HEADER_NAME));
     System.out.println(job.getCustomHeader(Protocol.USER_TASK_FOLLOW_UP_DATE_HEADER_NAME));
 
-    try {
-      List<String> candidateGroups = new ObjectMapper().readValue(job.getCustomHeader(Protocol.USER_TASK_CANDIDATE_GROUPS_HEADER_NAME),
-          TypeFactory.defaultInstance().constructCollectionType(List.class, String.class));
+    List<String> candidateGroups = instance.client.getConfiguration().getJsonMapper()
+        .fromJson(job.getCustomHeader(Protocol.USER_TASK_CANDIDATE_GROUPS_HEADER_NAME),
+            List.class);
 
-      System.out.println(candidateGroups);
-    } catch (IOException e) {
+    System.out.println(candidateGroups);
 
-    }
   }
 
   /**
@@ -200,120 +176,62 @@ public class UserTaskHandler {
   }
 
   /**
-   * Verifies that the user task has a specific assignee (a static value or FEEL expression specified in the "Assignment" section).
+   * Verifies that the user task has a specific assignee FEEL expression (see "Assignment" section), using a consumer function.
    *
-   * @param expectedAssignee The expected assignee.
+   * @param assigneeExpressionConsumer A consumer asserting the assignee expression.
    * @return The handler.
    */
-  public UserTaskHandler verifyAssignee(String expectedAssignee) {
-    this.expectedAssignee = expectedAssignee;
+  public UserTaskHandler verifyAssigneeExpression(Consumer<String> assigneeExpressionConsumer) {
+    this.assigneeExpressionConsumer = assigneeExpressionConsumer;
     return this;
   }
 
   /**
-   * Verifies that the user task has a specific assignee (a static value or FEEL expression specified in the "Assignment" section), using a consumer function.
+   * Verifies that the user task has specific candidate groups FEEL expression (see "Assignment" section), using a consumer function.
    *
-   * @param expectedAssigneeConsumer A consumer asserting the assignee.
+   * @param candidateGroupsExpressionConsumer A consumer asserting the candidate groups expression.
    * @return The handler.
    */
-  public UserTaskHandler verifyAssignee(Consumer<String> expectedAssigneeConsumer) {
-    this.expectedAssigneeConsumer = expectedAssigneeConsumer;
+  public UserTaskHandler verifyCandidateGroupsExpression(Consumer<String> candidateGroupsExpressionConsumer) {
+    this.candidateGroupsExpressionConsumer = candidateGroupsExpressionConsumer;
     return this;
   }
 
   /**
-   * Verifies that the user task has specific candidate groups (a static value or FEEL expression specified in the "Assignment" section).
+   * Verifies that the user task has specific candidate users FEEL expression (see "Assignment" section), using a consumer function.
    *
-   * @param expectedCandidateGroups The expected candidate groups.
+   * @param candidateUsersExpressionConsumer A consumer asserting the candidate users expression.
    * @return The handler.
    */
-  public UserTaskHandler verifyCandidateGroups(String expectedCandidateGroups) {
-    this.expectedCandidateGroups = expectedCandidateGroups;
+  public UserTaskHandler verifyCandidateUsersExpression(Consumer<String> candidateUsersExpressionConsumer) {
+    this.candidateUsersExpressionConsumer = candidateUsersExpressionConsumer;
     return this;
   }
 
   /**
-   * Verifies that the user task has specific candidate groups (a static value or FEEL expression specified in the "Assignment" section), using a consumer
-   * function.
+   * Verifies that the user task has a specific due date FEEL expression (see "Assignment" section), using a consumer function.
    *
-   * @param expectedCandidateGroupsConsumer A consumer asserting the candidate groups.
+   * @param dueDateExpressionConsumer A consumer asserting the due date expression.
    * @return The handler.
    */
-  public UserTaskHandler verifyCandidateGroups(Consumer<String> expectedCandidateGroupsConsumer) {
-    this.expectedCandidateGroupsConsumer = expectedCandidateGroupsConsumer;
+  public UserTaskHandler verifyDueDateExpression(Consumer<String> dueDateExpressionConsumer) {
+    this.dueDateExpressionConsumer = dueDateExpressionConsumer;
     return this;
   }
 
   /**
-   * Verifies that the user task has specific candidate users (a static value or FEEL expression specified in the "Assignment" section).
+   * Verifies that the user task has a specific follow-up date FEEL expression (see "Assignment" section), using a consumer function.
    *
-   * @param expectedCandidateUsers The expected candidate users.
+   * @param followUpDateExpressionConsumer A consumer asserting the follow-up date expression.
    * @return The handler.
    */
-  public UserTaskHandler verifyCandidateUsers(String expectedCandidateUsers) {
-    this.expectedCandidateUsers = expectedCandidateUsers;
+  public UserTaskHandler verifyFollowUpDateExpression(Consumer<String> followUpDateExpressionConsumer) {
+    this.followUpDateExpressionConsumer = followUpDateExpressionConsumer;
     return this;
   }
 
   /**
-   * Verifies that the user task has specific candidate users (a static value or FEEL expression specified in the "Assignment" section), using a consumer
-   * function.
-   *
-   * @param expectedCandidateUsersConsumer A consumer asserting the candidate users.
-   * @return The handler.
-   */
-  public UserTaskHandler verifyCandidateUsers(Consumer<String> expectedCandidateUsersConsumer) {
-    this.expectedCandidateUsersConsumer = expectedCandidateUsersConsumer;
-    return this;
-  }
-
-  /**
-   * Verifies that the user task has a specific due date (a static value or FEEL expression specified in the "Assignment" section).
-   *
-   * @param expectedDueDate The expected due date.
-   * @return The handler.
-   */
-  public UserTaskHandler verifyDueDate(String expectedDueDate) {
-    this.expectedDueDate = expectedDueDate;
-    return this;
-  }
-
-  /**
-   * Verifies that the user task has a specific due date (a static value or FEEL expression specified in the "Assignment" section), using a consumer function.
-   *
-   * @param expectedDueDateConsumer A consumer asserting the due date.
-   * @return The handler.
-   */
-  public UserTaskHandler verifyDueDate(Consumer<String> expectedDueDateConsumer) {
-    this.expectedDueDateConsumer = expectedDueDateConsumer;
-    return this;
-  }
-
-  /**
-   * Verifies that the user task has a specific follow-up date (a static value or FEEL expression specified in the "Assignment" section).
-   *
-   * @param expectedFollowUpDate The expected follow-up date.
-   * @return The handler.
-   */
-  public UserTaskHandler verifyFollowUpDate(String expectedFollowUpDate) {
-    this.expectedFollowUpDate = expectedFollowUpDate;
-    return this;
-  }
-
-  /**
-   * Verifies that the user task has a specific follow-up date (a static value or FEEL expression specified in the "Assignment" section), using a consumer
-   * function.
-   *
-   * @param expectedFollowUpDateConsumer A consumer asserting the follow-up date.
-   * @return The handler.
-   */
-  public UserTaskHandler verifyFollowUpDate(Consumer<String> expectedFollowUpDateConsumer) {
-    this.expectedFollowUpDateConsumer = expectedFollowUpDateConsumer;
-    return this;
-  }
-
-  /**
-   * Verifies that the user task has a specific form key (a static value or FEEL expression specified in the "Assignment" section).
+   * Verifies that the user task has a specific form key (see "Form" section).
    *
    * @param expectedFormKey The expected form key.
    * @return The handler.
@@ -324,13 +242,13 @@ public class UserTaskHandler {
   }
 
   /**
-   * Verifies that the user task has a specific form key (a static value or FEEL expression specified in the "Assignment" section), using a consumer function.
+   * Verifies that the user task has a specific form key (see "Form" section), using a consumer function.
    *
-   * @param expectedFormKeyConsumer A consumer asserting the form key.
+   * @param formKeyConsumer A consumer asserting the form key.
    * @return The handler.
    */
-  public UserTaskHandler verifyFormKey(Consumer<String> expectedFormKeyConsumer) {
-    this.expectedFormKeyConsumer = expectedFormKeyConsumer;
+  public UserTaskHandler verifyFormKey(Consumer<String> formKeyConsumer) {
+    this.formKeyConsumer = formKeyConsumer;
     return this;
   }
 
