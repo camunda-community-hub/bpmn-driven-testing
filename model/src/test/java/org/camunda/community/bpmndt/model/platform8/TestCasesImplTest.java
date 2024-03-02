@@ -2,6 +2,10 @@ package org.camunda.community.bpmndt.model.platform8;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import java.util.List;
+
+import org.camunda.community.bpmndt.model.platform8.element.PathElement;
+import org.camunda.community.bpmndt.model.platform8.element.TestCaseElement;
 import org.camunda.community.bpmndt.test.Platform8TestPaths;
 import org.junit.jupiter.api.Test;
 
@@ -11,11 +15,11 @@ public class TestCasesImplTest {
 
   @Test
   public void testGetTestCaseElements() {
-    var testCases = TestCasesImpl.of(Platform8TestPaths.simple("simple.bpmn"));
+    TestCasesImpl testCases = TestCasesImpl.of(Platform8TestPaths.simple("simple.bpmn"));
 
-    var process = (Process) testCases.modelInstance.getDefinitions().getUniqueChildElementByType(Process.class);
+    Process process = (Process) testCases.modelInstance.getDefinitions().getUniqueChildElementByType(Process.class);
 
-    var elements = testCases.getTestCaseElements(process);
+    List<TestCaseElement> elements = testCases.getTestCaseElements(process);
     assertThat(elements).hasSize(1);
 
     assertThat(elements.get(0).getName()).isNull();
@@ -25,17 +29,17 @@ public class TestCasesImplTest {
 
   @Test
   public void testGetTestCaseElementsIncludingNameAndDescription() {
-    var testCases = TestCasesImpl.of(Platform8TestPaths.simple("special/happyPath.bpmn"));
+    TestCasesImpl testCases = TestCasesImpl.of(Platform8TestPaths.simple("special/happyPath.bpmn"));
 
-    var process = (Process) testCases.modelInstance.getDefinitions().getUniqueChildElementByType(Process.class);
+    Process process = (Process) testCases.modelInstance.getDefinitions().getUniqueChildElementByType(Process.class);
 
-    var elements = testCases.getTestCaseElements(process);
+    List<TestCaseElement> elements = testCases.getTestCaseElements(process);
     assertThat(elements).hasSize(1);
 
     assertThat(elements.get(0).getName()).isEqualTo("Happy Path");
     assertThat(elements.get(0).getDescription()).isEqualTo("The happy path");
 
-    var path = elements.get(0).getPath();
+    PathElement path = elements.get(0).getPath();
     assertThat(path).isNotNull();
     assertThat(path.getFlowNodeIds()).hasSize(2);
     assertThat(path.getFlowNodeIds().get(0)).isEqualTo("startEvent");
@@ -44,11 +48,11 @@ public class TestCasesImplTest {
 
   @Test
   public void testGetTestCaseElementsWhenNotDefined() {
-    var testCases = TestCasesImpl.of(Platform8TestPaths.simple("special/noTestCases.bpmn"));
+    TestCasesImpl testCases = TestCasesImpl.of(Platform8TestPaths.simple("special/noTestCases.bpmn"));
 
-    var process = (Process) testCases.modelInstance.getDefinitions().getUniqueChildElementByType(Process.class);
+    Process process = (Process) testCases.modelInstance.getDefinitions().getUniqueChildElementByType(Process.class);
 
-    var elements = testCases.getTestCaseElements(process);
+    List<TestCaseElement> elements = testCases.getTestCaseElements(process);
     assertThat(elements).isNotNull();
     assertThat(elements).isEmpty();
   }

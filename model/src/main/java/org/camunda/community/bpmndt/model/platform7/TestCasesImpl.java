@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -14,10 +15,15 @@ import java.util.stream.Collectors;
 import org.camunda.bpm.model.bpmn.Bpmn;
 import org.camunda.bpm.model.bpmn.BpmnModelInstance;
 import org.camunda.bpm.model.bpmn.instance.BoundaryEvent;
+import org.camunda.bpm.model.bpmn.instance.Definitions;
+import org.camunda.bpm.model.bpmn.instance.Error;
+import org.camunda.bpm.model.bpmn.instance.Escalation;
 import org.camunda.bpm.model.bpmn.instance.IntermediateCatchEvent;
 import org.camunda.bpm.model.bpmn.instance.IntermediateThrowEvent;
+import org.camunda.bpm.model.bpmn.instance.Message;
 import org.camunda.bpm.model.bpmn.instance.Process;
 import org.camunda.bpm.model.bpmn.instance.ReceiveTask;
+import org.camunda.bpm.model.bpmn.instance.Signal;
 import org.camunda.bpm.model.xml.ModelParseException;
 import org.camunda.community.bpmndt.model.Constants;
 import org.camunda.community.bpmndt.model.platform7.element.TestCaseElement;
@@ -69,7 +75,7 @@ class TestCasesImpl implements TestCases {
   private void addActivity(TestCaseImpl testCase, TestCaseActivityImpl next) {
     testCase.addActivity(next);
 
-    var scope = addActivityScope(testCase, next.getId());
+    TestCaseActivityScopeImpl scope = addActivityScope(testCase, next.getId());
     if (scope != null) {
       scope.addActivity(next);
     }
@@ -83,12 +89,12 @@ class TestCasesImpl implements TestCases {
    * @return The parent scope or {@code null}, if the parent is the process.
    */
   private TestCaseActivityScopeImpl addActivityScope(TestCaseImpl testCase, String elementId) {
-    var parentElementId = bpmnSupport.getParentElementId(elementId);
+    String parentElementId = bpmnSupport.getParentElementId(elementId);
     if (testCase.getProcessId().equals(parentElementId)) {
       return null;
     }
 
-    var scope = testCase.getActivityScope(parentElementId);
+    TestCaseActivityScopeImpl scope = testCase.getActivityScope(parentElementId);
     if (scope == null) {
       scope = new TestCaseActivityScopeImpl();
       scope.flowNode = bpmnSupport.get(parentElementId);
@@ -124,42 +130,42 @@ class TestCasesImpl implements TestCases {
 
   protected List<TestCaseElement> getTestCaseElements(Process process) {
     if (process.getExtensionElements() == null) {
-      return List.of();
+      return Collections.emptyList();
     }
 
-    var testCasesElement = (TestCasesElement) process.getExtensionElements().getUniqueChildElementByType(TestCasesElement.class);
+    TestCasesElement testCasesElement = (TestCasesElement) process.getExtensionElements().getUniqueChildElementByType(TestCasesElement.class);
     if (testCasesElement == null) {
-      return List.of();
+      return Collections.emptyList();
     }
 
     return testCasesElement.getTestCases();
   }
 
   private void handleBoundaryEvent(TestCaseActivityImpl activity) {
-    var event = activity.getFlowNode(BoundaryEvent.class);
-    var eventSupport = new BpmnEventSupport(event);
+    BoundaryEvent event = activity.getFlowNode(BoundaryEvent.class);
+    BpmnEventSupport eventSupport = new BpmnEventSupport(event);
 
     activity.attachedTo = event.getAttachedTo().getId();
 
     if (eventSupport.isConditional()) {
       activity.type = TestCaseActivityType.CONDITIONAL_BOUNDARY;
     } else if (eventSupport.isError()) {
-      var error = eventSupport.getError();
+      Error error = eventSupport.getError();
 
       activity.type = TestCaseActivityType.ERROR_BOUNDARY;
       activity.eventCode = error != null ? error.getErrorCode() : null;
     } else if (eventSupport.isEscalation()) {
-      var escalation = eventSupport.getEscalation();
+      Escalation escalation = eventSupport.getEscalation();
 
       activity.type = TestCaseActivityType.ESCALATION_BOUNDARY;
       activity.eventCode = escalation != null ? escalation.getEscalationCode() : null;
     } else if (eventSupport.isMessage()) {
-      var message = eventSupport.getMessage();
+      Message message = eventSupport.getMessage();
 
       activity.type = TestCaseActivityType.MESSAGE_BOUNDARY;
       activity.eventName = message != null ? message.getName() : null;
     } else if (eventSupport.isSignal()) {
-      var signal = eventSupport.getSignal();
+      Signal signal = eventSupport.getSignal();
 
       activity.type = TestCaseActivityType.SIGNAL_BOUNDARY;
       activity.eventName = signal != null ? signal.getName() : null;
@@ -171,18 +177,18 @@ class TestCasesImpl implements TestCases {
   }
 
   private void handleIntermediateCatchEvent(TestCaseActivityImpl activity) {
-    var event = activity.getFlowNode(IntermediateCatchEvent.class);
-    var eventSupport = new BpmnEventSupport(event);
+    IntermediateCatchEvent event = activity.getFlowNode(IntermediateCatchEvent.class);
+    BpmnEventSupport eventSupport = new BpmnEventSupport(event);
 
     if (eventSupport.isConditional()) {
       activity.type = TestCaseActivityType.CONDITIONAL_CATCH;
     } else if (eventSupport.isMessage()) {
-      var message = eventSupport.getMessage();
+      Message message = eventSupport.getMessage();
 
       activity.type = TestCaseActivityType.MESSAGE_CATCH;
       activity.eventName = message != null ? message.getName() : null;
     } else if (eventSupport.isSignal()) {
-      var signal = eventSupport.getSignal();
+      Signal signal = eventSupport.getSignal();
 
       activity.type = TestCaseActivityType.SIGNAL_CATCH;
       activity.eventName = signal != null ? signal.getName() : null;
@@ -194,8 +200,8 @@ class TestCasesImpl implements TestCases {
   }
 
   private void handleIntermediateThrowEvent(TestCaseActivityImpl activity) {
-    var event = activity.getFlowNode(IntermediateThrowEvent.class);
-    var eventSupport = new BpmnEventSupport(event);
+    IntermediateThrowEvent event = activity.getFlowNode(IntermediateThrowEvent.class);
+    BpmnEventSupport eventSupport = new BpmnEventSupport(event);
 
     if (eventSupport.isLink()) {
       activity.type = TestCaseActivityType.LINK_THROW;
@@ -215,12 +221,12 @@ class TestCasesImpl implements TestCases {
       return false;
     }
 
-    var definitions = modelInstance.getDefinitions();
+    Definitions definitions = modelInstance.getDefinitions();
     if (definitions.getDomElement() == null) {
       return false;
     }
 
-    var modelerExecutionPlatform = definitions.getDomElement().getAttribute(Constants.MODELER_NS, Constants.MODELER_EXECUTION_PLATFORM_ATTRIBUTE);
+    String modelerExecutionPlatform = definitions.getDomElement().getAttribute(Constants.MODELER_NS, Constants.MODELER_EXECUTION_PLATFORM_ATTRIBUTE);
     return !Constants.MODELER_EXECUTION_PLATFORM.equals(modelerExecutionPlatform);
   }
 
@@ -249,7 +255,7 @@ class TestCasesImpl implements TestCases {
    * @return The mapped test case.
    */
   private TestCase mapTestCase(TestCaseElement testCaseElement) {
-    var testCase = new TestCaseImpl();
+    TestCaseImpl testCase = new TestCaseImpl();
     testCase.element = testCaseElement;
     testCase.process = bpmnSupport.getProcess();
 
@@ -257,7 +263,7 @@ class TestCasesImpl implements TestCases {
       return testCase;
     }
 
-    var flowNodeIds = testCaseElement.getPath().getFlowNodeIds();
+    List<String> flowNodeIds = testCaseElement.getPath().getFlowNodeIds();
     for (int i = 0; i < flowNodeIds.size(); i++) {
       String flowNodeId = flowNodeIds.get(i);
 
@@ -266,7 +272,7 @@ class TestCasesImpl implements TestCases {
         continue;
       }
 
-      var activity = new TestCaseActivityImpl();
+      TestCaseActivityImpl activity = new TestCaseActivityImpl();
       activity.flowNode = bpmnSupport.get(flowNodeId);
       activity.multiInstanceLoopCharacteristics = bpmnSupport.getMultiInstanceLoopCharacteristics(flowNodeId);
 
@@ -285,7 +291,7 @@ class TestCasesImpl implements TestCases {
         handleBoundaryEvent(activity);
       } else if (bpmnSupport.isReceiveTask(flowNodeId)) {
         // handle receive task as message catch event
-        var message = activity.getFlowNode(ReceiveTask.class).getMessage();
+        Message message = activity.getFlowNode(ReceiveTask.class).getMessage();
 
         activity.type = TestCaseActivityType.MESSAGE_CATCH;
         activity.eventName = message != null ? message.getName() : null;

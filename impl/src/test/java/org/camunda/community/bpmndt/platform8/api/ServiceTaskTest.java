@@ -16,6 +16,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.camunda.zeebe.client.ZeebeClient;
+import io.camunda.zeebe.client.api.worker.JobWorker;
+import io.camunda.zeebe.client.api.worker.JobWorkerBuilderStep1.JobWorkerBuilderStep3;
 import io.camunda.zeebe.process.test.api.ZeebeTestEngine;
 import io.camunda.zeebe.process.test.assertions.ProcessInstanceAssert;
 import io.camunda.zeebe.process.test.extension.ZeebeProcessTest;
@@ -33,7 +35,7 @@ public class ServiceTaskTest {
 
   @BeforeEach
   public void setUp() {
-    var element = new JobElement();
+    JobElement element = new JobElement();
     element.setId("serviceTask");
     element.setType("= \"serviceTaskType\"");
 
@@ -42,18 +44,18 @@ public class ServiceTaskTest {
 
   @Test
   public void testExecute() {
-    var workerBuilder = client.newWorker().jobType("serviceTaskType").handler((client, job) ->
+    JobWorkerBuilderStep3 workerBuilder = client.newWorker().jobType("serviceTaskType").handler((client, job) ->
         client.newCompleteCommand(job).variable("test", "123").send()
     );
 
-    try (var ignored = workerBuilder.open()) {
+    try (JobWorker worker = workerBuilder.open()) {
       tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
     }
   }
 
   @Test
   public void testExecuteWithVariableMap() {
-    var workerBuilder = client.newWorker().jobType("serviceTaskType").handler((client, job) -> {
+    JobWorkerBuilderStep3 workerBuilder = client.newWorker().jobType("serviceTaskType").handler((client, job) -> {
       assertThat(job.getVariables()).isEqualTo("{\"x\":\"test\",\"y\":1,\"z\":true}");
 
       assertThat(job.getVariable("x")).isEqualTo("test");
@@ -65,10 +67,14 @@ public class ServiceTaskTest {
       client.newCompleteCommand(job).send();
     });
 
-    try (var ignored = workerBuilder.open()) {
+    Map<String, Object> variableMap = new HashMap<>();
+    variableMap.put("y", 1);
+    variableMap.put("z", true);
+
+    try (JobWorker worker = workerBuilder.open()) {
       tc.createExecutor(engine)
           .withVariable("x", "test")
-          .withVariableMap(Map.of("y", 1, "z", true))
+          .withVariableMap(variableMap)
           .verify(ProcessInstanceAssert::isCompleted)
           .execute();
     }
@@ -76,8 +82,8 @@ public class ServiceTaskTest {
 
   @Test
   public void testExecuteWithVariables() {
-    var workerBuilder = client.newWorker().jobType("serviceTaskType").handler((client, job) -> {
-      var variables = job.getVariablesAsType(TestVariables.class);
+    JobWorkerBuilderStep3 workerBuilder = client.newWorker().jobType("serviceTaskType").handler((client, job) -> {
+      TestVariables variables = job.getVariablesAsType(TestVariables.class);
       assertThat(variables.getX()).isEqualTo("test");
       assertThat(variables.getY()).isEqualTo(1);
       assertThat(variables.isZ()).isTrue();
@@ -85,8 +91,8 @@ public class ServiceTaskTest {
       client.newCompleteCommand(job).send();
     });
 
-    try (var ignored = workerBuilder.open()) {
-      var variables = new TestVariables();
+    try (JobWorker worker = workerBuilder.open()) {
+      TestVariables variables = new TestVariables();
       variables.setX("test");
       variables.setY(1);
       variables.setZ(true);
@@ -100,44 +106,42 @@ public class ServiceTaskTest {
 
   @Test
   public void testVerifyEvaluatedType() {
-    var workerBuilder = client.newWorker().jobType("serviceTaskType").handler((client, job) ->
+    JobWorkerBuilderStep3 workerBuilder = client.newWorker().jobType("serviceTaskType").handler((client, job) ->
         client.newCompleteCommand(job).send()
     );
 
     handler.verifyEvaluatedType("wrongType");
 
-    try (var ignored = workerBuilder.open()) {
-      var e = assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
-
+    try (JobWorker worker = workerBuilder.open()) {
+      AssertionError e = assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
       assertThat(e).hasMessageThat().contains("wrongType");
       assertThat(e).hasMessageThat().contains("serviceTaskType");
     }
 
     handler.verifyEvaluatedType("serviceTaskType");
 
-    try (var ignored = workerBuilder.open()) {
+    try (JobWorker worker = workerBuilder.open()) {
       tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
     }
   }
 
   @Test
   public void testVerifyType() {
-    var workerBuilder = client.newWorker().jobType("serviceTaskType").handler((client, job) ->
+    JobWorkerBuilderStep3 workerBuilder = client.newWorker().jobType("serviceTaskType").handler((client, job) ->
         client.newCompleteCommand(job).send()
     );
 
     handler.verifyType("wrongType");
 
-    try (var ignored = workerBuilder.open()) {
-      var e = assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
-
+    try (JobWorker worker = workerBuilder.open()) {
+      AssertionError e = assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
       assertThat(e).hasMessageThat().contains("wrongType");
       assertThat(e).hasMessageThat().contains("= \"serviceTaskType\"");
     }
 
     handler.verifyType("= \"serviceTaskType\"");
 
-    try (var ignored = workerBuilder.open()) {
+    try (JobWorker ignored = workerBuilder.open()) {
       tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
     }
   }
@@ -153,7 +157,7 @@ public class ServiceTaskTest {
 
   @Test
   public void testExecuteActionWithVariables() {
-    var variables = new TestVariables();
+    TestVariables variables = new TestVariables();
     variables.setX("test");
     variables.setY(1);
     variables.setZ(true);
@@ -171,7 +175,7 @@ public class ServiceTaskTest {
 
   @Test
   public void testExecuteActionWithVariableMap() {
-    var variableMap = new HashMap<String, Object>();
+    Map<String, Object> variableMap = new HashMap<>();
     variableMap.put("y", 1);
     variableMap.put("z", true);
 

@@ -49,7 +49,7 @@ public class GeneratorTest {
 
     result = generator.getResult();
 
-    String fileName = testInfo.getTestMethod().orElseThrow().getName().replace("test", "") + ".bpmn";
+    String fileName = testInfo.getTestMethod().get().getName().replace("test", "") + ".bpmn";
     bpmnFile = ctx.getMainResourcePath().resolve(StringUtils.uncapitalize(fileName));
   }
 

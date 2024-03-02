@@ -7,7 +7,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import org.camunda.community.bpmndt.platform8.api.TestCaseInstanceMemo.ElementMemo;
 import org.camunda.community.bpmndt.platform8.api.TestCaseInstanceMemo.JobMemo;
+import org.camunda.community.bpmndt.platform8.api.TestCaseInstanceMemo.ProcessInstanceMemo;
 
 import io.camunda.zeebe.client.ZeebeClient;
 import io.camunda.zeebe.process.test.api.ZeebeTestEngine;
@@ -57,49 +59,34 @@ public class TestCaseInstance implements AutoCloseable {
     }
   }
 
-  void apply(long processInstanceKey, JobHandler handler) {
+  public void apply(long processInstanceKey, JobHandler handler) {
     handler.apply(this, processInstanceKey);
   }
 
-  void apply(long processInstanceKey, UserTaskHandler handler) {
+  public void apply(long processInstanceKey, UserTaskHandler handler) {
     handler.apply(this, processInstanceKey);
   }
 
-  JobMemo getJob(long processInstanceKey, String bpmnElementId) {
-    return select(memo -> {
-      var processInstance = memo.processInstances.get(processInstanceKey);
-      if (processInstance == null) {
-        throw new IllegalStateException("process instance %d could not be found".formatted(processInstanceKey));
-      }
-
-      var jobMemo = processInstance.jobs.get(bpmnElementId);
-      if (jobMemo == null) {
-        throw new IllegalStateException("job %s could not be found".formatted(bpmnElementId));
-      }
-
-      return jobMemo;
-    });
-  }
-
-  void hasPassed(long processInstanceKey, String bpmnElementId) {
+  public void hasPassed(long processInstanceKey, String bpmnElementId) {
     boolean hasPassed = selectAndTest(memo -> {
-      var processInstance = memo.processInstances.get(processInstanceKey);
+      ProcessInstanceMemo processInstance = memo.processInstances.get(processInstanceKey);
       if (processInstance == null) {
         return false;
       }
 
-      var element = processInstance.elements.get(bpmnElementId);
+      ElementMemo element = processInstance.elements.get(bpmnElementId);
       return element != null && element.state == ProcessInstanceIntent.ELEMENT_COMPLETED;
     });
 
     if (!hasPassed) {
-      throw new AssertionError("expected process instance %d to has passed BPMN element %s, but was not".formatted(processInstanceKey, bpmnElementId));
+      String message = "expected process instance %d to has passed BPMN element %s, but was not";
+      throw new AssertionError(String.format(message, processInstanceKey, bpmnElementId));
     }
   }
 
-  void isCompleted(long processInstanceKey) {
+  public void isCompleted(long processInstanceKey) {
     boolean isCompleted = selectAndTest(memo -> {
-      var processInstance = memo.processInstances.get(processInstanceKey);
+      ProcessInstanceMemo processInstance = memo.processInstances.get(processInstanceKey);
       if (processInstance == null) {
         return false;
       }
@@ -108,18 +95,19 @@ public class TestCaseInstance implements AutoCloseable {
     });
 
     if (!isCompleted) {
-      throw new AssertionError("expected process instance %d to be completed, but was not".formatted(processInstanceKey));
+      String message = "expected process instance %d to be completed, but was not";
+      throw new AssertionError(String.format(message, processInstanceKey));
     }
   }
 
-  void isWaitingAt(long processInstanceKey, String bpmnElementId) {
+  public void isWaitingAt(long processInstanceKey, String bpmnElementId) {
     boolean isWaitingAt = selectAndTest(memo -> {
-      var processInstance = memo.processInstances.get(processInstanceKey);
+      ProcessInstanceMemo processInstance = memo.processInstances.get(processInstanceKey);
       if (processInstance == null) {
         return false;
       }
 
-      var job = processInstance.jobs.get(bpmnElementId);
+      JobMemo job = processInstance.jobs.get(bpmnElementId);
       if (job == null) {
         return false;
       }
@@ -128,14 +116,33 @@ public class TestCaseInstance implements AutoCloseable {
     });
 
     if (!isWaitingAt) {
-      throw new AssertionError("expected process instance %d to be waiting at %s, but was not".formatted(processInstanceKey, bpmnElementId));
+      String message = "expected process instance %d to be waiting at %s, but was not";
+      throw new AssertionError(String.format(message, processInstanceKey, bpmnElementId));
     }
   }
 
-  private void consumeRecordStream() {
-    var recordStream = RecordStream.of(engine.getRecordStreamSource());
+  JobMemo getJob(long processInstanceKey, String bpmnElementId) {
+    return select(memo -> {
+      ProcessInstanceMemo processInstance = memo.processInstances.get(processInstanceKey);
+      if (processInstance == null) {
+        String message = "process instance %d could not be found";
+        throw new IllegalStateException(String.format(message, processInstanceKey));
+      }
 
-    var memo = new TestCaseInstanceMemo();
+      JobMemo jobMemo = processInstance.jobs.get(bpmnElementId);
+      if (jobMemo == null) {
+        String message = "job %s could not be found";
+        throw new IllegalStateException(String.format(message, bpmnElementId));
+      }
+
+      return jobMemo;
+    });
+  }
+
+  private void consumeRecordStream() {
+    RecordStream recordStream = RecordStream.of(engine.getRecordStreamSource());
+
+    TestCaseInstanceMemo memo = new TestCaseInstanceMemo();
 
     int recordCount = 0;
     while (true) {
@@ -154,7 +161,7 @@ public class TestCaseInstance implements AutoCloseable {
       }
 
       if (selectTask != null) {
-        var task = selectTask;
+        SelectTask<?> task = selectTask;
 
         selectTask = null;
 
@@ -165,7 +172,7 @@ public class TestCaseInstance implements AutoCloseable {
       }
 
       if (selectAndTestTask != null) {
-        var task = selectAndTestTask;
+        SelectAndTestTask task = selectAndTestTask;
 
         if (task.selectAndTest(memo)) {
           selectAndTestTask = null;
@@ -185,7 +192,7 @@ public class TestCaseInstance implements AutoCloseable {
   }
 
   private <T> T select(Function<TestCaseInstanceMemo, T> selector) {
-    var task = new SelectTask<>(selector);
+    SelectTask<T> task = new SelectTask<>(selector);
 
     selectTask = task;
     try {

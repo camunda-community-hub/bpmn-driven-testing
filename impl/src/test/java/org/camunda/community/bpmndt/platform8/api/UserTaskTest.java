@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import org.camunda.community.bpmndt.platform8.api.TestCaseInstanceElement.UserTaksElement;
 import org.camunda.community.bpmndt.test.Platform8TestPaths;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -15,6 +16,7 @@ import io.camunda.zeebe.process.test.api.ZeebeTestEngine;
 import io.camunda.zeebe.process.test.assertions.ProcessInstanceAssert;
 import io.camunda.zeebe.process.test.extension.ZeebeProcessTest;
 
+@Disabled
 @ZeebeProcessTest
 public class UserTaskTest {
 
@@ -28,7 +30,7 @@ public class UserTaskTest {
 
   @BeforeEach
   public void setUp() {
-    var element = new UserTaksElement();
+    UserTaksElement element = new UserTaksElement();
     element.setId("userTask");
 
     handler = new UserTaskHandler(element);

@@ -78,10 +78,11 @@ public class BpmnSupport {
     }
 
     FlowNode flowNode = flowNodes.get(flowNodeId);
-    if (!(flowNode instanceof Activity activity)) {
+    if (!(flowNode instanceof Activity)) {
       return null;
     }
 
+    Activity activity = (Activity) flowNode;
     if (activity.getLoopCharacteristics() == null) {
       return null;
     }

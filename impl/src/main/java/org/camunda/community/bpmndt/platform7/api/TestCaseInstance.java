@@ -112,7 +112,7 @@ public class TestCaseInstance {
         .filter(pd -> pd.getKey().equals(processDefinitionKey))
         .map(ProcessDefinition::getId)
         .findFirst()
-        .orElseThrow();
+        .get();
   }
 
   /**
@@ -143,7 +143,7 @@ public class TestCaseInstance {
         .filter((parseListener) -> (parseListener instanceof BpmndtParseListener))
         .map(BpmndtParseListener.class::cast)
         .findFirst()
-        .orElseThrow();
+        .get();
   }
 
   public String getDeploymentId() {

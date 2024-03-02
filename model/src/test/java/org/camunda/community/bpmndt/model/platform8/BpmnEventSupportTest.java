@@ -10,6 +10,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import io.camunda.zeebe.model.bpmn.Bpmn;
+import io.camunda.zeebe.model.bpmn.BpmnModelInstance;
 import io.camunda.zeebe.model.bpmn.instance.Process;
 import io.camunda.zeebe.model.bpmn.instance.ThrowEvent;
 
@@ -24,22 +25,22 @@ public class BpmnEventSupportTest {
 
   @Test
   public void testIsNoneEndEvent() {
-    var bpmnSupport = of(advancedMultiInstance.resolve("scopeSequential.bpmn"));
-    var bpmnEventSupport = new BpmnEventSupport((ThrowEvent) bpmnSupport.get("subProcessEndEvent"));
+    BpmnSupport bpmnSupport = of(advancedMultiInstance.resolve("scopeSequential.bpmn"));
+    BpmnEventSupport bpmnEventSupport = new BpmnEventSupport((ThrowEvent) bpmnSupport.get("subProcessEndEvent"));
     assertThat(bpmnEventSupport.isNoneEnd()).isTrue();
   }
 
   @Test
   public void testIsNotNoneEndEvent() {
-    var bpmnSupport = of(advancedMultiInstance.resolve("scopeErrorEndEvent.bpmn"));
-    var bpmnEventSupport = new BpmnEventSupport((ThrowEvent) bpmnSupport.get("subProcessErrorEndEvent"));
+    BpmnSupport bpmnSupport = of(advancedMultiInstance.resolve("scopeErrorEndEvent.bpmn"));
+    BpmnEventSupport bpmnEventSupport = new BpmnEventSupport((ThrowEvent) bpmnSupport.get("subProcessErrorEndEvent"));
     assertThat(bpmnEventSupport.isNoneEnd()).isFalse();
   }
 
   private BpmnSupport of(Path bpmnFile) {
     try {
-      var modelInstance = Bpmn.readModelFromStream(Files.newInputStream(bpmnFile));
-      var process = (Process) modelInstance.getDefinitions().getUniqueChildElementByType(Process.class);
+      BpmnModelInstance modelInstance = Bpmn.readModelFromStream(Files.newInputStream(bpmnFile));
+      Process process = (Process) modelInstance.getDefinitions().getUniqueChildElementByType(Process.class);
       return new BpmnSupport(process);
     } catch (Exception e) {
       throw new RuntimeException(e);

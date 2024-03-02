@@ -22,7 +22,7 @@ public class CallActivityTimerTest {
 
   @Test
   public void testExecute() {
-    var handler = new CallActivityHandler(tc.instance, "callActivity");
+    CallActivityHandler handler = new CallActivityHandler(tc.instance, "callActivity");
     handler.waitForBoundaryEvent();
 
     tc.createExecutor().execute();

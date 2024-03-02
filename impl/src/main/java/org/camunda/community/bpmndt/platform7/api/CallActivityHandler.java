@@ -140,7 +140,7 @@ public class CallActivityHandler {
         .filter(method -> method.getName().equals(methodName))
         .findFirst();
 
-    if (foundMethod.isEmpty()) {
+    if (!foundMethod.isPresent()) {
       throw new RuntimeException(String.format("Class '%s' misses required method '%s'", CallableElement.class.getName(), methodName));
     }
 

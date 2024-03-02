@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -19,10 +20,15 @@ import org.camunda.community.bpmndt.model.platform8.element.TestCasesElement;
 import io.camunda.zeebe.model.bpmn.Bpmn;
 import io.camunda.zeebe.model.bpmn.BpmnModelInstance;
 import io.camunda.zeebe.model.bpmn.instance.BoundaryEvent;
+import io.camunda.zeebe.model.bpmn.instance.Definitions;
+import io.camunda.zeebe.model.bpmn.instance.Error;
+import io.camunda.zeebe.model.bpmn.instance.Escalation;
 import io.camunda.zeebe.model.bpmn.instance.IntermediateCatchEvent;
 import io.camunda.zeebe.model.bpmn.instance.IntermediateThrowEvent;
+import io.camunda.zeebe.model.bpmn.instance.Message;
 import io.camunda.zeebe.model.bpmn.instance.Process;
 import io.camunda.zeebe.model.bpmn.instance.ReceiveTask;
+import io.camunda.zeebe.model.bpmn.instance.Signal;
 
 class TestCasesImpl implements TestCases {
 
@@ -98,23 +104,23 @@ class TestCasesImpl implements TestCases {
       return false;
     }
 
-    var definitions = modelInstance.getDefinitions();
+    Definitions definitions = modelInstance.getDefinitions();
     if (definitions.getDomElement() == null) {
       return false;
     }
 
-    var modelerExecutionPlatform = definitions.getDomElement().getAttribute(Constants.MODELER_NS, Constants.MODELER_EXECUTION_PLATFORM_ATTRIBUTE);
+    String modelerExecutionPlatform = definitions.getDomElement().getAttribute(Constants.MODELER_NS, Constants.MODELER_EXECUTION_PLATFORM_ATTRIBUTE);
     return Constants.MODELER_EXECUTION_PLATFORM.equals(modelerExecutionPlatform);
   }
 
   List<TestCaseElement> getTestCaseElements(Process process) {
     if (process.getExtensionElements() == null) {
-      return List.of();
+      return Collections.emptyList();
     }
 
-    var testCasesElement = (TestCasesElement) process.getExtensionElements().getUniqueChildElementByType(TestCasesElement.class);
+    TestCasesElement testCasesElement = (TestCasesElement) process.getExtensionElements().getUniqueChildElementByType(TestCasesElement.class);
     if (testCasesElement == null) {
-      return List.of();
+      return Collections.emptyList();
     }
 
     return testCasesElement.getTestCases();
@@ -123,7 +129,7 @@ class TestCasesImpl implements TestCases {
   private void addElement(TestCaseImpl testCase, BpmnElementImpl next) {
     testCase.addElement(next);
 
-    var scope = addScope(testCase, next.getId());
+    BpmnElementScopeImpl scope = addScope(testCase, next.getId());
     if (scope != null) {
       scope.addElement(next);
     }
@@ -137,12 +143,12 @@ class TestCasesImpl implements TestCases {
    * @return The parent scope or {@code null}, if the parent is the process.
    */
   private BpmnElementScopeImpl addScope(TestCaseImpl testCase, String elementId) {
-    var parentElementId = bpmnSupport.getParentElementId(elementId);
+    String parentElementId = bpmnSupport.getParentElementId(elementId);
     if (testCase.getProcessId().equals(parentElementId)) {
       return null;
     }
 
-    var scope = testCase.getScope(parentElementId);
+    BpmnElementScopeImpl scope = testCase.getScope(parentElementId);
     if (scope == null) {
       scope = new BpmnElementScopeImpl();
       scope.flowNode = bpmnSupport.get(parentElementId);
@@ -157,28 +163,28 @@ class TestCasesImpl implements TestCases {
   }
 
   private void handleBoundaryEvent(BpmnElementImpl element) {
-    var event = element.getFlowNode(BoundaryEvent.class);
-    var eventSupport = new BpmnEventSupport(event);
+    BoundaryEvent event = element.getFlowNode(BoundaryEvent.class);
+    BpmnEventSupport eventSupport = new BpmnEventSupport(event);
 
     element.attachedTo = event.getAttachedTo().getId();
 
     if (eventSupport.isError()) {
-      var error = eventSupport.getError();
+      Error error = eventSupport.getError();
 
       element.type = BpmnElementType.ERROR_BOUNDARY;
       element.eventCode = error != null ? error.getErrorCode() : null;
     } else if (eventSupport.isEscalation()) {
-      var escalation = eventSupport.getEscalation();
+      Escalation escalation = eventSupport.getEscalation();
 
       element.type = BpmnElementType.ESCALATION_BOUNDARY;
       element.eventCode = escalation != null ? escalation.getEscalationCode() : null;
     } else if (eventSupport.isMessage()) {
-      var message = eventSupport.getMessage();
+      Message message = eventSupport.getMessage();
 
       element.type = BpmnElementType.MESSAGE_BOUNDARY;
       element.eventName = message != null ? message.getName() : null;
     } else if (eventSupport.isSignal()) {
-      var signal = eventSupport.getSignal();
+      Signal signal = eventSupport.getSignal();
 
       element.type = BpmnElementType.SIGNAL_BOUNDARY;
       element.eventName = signal != null ? signal.getName() : null;
@@ -190,16 +196,16 @@ class TestCasesImpl implements TestCases {
   }
 
   private void handleIntermediateCatchEvent(BpmnElementImpl element) {
-    var event = element.getFlowNode(IntermediateCatchEvent.class);
-    var eventSupport = new BpmnEventSupport(event);
+    IntermediateCatchEvent event = element.getFlowNode(IntermediateCatchEvent.class);
+    BpmnEventSupport eventSupport = new BpmnEventSupport(event);
 
     if (eventSupport.isMessage()) {
-      var message = eventSupport.getMessage();
+      Message message = eventSupport.getMessage();
 
       element.type = BpmnElementType.MESSAGE_CATCH;
       element.eventName = message != null ? message.getName() : null;
     } else if (eventSupport.isSignal()) {
-      var signal = eventSupport.getSignal();
+      Signal signal = eventSupport.getSignal();
 
       element.type = BpmnElementType.SIGNAL_CATCH;
       element.eventName = signal != null ? signal.getName() : null;
@@ -211,8 +217,8 @@ class TestCasesImpl implements TestCases {
   }
 
   private void handleIntermediateThrowEvent(BpmnElementImpl element) {
-    var event = element.getFlowNode(IntermediateThrowEvent.class);
-    var eventSupport = new BpmnEventSupport(event);
+    IntermediateThrowEvent event = element.getFlowNode(IntermediateThrowEvent.class);
+    BpmnEventSupport eventSupport = new BpmnEventSupport(event);
 
     if (eventSupport.isLink()) {
       element.type = BpmnElementType.LINK_THROW;
@@ -246,7 +252,7 @@ class TestCasesImpl implements TestCases {
    * @return The mapped test case.
    */
   private TestCase mapTestCase(TestCaseElement testCaseElement) {
-    var testCase = new TestCaseImpl();
+    TestCaseImpl testCase = new TestCaseImpl();
     testCase.element = testCaseElement;
     testCase.process = bpmnSupport.getProcess();
 
@@ -254,16 +260,16 @@ class TestCasesImpl implements TestCases {
       return testCase;
     }
 
-    var flowNodeIds = testCaseElement.getPath().getFlowNodeIds();
+    List<String> flowNodeIds = testCaseElement.getPath().getFlowNodeIds();
     for (int i = 0; i < flowNodeIds.size(); i++) {
-      var flowNodeId = flowNodeIds.get(i);
+      String flowNodeId = flowNodeIds.get(i);
 
       if (!bpmnSupport.has(flowNodeId)) {
         testCase.addInvalidElementId(flowNodeId);
         continue;
       }
 
-      var element = new BpmnElementImpl();
+      BpmnElementImpl element = new BpmnElementImpl();
       element.flowNode = bpmnSupport.get(flowNodeId);
       element.multiInstanceLoopCharacteristics = bpmnSupport.getMultiInstanceLoopCharacteristics(flowNodeId);
 
@@ -279,7 +285,7 @@ class TestCasesImpl implements TestCases {
         handleBoundaryEvent(element);
       } else if (bpmnSupport.isReceiveTask(flowNodeId)) {
         // handle receive task as message catch event
-        var message = element.getFlowNode(ReceiveTask.class).getMessage();
+        Message message = element.getFlowNode(ReceiveTask.class).getMessage();
 
         element.type = BpmnElementType.MESSAGE_CATCH;
         element.eventName = message != null ? message.getName() : null;

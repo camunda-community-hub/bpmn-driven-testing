@@ -27,10 +27,11 @@ class BpmnElementImpl implements BpmnElement {
     if (obj == this) {
       return true;
     }
-    if (!(obj instanceof BpmnElement element)) {
+    if (!(obj instanceof BpmnElement)) {
       return false;
     }
 
+    BpmnElement element = (BpmnElement) obj;
     return element.getId().equals(getId());
   }
 

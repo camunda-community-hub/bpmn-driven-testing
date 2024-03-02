@@ -14,7 +14,7 @@ public class TestCasesImplTest {
 
   @Test
   public void testGetTestCaseElements() {
-    var testCases = TestCasesImpl.of(Platform7TestPaths.simple("simple.bpmn"));
+    TestCasesImpl testCases = TestCasesImpl.of(Platform7TestPaths.simple("simple.bpmn"));
 
     Process process = (Process) testCases.modelInstance.getDefinitions().getUniqueChildElementByType(Process.class);
 
@@ -28,7 +28,7 @@ public class TestCasesImplTest {
 
   @Test
   public void testGetTestCaseElementsIncludingNameAndDescription() {
-    var testCases = TestCasesImpl.of(Platform7TestPaths.simple("special/happyPath.bpmn"));
+    TestCasesImpl testCases = TestCasesImpl.of(Platform7TestPaths.simple("special/happyPath.bpmn"));
 
     Process process = (Process) testCases.modelInstance.getDefinitions().getUniqueChildElementByType(Process.class);
 
@@ -47,7 +47,7 @@ public class TestCasesImplTest {
 
   @Test
   public void testGetTestCaseElementsWhenNotDefined() {
-    var testCases = TestCasesImpl.of(Platform7TestPaths.simple("special/noTestCases.bpmn"));
+    TestCasesImpl testCases = TestCasesImpl.of(Platform7TestPaths.simple("special/noTestCases.bpmn"));
 
     Process process = (Process) testCases.modelInstance.getDefinitions().getUniqueChildElementByType(Process.class);
 

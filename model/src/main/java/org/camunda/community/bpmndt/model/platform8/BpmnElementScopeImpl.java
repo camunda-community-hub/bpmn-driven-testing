@@ -22,10 +22,11 @@ class BpmnElementScopeImpl implements BpmnElementScope {
     if (obj == this) {
       return true;
     }
-    if (!(obj instanceof BpmnElementScope scope)) {
+    if (!(obj instanceof BpmnElementScope)) {
       return false;
     }
 
+    BpmnElementScope scope = (BpmnElementScope) obj;
     return scope.getId().equals(getId());
   }
 

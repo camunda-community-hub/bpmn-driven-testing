@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 
 import org.camunda.community.bpmndt.platform8.api.TestCaseInstanceElement.UserTaksElement;
+import org.camunda.community.bpmndt.platform8.api.TestCaseInstanceMemo.JobMemo;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
@@ -32,9 +33,10 @@ public class UserTaskHandler {
   }
 
   void apply(TestCaseInstance instance, long processInstanceKey) {
-    var job = instance.getJob(processInstanceKey, element.getId());
+    JobMemo job = instance.getJob(processInstanceKey, element.getId());
     if (!Protocol.USER_TASK_JOB_TYPE.equals(job.type)) {
-      throw new AssertionError("expected job %s to be of type %s, but was %s".formatted(element.getId(), Protocol.USER_TASK_JOB_TYPE, job.type));
+      String message = "expected job %s to be of type %s, but was %s";
+      throw new AssertionError(String.format(message, element.getId(), Protocol.USER_TASK_JOB_TYPE, job.type));
     }
 
     System.out.println(job.getCustomHeader(Protocol.USER_TASK_ASSIGNEE_HEADER_NAME));
@@ -45,7 +47,7 @@ public class UserTaskHandler {
     System.out.println(job.getCustomHeader(Protocol.USER_TASK_FOLLOW_UP_DATE_HEADER_NAME));
 
     try {
-      var candidateGroups = new ObjectMapper().readValue(job.getCustomHeader(Protocol.USER_TASK_CANDIDATE_GROUPS_HEADER_NAME),
+      List<String> candidateGroups = new ObjectMapper().readValue(job.getCustomHeader(Protocol.USER_TASK_CANDIDATE_GROUPS_HEADER_NAME),
           TypeFactory.defaultInstance().constructCollectionType(List.class, String.class));
 
       System.out.println(candidateGroups);

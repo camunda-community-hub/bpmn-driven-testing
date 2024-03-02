@@ -20,7 +20,7 @@ public class CallActivityErrorTest {
 
   @Test
   public void testExecute() {
-    var handler = new CallActivityHandler(tc.instance, "callActivity");
+    CallActivityHandler handler = new CallActivityHandler(tc.instance, "callActivity");
     handler.simulateBpmnError("callActivityError", "callActivityErrorMessage");
 
     tc.createExecutor().execute();

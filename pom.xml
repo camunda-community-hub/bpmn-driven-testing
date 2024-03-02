@@ -21,11 +21,12 @@
   </modules>
 
   <properties>
-    <version.java>17</version.java>
+    <version.java>21</version.java>
+    <maven.compiler.release>8</maven.compiler.release>
 
     <!-- Versions -->
     <camunda.bpm.version>7.19.0</camunda.bpm.version>
-    <camunda.zeebe.version>8.3.5</camunda.zeebe.version>
+    <camunda.zeebe.version>8.4.4</camunda.zeebe.version>
     <google.truth.version>1.1.5</google.truth.version>
     <javapoet.version>1.13.0</javapoet.version>
     <junit.jupiter.version>5.10.1</junit.jupiter.version>

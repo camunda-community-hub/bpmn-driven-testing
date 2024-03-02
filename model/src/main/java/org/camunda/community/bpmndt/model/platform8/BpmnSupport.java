@@ -18,6 +18,8 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.camunda.bpm.model.xml.instance.ModelElementInstance;
+
 import io.camunda.zeebe.model.bpmn.instance.Activity;
 import io.camunda.zeebe.model.bpmn.instance.BaseElement;
 import io.camunda.zeebe.model.bpmn.instance.FlowElement;
@@ -37,7 +39,7 @@ public class BpmnSupport {
   public BpmnSupport(Process process) {
     this.process = process;
 
-    var flowNodes = new LinkedList<FlowNode>();
+    List<FlowNode> flowNodes = new LinkedList<>();
 
     // collect flow nodes of process and (embedded) sub processes
     collect(flowNodes, process.getFlowElements());
@@ -61,11 +63,12 @@ public class BpmnSupport {
       return null;
     }
 
-    var flowNode = flowNodes.get(flowNodeId);
-    if (!(flowNode instanceof Activity activity)) {
+    FlowNode flowNode = flowNodes.get(flowNodeId);
+    if (!(flowNode instanceof Activity)) {
       return null;
     }
 
+    Activity activity = (Activity) flowNode;
     if (activity.getLoopCharacteristics() == null) {
       return null;
     }
@@ -85,7 +88,7 @@ public class BpmnSupport {
    * type {@link BaseElement}.
    */
   public String getParentElementId(String flowNodeId) {
-    var flowNode = flowNodes.get(flowNodeId);
+    FlowNode flowNode = flowNodes.get(flowNodeId);
     if (flowNode == null) {
       return null;
     }
@@ -141,7 +144,7 @@ public class BpmnSupport {
       return false;
     }
 
-    var parent = flowNodes.get(flowNodeId).getParentElement();
+    ModelElementInstance parent = flowNodes.get(flowNodeId).getParentElement();
     if (parent == null) {
       return false;
     }
@@ -154,7 +157,7 @@ public class BpmnSupport {
       return false;
     }
 
-    var parent = flowNodes.get(flowNodeId).getParentElement();
+    ModelElementInstance parent = flowNodes.get(flowNodeId).getParentElement();
     if (parent == null) {
       return false;
     }
@@ -182,7 +185,7 @@ public class BpmnSupport {
   }
 
   private boolean is(String flowNodeId, String typeName) {
-    var flowNode = flowNodes.get(flowNodeId);
+    FlowNode flowNode = flowNodes.get(flowNodeId);
     return flowNode != null && flowNode.getElementType().getTypeName().equals(typeName);
   }
 

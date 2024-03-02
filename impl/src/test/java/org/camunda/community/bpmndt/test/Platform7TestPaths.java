@@ -25,7 +25,7 @@ public class Platform7TestPaths {
   }
 
   public static Path of(String projectName) {
-    return Paths.get("../integration-tests").resolve(projectName).resolve("src/main/resources");
+    return Paths.get("../integration-tests/platform7").resolve(projectName).resolve("src/main/resources");
   }
 
   public static Path of(String projectName, String fileName) {

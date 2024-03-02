@@ -8,8 +8,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.camunda.zeebe.client.ZeebeClient;
 import io.camunda.zeebe.client.api.JsonMapper;
+import io.camunda.zeebe.client.api.command.CreateProcessInstanceCommandStep1.CreateProcessInstanceCommandStep3;
 import io.camunda.zeebe.client.api.command.DeployResourceCommandStep1;
 import io.camunda.zeebe.client.api.command.DeployResourceCommandStep1.DeployResourceCommandStep2;
+import io.camunda.zeebe.client.api.response.DeploymentEvent;
 import io.camunda.zeebe.client.api.response.ProcessInstanceEvent;
 import io.camunda.zeebe.client.impl.ZeebeObjectMapper;
 import io.camunda.zeebe.process.test.api.ZeebeTestEngine;
@@ -75,7 +77,7 @@ public class TestCaseExecutor {
       if (testCase.getBpmnResourceName() != null) {
         deployResourceCommandStep2 = deployResourceCommandStep1.addResourceFromClasspath(testCase.getBpmnResourceName());
       } else {
-        var resourceName = "%s.%s.bpmn".formatted(testCase.testClass.getSimpleName(), testCase.testMethodName);
+        String resourceName = String.format("%s.%s.bpmn", testCase.testClass.getSimpleName(), testCase.testMethodName);
         deployResourceCommandStep2 = deployResourceCommandStep1.addResourceStream(testCase.getBpmnResource(), resourceName);
       }
 
@@ -83,11 +85,11 @@ public class TestCaseExecutor {
         deployResourceCommandStep2 = deployResourceCommandStep2.tenantId(tenantId);
       }
 
-      var deployEvent = deployResourceCommandStep2.send().join();
+      DeploymentEvent deployEvent = deployResourceCommandStep2.send().join();
 
       BpmnAssert.assertThat(deployEvent).containsProcessesByBpmnProcessId(testCase.getBpmnProcessId());
 
-      var createProcessInstanceCommandStep3 = client.newCreateInstanceCommand()
+      CreateProcessInstanceCommandStep3 createProcessInstanceCommandStep3 = client.newCreateInstanceCommand()
           .bpmnProcessId(testCase.getBpmnProcessId())
           .latestVersion();
 
@@ -113,7 +115,7 @@ public class TestCaseExecutor {
         createProcessInstanceCommandStep3 = createProcessInstanceCommandStep3.tenantId(tenantId);
       }
 
-      var processInstanceEvent = createProcessInstanceCommandStep3.send().join();
+      ProcessInstanceEvent processInstanceEvent = createProcessInstanceCommandStep3.send().join();
 
       executeTestCase(processInstanceEvent, client);
 
@@ -249,7 +251,7 @@ public class TestCaseExecutor {
   }
 
   void executeTestCase(ProcessInstanceEvent processInstanceEvent, ZeebeClient client) {
-    try (var testCaseInstance = new TestCaseInstance(engine, client)) {
+    try (TestCaseInstance testCaseInstance = new TestCaseInstance(engine, client)) {
       testCase.execute(testCaseInstance, processInstanceEvent.getProcessInstanceKey());
     }
 

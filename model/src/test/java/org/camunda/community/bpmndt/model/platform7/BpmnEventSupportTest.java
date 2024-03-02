@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.camunda.bpm.model.bpmn.Bpmn;
+import org.camunda.bpm.model.bpmn.BpmnModelInstance;
 import org.camunda.bpm.model.bpmn.instance.Process;
 import org.camunda.bpm.model.bpmn.instance.ThrowEvent;
 import org.camunda.community.bpmndt.test.Platform7TestPaths;
@@ -23,22 +24,22 @@ public class BpmnEventSupportTest {
 
   @Test
   public void testIsNoneEndEvent() {
-    var bpmnSupport = of(advancedMultiInstance.resolve("scopeSequential.bpmn"));
-    var bpmnEventSupport = new BpmnEventSupport((ThrowEvent) bpmnSupport.get("subProcessEndEvent"));
+    BpmnSupport bpmnSupport = of(advancedMultiInstance.resolve("scopeSequential.bpmn"));
+    BpmnEventSupport bpmnEventSupport = new BpmnEventSupport((ThrowEvent) bpmnSupport.get("subProcessEndEvent"));
     assertThat(bpmnEventSupport.isNoneEnd()).isTrue();
   }
 
   @Test
   public void testIsNotNoneEndEvent() {
-    var bpmnSupport = of(advancedMultiInstance.resolve("scopeErrorEndEvent.bpmn"));
-    var bpmnEventSupport = new BpmnEventSupport((ThrowEvent) bpmnSupport.get("subProcessErrorEndEvent"));
+    BpmnSupport bpmnSupport = of(advancedMultiInstance.resolve("scopeErrorEndEvent.bpmn"));
+    BpmnEventSupport bpmnEventSupport = new BpmnEventSupport((ThrowEvent) bpmnSupport.get("subProcessErrorEndEvent"));
     assertThat(bpmnEventSupport.isNoneEnd()).isFalse();
   }
 
   private BpmnSupport of(Path bpmnFile) {
     try {
-      var modelInstance = Bpmn.readModelFromStream(Files.newInputStream(bpmnFile));
-      var process = (Process) modelInstance.getDefinitions().getUniqueChildElementByType(Process.class);
+      BpmnModelInstance modelInstance = Bpmn.readModelFromStream(Files.newInputStream(bpmnFile));
+      Process process = (Process) modelInstance.getDefinitions().getUniqueChildElementByType(Process.class);
       return new BpmnSupport(process);
     } catch (Exception e) {
       throw new RuntimeException(e);

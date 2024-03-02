@@ -26,10 +26,11 @@ class TestCaseImpl implements TestCase {
     if (obj == this) {
       return true;
     }
-    if (!(obj instanceof TestCase testCase)) {
+    if (!(obj instanceof TestCase)) {
       return false;
     }
 
+    TestCase testCase = (TestCase) obj;
     return testCase.getProcessId().equals(getProcessId()) && testCase.getName().equals(getName());
   }
 

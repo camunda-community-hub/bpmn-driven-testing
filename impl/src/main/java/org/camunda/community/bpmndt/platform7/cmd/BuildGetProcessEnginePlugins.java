@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.lang.model.element.Modifier;
 
@@ -29,7 +30,7 @@ public class BuildGetProcessEnginePlugins implements Function<GeneratorContext, 
     List<ClassName> classNames = ctx.getProcessEnginePluginNames().stream()
         .map(this::buildClassName)
         .filter(Objects::nonNull)
-        .toList();
+        .collect(Collectors.toList());
 
     builder.addStatement("$T processEnginePlugins = new $T<>()", returnType, LinkedList.class);
 

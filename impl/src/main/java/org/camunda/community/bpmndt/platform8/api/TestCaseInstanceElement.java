@@ -40,5 +40,59 @@ public abstract class TestCaseInstanceElement {
 
   public static class UserTaksElement extends TestCaseInstanceElement {
 
+    private String assignee;
+    private String candidateGroups;
+    private String candidateUsers;
+    private String dueDate;
+    private String followUpDate;
+    private String formKey;
+
+    public String getAssignee() {
+      return assignee;
+    }
+
+    public String getCandidateGroups() {
+      return candidateGroups;
+    }
+
+    public String getCandidateUsers() {
+      return candidateUsers;
+    }
+
+    public String getDueDate() {
+      return dueDate;
+    }
+
+    public String getFollowUpDate() {
+      return followUpDate;
+    }
+
+    public String getFormKey() {
+      return formKey;
+    }
+
+    public void setAssignee(String assignee) {
+      this.assignee = assignee;
+    }
+
+    public void setCandidateGroups(String candidateGroups) {
+      this.candidateGroups = candidateGroups;
+    }
+
+    public void setCandidateUsers(String candidateUsers) {
+      this.candidateUsers = candidateUsers;
+    }
+
+    public void setDueDate(String dueDate) {
+      this.dueDate = dueDate;
+    }
+
+    public void setFollowUpDate(String followUpDate) {
+      this.followUpDate = followUpDate;
+    }
+
+    public void setFormKey(String formKey) {
+      this.formKey = formKey;
+    }
   }
 }

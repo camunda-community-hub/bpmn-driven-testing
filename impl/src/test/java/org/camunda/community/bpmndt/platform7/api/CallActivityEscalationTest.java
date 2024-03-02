@@ -20,7 +20,7 @@ public class CallActivityEscalationTest {
 
   @Test
   public void testExecute() {
-    var handler = new CallActivityHandler(tc.instance, "callActivity");
+    CallActivityHandler handler = new CallActivityHandler(tc.instance, "callActivity");
     handler.simulateEscalation("callActivityEscalation");
 
     tc.createExecutor().execute();

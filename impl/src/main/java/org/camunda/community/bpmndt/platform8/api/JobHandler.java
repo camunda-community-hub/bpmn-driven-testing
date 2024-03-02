@@ -5,9 +5,11 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import org.camunda.community.bpmndt.platform8.api.TestCaseInstanceElement.JobElement;
+import org.camunda.community.bpmndt.platform8.api.TestCaseInstanceMemo.JobMemo;
 
 import io.camunda.zeebe.client.api.response.ActivatedJob;
 import io.camunda.zeebe.client.api.worker.JobClient;
+import io.camunda.zeebe.client.api.worker.JobWorker;
 
 /**
  * Fluent API to handle jobs that are handled via {@code JobHandler} by worker.
@@ -30,16 +32,18 @@ public class JobHandler {
 
   void apply(TestCaseInstance instance, long processInstanceKey) {
     if (expectedType != null && !expectedType.equals(element.getType())) {
-      throw new AssertionError("expected job %s to be of type %s, but was %s".formatted(element.getId(), expectedType, element.getType()));
+      String message = "expected job %s to be of type %s, but was %s";
+      throw new AssertionError(String.format(message, element.getId(), expectedType, element.getType()));
     }
 
-    var job = instance.getJob(processInstanceKey, element.getId());
+    JobMemo job = instance.getJob(processInstanceKey, element.getId());
     if (expectedEvaluatedType != null && !expectedEvaluatedType.equals(job.type)) {
-      throw new AssertionError("expected job %s to be of evaluated type %s, but was %s".formatted(element.getId(), expectedEvaluatedType, job.type));
+      String message = "expected job %s to be of evaluated type %s, but was %s";
+      throw new AssertionError(String.format(message, element.getId(), expectedEvaluatedType, job.type));
     }
 
     if (action != null) {
-      try (var ignored = instance.client.newWorker().jobType(job.type).handler(action).open()) {
+      try (JobWorker worker = instance.client.newWorker().jobType(job.type).handler(action).open()) {
         instance.hasPassed(processInstanceKey, element.getId());
       }
     }

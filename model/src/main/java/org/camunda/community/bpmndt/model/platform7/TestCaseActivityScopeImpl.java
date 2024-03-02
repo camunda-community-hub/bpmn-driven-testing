@@ -27,10 +27,11 @@ class TestCaseActivityScopeImpl implements TestCaseActivityScope {
     if (obj == this) {
       return true;
     }
-    if (!(obj instanceof TestCaseActivityScope scope)) {
+    if (!(obj instanceof TestCaseActivityScope)) {
       return false;
     }
 
+    TestCaseActivityScope scope = (TestCaseActivityScope) obj;
     return scope.getId().equals(getId());
   }
 

@@ -1,5 +1,6 @@
 package org.camunda.community.bpmndt.model.platform8;
 
+import org.camunda.bpm.model.xml.ModelBuilder;
 import org.camunda.community.bpmndt.model.platform8.element.DescriptionElement;
 import org.camunda.community.bpmndt.model.platform8.element.NameElement;
 import org.camunda.community.bpmndt.model.platform8.element.PathElement;
@@ -15,7 +16,7 @@ import io.camunda.zeebe.model.bpmn.Bpmn;
 public class BpmnExtension extends Bpmn {
 
   public static void registerTypes() {
-    var modelBuilder = Bpmn.INSTANCE.getBpmnModelBuilder();
+    ModelBuilder modelBuilder = Bpmn.INSTANCE.getBpmnModelBuilder();
 
     TestCasesElement.registerType(modelBuilder);
     TestCaseElement.registerType(modelBuilder);

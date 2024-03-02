@@ -16,28 +16,28 @@ public class TestCasesTest {
 
   @Test
   public void shouldFailWhenFileIsDirectory() {
-    var e = assertThrows(RuntimeException.class, () -> TestCasesImpl.of(Paths.get(".")));
+    RuntimeException e = assertThrows(RuntimeException.class, () -> TestCasesImpl.of(Paths.get(".")));
     assertThat(e.getCause()).isNotNull();
     assertThat(e.getCause()).isInstanceOf(IOException.class);
   }
 
   @Test
   public void shouldFailWhenFileNotExists() {
-    var e = assertThrows(RuntimeException.class, () -> TestCasesImpl.of(Paths.get("./not-existing")));
+    RuntimeException e = assertThrows(RuntimeException.class, () -> TestCasesImpl.of(Paths.get("./not-existing")));
     assertThat(e.getCause()).isNotNull();
     assertThat(e.getCause()).isInstanceOf(IOException.class);
   }
 
   @Test
   public void testCollaboration() {
-    var testCases = TestCases.of(Platform8TestPaths.advanced("collaboration.bpmn"));
+    TestCases testCases = TestCases.of(Platform8TestPaths.advanced("collaboration.bpmn"));
     assertThat(testCases.get()).hasSize(4);
     assertThat(testCases.get("processA")).hasSize(1);
     assertThat(testCases.get("processB")).hasSize(0);
     assertThat(testCases.get("processC")).hasSize(3);
     assertThat(testCases.getProcessIds()).containsExactly("processA", "processB", "processC").inOrder();
 
-    var testCase = testCases.get("processA").get(0);
+    TestCase testCase = testCases.get("processA").get(0);
     assertThat(testCase.getElements()).hasSize(4);
     assertThat(testCase.getEndElement().getId()).isEqualTo("endEventA");
     assertThat(testCase.getStartElement().getId()).isEqualTo("startEventA");
@@ -50,14 +50,14 @@ public class TestCasesTest {
 
   @Test
   public void testHappyPath() {
-    var testCases = TestCases.of(Platform8TestPaths.simple("special/happyPath.bpmn"));
+    TestCases testCases = TestCases.of(Platform8TestPaths.simple("special/happyPath.bpmn"));
     assertThat(testCases.get()).hasSize(1);
     assertThat(testCases.get("happyPath")).hasSize(1);
     assertThat(testCases.getModelInstance()).isNotNull();
     assertThat(testCases.getProcessIds()).containsExactly("happyPath");
     assertThat(testCases.isEmpty()).isFalse();
 
-    var testCase = testCases.get().get(0);
+    TestCase testCase = testCases.get().get(0);
     assertThat(testCase.getElements()).hasSize(2);
     assertThat(testCase.getDescription()).isEqualTo("The happy path");
     assertThat(testCase.getEndElement().getId()).isEqualTo("endEvent");
@@ -76,10 +76,10 @@ public class TestCasesTest {
 
   @Test
   public void testIsEmpty() {
-    var testCases = TestCases.of(Platform8TestPaths.simple("special/empty.bpmn"));
+    TestCases testCases = TestCases.of(Platform8TestPaths.simple("special/empty.bpmn"));
     assertThat(testCases.get()).hasSize(1);
 
-    var testCase = testCases.get().get(0);
+    TestCase testCase = testCases.get().get(0);
     assertThat(testCase.getInvalidElementIds()).isEmpty();
     assertThat(testCase.hasEmptyPath()).isTrue();
     assertThat(testCase.hasIncompletePath()).isFalse();
@@ -89,10 +89,10 @@ public class TestCasesTest {
 
   @Test
   public void testIsIncomplete() {
-    var testCases = TestCases.of(Platform8TestPaths.simple("special/incomplete.bpmn"));
+    TestCases testCases = TestCases.of(Platform8TestPaths.simple("special/incomplete.bpmn"));
     assertThat(testCases.get()).hasSize(1);
 
-    var testCase = testCases.get().get(0);
+    TestCase testCase = testCases.get().get(0);
     assertThat(testCase.getInvalidElementIds()).isEmpty();
     assertThat(testCase.hasEmptyPath()).isFalse();
     assertThat(testCase.hasIncompletePath()).isTrue();
@@ -102,10 +102,10 @@ public class TestCasesTest {
 
   @Test
   public void testIsInvalid() {
-    var testCases = TestCases.of(Platform8TestPaths.simple("special/invalid.bpmn"));
+    TestCases testCases = TestCases.of(Platform8TestPaths.simple("special/invalid.bpmn"));
     assertThat(testCases.get()).hasSize(1);
 
-    var testCase = testCases.get().get(0);
+    TestCase testCase = testCases.get().get(0);
     assertThat(testCase.getInvalidElementIds()).containsExactly("a", "b").inOrder();
     assertThat(testCase.hasEmptyPath()).isFalse();
     assertThat(testCase.hasIncompletePath()).isFalse();
@@ -115,25 +115,25 @@ public class TestCasesTest {
 
   @Test
   public void testIsPlatform8() {
-    var testCases = TestCases.of(Platform8TestPaths.simple("special/happyPath.bpmn"));
+    TestCases testCases = TestCases.of(Platform8TestPaths.simple("special/happyPath.bpmn"));
     assertThat(testCases.isPlatform8()).isTrue();
   }
 
   @Test
   public void testIsNotPlatform8() {
-    var testCases = TestCases.of(Platform7TestPaths.simple("special/happyPath.bpmn"));
+    TestCases testCases = TestCases.of(Platform7TestPaths.simple("special/happyPath.bpmn"));
     assertThat(testCases.isPlatform8()).isFalse();
   }
 
   @Test
   public void testLinkEvent() {
-    var testCases = TestCases.of(Platform8TestPaths.advanced("linkEvent.bpmn"));
+    TestCases testCases = TestCases.of(Platform8TestPaths.advanced("linkEvent.bpmn"));
     assertThat(testCases.get()).hasSize(2);
 
-    var testCase = testCases.get().get(0);
+    TestCase testCase = testCases.get().get(0);
     assertThat(testCase.getElements()).hasSize(3);
 
-    var element = testCase.getElements().get(1);
+    BpmnElement element = testCase.getElements().get(1);
     assertThat(element.getId()).isEqualTo("linkThrowEventA");
     assertThat(element.getType()).isEqualTo(BpmnElementType.LINK_THROW);
 
@@ -144,10 +144,10 @@ public class TestCasesTest {
 
   @Test
   public void testMultiInstanceScopeNested() {
-    var testCases = TestCases.of(Platform8TestPaths.advancedMultiInstance("scopeNested.bpmn"));
+    TestCases testCases = TestCases.of(Platform8TestPaths.advancedMultiInstance("scopeNested.bpmn"));
     assertThat(testCases.get()).hasSize(3);
 
-    var testCase = testCases.get().get(0);
+    TestCase testCase = testCases.get().get(0);
     assertThat(testCase.getElements()).hasSize(7);
     assertThat(testCase.getElements().get(0).getNestingLevel()).isEqualTo(0);
     assertThat(testCase.getElements().get(1).getNestingLevel()).isEqualTo(1);
@@ -157,7 +157,7 @@ public class TestCasesTest {
     assertThat(testCase.getElements().get(5).getNestingLevel()).isEqualTo(1);
     assertThat(testCase.getElements().get(6).getNestingLevel()).isEqualTo(0);
 
-    var scope = testCase.getElements().get(2).getParent();
+    BpmnElementScope scope = testCase.getElements().get(2).getParent();
     assertThat(scope.getElements()).hasSize(3);
     assertThat(scope.getElements().get(0).getId()).isEqualTo("nestedSubProcessStartEvent");
     assertThat(scope.getElements().get(1).getId()).isEqualTo("userTask");
@@ -208,22 +208,22 @@ public class TestCasesTest {
 
   @Test
   public void testNoTestCases() {
-    var testCases = TestCases.of(Platform8TestPaths.simple("special/noTestCases.bpmn"));
+    TestCases testCases = TestCases.of(Platform8TestPaths.simple("special/noTestCases.bpmn"));
     assertThat(testCases.get()).hasSize(0);
     assertThat(testCases.isEmpty()).isTrue();
   }
 
   @Test
   public void testSubProcessNested() {
-    var testCases = TestCases.of(Platform8TestPaths.simple("simpleSubProcessNested.bpmn"));
+    TestCases testCases = TestCases.of(Platform8TestPaths.simple("simpleSubProcessNested.bpmn"));
     assertThat(testCases.get()).hasSize(1);
 
-    var testCase = testCases.get().get(0);
+    TestCase testCase = testCases.get().get(0);
     assertThat(testCase.getElements()).hasSize(7);
 
     // all activities beside startEvent and endEvent
     for (int i = 1; i < testCase.getElements().size() - 1; i++) {
-      var element = testCase.getElements().get(i);
+      BpmnElement element = testCase.getElements().get(i);
 
       assertThat(element.hasParent()).isTrue();
       assertThat(element.getParent().isMultiInstance()).isFalse();

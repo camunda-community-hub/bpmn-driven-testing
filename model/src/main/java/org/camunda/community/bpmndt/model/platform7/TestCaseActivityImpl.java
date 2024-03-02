@@ -28,10 +28,11 @@ class TestCaseActivityImpl implements TestCaseActivity {
     if (obj == this) {
       return true;
     }
-    if (!(obj instanceof TestCaseActivity activity)) {
+    if (!(obj instanceof TestCaseActivity)) {
       return false;
     }
 
+    TestCaseActivity activity = (TestCaseActivity) obj;
     return activity.getId().equals(getId());
   }
 
