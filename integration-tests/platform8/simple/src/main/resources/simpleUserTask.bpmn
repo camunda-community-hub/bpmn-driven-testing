@@ -22,7 +22,7 @@
     <bpmn:sequenceFlow id="Flow_0och7kl" sourceRef="userTask" targetRef="endEvent" />
     <bpmn:userTask id="userTask" name="User task">
       <bpmn:extensionElements>
-        <zeebe:assignmentDefinition assignee="=&#34;simpleAssigne&#34;" candidateGroups="=[&#34;simpleGroupA&#34;, &#34;simpleGroupB&#34;]" candidateUsers="=[&#34;simpleUserA&#34;, &#34;simpleUserB&#34;]" />
+        <zeebe:assignmentDefinition assignee="=&#34;simpleAssignee&#34;" candidateGroups="=[&#34;simpleGroupA&#34;, &#34;simpleGroupB&#34;]" candidateUsers="=[&#34;simpleUserA&#34;, &#34;simpleUserB&#34;]" />
         <zeebe:formDefinition formKey="simpleFormKey" />
         <zeebe:taskSchedule dueDate="=&#34;2023-02-17T00:00:00Z&#34;" followUpDate="=&#34;2023-02-18T00:00:00Z&#34;" />
       </bpmn:extensionElements>

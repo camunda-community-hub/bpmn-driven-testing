@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.camunda.zeebe.client.ZeebeClient;
+import io.camunda.zeebe.client.api.response.ProcessInstanceEvent;
 import io.camunda.zeebe.client.api.worker.JobWorker;
 import io.camunda.zeebe.client.api.worker.JobWorkerBuilderStep1.JobWorkerBuilderStep3;
 import io.camunda.zeebe.process.test.api.ZeebeTestEngine;
@@ -48,7 +49,7 @@ public class ServiceTaskTest {
         client.newCompleteCommand(job).variable("test", "123").send()
     );
 
-    try (JobWorker worker = workerBuilder.open()) {
+    try (JobWorker ignored = workerBuilder.open()) {
       tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
     }
   }
@@ -67,11 +68,17 @@ public class ServiceTaskTest {
       client.newCompleteCommand(job).send();
     });
 
+    handler.verify(processInstanceAssert -> {
+      processInstanceAssert.hasVariableWithValue("x", "test");
+      processInstanceAssert.hasVariableWithValue("y", 1);
+      processInstanceAssert.hasVariableWithValue("z", true);
+    });
+
     Map<String, Object> variableMap = new HashMap<>();
     variableMap.put("y", 1);
     variableMap.put("z", true);
 
-    try (JobWorker worker = workerBuilder.open()) {
+    try (JobWorker ignored = workerBuilder.open()) {
       tc.createExecutor(engine)
           .withVariable("x", "test")
           .withVariableMap(variableMap)
@@ -91,7 +98,13 @@ public class ServiceTaskTest {
       client.newCompleteCommand(job).send();
     });
 
-    try (JobWorker worker = workerBuilder.open()) {
+    handler.verify(processInstanceAssert -> {
+      processInstanceAssert.hasVariableWithValue("x", "test");
+      processInstanceAssert.hasVariableWithValue("y", 1);
+      processInstanceAssert.hasVariableWithValue("z", true);
+    });
+
+    try (JobWorker ignored = workerBuilder.open()) {
       TestVariables variables = new TestVariables();
       variables.setX("test");
       variables.setY(1);
@@ -112,15 +125,16 @@ public class ServiceTaskTest {
 
     handler.verifyEvaluatedType("wrongType");
 
-    try (JobWorker worker = workerBuilder.open()) {
+    try (JobWorker ignored = workerBuilder.open()) {
       AssertionError e = assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
       assertThat(e).hasMessageThat().contains("wrongType");
       assertThat(e).hasMessageThat().contains("serviceTaskType");
     }
 
     handler.verifyEvaluatedType("serviceTaskType");
+    handler.verifyEvaluatedType(evaluatedType -> assertThat(evaluatedType).isEqualTo("serviceTaskType"));
 
-    try (JobWorker worker = workerBuilder.open()) {
+    try (JobWorker ignored = workerBuilder.open()) {
       tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
     }
   }
@@ -133,13 +147,14 @@ public class ServiceTaskTest {
 
     handler.verifyType("wrongType");
 
-    try (JobWorker worker = workerBuilder.open()) {
+    try (JobWorker ignored = workerBuilder.open()) {
       AssertionError e = assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
       assertThat(e).hasMessageThat().contains("wrongType");
       assertThat(e).hasMessageThat().contains("= \"serviceTaskType\"");
     }
 
     handler.verifyType("= \"serviceTaskType\"");
+    handler.verifyType(type -> assertThat(type).isEqualTo("= \"serviceTaskType\""));
 
     try (JobWorker ignored = workerBuilder.open()) {
       tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
@@ -220,13 +235,13 @@ public class ServiceTaskTest {
     }
 
     @Override
-    protected void execute(TestCaseInstance instance, long processInstanceKey) {
-      instance.hasPassed(processInstanceKey, "startEvent");
-      instance.isWaitingAt(processInstanceKey, "serviceTask");
-      instance.apply(processInstanceKey, handler);
-      instance.hasPassed(processInstanceKey, "serviceTask");
-      instance.hasPassed(processInstanceKey, "endEvent");
-      instance.isCompleted(processInstanceKey);
+    protected void execute(TestCaseInstance instance, ProcessInstanceEvent processInstanceEvent) {
+      instance.hasPassed(processInstanceEvent, "startEvent");
+      instance.isWaitingAt(processInstanceEvent, "serviceTask");
+      instance.apply(processInstanceEvent, handler);
+      instance.hasPassed(processInstanceEvent, "serviceTask");
+      instance.hasPassed(processInstanceEvent, "endEvent");
+      instance.isCompleted(processInstanceEvent);
     }
   }
 

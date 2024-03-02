@@ -252,7 +252,7 @@ public class TestCaseExecutor {
 
   void executeTestCase(ProcessInstanceEvent processInstanceEvent, ZeebeClient client) {
     try (TestCaseInstance testCaseInstance = new TestCaseInstance(engine, client)) {
-      testCase.execute(testCaseInstance, processInstanceEvent.getProcessInstanceKey());
+      testCase.execute(testCaseInstance, processInstanceEvent);
     }
 
     if (verifier != null) {

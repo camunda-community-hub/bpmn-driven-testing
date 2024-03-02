@@ -12,6 +12,7 @@ import org.camunda.community.bpmndt.platform8.api.TestCaseInstanceMemo.JobMemo;
 import org.camunda.community.bpmndt.platform8.api.TestCaseInstanceMemo.ProcessInstanceMemo;
 
 import io.camunda.zeebe.client.ZeebeClient;
+import io.camunda.zeebe.client.api.response.ProcessInstanceEvent;
 import io.camunda.zeebe.process.test.api.ZeebeTestEngine;
 import io.camunda.zeebe.process.test.filters.RecordStream;
 import io.camunda.zeebe.protocol.record.Record;
@@ -59,17 +60,17 @@ public class TestCaseInstance implements AutoCloseable {
     }
   }
 
-  public void apply(long processInstanceKey, JobHandler handler) {
-    handler.apply(this, processInstanceKey);
+  public void apply(ProcessInstanceEvent processInstanceEvent, JobHandler handler) {
+    handler.apply(this, processInstanceEvent);
   }
 
-  public void apply(long processInstanceKey, UserTaskHandler handler) {
-    handler.apply(this, processInstanceKey);
+  public void apply(ProcessInstanceEvent processInstanceEvent, UserTaskHandler handler) {
+    handler.apply(this, processInstanceEvent);
   }
 
-  public void hasPassed(long processInstanceKey, String bpmnElementId) {
+  public void hasPassed(ProcessInstanceEvent processInstanceEvent, String bpmnElementId) {
     boolean hasPassed = selectAndTest(memo -> {
-      ProcessInstanceMemo processInstance = memo.processInstances.get(processInstanceKey);
+      ProcessInstanceMemo processInstance = memo.processInstances.get(processInstanceEvent.getProcessInstanceKey());
       if (processInstance == null) {
         return false;
       }
@@ -80,13 +81,13 @@ public class TestCaseInstance implements AutoCloseable {
 
     if (!hasPassed) {
       String message = "expected process instance %d to has passed BPMN element %s, but was not";
-      throw new AssertionError(String.format(message, processInstanceKey, bpmnElementId));
+      throw new AssertionError(String.format(message, processInstanceEvent.getProcessInstanceKey(), bpmnElementId));
     }
   }
 
-  public void isCompleted(long processInstanceKey) {
+  public void isCompleted(ProcessInstanceEvent processInstanceEvent) {
     boolean isCompleted = selectAndTest(memo -> {
-      ProcessInstanceMemo processInstance = memo.processInstances.get(processInstanceKey);
+      ProcessInstanceMemo processInstance = memo.processInstances.get(processInstanceEvent.getProcessInstanceKey());
       if (processInstance == null) {
         return false;
       }
@@ -96,13 +97,13 @@ public class TestCaseInstance implements AutoCloseable {
 
     if (!isCompleted) {
       String message = "expected process instance %d to be completed, but was not";
-      throw new AssertionError(String.format(message, processInstanceKey));
+      throw new AssertionError(String.format(message, processInstanceEvent.getProcessInstanceKey()));
     }
   }
 
-  public void isWaitingAt(long processInstanceKey, String bpmnElementId) {
+  public void isWaitingAt(ProcessInstanceEvent processInstanceEvent, String bpmnElementId) {
     boolean isWaitingAt = selectAndTest(memo -> {
-      ProcessInstanceMemo processInstance = memo.processInstances.get(processInstanceKey);
+      ProcessInstanceMemo processInstance = memo.processInstances.get(processInstanceEvent.getProcessInstanceKey());
       if (processInstance == null) {
         return false;
       }
@@ -117,16 +118,16 @@ public class TestCaseInstance implements AutoCloseable {
 
     if (!isWaitingAt) {
       String message = "expected process instance %d to be waiting at %s, but was not";
-      throw new AssertionError(String.format(message, processInstanceKey, bpmnElementId));
+      throw new AssertionError(String.format(message, processInstanceEvent.getProcessInstanceKey(), bpmnElementId));
     }
   }
 
-  JobMemo getJob(long processInstanceKey, String bpmnElementId) {
+  JobMemo getJob(ProcessInstanceEvent processInstanceEvent, String bpmnElementId) {
     return select(memo -> {
-      ProcessInstanceMemo processInstance = memo.processInstances.get(processInstanceKey);
+      ProcessInstanceMemo processInstance = memo.processInstances.get(processInstanceEvent.getProcessInstanceKey());
       if (processInstance == null) {
         String message = "process instance %d could not be found";
-        throw new IllegalStateException(String.format(message, processInstanceKey));
+        throw new IllegalStateException(String.format(message, processInstanceEvent.getProcessInstanceKey()));
       }
 
       JobMemo jobMemo = processInstance.jobs.get(bpmnElementId);

@@ -7,16 +7,15 @@ import java.nio.file.Files;
 import org.camunda.community.bpmndt.platform8.api.TestCaseInstanceElement.UserTaksElement;
 import org.camunda.community.bpmndt.test.Platform8TestPaths;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.camunda.zeebe.client.ZeebeClient;
+import io.camunda.zeebe.client.api.response.ProcessInstanceEvent;
 import io.camunda.zeebe.process.test.api.ZeebeTestEngine;
 import io.camunda.zeebe.process.test.assertions.ProcessInstanceAssert;
 import io.camunda.zeebe.process.test.extension.ZeebeProcessTest;
 
-@Disabled
 @ZeebeProcessTest
 public class UserTaskTest {
 
@@ -68,13 +67,13 @@ public class UserTaskTest {
     }
 
     @Override
-    protected void execute(TestCaseInstance instance, long processInstanceKey) {
-      instance.hasPassed(processInstanceKey, "startEvent");
-      instance.isWaitingAt(processInstanceKey, "userTask");
-      instance.apply(processInstanceKey, handler);
-      instance.hasPassed(processInstanceKey, "userTask");
-      instance.hasPassed(processInstanceKey, "endEvent");
-      instance.isCompleted(processInstanceKey);
+    protected void execute(TestCaseInstance instance, ProcessInstanceEvent processInstanceEvent) {
+      instance.hasPassed(processInstanceEvent, "startEvent");
+      instance.isWaitingAt(processInstanceEvent, "userTask");
+      instance.apply(processInstanceEvent, handler);
+      instance.hasPassed(processInstanceEvent, "userTask");
+      instance.hasPassed(processInstanceEvent, "endEvent");
+      instance.isCompleted(processInstanceEvent);
     }
   }
 }

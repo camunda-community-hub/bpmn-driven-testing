@@ -2,6 +2,7 @@ package org.camunda.community.bpmndt.platform8.api;
 
 import java.io.InputStream;
 
+import io.camunda.zeebe.client.api.response.ProcessInstanceEvent;
 import io.camunda.zeebe.process.test.api.ZeebeTestEngine;
 
 /**
@@ -53,10 +54,10 @@ public abstract class AbstractTestCase {
   /**
    * Executes the test case.
    *
-   * @param instance           The test case instance to use.
-   * @param processInstanceKey The key of the process instance, created especially for the test case.
+   * @param instance             The test case instance to use.
+   * @param processInstanceEvent The related process instance event, created during the start of the test case.
    */
-  protected abstract void execute(TestCaseInstance instance, long processInstanceKey);
+  protected abstract void execute(TestCaseInstance instance, ProcessInstanceEvent processInstanceEvent);
 
   /**
    * Returns an input stream that provides the BPMN resource with the process definition to be tested - either this method or {@link #getBpmnResourceName()}
