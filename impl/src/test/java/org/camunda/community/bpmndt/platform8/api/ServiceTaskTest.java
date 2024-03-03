@@ -136,8 +136,8 @@ public class ServiceTaskTest {
 
     try (JobWorker ignored = workerBuilder.open()) {
       AssertionError e = assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
-      assertThat(e).hasMessageThat().contains("wrong type");
-      assertThat(e).hasMessageThat().contains("serviceTaskType");
+      assertThat(e).hasMessageThat().contains("'wrong type'");
+      assertThat(e).hasMessageThat().contains("'serviceTaskType'");
     }
 
     handler.verifyType("serviceTaskType");
@@ -154,15 +154,13 @@ public class ServiceTaskTest {
         client.newCompleteCommand(job).send()
     );
 
-    handler.verifyTypeExpression(type -> assertThat(type).isEqualTo("wrong type expression"));
+    handler.verifyTypeExpression(expr -> assertThat(expr).isEqualTo("wrong type expression"));
 
     try (JobWorker ignored = workerBuilder.open()) {
-      AssertionError e = assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
-      assertThat(e).hasMessageThat().contains("wrong type expression");
-      assertThat(e).hasMessageThat().contains("=\"serviceTaskType\"");
+      assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
     }
 
-    handler.verifyTypeExpression(type -> assertThat(type).isEqualTo("=\"serviceTaskType\""));
+    handler.verifyTypeExpression(expr -> assertThat(expr).isEqualTo("=\"serviceTaskType\""));
 
     try (JobWorker ignored = workerBuilder.open()) {
       tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();

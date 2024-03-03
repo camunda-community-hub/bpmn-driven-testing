@@ -13,7 +13,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import io.camunda.zeebe.client.ZeebeClient;
 import io.camunda.zeebe.client.api.response.ProcessInstanceEvent;
 import io.camunda.zeebe.process.test.api.ZeebeTestEngine;
 import io.camunda.zeebe.process.test.assertions.ProcessInstanceAssert;
@@ -26,9 +25,11 @@ public class UserTaskTest {
   TestCase tc = new TestCase();
 
   ZeebeTestEngine engine;
-  ZeebeClient client;
 
   private UserTaskHandler handler;
+  private UserTaskHandler emptyHandler;
+
+  private AssertionError e;
 
   @BeforeEach
   public void setUp() {
@@ -38,10 +39,14 @@ public class UserTaskTest {
     element.setCandidateUsers("=[\"simpleUserA\", \"simpleUserB\"]");
     element.setDueDate("=\"2023-02-17T00:00:00Z\"");
     element.setFollowUpDate("=\"2023-02-18T00:00:00Z\"");
-    element.setFormKey("simpleFormKey");
     element.setId("userTask");
 
     handler = new UserTaskHandler(element);
+
+    UserTaksElement emptyElement = new UserTaksElement();
+    emptyElement.setId("emptyUserTask");
+
+    emptyHandler = new UserTaskHandler(emptyElement);
   }
 
   @Test
@@ -51,9 +56,7 @@ public class UserTaskTest {
 
   @Test
   public void testVerify() {
-    handler.verify(processInstanceAssert -> {
-      processInstanceAssert.hasVariableWithValue("x", "test");
-    });
+    handler.verify(processInstanceAssert -> processInstanceAssert.hasVariableWithValue("x", "test"));
 
     tc.createExecutor(engine)
         .withVariable("x", "test")
@@ -63,13 +66,65 @@ public class UserTaskTest {
 
   @Test
   public void testVerifyAssignee() {
-    handler.verifyAssigneeExpression(assignee -> assertThat(assignee).isEqualTo("wrong assignee expression"));
+    handler.verifyAssignee("wrong assignee");
 
-    AssertionError e = assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
-    assertThat(e).hasMessageThat().contains("wrong assignee expression");
-    assertThat(e).hasMessageThat().contains("=\"simpleAssignee\"");
+    e = assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
+    assertThat(e).hasMessageThat().contains("'wrong assignee'");
+    assertThat(e).hasMessageThat().contains("'simpleAssignee'");
 
-    handler.verifyAssigneeExpression(assignee -> assertThat(assignee).isEqualTo("=\"simpleAssignee\""));
+    handler.verifyAssignee("simpleAssignee");
+
+    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+
+    handler.verifyAssignee(assignee -> assertThat(assignee).isEqualTo("wrong assignee"));
+
+    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
+
+    handler.verifyAssignee(assignee -> assertThat(assignee).isEqualTo("simpleAssignee"));
+
+    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+  }
+
+  @Test
+  public void testVerifyAssigneeExpression() {
+    handler.verifyAssigneeExpression(expr -> assertThat(expr).isEqualTo("wrong assignee expression"));
+
+    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
+
+    handler.verifyAssigneeExpression(expr -> assertThat(expr).isEqualTo("=\"simpleAssignee\""));
+
+    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+  }
+
+  @Test
+  public void testVerifyCandidateGroupsExpression() {
+    handler.verifyCandidateGroupsExpression(expr -> assertThat(expr).isEqualTo("wrong candidate groups expression"));
+
+    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
+
+    handler.verifyCandidateGroupsExpression(expr -> assertThat(expr).isEqualTo("=[\"simpleGroupA\", \"simpleGroupB\"]"));
+
+    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+  }
+
+  @Test
+  public void testVerifyCandidateUsersExpression() {
+    handler.verifyCandidateUsersExpression(expr -> assertThat(expr).isEqualTo("wrong candidate users expression"));
+
+    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
+
+    handler.verifyCandidateUsersExpression(expr -> assertThat(expr).isEqualTo("=[\"simpleUserA\", \"simpleUserB\"]"));
+
+    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+  }
+
+  @Test
+  public void testVerifyDueDateExpression() {
+    handler.verifyDueDateExpression(expr -> assertThat(expr).isEqualTo("wrong due date expression"));
+
+    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
+
+    handler.verifyDueDateExpression(expr -> assertThat(expr).isEqualTo("=\"2023-02-17T00:00:00Z\""));
 
     tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
   }
@@ -106,6 +161,9 @@ public class UserTaskTest {
       instance.isWaitingAt(processInstanceEvent, "userTask");
       instance.apply(processInstanceEvent, handler);
       instance.hasPassed(processInstanceEvent, "userTask");
+      instance.isWaitingAt(processInstanceEvent, "emptyUserTask");
+      instance.apply(processInstanceEvent, emptyHandler);
+      instance.hasPassed(processInstanceEvent, "emptyUserTask");
       instance.hasPassed(processInstanceEvent, "endEvent");
       instance.isCompleted(processInstanceEvent);
     }

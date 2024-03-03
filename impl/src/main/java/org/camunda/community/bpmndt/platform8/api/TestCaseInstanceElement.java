@@ -45,7 +45,6 @@ public abstract class TestCaseInstanceElement {
     private String candidateUsers;
     private String dueDate;
     private String followUpDate;
-    private String formKey;
 
     public String getAssignee() {
       return assignee;
@@ -67,10 +66,6 @@ public abstract class TestCaseInstanceElement {
       return followUpDate;
     }
 
-    public String getFormKey() {
-      return formKey;
-    }
-
     public void setAssignee(String assignee) {
       this.assignee = assignee;
     }
@@ -89,10 +84,6 @@ public abstract class TestCaseInstanceElement {
 
     public void setFollowUpDate(String followUpDate) {
       this.followUpDate = followUpDate;
-    }
-
-    public void setFormKey(String formKey) {
-      this.formKey = formKey;
     }
   }
 }

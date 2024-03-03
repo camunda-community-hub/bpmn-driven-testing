@@ -21,8 +21,6 @@ class TestCaseInstanceMemo {
       return;
     }
 
-    System.out.println(record);
-
     if (record.getValueType() == ValueType.JOB) {
       JobRecordValue recordValue = (JobRecordValue) record.getValue();
 

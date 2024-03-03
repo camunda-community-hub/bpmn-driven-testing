@@ -1,5 +1,6 @@
 package org.camunda.community.bpmndt.platform8.api;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -8,6 +9,7 @@ import java.util.function.Consumer;
 import org.camunda.community.bpmndt.platform8.api.TestCaseInstanceElement.UserTaksElement;
 import org.camunda.community.bpmndt.platform8.api.TestCaseInstanceMemo.JobMemo;
 
+import io.camunda.zeebe.client.api.JsonMapper;
 import io.camunda.zeebe.client.api.response.ActivatedJob;
 import io.camunda.zeebe.client.api.response.ProcessInstanceEvent;
 import io.camunda.zeebe.client.api.worker.JobClient;
@@ -53,6 +55,7 @@ public class UserTaskHandler {
     action = this::complete;
   }
 
+  @SuppressWarnings("unchecked")
   void apply(TestCaseInstance instance, ProcessInstanceEvent processInstanceEvent) {
     JobMemo job = instance.getJob(processInstanceEvent, element.getId());
     if (!Protocol.USER_TASK_JOB_TYPE.equals(job.type)) {
@@ -83,18 +86,85 @@ public class UserTaskHandler {
     String assignee = job.getCustomHeader(Protocol.USER_TASK_ASSIGNEE_HEADER_NAME);
     if (expectedAssignee != null && !expectedAssignee.equals(assignee)) {
       String message = "expected user task %s to have assignee '%s', but was '%s'";
-      throw new AssertionError(String.format(message, element.getId(), expectedAssignee, element.getAssignee()));
+      throw new AssertionError(String.format(message, element.getId(), expectedAssignee, assignee));
     }
     if (assigneeConsumer != null) {
       assigneeConsumer.accept(assignee);
     }
 
-    if (expectedFormKey != null && !expectedFormKey.equals(element.getFormKey())) {
+    JsonMapper jsonMapper = instance.client.getConfiguration().getJsonMapper();
+
+    String candidateGroupsHeader = job.getCustomHeader(Protocol.USER_TASK_CANDIDATE_GROUPS_HEADER_NAME);
+
+    List<String> candidateGroups;
+    if (candidateGroupsHeader == null) {
+      candidateGroups = Collections.emptyList();
+    } else {
+      candidateGroups = jsonMapper.fromJson(candidateGroupsHeader, List.class);
+    }
+
+    if (expectedCandidateGroups != null) {
+      if (expectedCandidateGroups.size() != candidateGroups.size()) {
+        String message = "expected user task %s to have %d candidate group(s), but it has %d";
+        throw new AssertionError(String.format(message, element.getId(), expectedCandidateGroups.size(), candidateGroups.size()));
+      }
+
+      for (int i = 0; i < candidateGroups.size(); i++) {
+
+      }
+    }
+    if (candidateGroupsConsumer != null) {
+      candidateGroupsConsumer.accept(candidateGroups);
+    }
+
+    String candidateUsersHeader = job.getCustomHeader(Protocol.USER_TASK_CANDIDATE_USERS_HEADER_NAME);
+
+    List<String> candidateUsers;
+    if (candidateUsersHeader == null) {
+      candidateUsers = Collections.emptyList();
+    } else {
+      candidateUsers = jsonMapper.fromJson(candidateUsersHeader, List.class);
+    }
+
+    if (expectedCandidateUsers != null) {
+      if (expectedCandidateUsers.size() != candidateUsers.size()) {
+        String message = "expected user task %s to have %d candidate user(s), but it has %d";
+        throw new AssertionError(String.format(message, element.getId(), expectedCandidateUsers.size(), candidateUsers.size()));
+      }
+
+      for (int i = 0; i < candidateUsers.size(); i++) {
+
+      }
+    }
+    if (candidateUsersConsumer != null) {
+      candidateUsersConsumer.accept(candidateUsers);
+    }
+
+    String dueDate = job.getCustomHeader(Protocol.USER_TASK_DUE_DATE_HEADER_NAME);
+    if (expectedDueDate != null && !expectedDueDate.equals(dueDate)) {
+      String message = "expected user task %s to have due date '%s', but was '%s'";
+      throw new AssertionError(String.format(message, element.getId(), expectedDueDate, dueDate));
+    }
+    if (dueDateConsumer != null) {
+      dueDateConsumer.accept(dueDate);
+    }
+
+    String followUpDate = job.getCustomHeader(Protocol.USER_TASK_FOLLOW_UP_DATE_HEADER_NAME);
+    if (expectedFollowUpDate != null && !expectedFollowUpDate.equals(followUpDate)) {
       String message = "expected user task %s to have follow-up date '%s', but was '%s'";
-      throw new AssertionError(String.format(message, element.getId(), expectedFormKey, element.getFormKey()));
+      throw new AssertionError(String.format(message, element.getId(), expectedFollowUpDate, followUpDate));
+    }
+    if (followUpDateConsumer != null) {
+      followUpDateConsumer.accept(followUpDate);
+    }
+
+    String formKey = job.getCustomHeader(Protocol.USER_TASK_FORM_KEY_HEADER_NAME);
+    if (expectedFormKey != null && !expectedFormKey.equals(formKey)) {
+      String message = "expected user task %s to have fork mey '%s', but was '%s'";
+      throw new AssertionError(String.format(message, element.getId(), expectedFormKey, formKey));
     }
     if (formKeyConsumer != null) {
-      formKeyConsumer.accept(element.getFormKey());
+      formKeyConsumer.accept(formKey);
     }
 
     if (action != null) {
@@ -102,20 +172,6 @@ public class UserTaskHandler {
         instance.hasPassed(processInstanceEvent, element.getId());
       }
     }
-
-    System.out.println(job.getCustomHeader(Protocol.USER_TASK_ASSIGNEE_HEADER_NAME));
-    System.out.println(job.getCustomHeader(Protocol.USER_TASK_CANDIDATE_GROUPS_HEADER_NAME));
-    System.out.println(job.getCustomHeader(Protocol.USER_TASK_CANDIDATE_USERS_HEADER_NAME));
-    System.out.println(job.getCustomHeader(Protocol.USER_TASK_FORM_KEY_HEADER_NAME));
-    System.out.println(job.getCustomHeader(Protocol.USER_TASK_DUE_DATE_HEADER_NAME));
-    System.out.println(job.getCustomHeader(Protocol.USER_TASK_FOLLOW_UP_DATE_HEADER_NAME));
-
-    List<String> candidateGroups = instance.client.getConfiguration().getJsonMapper()
-        .fromJson(job.getCustomHeader(Protocol.USER_TASK_CANDIDATE_GROUPS_HEADER_NAME),
-            List.class);
-
-    System.out.println(candidateGroups);
-
   }
 
   /**
@@ -176,6 +232,28 @@ public class UserTaskHandler {
   }
 
   /**
+   * Verifies that the user task has a specific assignee.
+   *
+   * @param expectedAssignee The expected assignee.
+   * @return The handler.
+   */
+  public UserTaskHandler verifyAssignee(String expectedAssignee) {
+    this.expectedAssignee = expectedAssignee;
+    return this;
+  }
+
+  /**
+   * Verifies that the user task has a specific assignee, using a consumer.
+   *
+   * @param assigneeConsumer A consumer asserting the assignee.
+   * @return The handler.
+   */
+  public UserTaskHandler verifyAssignee(Consumer<String> assigneeConsumer) {
+    this.assigneeConsumer = assigneeConsumer;
+    return this;
+  }
+
+  /**
    * Verifies that the user task has a specific assignee FEEL expression (see "Assignment" section), using a consumer function.
    *
    * @param assigneeExpressionConsumer A consumer asserting the assignee expression.
@@ -183,6 +261,28 @@ public class UserTaskHandler {
    */
   public UserTaskHandler verifyAssigneeExpression(Consumer<String> assigneeExpressionConsumer) {
     this.assigneeExpressionConsumer = assigneeExpressionConsumer;
+    return this;
+  }
+
+  /**
+   * Verifies that the user task has specific candidate groups.
+   *
+   * @param expectedCandidateGroups The expected candidate groups.
+   * @return The handler.
+   */
+  public UserTaskHandler verifyCandidateGroups(List<String> expectedCandidateGroups) {
+    this.expectedCandidateGroups = expectedCandidateGroups;
+    return this;
+  }
+
+  /**
+   * Verifies that the user task has specific candidate groups, using a consumer.
+   *
+   * @param candidateGroupsConsumer A consumer asserting the candidate groups - a list of {@code String}s.
+   * @return The handler.
+   */
+  public UserTaskHandler verifyCandidateGroups(Consumer<List<String>> candidateGroupsConsumer) {
+    this.candidateGroupsConsumer = candidateGroupsConsumer;
     return this;
   }
 
@@ -198,6 +298,28 @@ public class UserTaskHandler {
   }
 
   /**
+   * Verifies that the user task has specific candidate users.
+   *
+   * @param expectedCandidateUsers The expected candidate users.
+   * @return The handler.
+   */
+  public UserTaskHandler verifyCandidateUsers(List<String> expectedCandidateUsers) {
+    this.expectedCandidateUsers = expectedCandidateUsers;
+    return this;
+  }
+
+  /**
+   * Verifies that the user task has specific candidate users, using a consumer.
+   *
+   * @param candidateUsersConsumer A consumer asserting the candidate users - a list of {@code String}s.
+   * @return The handler.
+   */
+  public UserTaskHandler verifyCandidateUsers(Consumer<List<String>> candidateUsersConsumer) {
+    this.candidateUsersConsumer = candidateUsersConsumer;
+    return this;
+  }
+
+  /**
    * Verifies that the user task has specific candidate users FEEL expression (see "Assignment" section), using a consumer function.
    *
    * @param candidateUsersExpressionConsumer A consumer asserting the candidate users expression.
@@ -209,6 +331,28 @@ public class UserTaskHandler {
   }
 
   /**
+   * Verifies that the user task has a specific due date.
+   *
+   * @param expectedDueDate The expected due date.
+   * @return The handler.
+   */
+  public UserTaskHandler verifyDueDate(String expectedDueDate) {
+    this.expectedDueDate = expectedDueDate;
+    return this;
+  }
+
+  /**
+   * Verifies that the user task has a specific due date, using a consumer.
+   *
+   * @param dueDateConsumer A consumer asserting the due date.
+   * @return The handler.
+   */
+  public UserTaskHandler verifyDueDate(Consumer<String> dueDateConsumer) {
+    this.dueDateConsumer = dueDateConsumer;
+    return this;
+  }
+
+  /**
    * Verifies that the user task has a specific due date FEEL expression (see "Assignment" section), using a consumer function.
    *
    * @param dueDateExpressionConsumer A consumer asserting the due date expression.
@@ -216,6 +360,28 @@ public class UserTaskHandler {
    */
   public UserTaskHandler verifyDueDateExpression(Consumer<String> dueDateExpressionConsumer) {
     this.dueDateExpressionConsumer = dueDateExpressionConsumer;
+    return this;
+  }
+
+  /**
+   * Verifies that the user task has a specific follow-up date.
+   *
+   * @param expectedFollowUpDate The expected follow-up date.
+   * @return The handler.
+   */
+  public UserTaskHandler verifyFollowUpDate(String expectedFollowUpDate) {
+    this.expectedFollowUpDate = expectedFollowUpDate;
+    return this;
+  }
+
+  /**
+   * Verifies that the user task has a specific follow-up date, using a consumer.
+   *
+   * @param followUpDateConsumer A consumer asserting the follow-up date.
+   * @return The handler.
+   */
+  public UserTaskHandler verifyFollowUpDate(Consumer<String> followUpDateConsumer) {
+    this.followUpDateConsumer = followUpDateConsumer;
     return this;
   }
 
