@@ -7,6 +7,7 @@ import java.util.function.Consumer;
 import org.camunda.community.bpmndt.platform8.api.TestCaseInstanceElement.JobElement;
 import org.camunda.community.bpmndt.platform8.api.TestCaseInstanceMemo.JobMemo;
 
+import io.camunda.zeebe.client.api.command.ThrowErrorCommandStep1.ThrowErrorCommandStep2;
 import io.camunda.zeebe.client.api.response.ActivatedJob;
 import io.camunda.zeebe.client.api.response.ProcessInstanceEvent;
 import io.camunda.zeebe.client.api.worker.JobClient;
@@ -25,6 +26,7 @@ public class JobHandler {
 
   private Consumer<ProcessInstanceAssert> verifier;
   private io.camunda.zeebe.client.api.worker.JobHandler action;
+  private String errorMessage;
   private Object variables;
 
   private Consumer<String> typeExpressionConsumer;
@@ -57,7 +59,11 @@ public class JobHandler {
 
     if (action != null) {
       try (JobWorker ignored = instance.client.newWorker().jobType(job.type).handler(action).open()) {
-        instance.hasPassed(processInstanceEvent, element.getId());
+        if (element.getErrorCode() == null) {
+          instance.hasPassed(processInstanceEvent, element.getId());
+        } else {
+          instance.hasTerminated(processInstanceEvent, element.getId());
+        }
       }
     }
   }
@@ -109,7 +115,35 @@ public class JobHandler {
   }
 
   /**
+   * Throws an BPMN error using the given error message as well as specified variables.
+   * <p>
+   * This action can be used, if there is no related job worker implementation yet.
+   */
+  public void throwBpmnError(String errorMessage) {
+    if (element.getErrorCode() == null) {
+      throw new IllegalStateException("the subsequent test case element is not an error boundary event");
+    }
+
+    this.errorMessage = errorMessage;
+    this.action = this::throwBpmnError;
+  }
+
+  void throwBpmnError(JobClient client, ActivatedJob job) {
+    ThrowErrorCommandStep2 throwErrorCommandStep2 = client.newThrowErrorCommand(job)
+        .errorCode(element.getErrorCode())
+        .errorMessage(errorMessage);
+
+    if (variables != null) {
+      throwErrorCommandStep2.variables(variables).send();
+    } else {
+      throwErrorCommandStep2.variables(variableMap).send();
+    }
+  }
+
+  /**
    * Verifies the job's waiting state.
+   * <p>
+   * <b>Please note</b>: An application specific job worker may have already completed the related job.
    *
    * @param verifier Verifier that accepts an {@link ProcessInstanceAssert} instance.
    * @return The handler.

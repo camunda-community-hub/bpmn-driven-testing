@@ -35,6 +35,7 @@ public class TestCaseExecutor {
   private final Map<String, Object> variableMap = new HashMap<>();
 
   private ObjectMapper objectMapper;
+  private long taskTimeout = 5000;
   private String tenantId;
   private Object variables;
   private Consumer<ProcessInstanceAssert> verifier;
@@ -191,6 +192,18 @@ public class TestCaseExecutor {
   }
 
   /**
+   * Specifies a timeout in milliseconds for tasks that audit the test engine's record stream - e.g. tasks that check process instance is waiting at or has
+   * passend a certain BPMN element.
+   *
+   * @param taskTimeout The audit task timeout in milliseconds - the default value is {@code 5000}
+   * @return The executor.
+   */
+  public TestCaseExecutor withTaskTimeout(long taskTimeout) {
+    this.taskTimeout = taskTimeout;
+    return this;
+  }
+
+  /**
    * Sets the tenant ID to be used for the automatic process deployment.
    *
    * @param tenantId A specific tenant ID.
@@ -251,7 +264,7 @@ public class TestCaseExecutor {
   }
 
   void executeTestCase(ProcessInstanceEvent processInstanceEvent, ZeebeClient client) {
-    try (TestCaseInstance testCaseInstance = new TestCaseInstance(engine, client)) {
+    try (TestCaseInstance testCaseInstance = new TestCaseInstance(engine, client, taskTimeout)) {
       testCase.execute(testCaseInstance, processInstanceEvent);
     }
 

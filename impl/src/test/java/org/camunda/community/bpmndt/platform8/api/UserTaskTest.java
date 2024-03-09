@@ -6,8 +6,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.util.Arrays;
 
-import org.camunda.community.bpmndt.platform8.api.TestCaseInstanceElement.UserTaksElement;
+import org.camunda.community.bpmndt.platform8.api.TestCaseInstanceElement.UserTaskElement;
 import org.camunda.community.bpmndt.test.Platform8TestPaths;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,11 +30,9 @@ public class UserTaskTest {
   private UserTaskHandler handler;
   private UserTaskHandler emptyHandler;
 
-  private AssertionError e;
-
   @BeforeEach
   public void setUp() {
-    UserTaksElement element = new UserTaksElement();
+    UserTaskElement element = new UserTaskElement();
     element.setAssignee("=\"simpleAssignee\"");
     element.setCandidateGroups("=[\"simpleGroupA\", \"simpleGroupB\"]");
     element.setCandidateUsers("=[\"simpleUserA\", \"simpleUserB\"]");
@@ -43,7 +42,7 @@ public class UserTaskTest {
 
     handler = new UserTaskHandler(element);
 
-    UserTaksElement emptyElement = new UserTaksElement();
+    UserTaskElement emptyElement = new UserTaskElement();
     emptyElement.setId("emptyUserTask");
 
     emptyHandler = new UserTaskHandler(emptyElement);
@@ -68,7 +67,7 @@ public class UserTaskTest {
   public void testVerifyAssignee() {
     handler.verifyAssignee("wrong assignee");
 
-    e = assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
+    AssertionError e = assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
     assertThat(e).hasMessageThat().contains("'wrong assignee'");
     assertThat(e).hasMessageThat().contains("'simpleAssignee'");
 
@@ -97,12 +96,54 @@ public class UserTaskTest {
   }
 
   @Test
+  public void testVerifyCandidateGroups() {
+    handler.verifyCandidateGroups(Arrays.asList("wrong group 1", "wrong group 2"));
+
+    AssertionError e = assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
+    assertThat(e).hasMessageThat().contains("candidate group #0 'wrong group 1'");
+    assertThat(e).hasMessageThat().contains("'simpleGroupA'");
+
+    handler.verifyCandidateGroups(Arrays.asList("simpleGroupA", "simpleGroupB"));
+
+    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+
+    handler.verifyCandidateGroups(groups -> assertThat(groups).containsExactly("wrong group 1", "wrong group 2").inOrder());
+
+    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
+
+    handler.verifyCandidateGroups(groups -> assertThat(groups).containsExactly("simpleGroupA", "simpleGroupB").inOrder());
+
+    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+  }
+
+  @Test
   public void testVerifyCandidateGroupsExpression() {
     handler.verifyCandidateGroupsExpression(expr -> assertThat(expr).isEqualTo("wrong candidate groups expression"));
 
     assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
 
     handler.verifyCandidateGroupsExpression(expr -> assertThat(expr).isEqualTo("=[\"simpleGroupA\", \"simpleGroupB\"]"));
+
+    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+  }
+
+  @Test
+  public void testVerifyCandidateUsers() {
+    handler.verifyCandidateUsers(Arrays.asList("wrong user 1", "wrong user 2"));
+
+    AssertionError e = assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
+    assertThat(e).hasMessageThat().contains("candidate user #0 'wrong user 1'");
+    assertThat(e).hasMessageThat().contains("'simpleUserA'");
+
+    handler.verifyCandidateUsers(Arrays.asList("simpleUserA", "simpleUserB"));
+
+    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+
+    handler.verifyCandidateUsers(users -> assertThat(users).containsExactly("wrong user 1", "wrong user 2").inOrder());
+
+    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
+
+    handler.verifyCandidateUsers(users -> assertThat(users).containsExactly("simpleUserA", "simpleUserB").inOrder());
 
     tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
   }
@@ -125,6 +166,17 @@ public class UserTaskTest {
     assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
 
     handler.verifyDueDateExpression(expr -> assertThat(expr).isEqualTo("=\"2023-02-17T00:00:00Z\""));
+
+    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+  }
+
+  @Test
+  public void testVerifyFollowUpDateExpression() {
+    handler.verifyFollowUpDateExpression(expr -> assertThat(expr).isEqualTo("wrong follow-up date expression"));
+
+    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
+
+    handler.verifyFollowUpDateExpression(expr -> assertThat(expr).isEqualTo("=\"2023-02-18T00:00:00Z\""));
 
     tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
   }

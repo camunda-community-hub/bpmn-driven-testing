@@ -8,6 +8,14 @@ import java.nio.file.Paths;
  */
 public class Platform8TestPaths {
 
+  public static Path advanced() {
+    return of("advanced");
+  }
+
+  public static Path advanced(String fileName) {
+    return advanced().resolve(fileName);
+  }
+
   public static Path of(String projectName) {
     return Paths.get("../integration-tests/platform8").resolve(projectName).resolve("src/main/resources");
   }

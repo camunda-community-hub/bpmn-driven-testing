@@ -22,7 +22,17 @@ public abstract class TestCaseInstanceElement {
 
   public static class JobElement extends TestCaseInstanceElement {
 
+    private String errorCode;
     private String type;
+
+    /**
+     * Returns the error code of the attached error boundary event that is subsequent test case element.
+     *
+     * @return The error code or {@code null}, if the next element is not an error boundary event.
+     */
+    public String getErrorCode() {
+      return errorCode;
+    }
 
     /**
      * Returns the job type - e.g. the service task type, handled by a Zeebe client job worker.
@@ -33,12 +43,16 @@ public abstract class TestCaseInstanceElement {
       return type;
     }
 
+    public void setErrorCode(String errorCode) {
+      this.errorCode = errorCode;
+    }
+
     public void setType(String type) {
       this.type = type;
     }
   }
 
-  public static class UserTaksElement extends TestCaseInstanceElement {
+  public static class UserTaskElement extends TestCaseInstanceElement {
 
     private String assignee;
     private String candidateGroups;

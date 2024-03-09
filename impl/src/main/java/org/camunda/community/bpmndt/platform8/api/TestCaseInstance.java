@@ -28,6 +28,8 @@ public class TestCaseInstance implements AutoCloseable {
   final ZeebeTestEngine engine;
   final ZeebeClient client;
 
+  private final long taskTimeout;
+
   private final ExecutorService executorService;
 
   private Future<?> consumeRecordStreamTask;
@@ -35,9 +37,10 @@ public class TestCaseInstance implements AutoCloseable {
   private volatile SelectTask<?> selectTask;
   private volatile SelectAndTestTask selectAndTestTask;
 
-  TestCaseInstance(ZeebeTestEngine engine, ZeebeClient client) {
+  TestCaseInstance(ZeebeTestEngine engine, ZeebeClient client, long taskTimeout) {
     this.engine = engine;
     this.client = client;
+    this.taskTimeout = taskTimeout;
 
     executorService = Executors.newSingleThreadScheduledExecutor();
 
@@ -81,6 +84,23 @@ public class TestCaseInstance implements AutoCloseable {
 
     if (!hasPassed) {
       String message = "expected process instance %d to has passed BPMN element %s, but was not";
+      throw new AssertionError(String.format(message, processInstanceEvent.getProcessInstanceKey(), bpmnElementId));
+    }
+  }
+
+  public void hasTerminated(ProcessInstanceEvent processInstanceEvent, String bpmnElementId) {
+    boolean hasTerminated = selectAndTest(memo -> {
+      ProcessInstanceMemo processInstance = memo.processInstances.get(processInstanceEvent.getProcessInstanceKey());
+      if (processInstance == null) {
+        return false;
+      }
+
+      ElementMemo element = processInstance.elements.get(bpmnElementId);
+      return element != null && element.state == ProcessInstanceIntent.ELEMENT_TERMINATED;
+    });
+
+    if (!hasTerminated) {
+      String message = "expected process instance %d to has terminated BPMN element %s, but was not";
       throw new AssertionError(String.format(message, processInstanceEvent.getProcessInstanceKey(), bpmnElementId));
     }
   }
@@ -140,6 +160,10 @@ public class TestCaseInstance implements AutoCloseable {
     });
   }
 
+  /**
+   * Consumes all records that has not been consumed already. Additionally select as well as select and test tasks that are waiting to be executed are handled
+   * using the memorization.
+   */
   private void consumeRecordStream() {
     RecordStream recordStream = RecordStream.of(engine.getRecordStreamSource());
 
@@ -198,7 +222,7 @@ public class TestCaseInstance implements AutoCloseable {
     selectTask = task;
     try {
       synchronized (selectTask) {
-        task.wait(5000);
+        task.wait(taskTimeout);
       }
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
@@ -211,7 +235,7 @@ public class TestCaseInstance implements AutoCloseable {
     selectAndTestTask = new SelectAndTestTask(predicate);
     try {
       synchronized (selectAndTestTask) {
-        selectAndTestTask.wait(5000);
+        selectAndTestTask.wait(taskTimeout);
       }
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();

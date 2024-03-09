@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import org.camunda.community.bpmndt.platform8.api.TestCaseInstanceElement.UserTaksElement;
+import org.camunda.community.bpmndt.platform8.api.TestCaseInstanceElement.UserTaskElement;
 import org.camunda.community.bpmndt.platform8.api.TestCaseInstanceMemo.JobMemo;
 
 import io.camunda.zeebe.client.api.JsonMapper;
@@ -20,7 +20,7 @@ import io.camunda.zeebe.protocol.Protocol;
 
 public class UserTaskHandler {
 
-  private final UserTaksElement element;
+  private final UserTaskElement element;
 
   private final Map<String, Object> variableMap = new HashMap<>();
 
@@ -49,7 +49,7 @@ public class UserTaskHandler {
   private Consumer<String> formKeyConsumer;
 
 
-  UserTaskHandler(UserTaksElement element) {
+  UserTaskHandler(UserTaskElement element) {
     this.element = element;
 
     action = this::complete;
@@ -110,7 +110,10 @@ public class UserTaskHandler {
       }
 
       for (int i = 0; i < candidateGroups.size(); i++) {
-
+        if (!expectedCandidateGroups.get(i).equals(candidateGroups.get(i))) {
+          String message = "expected user task %s to have candidate group #%d '%s', but it was '%s'";
+          throw new AssertionError(String.format(message, element.getId(), i, expectedCandidateGroups.get(i), candidateGroups.get(i)));
+        }
       }
     }
     if (candidateGroupsConsumer != null) {
@@ -133,7 +136,10 @@ public class UserTaskHandler {
       }
 
       for (int i = 0; i < candidateUsers.size(); i++) {
-
+        if (!expectedCandidateUsers.get(i).equals(candidateUsers.get(i))) {
+          String message = "expected user task %s to have candidate user #%d '%s', but it was '%s'";
+          throw new AssertionError(String.format(message, element.getId(), i, expectedCandidateUsers.get(i), candidateUsers.get(i)));
+        }
       }
     }
     if (candidateUsersConsumer != null) {
