@@ -12,7 +12,7 @@ import io.camunda.zeebe.protocol.record.value.BpmnElementType;
 import io.camunda.zeebe.protocol.record.value.JobRecordValue;
 import io.camunda.zeebe.protocol.record.value.ProcessInstanceRecordValue;
 
-class TestCaseInstanceMemo {
+public class TestCaseInstanceMemo {
 
   final Map<Long, ProcessInstanceMemo> processInstances = new HashMap<>();
 

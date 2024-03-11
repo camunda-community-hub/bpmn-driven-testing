@@ -7,7 +7,7 @@ import java.nio.file.Path;
 import java.util.function.Consumer;
 
 import org.apache.commons.io.FileUtils;
-import org.camunda.community.bpmndt.platform7.GeneratorContext;
+import org.camunda.community.bpmndt.GeneratorContextBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,9 +15,9 @@ public class WriteJavaType implements Consumer<Class<?>> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(WriteJavaType.class);
 
-  private final GeneratorContext ctx;
+  private final GeneratorContextBase ctx;
 
-  public WriteJavaType(GeneratorContext ctx) {
+  public WriteJavaType(GeneratorContextBase ctx) {
     this.ctx = ctx;
   }
 

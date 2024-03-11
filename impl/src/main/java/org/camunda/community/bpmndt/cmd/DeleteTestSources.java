@@ -7,12 +7,12 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
-import org.camunda.community.bpmndt.platform7.GeneratorContext;
+import org.camunda.community.bpmndt.GeneratorContextBase;
 
-public class DeleteTestSources implements Function<GeneratorContext, Void> {
+public class DeleteTestSources implements Function<GeneratorContextBase, Void> {
 
   @Override
-  public Void apply(GeneratorContext ctx) {
+  public Void apply(GeneratorContextBase ctx) {
     if (!Files.isDirectory(ctx.getTestSourcePath())) {
       return null;
     }

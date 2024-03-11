@@ -3,9 +3,9 @@ package org.camunda.community.bpmndt.platform7.strategy;
 import javax.lang.model.element.Modifier;
 
 import org.apache.commons.lang3.StringUtils;
+import org.camunda.community.bpmndt.Literal;
 import org.camunda.community.bpmndt.model.platform7.TestCaseActivity;
 import org.camunda.community.bpmndt.model.platform7.TestCaseActivityType;
-import org.camunda.community.bpmndt.platform7.Generator;
 import org.camunda.community.bpmndt.platform7.GeneratorStrategy;
 import org.camunda.community.bpmndt.platform7.api.CallActivityHandler;
 import org.camunda.community.bpmndt.platform7.api.EventHandler;
@@ -25,12 +25,12 @@ import com.squareup.javapoet.TypeSpec;
  */
 public class DefaultStrategy implements GeneratorStrategy {
 
-  protected static TypeName CALL_ACTIVITY = TypeName.get(CallActivityHandler.class);
-  protected static TypeName EVENT = TypeName.get(EventHandler.class);
-  protected static TypeName EXTERNAL_TASK = TypeName.get(ExternalTaskHandler.class);
-  protected static TypeName JOB = TypeName.get(JobHandler.class);
-  protected static TypeName OTHER = TypeName.get(Void.class);
-  protected static TypeName USER_TASK = TypeName.get(UserTaskHandler.class);
+  public static TypeName CALL_ACTIVITY = TypeName.get(CallActivityHandler.class);
+  public static TypeName EVENT = TypeName.get(EventHandler.class);
+  public static TypeName EXTERNAL_TASK = TypeName.get(ExternalTaskHandler.class);
+  public static TypeName JOB = TypeName.get(JobHandler.class);
+  public static TypeName OTHER = TypeName.get(Void.class);
+  public static TypeName USER_TASK = TypeName.get(UserTaskHandler.class);
 
   protected final TestCaseActivity activity;
   protected final String literal;
@@ -43,7 +43,7 @@ public class DefaultStrategy implements GeneratorStrategy {
   public DefaultStrategy(TestCaseActivity activity) {
     this.activity = activity;
 
-    literal = Generator.toLiteral(activity.getId());
+    literal = Literal.toLiteral(activity.getId());
   }
 
   @Override
@@ -212,6 +212,7 @@ public class DefaultStrategy implements GeneratorStrategy {
 
   @Override
   public CodeBlock initHandlerStatement() {
+    // nothing to return
     return null;
   }
 

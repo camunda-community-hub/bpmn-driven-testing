@@ -1,5 +1,6 @@
-package org.camunda.community.bpmndt.platform7.cmd;
+package org.camunda.community.bpmndt.platform8.cmd;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -9,20 +10,15 @@ import javax.lang.model.element.Modifier;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.test.assertions.ProcessEngineTests;
 import org.camunda.community.bpmndt.GeneratorResult;
-import org.camunda.community.bpmndt.model.platform7.TestCase;
-import org.camunda.community.bpmndt.model.platform7.TestCaseActivity;
-import org.camunda.community.bpmndt.model.platform7.TestCaseActivityType;
-import org.camunda.community.bpmndt.platform7.GeneratorContext;
-import org.camunda.community.bpmndt.platform7.GeneratorStrategy;
-import org.camunda.community.bpmndt.platform7.TestCaseContext;
-import org.camunda.community.bpmndt.platform7.api.AbstractJUnit5TestCase;
-import org.camunda.community.bpmndt.platform7.api.AbstractTestCase;
+import org.camunda.community.bpmndt.model.platform8.BpmnElement;
+import org.camunda.community.bpmndt.model.platform8.TestCase;
+import org.camunda.community.bpmndt.platform8.GeneratorStrategy;
+import org.camunda.community.bpmndt.platform8.TestCaseContext;
+import org.camunda.community.bpmndt.platform8.api.AbstractJUnit5TestCase;
 
-import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
-import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
@@ -33,21 +29,22 @@ import com.squareup.javapoet.TypeSpec;
  */
 public class GenerateTestCase implements Consumer<TestCaseContext> {
 
-  private final GeneratorContext gCtx;
   private final GeneratorResult result;
 
-  public GenerateTestCase(GeneratorContext gCtx, GeneratorResult result) {
-    this.gCtx = gCtx;
+  public GenerateTestCase(GeneratorResult result) {
     this.result = result;
   }
 
   @Override
   public void accept(TestCaseContext ctx) {
-    List<GeneratorStrategy> strategies = new GetStrategies().apply(ctx, ctx.getTestCase().getActivities());
+    List<GeneratorStrategy> strategies = new ArrayList<>(ctx.getTestCase().getElementIds().size());
+    for (String elementId : ctx.getTestCase().getElementIds()) {
+      strategies.add(ctx.getStrategy(elementId));
+    }
 
     TypeSpec.Builder classBuilder = TypeSpec.classBuilder(ctx.getClassName())
         .addJavadoc(buildJavadoc(ctx))
-        .superclass(getSuperClass(ctx))
+        .superclass(AbstractJUnit5TestCase.class)
         .addModifiers(Modifier.PUBLIC);
 
     addHandlerFields(strategies, classBuilder);
@@ -55,22 +52,14 @@ public class GenerateTestCase implements Consumer<TestCaseContext> {
     classBuilder.addMethod(buildBeforeEach(strategies));
     classBuilder.addMethod(buildExecute(ctx, strategies));
 
+    classBuilder.addMethod(buildGetBpmnProcessId(ctx));
     classBuilder.addMethod(buildGetBpmnResourceName(ctx));
     classBuilder.addMethod(buildGetEnd(ctx));
-    classBuilder.addMethod(buildGetProcessDefinitionKey(ctx));
-
-    if (!gCtx.getProcessEnginePluginNames().isEmpty()) {
-      classBuilder.addMethod(new BuildGetProcessEnginePlugins().apply(gCtx));
-    }
 
     classBuilder.addMethod(buildGetStart(ctx));
 
-    if (!ctx.getTestCase().getEndActivity().isProcessEnd()) {
+    if (!ctx.getTestCase().getEndElement().isProcessEnd()) {
       classBuilder.addMethod(buildIsProcessEnd());
-    }
-
-    if (gCtx.isSpringEnabled()) {
-      classBuilder.addMethod(buildIsSpringEnabled());
     }
 
     addHandlerMethods(strategies, classBuilder);
@@ -85,39 +74,18 @@ public class GenerateTestCase implements Consumer<TestCaseContext> {
 
   protected void addHandlerFields(List<GeneratorStrategy> strategies, TypeSpec.Builder classBuilder) {
     for (GeneratorStrategy strategy : strategies) {
-      if (strategy.shouldHandleBefore()) {
-        strategy.addHandlerFieldBefore(classBuilder);
-      }
-
       strategy.addHandlerField(classBuilder);
-
-      if (strategy.shouldHandleAfter()) {
-        strategy.addHandlerFieldAfter(classBuilder);
-      }
     }
   }
 
   protected void addHandlerMethods(List<GeneratorStrategy> strategies, TypeSpec.Builder classBuilder) {
     for (GeneratorStrategy strategy : strategies) {
-      TestCaseActivity activity = strategy.getActivity();
-
-      // since the async before of a call activity is instrumented
-      // the handler method should not be generated
-      if (strategy.shouldHandleBefore() && activity.getType() != TestCaseActivityType.CALL_ACTIVITY) {
-        strategy.addHandlerMethodBefore(classBuilder);
-      }
-
       strategy.addHandlerMethod(classBuilder);
-
-      if (strategy.shouldHandleAfter()) {
-        strategy.addHandlerMethodAfter(classBuilder);
-      }
     }
   }
 
   /**
-   * Overrides the {@code beforeEach} method of the {@link AbstractTestCase} to initialize the activity handlers (e.g. {@code UserTaskHandler}) that are
-   * required for a given test case.
+   * Overrides the {@code beforeEach} method to initialize the element handlers (e.g. {@code UserTaskHandler}) that are required for a given test case.
    *
    * @return The {@code beforeEach} method.
    */
@@ -130,15 +98,11 @@ public class GenerateTestCase implements Consumer<TestCaseContext> {
     builder.addStatement("super.$L()", "beforeEach");
 
     for (GeneratorStrategy strategy : strategies) {
-      if (strategy.shouldHandleBefore()) {
-        strategy.initHandlerBefore(builder);
-      }
+      strategy.initHandlerElement(builder);
+    }
 
+    for (GeneratorStrategy strategy : strategies) {
       strategy.initHandler(builder);
-
-      if (strategy.shouldHandleAfter()) {
-        strategy.initHandlerAfter(builder);
-      }
     }
 
     return builder.build();
@@ -165,7 +129,7 @@ public class GenerateTestCase implements Consumer<TestCaseContext> {
   }
 
   protected MethodSpec buildGetEnd(TestCaseContext ctx) {
-    TestCaseActivity end = ctx.getTestCase().getEndActivity();
+    BpmnElement end = ctx.getTestCase().getEndElement();
 
     return MethodSpec.methodBuilder("getEnd")
         .addAnnotation(Override.class)
@@ -175,8 +139,8 @@ public class GenerateTestCase implements Consumer<TestCaseContext> {
         .build();
   }
 
-  protected MethodSpec buildGetProcessDefinitionKey(TestCaseContext ctx) {
-    return MethodSpec.methodBuilder("getProcessDefinitionKey")
+  protected MethodSpec buildGetBpmnProcessId(TestCaseContext ctx) {
+    return MethodSpec.methodBuilder("getBpmnProcessId")
         .addAnnotation(Override.class)
         .addModifiers(Modifier.PUBLIC)
         .returns(String.class)
@@ -185,7 +149,7 @@ public class GenerateTestCase implements Consumer<TestCaseContext> {
   }
 
   protected MethodSpec buildGetStart(TestCaseContext ctx) {
-    TestCaseActivity start = ctx.getTestCase().getStartActivity();
+    BpmnElement start = ctx.getTestCase().getStartElement();
 
     return MethodSpec.methodBuilder("getStart")
         .addAnnotation(Override.class)
@@ -204,15 +168,6 @@ public class GenerateTestCase implements Consumer<TestCaseContext> {
         .build();
   }
 
-  protected MethodSpec buildIsSpringEnabled() {
-    return MethodSpec.methodBuilder("isSpringEnabled")
-        .addAnnotation(Override.class)
-        .addModifiers(Modifier.PROTECTED)
-        .returns(TypeName.BOOLEAN)
-        .addStatement("return true")
-        .build();
-  }
-
   protected CodeBlock buildJavadoc(TestCaseContext ctx) {
     CodeBlock.Builder builder = CodeBlock.builder();
 
@@ -222,25 +177,18 @@ public class GenerateTestCase implements Consumer<TestCaseContext> {
       builder.add("\n<br>\n");
     }
 
-    TestCaseActivity a = testCase.getStartActivity();
-    TestCaseActivity b = testCase.getEndActivity();
+    BpmnElement a = testCase.getStartElement();
+    BpmnElement b = testCase.getEndElement();
 
     List<Object> args = new LinkedList<>();
     args.add(a.getTypeName());
     args.add(a.getId());
     args.add(b.getTypeName());
     args.add(b.getId());
-    args.add(testCase.getFlowNodeIds().size());
+    args.add(testCase.getElementIds().size());
 
     builder.add("From: $L: $L, To: $L: $L, Length: $L", args.toArray(new Object[0]));
 
     return builder.build();
-  }
-
-  protected TypeName getSuperClass(TestCaseContext ctx) {
-    ClassName rawType = ClassName.get(AbstractJUnit5TestCase.class);
-
-    // e.g. AbstractJUnit5TestCase<TC_startEvent__endEvent>
-    return ParameterizedTypeName.get(rawType, ClassName.bestGuess(ctx.getClassName()));
   }
 }

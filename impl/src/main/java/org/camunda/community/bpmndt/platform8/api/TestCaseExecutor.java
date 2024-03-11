@@ -193,7 +193,7 @@ public class TestCaseExecutor {
 
   /**
    * Specifies a timeout in milliseconds for tasks that audit the test engine's record stream - e.g. tasks that check process instance is waiting at or has
-   * passend a certain BPMN element.
+   * passed a certain BPMN element.
    *
    * @param taskTimeout The audit task timeout in milliseconds - the default value is {@code 5000}
    * @return The executor.

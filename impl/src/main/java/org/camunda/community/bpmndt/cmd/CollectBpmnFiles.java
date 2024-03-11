@@ -12,22 +12,23 @@ import java.util.List;
 import java.util.function.Function;
 
 import org.camunda.community.bpmndt.Constants;
+import org.camunda.community.bpmndt.GeneratorContextBase;
 
 /**
  * Collects the paths of all BPMN files within the project's resource directory ({@code src/main/resources}).
  */
-public class CollectBpmnFiles extends SimpleFileVisitor<Path> implements Function<Path, Collection<Path>> {
+public class CollectBpmnFiles extends SimpleFileVisitor<Path> implements Function<GeneratorContextBase, Collection<Path>> {
 
   private List<Path> bpmnFiles;
 
   @Override
-  public Collection<Path> apply(Path path) {
+  public Collection<Path> apply(GeneratorContextBase ctx) {
     bpmnFiles = new LinkedList<>();
 
     try {
-      Files.walkFileTree(path, this);
+      Files.walkFileTree(ctx.getMainResourcePath(), this);
     } catch (IOException e) {
-      throw new RuntimeException(String.format("BPMN files under '%s' could not be collected", path), e);
+      throw new RuntimeException(String.format("BPMN files under '%s' could not be collected", ctx.getMainResourcePath()), e);
     }
 
     return bpmnFiles;

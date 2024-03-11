@@ -8,10 +8,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.function.Predicate;
 
 import org.apache.commons.lang3.StringUtils;
 import org.camunda.bpm.engine.impl.cfg.ProcessEnginePlugin;
+import org.camunda.community.bpmndt.GeneratorResult;
 import org.camunda.community.bpmndt.platform7.api.AbstractJUnit5TestCase;
 import org.camunda.community.bpmndt.platform7.api.cfg.SpringConfiguration;
 import org.camunda.community.bpmndt.test.Platform7TestPaths;
@@ -49,27 +51,8 @@ public class GeneratorTest {
 
     result = generator.getResult();
 
-    String fileName = testInfo.getTestMethod().get().getName().replace("test", "") + ".bpmn";
+    String fileName = testInfo.getTestMethod().orElseThrow(NoSuchElementException::new).getName().replace("test", "") + ".bpmn";
     bpmnFile = ctx.getMainResourcePath().resolve(StringUtils.uncapitalize(fileName));
-  }
-
-  @Test
-  public void testToJavaLiteral() {
-    assertThat(Generator.toJavaLiteral("Happy Path")).isEqualTo("happy_path");
-    assertThat(Generator.toJavaLiteral("Happy-Path")).isEqualTo("happy_path");
-    assertThat(Generator.toJavaLiteral("Happy Path!")).isEqualTo("happy_path_");
-    assertThat(Generator.toJavaLiteral("startEvent__endEvent")).isEqualTo("startevent__endevent");
-    assertThat(Generator.toJavaLiteral("123\nABC")).isEqualTo("_123_abc");
-    assertThat(Generator.toJavaLiteral("New")).isEqualTo("_new");
-  }
-
-  @Test
-  public void testToLiteral() {
-    assertThat(Generator.toLiteral("Happy Path")).isEqualTo("Happy_Path");
-    assertThat(Generator.toLiteral("Happy-Path")).isEqualTo("Happy_Path");
-    assertThat(Generator.toLiteral("Happy Path!")).isEqualTo("Happy_Path_");
-    assertThat(Generator.toLiteral("startEvent__endEvent")).isEqualTo("startEvent__endEvent");
-    assertThat(Generator.toLiteral("123\nABC")).isEqualTo("123_ABC");
   }
 
   /**
@@ -154,8 +137,8 @@ public class GeneratorTest {
     assertThat(isFile.test("org/camunda/community/bpmndt/platform7/api/ExternalTaskHandler.java")).isTrue();
     assertThat(isFile.test("org/camunda/community/bpmndt/platform7/api/JobHandler.java")).isTrue();
     assertThat(isFile.test("org/camunda/community/bpmndt/platform7/api/MultiInstanceHandler.java")).isTrue();
-    assertThat(isFile.test("org/camunda/community/bpmndt/platform7/api/TestCaseInstance.java")).isTrue();
     assertThat(isFile.test("org/camunda/community/bpmndt/platform7/api/TestCaseExecutor.java")).isTrue();
+    assertThat(isFile.test("org/camunda/community/bpmndt/platform7/api/TestCaseInstance.java")).isTrue();
     assertThat(isFile.test("org/camunda/community/bpmndt/platform7/api/UserTaskHandler.java")).isTrue();
     assertThat(isFile.test("org/camunda/community/bpmndt/platform7/api/cfg/BpmndtParseListener.java")).isTrue();
     assertThat(isFile.test("org/camunda/community/bpmndt/platform7/api/cfg/BpmndtProcessEnginePlugin.java")).isTrue();
@@ -195,8 +178,8 @@ public class GeneratorTest {
     assertThat(isFile.test("org/camunda/community/bpmndt/platform7/api/JobHandler.java")).isTrue();
     assertThat(isFile.test("org/camunda/community/bpmndt/platform7/api/MultiInstanceHandler.java")).isTrue();
     assertThat(isFile.test("org/camunda/community/bpmndt/platform7/api/MultiInstanceScopeHandler.java")).isTrue();
-    assertThat(isFile.test("org/camunda/community/bpmndt/platform7/api/TestCaseInstance.java")).isTrue();
     assertThat(isFile.test("org/camunda/community/bpmndt/platform7/api/TestCaseExecutor.java")).isTrue();
+    assertThat(isFile.test("org/camunda/community/bpmndt/platform7/api/TestCaseInstance.java")).isTrue();
     assertThat(isFile.test("org/camunda/community/bpmndt/platform7/api/UserTaskHandler.java")).isTrue();
     assertThat(isFile.test("org/camunda/community/bpmndt/platform7/api/cfg/BpmndtParseListener.java")).isTrue();
     assertThat(isFile.test("org/camunda/community/bpmndt/platform7/api/cfg/BpmndtProcessEnginePlugin.java")).isTrue();

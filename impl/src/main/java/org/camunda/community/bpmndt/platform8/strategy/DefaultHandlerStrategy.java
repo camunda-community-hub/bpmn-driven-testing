@@ -1,23 +1,23 @@
-package org.camunda.community.bpmndt.platform7.strategy;
+package org.camunda.community.bpmndt.platform8.strategy;
 
 import javax.lang.model.element.Modifier;
 
 import org.apache.commons.lang3.StringUtils;
 import org.camunda.community.bpmndt.Literal;
-import org.camunda.community.bpmndt.model.platform7.TestCaseActivity;
-import org.camunda.community.bpmndt.model.platform7.TestCaseActivityType;
+import org.camunda.community.bpmndt.model.platform8.BpmnElement;
+import org.camunda.community.bpmndt.model.platform8.BpmnElementType;
 
 import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeSpec;
 
 /**
- * Default strategy for all handled activities, that provide a fluent handler API.
+ * Default strategy for all handled BPMN element, that provide a fluent handler API.
  */
 public class DefaultHandlerStrategy extends DefaultStrategy {
 
-  public DefaultHandlerStrategy(TestCaseActivity activity) {
-    super(activity);
+  public DefaultHandlerStrategy(BpmnElement element) {
+    super(element);
   }
 
   @Override
@@ -38,59 +38,55 @@ public class DefaultHandlerStrategy extends DefaultStrategy {
   }
 
   protected CodeBlock buildHandlerMethodJavadoc() {
-    return CodeBlock.builder().add("Returns the handler for $L: $L", activity.getTypeName(), activity.getId()).build();
+    return CodeBlock.builder().add("Returns the handler for $L: $L", element.getTypeName(), element.getId()).build();
+  }
+
+  protected String buildHandlerMethodName(String literal) {
+    return String.format("handle%s", StringUtils.capitalize(literal));
   }
 
   @Override
   public void applyHandler(MethodSpec.Builder methodBuilder) {
-    if (activity.hasPrevious(TestCaseActivityType.EVENT_BASED_GATEWAY)) {
+    if (element.hasPrevious(BpmnElementType.EVENT_BASED_GATEWAY)) {
       // if an event or job is part of an event based gateway
       // the process instance is waiting at the gateway and not at the event or job itself
-      methodBuilder.addStatement("instance.apply($L)", getHandler());
-    } else if (activity.getType().isWaitState()) {
-      methodBuilder.addStatement("assertThat(pi).isWaitingAt($S)", activity.getId());
+      methodBuilder.addStatement("instance.apply(processInstanceEvent, $L)", getHandler());
+    } else {
+      methodBuilder.addStatement("instance.isWaitingAt(processInstanceEvent, $S)", element.getId());
       methodBuilder.addStatement("instance.apply($L)", getHandler());
     }
 
-    if (!activity.hasNext()) {
+    if (!element.hasNext()) {
       return;
     }
 
-    TestCaseActivity next = activity.getNext();
+    BpmnElement next = element.getNext();
     if (!next.getType().isBoundaryEvent()) {
       return;
     }
 
     switch (next.getType()) {
-      case CONDITIONAL_BOUNDARY:
       case MESSAGE_BOUNDARY:
       case SIGNAL_BOUNDARY:
       case TIMER_BOUNDARY:
-        methodBuilder.addStatement("instance.apply($L)", Literal.toLiteral(next.getId()));
-        break;
-      default:
-        break;
+        methodBuilder.addStatement("instance.apply(processInstanceEvent, $L)", Literal.toLiteral(next.getId()));
     }
   }
 
   @Override
   public CodeBlock getHandler() {
-    if (multiInstanceParent) {
-      return CodeBlock.of("get$LHandler(loopIndex)", StringUtils.capitalize(literal));
-    } else {
-      return CodeBlock.of(literal);
-    }
+    return CodeBlock.of(literal);
   }
 
   @Override
   public void initHandler(MethodSpec.Builder methodBuilder) {
-    methodBuilder.addCode("\n// $L: $L\n", activity.getTypeName(), activity.getId());
+    methodBuilder.addCode("\n// $L: $L\n", element.getTypeName(), element.getId());
     methodBuilder.addCode("$L = ", literal);
     methodBuilder.addStatement(initHandlerStatement());
   }
 
   @Override
   public CodeBlock initHandlerStatement() {
-    return CodeBlock.of("new $T(getProcessEngine(), $S)", getHandlerType(), activity.getId());
+    return CodeBlock.of("new $T($LElement)", getHandlerType(), element.getId());
   }
 }

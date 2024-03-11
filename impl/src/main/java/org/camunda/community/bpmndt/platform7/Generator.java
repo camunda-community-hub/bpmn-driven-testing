@@ -4,12 +4,10 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
 
-import javax.lang.model.SourceVersion;
-
+import org.camunda.community.bpmndt.GeneratorResult;
 import org.camunda.community.bpmndt.cmd.CollectBpmnFiles;
 import org.camunda.community.bpmndt.cmd.DeleteTestSources;
 import org.camunda.community.bpmndt.cmd.WriteJavaFile;
@@ -46,60 +44,6 @@ public class Generator {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(Generator.class);
 
-  /**
-   * Converts the given BPMN element ID into a Java literal, which can be used when generating source code. The conversion lowers all characters and retains
-   * letters as well as digits. All other characters are converted into underscores. If the literal starts with a digit, an additional underscore is prepended.
-   *
-   * @param id The ID of a specific flow node or process.
-   * @return A Java conform literal.
-   */
-  public static String toJavaLiteral(String id) {
-    if (id == null) {
-      throw new IllegalArgumentException("id is null");
-    }
-
-    String literal = toLiteral(id).toLowerCase(Locale.ENGLISH);
-
-    if (Character.isDigit(literal.charAt(0))) {
-      return String.format("_%s", literal);
-    } else if (SourceVersion.isKeyword(literal)) {
-      return String.format("_%s", literal);
-    } else {
-      return literal;
-    }
-  }
-
-  /**
-   * Converts the given BPMN element ID into a literal, which can be used when generating source code. The conversion retains letters and digits. All other
-   * characters are converted into underscores. Moreover, upper case is also retained.
-   *
-   * @param id The ID of a specific flow node or process.
-   * @return A conform literal.
-   */
-  public static String toLiteral(String id) {
-    if (id == null) {
-      throw new IllegalArgumentException("id is null");
-    }
-
-    String trimmedId = id.trim();
-    if (trimmedId.isEmpty()) {
-      throw new IllegalArgumentException("id is empty");
-    }
-
-    StringBuilder sb = new StringBuilder(trimmedId.length());
-    for (int i = 0; i < trimmedId.length(); i++) {
-      char c = trimmedId.charAt(i);
-
-      if (Character.isLetterOrDigit(c)) {
-        sb.append(c);
-      } else {
-        sb.append('_');
-      }
-    }
-
-    return sb.toString();
-  }
-
   private final GeneratorResult result;
 
   public Generator() {
@@ -113,7 +57,7 @@ public class Generator {
     new DeleteTestSources().apply(ctx);
 
     // collect BPMN files
-    Collection<Path> bpmnFiles = new CollectBpmnFiles().apply(ctx.getMainResourcePath());
+    Collection<Path> bpmnFiles = new CollectBpmnFiles().apply(ctx);
     for (Path bpmnFile : bpmnFiles) {
       String relativePath = ctx.getMainResourcePath().relativize(bpmnFile).toString().replace('\\', '/');
       LOGGER.info("Found BPMN file: {}", relativePath);
@@ -153,6 +97,7 @@ public class Generator {
 
     Set<Class<?>> apiClasses = new TreeSet<>(Comparator.comparing(Class::getName));
 
+    apiClasses.add(AbstractJUnit5TestCase.class);
     apiClasses.add(AbstractTestCase.class);
     apiClasses.add(CallActivityDefinition.class);
     apiClasses.add(CallActivityHandler.class);
@@ -161,14 +106,12 @@ public class Generator {
     apiClasses.add(JobHandler.class);
     apiClasses.add(MultiInstanceHandler.class);
     apiClasses.add(MultiInstanceScopeHandler.class);
-    apiClasses.add(TestCaseInstance.class);
     apiClasses.add(TestCaseExecutor.class);
+    apiClasses.add(TestCaseInstance.class);
     apiClasses.add(UserTaskHandler.class);
 
     apiClasses.add(BpmndtParseListener.class);
     apiClasses.add(BpmndtProcessEnginePlugin.class);
-
-    apiClasses.add(AbstractJUnit5TestCase.class);
 
     if (ctx.isSpringEnabled()) {
       apiClasses.add(SpringConfiguration.class);

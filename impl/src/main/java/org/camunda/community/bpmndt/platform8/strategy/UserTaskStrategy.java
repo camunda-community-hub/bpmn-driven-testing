@@ -1,0 +1,71 @@
+package org.camunda.community.bpmndt.platform8.strategy;
+
+import org.camunda.community.bpmndt.model.platform8.BpmnElement;
+import org.camunda.community.bpmndt.platform8.api.TestCaseInstanceElement.UserTaskElement;
+
+import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.TypeName;
+
+import io.camunda.zeebe.model.bpmn.instance.ExtensionElements;
+import io.camunda.zeebe.model.bpmn.instance.UserTask;
+import io.camunda.zeebe.model.bpmn.instance.zeebe.ZeebeAssignmentDefinition;
+import io.camunda.zeebe.model.bpmn.instance.zeebe.ZeebeTaskSchedule;
+
+public class UserTaskStrategy extends DefaultHandlerStrategy {
+
+  public UserTaskStrategy(BpmnElement element) {
+    super(element);
+  }
+
+  @Override
+  public TypeName getHandlerType() {
+    return USER_TASK;
+  }
+
+  @Override
+  public void initHandler(MethodSpec.Builder methodBuilder) {
+    super.initHandler(methodBuilder);
+
+    if (!element.hasNext()) {
+      return;
+    }
+
+    BpmnElement next = element.getNext();
+    if (!next.getType().isBoundaryEvent()) {
+      return;
+    }
+
+    switch (next.getType()) {
+      case ERROR_BOUNDARY:
+        methodBuilder.addStatement("$L.throwBpmnError($S, null)", literal, next.getEventCode());
+        break;
+      default:
+        methodBuilder.addStatement("$L.waitForBoundaryEvent()", literal);
+        break;
+    }
+  }
+
+  @Override
+  public void initHandlerElement(MethodSpec.Builder methodBuilder) {
+    methodBuilder.addCode("\n// $L: $L\n", element.getTypeName(), element.getId());
+    methodBuilder.addStatement("$T $LElement = new $T()", UserTaskElement.class, literal, UserTaskElement.class);
+
+    UserTask userTask = element.getFlowNode(UserTask.class);
+    methodBuilder.addStatement("$LElement.setId($S)", literal, element.getId());
+
+    ExtensionElements extensionElements = userTask.getExtensionElements();
+
+    ZeebeAssignmentDefinition assignmentDefinition = (ZeebeAssignmentDefinition) extensionElements.getUniqueChildElementByType(ZeebeAssignmentDefinition.class);
+    if (assignmentDefinition != null) {
+      methodBuilder.addStatement("$LElement.setAssignee($S)", literal, assignmentDefinition.getAssignee());
+      methodBuilder.addStatement("$LElement.setCandidateGroups($S)", literal, assignmentDefinition.getCandidateGroups());
+      methodBuilder.addStatement("$LElement.setCandidateUsers($S)", literal, assignmentDefinition.getCandidateUsers());
+    }
+
+    ZeebeTaskSchedule taskSchedule = (ZeebeTaskSchedule) extensionElements.getUniqueChildElementByType(ZeebeTaskSchedule.class);
+    if (taskSchedule != null) {
+      methodBuilder.addStatement("$LElement.setDueDate($S)", literal, taskSchedule.getDueDate());
+      methodBuilder.addStatement("$LElement.setFollowUpDate($S)", literal, taskSchedule.getFollowUpDate());
+    }
+  }
+}

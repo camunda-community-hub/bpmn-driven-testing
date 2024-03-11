@@ -5,9 +5,9 @@ import java.util.function.Consumer;
 import javax.lang.model.element.Modifier;
 
 import org.camunda.bpm.engine.runtime.ProcessInstance;
+import org.camunda.community.bpmndt.GeneratorResult;
 import org.camunda.community.bpmndt.model.platform7.TestCaseActivity;
 import org.camunda.community.bpmndt.model.platform7.TestCaseActivityType;
-import org.camunda.community.bpmndt.platform7.GeneratorResult;
 import org.camunda.community.bpmndt.platform7.GeneratorStrategy;
 import org.camunda.community.bpmndt.platform7.TestCaseContext;
 import org.camunda.community.bpmndt.platform7.api.MultiInstanceHandler;

@@ -11,6 +11,7 @@ import java.util.Map;
 
 import org.camunda.community.bpmndt.platform8.api.TestCaseInstanceElement.JobElement;
 import org.camunda.community.bpmndt.test.Platform8TestPaths;
+import org.camunda.community.bpmndt.test.TestVariables;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -169,9 +170,7 @@ public class ServiceTaskTest {
 
   @Test
   public void testExecuteAction() {
-    handler.execute((client, job) ->
-        client.newCompleteCommand(job).send()
-    );
+    handler.execute((client, job) -> client.newCompleteCommand(job).send());
 
     tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
   }
@@ -248,37 +247,6 @@ public class ServiceTaskTest {
       instance.hasPassed(processInstanceEvent, "serviceTask");
       instance.hasPassed(processInstanceEvent, "endEvent");
       instance.isCompleted(processInstanceEvent);
-    }
-  }
-
-  public static class TestVariables {
-
-    private String x;
-    private int y;
-    private boolean z;
-
-    public String getX() {
-      return x;
-    }
-
-    public int getY() {
-      return y;
-    }
-
-    public boolean isZ() {
-      return z;
-    }
-
-    public void setX(String x) {
-      this.x = x;
-    }
-
-    public void setY(int y) {
-      this.y = y;
-    }
-
-    public void setZ(boolean z) {
-      this.z = z;
     }
   }
 }

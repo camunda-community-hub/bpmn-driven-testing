@@ -7,13 +7,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.camunda.community.bpmndt.platform8.api.TestCaseInstanceElement.UserTaskElement;
 import org.camunda.community.bpmndt.test.Platform8TestPaths;
+import org.camunda.community.bpmndt.test.TestVariables;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
+import io.camunda.zeebe.client.ZeebeClient;
+import io.camunda.zeebe.client.api.response.Form;
 import io.camunda.zeebe.client.api.response.ProcessInstanceEvent;
 import io.camunda.zeebe.process.test.api.ZeebeTestEngine;
 import io.camunda.zeebe.process.test.assertions.ProcessInstanceAssert;
@@ -26,12 +32,25 @@ public class UserTaskTest {
   TestCase tc = new TestCase();
 
   ZeebeTestEngine engine;
+  ZeebeClient client;
 
   private UserTaskHandler handler;
-  private UserTaskHandler emptyHandler;
+  private UserTaskHandler handlerWithLinkedForm;
+  private UserTaskHandler handlerWithEmbeddedForm;
+
+  private Form form;
 
   @BeforeEach
   public void setUp() {
+    List<Form> forms = client.newDeployResourceCommand()
+        .addResourceFile(Platform8TestPaths.simple("simpleUserTask.form").toAbsolutePath().toString())
+        .send()
+        .join()
+        .getForm();
+
+    assertThat(forms).hasSize(1);
+    form = forms.get(0);
+
     UserTaskElement element = new UserTaskElement();
     element.setAssignee("=\"simpleAssignee\"");
     element.setCandidateGroups("=[\"simpleGroupA\", \"simpleGroupB\"]");
@@ -42,15 +61,65 @@ public class UserTaskTest {
 
     handler = new UserTaskHandler(element);
 
-    UserTaskElement emptyElement = new UserTaskElement();
-    emptyElement.setId("emptyUserTask");
+    UserTaskElement elementWithLinkedForm = new UserTaskElement();
+    elementWithLinkedForm.setId("userTaskWithLinkedForm");
 
-    emptyHandler = new UserTaskHandler(emptyElement);
+    handlerWithLinkedForm = new UserTaskHandler(elementWithLinkedForm);
+
+    UserTaskElement elementWithEmbeddedForm = new UserTaskElement();
+    elementWithEmbeddedForm.setId("userTaskWithEmbeddedForm");
+
+    handlerWithEmbeddedForm = new UserTaskHandler(elementWithEmbeddedForm);
   }
 
   @Test
   public void testExecute() {
     tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+  }
+
+  @Test
+  public void testCompleteAction() {
+    handler.complete((client, job) -> client.newCompleteCommand(job).send());
+
+    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+  }
+
+  @Test
+  public void testCompleteActionWithVariables() {
+    TestVariables variables = new TestVariables();
+    variables.setX("test");
+    variables.setY(1);
+    variables.setZ(true);
+
+    handler.withVariables(variables).complete();
+
+    tc.createExecutor(engine).verify(piAssert -> {
+      piAssert.isCompleted();
+
+      piAssert.hasVariableWithValue("x", "test");
+      piAssert.hasVariableWithValue("y", 1);
+      piAssert.hasVariableWithValue("z", true);
+    }).execute();
+  }
+
+  @Test
+  public void testCompleteActionWithVariableMap() {
+    Map<String, Object> variableMap = new HashMap<>();
+    variableMap.put("y", 1);
+    variableMap.put("z", true);
+
+    handler
+        .withVariable("x", "test")
+        .withVariableMap(variableMap)
+        .complete();
+
+    tc.createExecutor(engine).verify(piAssert -> {
+      piAssert.isCompleted();
+
+      piAssert.hasVariableWithValue("x", "test");
+      piAssert.hasVariableWithValue("y", 1);
+      piAssert.hasVariableWithValue("z", true);
+    }).execute();
   }
 
   @Test
@@ -181,6 +250,26 @@ public class UserTaskTest {
     tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
   }
 
+  @Test
+  public void testVerifyFormKey() {
+    handler.verifyFormKey("wrong form key");
+
+    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
+
+    handler.verifyFormKey((String) null);
+    handler.verifyFormKey(formKey -> assertThat(formKey).isEqualTo("wrong form key"));
+
+    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
+
+    handler.verifyFormKey("simpleFormKey");
+    handler.verifyFormKey(formKey -> assertThat(formKey).isEqualTo("simpleFormKey"));
+
+    handlerWithLinkedForm.verifyFormKey(String.valueOf(form.getFormKey()));
+    handlerWithEmbeddedForm.verifyFormKey("camunda-forms:bpmn:UserTaskForm_0e64hjp");
+
+    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+  }
+
   private class TestCase extends AbstractJUnit5TestCase {
 
     @Override
@@ -213,9 +302,12 @@ public class UserTaskTest {
       instance.isWaitingAt(processInstanceEvent, "userTask");
       instance.apply(processInstanceEvent, handler);
       instance.hasPassed(processInstanceEvent, "userTask");
-      instance.isWaitingAt(processInstanceEvent, "emptyUserTask");
-      instance.apply(processInstanceEvent, emptyHandler);
-      instance.hasPassed(processInstanceEvent, "emptyUserTask");
+      instance.isWaitingAt(processInstanceEvent, "userTaskWithLinkedForm");
+      instance.apply(processInstanceEvent, handlerWithLinkedForm);
+      instance.hasPassed(processInstanceEvent, "userTaskWithLinkedForm");
+      instance.isWaitingAt(processInstanceEvent, "userTaskWithEmbeddedForm");
+      instance.apply(processInstanceEvent, handlerWithEmbeddedForm);
+      instance.hasPassed(processInstanceEvent, "userTaskWithEmbeddedForm");
       instance.hasPassed(processInstanceEvent, "endEvent");
       instance.isCompleted(processInstanceEvent);
     }

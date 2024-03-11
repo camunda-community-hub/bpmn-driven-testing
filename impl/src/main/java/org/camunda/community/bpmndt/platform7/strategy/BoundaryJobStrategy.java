@@ -1,7 +1,7 @@
 package org.camunda.community.bpmndt.platform7.strategy;
 
+import org.camunda.community.bpmndt.Literal;
 import org.camunda.community.bpmndt.model.platform7.TestCaseActivity;
-import org.camunda.community.bpmndt.platform7.Generator;
 
 import com.squareup.javapoet.CodeBlock;
 
@@ -30,7 +30,7 @@ public class BoundaryJobStrategy extends JobStrategy {
     Object[] args = {activity.getTypeName(), activity.getId(), previous.getTypeName(), previous.getId()};
     builder.add("Returns the handler for $L: $L attached to $L: $L", args);
 
-    String literal = Generator.toLiteral(previous.getId());
+    String literal = Literal.toLiteral(previous.getId());
     builder.add("\n\n@see #$L", buildHandlerMethodName(literal));
 
     return builder.build();

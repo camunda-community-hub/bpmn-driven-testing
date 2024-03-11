@@ -135,8 +135,8 @@ public interface GeneratorStrategy {
   TestCaseActivity getActivity();
 
   /**
-   * Returns code for getting a handler field reference. Normally a handler field is references using {@link TestCaseActivity##getLiteral()}, but in case of a
-   * multi instance scope a specific {@code getHandler} method must be called.<br>
+   * Returns code for getting a handler field reference. Normally a handler field is references using {@link #getLiteral()}, but in case of a multi instance
+   * scope a specific {@code getHandler} method must be called.<br>
    * <br>
    * <p>
    * Normally:

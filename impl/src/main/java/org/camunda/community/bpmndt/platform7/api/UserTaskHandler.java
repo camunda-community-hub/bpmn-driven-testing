@@ -152,8 +152,8 @@ public class UserTaskHandler {
   }
 
   /**
-   * Applies no action at the user task's wait state. This is required to wait for events (e.g. message, signal or timer events) that are attached as boundary
-   * events on the activity itself or on the surrounding scope (e.g. embedded subprocess).
+   * Applies no action at the user task's wait state. This is required when waiting for events (e.g. message, signal or timer events) that are attached as
+   * boundary events on the activity itself or on the surrounding scope (e.g. embedded subprocess).
    */
   public void waitForBoundaryEvent() {
     action = null;

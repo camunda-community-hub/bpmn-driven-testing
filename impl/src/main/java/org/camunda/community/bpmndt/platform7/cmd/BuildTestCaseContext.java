@@ -6,10 +6,10 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.function.Function;
 
+import org.camunda.community.bpmndt.Literal;
 import org.camunda.community.bpmndt.model.platform7.TestCase;
 import org.camunda.community.bpmndt.model.platform7.TestCaseActivity;
 import org.camunda.community.bpmndt.model.platform7.TestCaseActivityScope;
-import org.camunda.community.bpmndt.platform7.Generator;
 import org.camunda.community.bpmndt.platform7.GeneratorContext;
 import org.camunda.community.bpmndt.platform7.GeneratorStrategy;
 import org.camunda.community.bpmndt.platform7.TestCaseContext;
@@ -46,15 +46,15 @@ public class BuildTestCaseContext implements Function<TestCase, TestCaseContext>
     // build test case name
     String name;
     if (testCase.getName() != null) {
-      name = Generator.toLiteral(testCase.getName());
+      name = Literal.toLiteral(testCase.getName());
     } else {
-      String a = Generator.toLiteral(testCase.getStartActivity().getId());
-      String b = Generator.toLiteral(testCase.getEndActivity().getId());
+      String a = Literal.toLiteral(testCase.getStartActivity().getId());
+      String b = Literal.toLiteral(testCase.getEndActivity().getId());
 
       name = String.format("%s__%s", a, b);
     }
 
-    String packageName = Generator.toJavaLiteral(testCase.getProcessId().toLowerCase(Locale.ENGLISH));
+    String packageName = Literal.toJavaLiteral(testCase.getProcessId().toLowerCase(Locale.ENGLISH));
 
     TestCaseContext ctx = new TestCaseContext();
     ctx.setClassName(String.format("TC_%s", name));

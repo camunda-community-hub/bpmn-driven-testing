@@ -4,8 +4,8 @@ import java.util.function.Consumer;
 
 import javax.lang.model.element.Modifier;
 
+import org.camunda.community.bpmndt.GeneratorResult;
 import org.camunda.community.bpmndt.platform7.GeneratorContext;
-import org.camunda.community.bpmndt.platform7.GeneratorResult;
 import org.camunda.community.bpmndt.platform7.api.cfg.SpringConfiguration;
 import org.springframework.context.annotation.Configuration;
 

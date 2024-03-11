@@ -1,0 +1,12 @@
+{
+  "components": [],
+  "type": "default",
+  "id": "simpleUserTask",
+  "executionPlatform": "Camunda Cloud",
+  "executionPlatformVersion": "8.4.0",
+  "exporter": {
+    "name": "Camunda Modeler",
+    "version": "5.20.0"
+  },
+  "schemaVersion": 15
+}

@@ -277,6 +277,8 @@ class TestCasesImpl implements TestCases {
         element.type = BpmnElementType.CALL_ACTIVITY;
       } else if (bpmnSupport.isEventBasedGateway(flowNodeId)) {
         element.type = BpmnElementType.EVENT_BASED_GATEWAY;
+      } else if (bpmnSupport.isServiceTask(flowNodeId)) {
+        element.type = BpmnElementType.SERVICE_TASK;
       } else if (bpmnSupport.isUserTask(flowNodeId)) {
         element.type = BpmnElementType.USER_TASK;
       } else if (bpmnSupport.isIntermediateCatchEvent(flowNodeId)) {

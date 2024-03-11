@@ -8,6 +8,7 @@ import static org.camunda.community.bpmndt.test.TypeSpecSubject.assertThat;
 import java.nio.file.Path;
 
 import org.apache.commons.lang3.StringUtils;
+import org.camunda.community.bpmndt.GeneratorResult;
 import org.camunda.community.bpmndt.platform7.api.CallActivityHandler;
 import org.camunda.community.bpmndt.platform7.api.EventHandler;
 import org.camunda.community.bpmndt.platform7.api.JobHandler;

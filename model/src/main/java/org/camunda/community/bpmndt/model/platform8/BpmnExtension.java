@@ -18,13 +18,23 @@ public class BpmnExtension extends Bpmn {
   public static void registerTypes() {
     ModelBuilder modelBuilder = Bpmn.INSTANCE.getBpmnModelBuilder();
 
+    new BpmnExtension().doRegisterTypes(modelBuilder);
+
+    Bpmn.INSTANCE.setBpmnModel(modelBuilder.build());
+  }
+
+  @Override
+  protected void doRegisterTypes(ModelBuilder modelBuilder) {
+    super.doRegisterTypes(modelBuilder);
+
     TestCasesElement.registerType(modelBuilder);
     TestCaseElement.registerType(modelBuilder);
     DescriptionElement.registerType(modelBuilder);
     NameElement.registerType(modelBuilder);
     PathElement.registerType(modelBuilder);
     PathNodeElement.registerType(modelBuilder);
+  }
 
-    Bpmn.INSTANCE.setBpmnModel(modelBuilder.build());
+  private BpmnExtension() {
   }
 }

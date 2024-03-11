@@ -52,7 +52,7 @@ public class UserTaskHandler {
   UserTaskHandler(UserTaskElement element) {
     this.element = element;
 
-    action = this::complete;
+    complete();
   }
 
   @SuppressWarnings("unchecked")
@@ -174,7 +174,7 @@ public class UserTaskHandler {
     }
 
     if (action != null) {
-      try (JobWorker worker = instance.client.newWorker().jobType(job.type).handler(action).open()) {
+      try (JobWorker ignored = instance.client.newWorker().jobType(job.type).handler(action).open()) {
         instance.hasPassed(processInstanceEvent, element.getId());
       }
     }
@@ -422,6 +422,14 @@ public class UserTaskHandler {
   public UserTaskHandler verifyFormKey(Consumer<String> formKeyConsumer) {
     this.formKeyConsumer = formKeyConsumer;
     return this;
+  }
+
+  /**
+   * Applies no action at the user task's wait state. This is required when waiting for events (e.g. message, signal or timer events) that are attached as
+   * boundary events on the element itself or on the surrounding scope (e.g. embedded subprocess).
+   */
+  public void waitForBoundaryEvent() {
+    action = null;
   }
 
   /**

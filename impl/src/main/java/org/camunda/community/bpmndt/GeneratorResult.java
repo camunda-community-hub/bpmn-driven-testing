@@ -1,4 +1,4 @@
-package org.camunda.community.bpmndt.platform7;
+package org.camunda.community.bpmndt;
 
 import java.util.LinkedList;
 import java.util.List;

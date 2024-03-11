@@ -226,7 +226,7 @@ public class ExternalTaskHandler {
   }
 
   /**
-   * Applies no action at the external task's wait state. This is required to wait for events (e.g. message, signal or timer events) that are attached as
+   * Applies no action at the external task's wait state. This is required when waiting for events (e.g. message, signal or timer events) that are attached as
    * boundary events on the activity itself or on the surrounding scope (e.g. embedded subprocess).
    */
   public void waitForBoundaryEvent() {

@@ -8,7 +8,7 @@ import java.nio.file.Path;
 import java.util.function.Consumer;
 
 import org.camunda.community.bpmndt.Constants;
-import org.camunda.community.bpmndt.platform7.GeneratorContext;
+import org.camunda.community.bpmndt.GeneratorContextBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,9 +18,9 @@ public class WriteJavaFile implements Consumer<JavaFile> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(WriteJavaFile.class);
 
-  private final GeneratorContext ctx;
+  private final GeneratorContextBase ctx;
 
-  public WriteJavaFile(GeneratorContext ctx) {
+  public WriteJavaFile(GeneratorContextBase ctx) {
     this.ctx = ctx;
   }
 

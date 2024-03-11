@@ -1,34 +1,14 @@
 package org.camunda.community.bpmndt.platform7;
 
-import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 
-public class GeneratorContext {
+import org.camunda.community.bpmndt.GeneratorContextBase;
 
-  private Path basePath;
-  private Path mainResourcePath;
-  private String packageName;
+public class GeneratorContext extends GeneratorContextBase {
+
   private List<String> processEnginePluginNames;
   private boolean springEnabled;
-  private Path testSourcePath;
-
-  public Path getBasePath() {
-    return basePath;
-  }
-
-  public Path getMainResourcePath() {
-    return mainResourcePath;
-  }
-
-  /**
-   * Gets the configured base package name or the default value.
-   *
-   * @return The base package name.
-   */
-  public String getPackageName() {
-    return packageName;
-  }
 
   /**
    * Returns the class names of process engine plugins, which should be registered at the process engine that executes the generated test cases.
@@ -39,24 +19,8 @@ public class GeneratorContext {
     return processEnginePluginNames != null ? processEnginePluginNames : Collections.emptyList();
   }
 
-  public Path getTestSourcePath() {
-    return testSourcePath;
-  }
-
   public boolean isSpringEnabled() {
     return springEnabled;
-  }
-
-  public void setBasePath(Path basePath) {
-    this.basePath = basePath;
-  }
-
-  public void setMainResourcePath(Path mainResourcePath) {
-    this.mainResourcePath = mainResourcePath;
-  }
-
-  public void setPackageName(String packageName) {
-    this.packageName = packageName;
   }
 
   public void setProcessEnginePluginNames(List<String> processEnginePluginNames) {
@@ -65,9 +29,5 @@ public class GeneratorContext {
 
   public void setSpringEnabled(boolean springEnabled) {
     this.springEnabled = springEnabled;
-  }
-
-  public void setTestSourcePath(Path testSourcePath) {
-    this.testSourcePath = testSourcePath;
   }
 }

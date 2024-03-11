@@ -31,33 +31,19 @@ public abstract class AbstractTestCase {
   }
 
   /**
-   * Returns the ID of the BPMN process that is tested.
-   *
-   * @return The BPMN process ID.
-   */
-  public abstract String getBpmnProcessId();
-
-  /**
-   * Returns the ID of the test case's end activity.
-   *
-   * @return The end activity ID.
-   */
-  public abstract String getEnd();
-
-  /**
-   * Returns the ID of the test case's start activity.
-   *
-   * @return The start activity ID.
-   */
-  public abstract String getStart();
-
-  /**
    * Executes the test case.
    *
    * @param instance             The test case instance to use.
    * @param processInstanceEvent The related process instance event, created during the start of the test case.
    */
   protected abstract void execute(TestCaseInstance instance, ProcessInstanceEvent processInstanceEvent);
+
+  /**
+   * Returns the ID of the BPMN process that is tested.
+   *
+   * @return The BPMN process ID.
+   */
+  public abstract String getBpmnProcessId();
 
   /**
    * Returns an input stream that provides the BPMN resource with the process definition to be tested - either this method or {@link #getBpmnResourceName()}
@@ -80,20 +66,34 @@ public abstract class AbstractTestCase {
   }
 
   /**
-   * Determines if the test case's end activity ends the process or not. This is the case if the activity is an end event and if the activity's parent scope is
-   * the process. This method returns {@code true}, if not overridden.
+   * Returns the ID of the test case's end activity.
    *
-   * @return {@code true}, if the test case's end activity ends the process. Otherwise {@code false}.
+   * @return The end activity ID.
+   */
+  public abstract String getEnd();
+
+  /**
+   * Returns the ID of the test case's start element.
+   *
+   * @return The start activity ID.
+   */
+  public abstract String getStart();
+
+  /**
+   * Determines if the test case's end element ends the process or not. This is the case if the BPMN element is an end event and if the element's parent scope
+   * is the process. This method returns {@code true}, if not overridden.
+   *
+   * @return {@code true}, if the test case's end element ends the process. Otherwise {@code false}.
    */
   protected boolean isProcessEnd() {
     return true;
   }
 
   /**
-   * Determines if the test case's start activity starts the process or not. This is the case if the activity is a start event and if the activity's parent
+   * Determines if the test case's start element starts the process or not. This is the case if the BPMN element is a start event and if the element's parent
    * scope is the process. This method returns {@code true}, if not overridden.
    *
-   * @return {@code true}, if the test case's start activity starts the process. Otherwise {@code false}.
+   * @return {@code true}, if the test case's start element starts the process. Otherwise {@code false}.
    */
   protected boolean isProcessStart() {
     return true;
