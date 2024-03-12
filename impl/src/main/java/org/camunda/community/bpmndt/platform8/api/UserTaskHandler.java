@@ -10,6 +10,7 @@ import org.camunda.community.bpmndt.platform8.api.TestCaseInstanceElement.UserTa
 import org.camunda.community.bpmndt.platform8.api.TestCaseInstanceMemo.JobMemo;
 
 import io.camunda.zeebe.client.api.JsonMapper;
+import io.camunda.zeebe.client.api.command.ThrowErrorCommandStep1.ThrowErrorCommandStep2;
 import io.camunda.zeebe.client.api.response.ActivatedJob;
 import io.camunda.zeebe.client.api.response.ProcessInstanceEvent;
 import io.camunda.zeebe.client.api.worker.JobClient;
@@ -26,6 +27,7 @@ public class UserTaskHandler {
 
   private Consumer<ProcessInstanceAssert> verifier;
   private io.camunda.zeebe.client.api.worker.JobHandler action;
+  private String errorMessage;
   private Object variables;
 
   private Consumer<String> assigneeExpressionConsumer;
@@ -37,8 +39,6 @@ public class UserTaskHandler {
   private String expectedAssignee;
   private List<String> expectedCandidateGroups;
   private List<String> expectedCandidateUsers;
-  private String expectedDueDate;
-  private String expectedFollowUpDate;
   private String expectedFormKey;
 
   private Consumer<String> assigneeConsumer;
@@ -147,19 +147,11 @@ public class UserTaskHandler {
     }
 
     String dueDate = job.getCustomHeader(Protocol.USER_TASK_DUE_DATE_HEADER_NAME);
-    if (expectedDueDate != null && !expectedDueDate.equals(dueDate)) {
-      String message = "expected user task %s to have due date '%s', but was '%s'";
-      throw new AssertionError(String.format(message, element.getId(), expectedDueDate, dueDate));
-    }
     if (dueDateConsumer != null) {
       dueDateConsumer.accept(dueDate);
     }
 
     String followUpDate = job.getCustomHeader(Protocol.USER_TASK_FOLLOW_UP_DATE_HEADER_NAME);
-    if (expectedFollowUpDate != null && !expectedFollowUpDate.equals(followUpDate)) {
-      String message = "expected user task %s to have follow-up date '%s', but was '%s'";
-      throw new AssertionError(String.format(message, element.getId(), expectedFollowUpDate, followUpDate));
-    }
     if (followUpDateConsumer != null) {
       followUpDateConsumer.accept(followUpDate);
     }
@@ -175,7 +167,11 @@ public class UserTaskHandler {
 
     if (action != null) {
       try (JobWorker ignored = instance.client.newWorker().jobType(job.type).handler(action).open()) {
-        instance.hasPassed(processInstanceEvent, element.getId());
+        if (element.getErrorCode() == null) {
+          instance.hasPassed(processInstanceEvent, element.getId());
+        } else {
+          instance.hasTerminated(processInstanceEvent, element.getId());
+        }
       }
     }
   }
@@ -197,6 +193,9 @@ public class UserTaskHandler {
    * @param action A specific action that accepts the related {@link JobClient} and {@link ActivatedJob} - a Zeebe job handler.
    */
   public void complete(io.camunda.zeebe.client.api.worker.JobHandler action) {
+    if (action == null) {
+      throw new IllegalArgumentException("action is null");
+    }
     this.action = action;
   }
 
@@ -224,6 +223,30 @@ public class UserTaskHandler {
       customizer.accept(this);
     }
     return this;
+  }
+
+  /**
+   * Throws an BPMN error using the given error message as well as the specified variables.
+   */
+  public void throwBpmnError(String errorMessage) {
+    if (element.getErrorCode() == null) {
+      throw new IllegalStateException("the subsequent test case element is not an error boundary event");
+    }
+
+    this.errorMessage = errorMessage;
+    this.action = this::throwBpmnError;
+  }
+
+  void throwBpmnError(JobClient client, ActivatedJob job) {
+    ThrowErrorCommandStep2 throwErrorCommandStep2 = client.newThrowErrorCommand(job)
+        .errorCode(element.getErrorCode())
+        .errorMessage(errorMessage);
+
+    if (variables != null) {
+      throwErrorCommandStep2.variables(variables).send();
+    } else {
+      throwErrorCommandStep2.variables(variableMap).send();
+    }
   }
 
   /**
@@ -337,17 +360,6 @@ public class UserTaskHandler {
   }
 
   /**
-   * Verifies that the user task has a specific due date.
-   *
-   * @param expectedDueDate The expected due date.
-   * @return The handler.
-   */
-  public UserTaskHandler verifyDueDate(String expectedDueDate) {
-    this.expectedDueDate = expectedDueDate;
-    return this;
-  }
-
-  /**
    * Verifies that the user task has a specific due date, using a consumer.
    *
    * @param dueDateConsumer A consumer asserting the due date.
@@ -366,17 +378,6 @@ public class UserTaskHandler {
    */
   public UserTaskHandler verifyDueDateExpression(Consumer<String> dueDateExpressionConsumer) {
     this.dueDateExpressionConsumer = dueDateExpressionConsumer;
-    return this;
-  }
-
-  /**
-   * Verifies that the user task has a specific follow-up date.
-   *
-   * @param expectedFollowUpDate The expected follow-up date.
-   * @return The handler.
-   */
-  public UserTaskHandler verifyFollowUpDate(String expectedFollowUpDate) {
-    this.expectedFollowUpDate = expectedFollowUpDate;
     return this;
   }
 

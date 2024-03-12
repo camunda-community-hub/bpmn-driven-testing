@@ -3,6 +3,7 @@ package org.camunda.community.bpmndt.platform7.api;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 import org.camunda.bpm.engine.ProcessEngine;
 import org.camunda.bpm.engine.impl.bpmn.behavior.CallActivityBehavior;
@@ -112,7 +113,7 @@ public class TestCaseInstance {
         .filter(pd -> pd.getKey().equals(processDefinitionKey))
         .map(ProcessDefinition::getId)
         .findFirst()
-        .get();
+        .orElseThrow(() -> new NoSuchElementException(String.format("process definition with key '%s' could not be found", processDefinitionKey)));
   }
 
   /**
@@ -143,7 +144,7 @@ public class TestCaseInstance {
         .filter((parseListener) -> (parseListener instanceof BpmndtParseListener))
         .map(BpmndtParseListener.class::cast)
         .findFirst()
-        .get();
+        .orElseThrow(() -> new NoSuchElementException("BpmndtParseListener could not be found in customPostBPMNParseListeners"));
   }
 
   public String getDeploymentId() {

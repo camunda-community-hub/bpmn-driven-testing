@@ -8,6 +8,7 @@ import static io.camunda.zeebe.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_I
 import static io.camunda.zeebe.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_INTERMEDIATE_THROW_EVENT;
 import static io.camunda.zeebe.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_PROCESS;
 import static io.camunda.zeebe.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_RECEIVE_TASK;
+import static io.camunda.zeebe.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_SEND_TASK;
 import static io.camunda.zeebe.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_SERVICE_TASK;
 import static io.camunda.zeebe.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_START_EVENT;
 import static io.camunda.zeebe.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_USER_TASK;
@@ -168,6 +169,10 @@ public class BpmnSupport {
 
   public boolean isReceiveTask(String flowNodeId) {
     return is(flowNodeId, BPMN_ELEMENT_RECEIVE_TASK);
+  }
+
+  public boolean isSendTask(String flowNodeId) {
+    return is(flowNodeId, BPMN_ELEMENT_SEND_TASK);
   }
 
   public boolean isServiceTask(String flowNodeId) {

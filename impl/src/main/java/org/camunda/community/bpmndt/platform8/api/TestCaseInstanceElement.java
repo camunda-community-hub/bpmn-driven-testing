@@ -52,12 +52,57 @@ public abstract class TestCaseInstanceElement {
     }
   }
 
+  public static class MessageEventElement extends TestCaseInstanceElement {
+
+    private String correlationKey;
+    private String messageName;
+
+    public String getCorrelationKey() {
+      return correlationKey;
+    }
+
+    public String getMessageName() {
+      return messageName;
+    }
+
+    public void setCorrelationKey(String correlationKey) {
+      this.correlationKey = correlationKey;
+    }
+
+    public void setMessageName(String messageName) {
+      this.messageName = messageName;
+    }
+  }
+
+  public static class TimerEventElement extends TestCaseInstanceElement {
+
+    private String timeDate;
+    private String timeDuration;
+
+    public String getTimeDate() {
+      return timeDate;
+    }
+
+    public String getTimeDuration() {
+      return timeDuration;
+    }
+
+    public void setTimeDate(String timeDate) {
+      this.timeDate = timeDate;
+    }
+
+    public void setTimeDuration(String timeDuration) {
+      this.timeDuration = timeDuration;
+    }
+  }
+
   public static class UserTaskElement extends TestCaseInstanceElement {
 
     private String assignee;
     private String candidateGroups;
     private String candidateUsers;
     private String dueDate;
+    private String errorCode;
     private String followUpDate;
 
     public String getAssignee() {
@@ -74,6 +119,10 @@ public abstract class TestCaseInstanceElement {
 
     public String getDueDate() {
       return dueDate;
+    }
+
+    public String getErrorCode() {
+      return errorCode;
     }
 
     public String getFollowUpDate() {
@@ -94,6 +143,10 @@ public abstract class TestCaseInstanceElement {
 
     public void setDueDate(String dueDate) {
       this.dueDate = dueDate;
+    }
+
+    public void setErrorCode(String errorCode) {
+      this.errorCode = errorCode;
     }
 
     public void setFollowUpDate(String followUpDate) {

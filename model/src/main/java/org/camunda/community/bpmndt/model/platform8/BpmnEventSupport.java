@@ -12,16 +12,13 @@ import java.util.Collection;
 
 import io.camunda.zeebe.model.bpmn.impl.BpmnModelConstants;
 import io.camunda.zeebe.model.bpmn.instance.CatchEvent;
-import io.camunda.zeebe.model.bpmn.instance.Error;
 import io.camunda.zeebe.model.bpmn.instance.ErrorEventDefinition;
-import io.camunda.zeebe.model.bpmn.instance.Escalation;
 import io.camunda.zeebe.model.bpmn.instance.EscalationEventDefinition;
 import io.camunda.zeebe.model.bpmn.instance.EventDefinition;
-import io.camunda.zeebe.model.bpmn.instance.Message;
 import io.camunda.zeebe.model.bpmn.instance.MessageEventDefinition;
-import io.camunda.zeebe.model.bpmn.instance.Signal;
 import io.camunda.zeebe.model.bpmn.instance.SignalEventDefinition;
 import io.camunda.zeebe.model.bpmn.instance.ThrowEvent;
+import io.camunda.zeebe.model.bpmn.instance.TimerEventDefinition;
 
 /**
  * BPMN event support allows easier working with {@link EventDefinition}s of {@link CatchEvent} or {@link ThrowEvent} nodes.
@@ -46,36 +43,24 @@ public class BpmnEventSupport {
     eventDefinition = eventDefinitions.stream().findFirst().orElse(null);
   }
 
-  public Error getError() {
-    return getErrorDefinition().getError();
-  }
-
   public ErrorEventDefinition getErrorDefinition() {
     return (ErrorEventDefinition) eventDefinition;
-  }
-
-  public Escalation getEscalation() {
-    return getEscalationDefinition().getEscalation();
   }
 
   public EscalationEventDefinition getEscalationDefinition() {
     return (EscalationEventDefinition) eventDefinition;
   }
 
-  public Message getMessage() {
-    return getMessageDefinition().getMessage();
-  }
-
   public MessageEventDefinition getMessageDefinition() {
     return (MessageEventDefinition) eventDefinition;
   }
 
-  public Signal getSignal() {
-    return getSignalDefinition().getSignal();
-  }
-
   public SignalEventDefinition getSignalDefinition() {
     return (SignalEventDefinition) eventDefinition;
+  }
+
+  public TimerEventDefinition getTimerDefinition() {
+    return (TimerEventDefinition) eventDefinition;
   }
 
   private boolean is(String typeName) {

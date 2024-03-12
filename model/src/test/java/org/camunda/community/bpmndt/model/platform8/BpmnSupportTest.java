@@ -101,6 +101,12 @@ public class BpmnSupportTest {
   }
 
   @Test
+  public void testIsSendTask() {
+    BpmnSupport bpmnSupport = of(simple.resolve("simpleSendTask.bpmn"));
+    assertThat(bpmnSupport.isSendTask("sendTask")).isTrue();
+  }
+
+  @Test
   public void testIsServiceTask() {
     BpmnSupport bpmnSupport = of(simple.resolve("simpleServiceTask.bpmn"));
     assertThat(bpmnSupport.isServiceTask("serviceTask")).isTrue();

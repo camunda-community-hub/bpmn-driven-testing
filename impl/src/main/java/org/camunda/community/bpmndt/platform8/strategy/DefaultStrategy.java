@@ -4,6 +4,8 @@ import org.camunda.community.bpmndt.Literal;
 import org.camunda.community.bpmndt.model.platform8.BpmnElement;
 import org.camunda.community.bpmndt.platform8.GeneratorStrategy;
 import org.camunda.community.bpmndt.platform8.api.JobHandler;
+import org.camunda.community.bpmndt.platform8.api.MessageEventHandler;
+import org.camunda.community.bpmndt.platform8.api.TimerEventHandler;
 import org.camunda.community.bpmndt.platform8.api.UserTaskHandler;
 
 import com.squareup.javapoet.CodeBlock;
@@ -13,9 +15,11 @@ import com.squareup.javapoet.TypeSpec.Builder;
 
 public class DefaultStrategy implements GeneratorStrategy {
 
-  public static TypeName JOB = TypeName.get(JobHandler.class);
-  public static TypeName OTHER = TypeName.get(Void.class);
-  public static TypeName USER_TASK = TypeName.get(UserTaskHandler.class);
+  public static final TypeName JOB = TypeName.get(JobHandler.class);
+  public static final TypeName MESSAGE_EVENT = TypeName.get(MessageEventHandler.class);
+  public static final TypeName OTHER = TypeName.get(Void.class);
+  public static final TypeName TIMER_EVENT = TypeName.get(TimerEventHandler.class);
+  public static final TypeName USER_TASK = TypeName.get(UserTaskHandler.class);
 
   protected final BpmnElement element;
   protected final String literal;

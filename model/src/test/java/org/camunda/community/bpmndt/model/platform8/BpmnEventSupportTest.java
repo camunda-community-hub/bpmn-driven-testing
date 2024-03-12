@@ -6,33 +6,34 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.camunda.community.bpmndt.test.Platform8TestPaths;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import io.camunda.zeebe.model.bpmn.Bpmn;
 import io.camunda.zeebe.model.bpmn.BpmnModelInstance;
+import io.camunda.zeebe.model.bpmn.instance.CatchEvent;
 import io.camunda.zeebe.model.bpmn.instance.Process;
 import io.camunda.zeebe.model.bpmn.instance.ThrowEvent;
 
 public class BpmnEventSupportTest {
 
-  private Path advancedMultiInstance;
-
-  @BeforeEach
-  public void setUp() {
-    advancedMultiInstance = Platform8TestPaths.advancedMultiInstance();
+  @Test
+  public void testGetTimerEventDefinition() {
+    BpmnSupport bpmnSupport = of(Platform8TestPaths.simple("simpleTimerCatchEvent.bpmn"));
+    BpmnEventSupport bpmnEventSupport = new BpmnEventSupport((CatchEvent) bpmnSupport.get("timerCatchEvent"));
+    assertThat(bpmnEventSupport.getTimerDefinition()).isNotNull();
+    assertThat(bpmnEventSupport.getTimerDefinition().getTimeDuration().getTextContent()).isEqualTo("PT1H");
   }
 
   @Test
   public void testIsNoneEndEvent() {
-    BpmnSupport bpmnSupport = of(advancedMultiInstance.resolve("scopeSequential.bpmn"));
+    BpmnSupport bpmnSupport = of(Platform8TestPaths.advancedMultiInstance("scopeSequential.bpmn"));
     BpmnEventSupport bpmnEventSupport = new BpmnEventSupport((ThrowEvent) bpmnSupport.get("subProcessEndEvent"));
     assertThat(bpmnEventSupport.isNoneEnd()).isTrue();
   }
 
   @Test
   public void testIsNotNoneEndEvent() {
-    BpmnSupport bpmnSupport = of(advancedMultiInstance.resolve("scopeErrorEndEvent.bpmn"));
+    BpmnSupport bpmnSupport = of(Platform8TestPaths.advancedMultiInstance("scopeErrorEndEvent.bpmn"));
     BpmnEventSupport bpmnEventSupport = new BpmnEventSupport((ThrowEvent) bpmnSupport.get("subProcessErrorEndEvent"));
     assertThat(bpmnEventSupport.isNoneEnd()).isFalse();
   }

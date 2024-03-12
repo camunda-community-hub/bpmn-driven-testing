@@ -22,7 +22,7 @@ public class GradlePlugin implements Plugin<Project> {
   private static final Logger LOGGER = LoggerFactory.getLogger(GradlePlugin.class);
 
   /**
-   * Name of the test source set, which must contain "test" to indicate that the source set contains test code. Otherwise Eclipse will not recognize it!
+   * Name of the test source set, which must contain "test" to indicate that the source set contains test code. Otherwise, Eclipse will not recognize it!
    */
   private static final String SOURCE_SET_NAME = "bpmndtTestCases";
 
@@ -62,8 +62,8 @@ public class GradlePlugin implements Plugin<Project> {
     }).get();
 
     // add generator task as test compile dependency
-    project.afterEvaluate(afterEvaluate -> {
-      afterEvaluate.getTasksByName(JavaPlugin.COMPILE_TEST_JAVA_TASK_NAME, false).forEach(task -> task.dependsOn(generatorTask));
-    });
+    project.afterEvaluate(afterEvaluate ->
+        afterEvaluate.getTasksByName(JavaPlugin.COMPILE_TEST_JAVA_TASK_NAME, false).forEach(task -> task.dependsOn(generatorTask))
+    );
   }
 }

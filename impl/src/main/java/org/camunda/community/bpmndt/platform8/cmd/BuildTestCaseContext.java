@@ -13,6 +13,8 @@ import org.camunda.community.bpmndt.model.platform8.TestCase;
 import org.camunda.community.bpmndt.platform8.GeneratorStrategy;
 import org.camunda.community.bpmndt.platform8.TestCaseContext;
 import org.camunda.community.bpmndt.platform8.strategy.DefaultStrategy;
+import org.camunda.community.bpmndt.platform8.strategy.MessageEventStrategy;
+import org.camunda.community.bpmndt.platform8.strategy.TimerEventStrategy;
 import org.camunda.community.bpmndt.platform8.strategy.UserTaskStrategy;
 
 /**
@@ -72,19 +74,16 @@ public class BuildTestCaseContext implements Function<TestCase, TestCaseContext>
       case CALL_ACTIVITY:
         return null;
       case MESSAGE_BOUNDARY:
-        return null;
       case MESSAGE_CATCH:
-        return null;
+        return new MessageEventStrategy(element);
       case SERVICE_TASK:
         return null;
       case SIGNAL_BOUNDARY:
-        return null;
       case SIGNAL_CATCH:
         return null;
       case TIMER_BOUNDARY:
-        return null;
       case TIMER_CATCH:
-        return null;
+        return new TimerEventStrategy(element);
       case USER_TASK:
         return new UserTaskStrategy(element);
       default:

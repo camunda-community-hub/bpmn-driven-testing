@@ -35,7 +35,7 @@ public class CollectBpmnFiles extends SimpleFileVisitor<Path> implements Functio
   }
 
   @Override
-  public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+  public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
     if (file.getFileName().toString().endsWith(Constants.BPMN_EXTENSION)) {
       bpmnFiles.add(file);
     }

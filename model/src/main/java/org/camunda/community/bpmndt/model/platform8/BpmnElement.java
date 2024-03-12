@@ -11,20 +11,6 @@ import io.camunda.zeebe.model.bpmn.instance.IntermediateCatchEvent;
 public interface BpmnElement {
 
   /**
-   * Returns the code of the related error or escalation event.
-   *
-   * @return The event code or {@code null}, if the BPMN element is not an error or escalation event or the code is not specified.
-   */
-  String getEventCode();
-
-  /**
-   * Returns the name of the related message or signal event.
-   *
-   * @return The event name or {@code null}, if the BPMN element is not related to a message or signal event.
-   */
-  String getEventName();
-
-  /**
    * Gets the underlying flow node.
    *
    * @return The element's flow node.

@@ -229,12 +229,34 @@ public class UserTaskTest {
   }
 
   @Test
+  public void testVerifyDueDate() {
+    handler.verifyDueDate(dueDate -> assertThat(dueDate).isEqualTo("wrong due date"));
+
+    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
+
+    handler.verifyDueDate(dueDate -> assertThat(dueDate).isEqualTo("2023-02-17T00:00Z"));
+
+    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+  }
+
+  @Test
   public void testVerifyDueDateExpression() {
     handler.verifyDueDateExpression(expr -> assertThat(expr).isEqualTo("wrong due date expression"));
 
     assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
 
     handler.verifyDueDateExpression(expr -> assertThat(expr).isEqualTo("=\"2023-02-17T00:00:00Z\""));
+
+    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+  }
+
+  @Test
+  public void testVerifyFollowUpDate() {
+    handler.verifyFollowUpDate(followUpDate -> assertThat(followUpDate).isEqualTo("wrong follow-up date"));
+
+    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
+
+    handler.verifyFollowUpDate(followUpDate -> assertThat(followUpDate).isEqualTo("2023-02-18T00:00Z"));
 
     tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
   }
@@ -273,6 +295,22 @@ public class UserTaskTest {
   private class TestCase extends AbstractJUnit5TestCase {
 
     @Override
+    protected void execute(TestCaseInstance instance, ProcessInstanceEvent processInstanceEvent) {
+      instance.hasPassed(processInstanceEvent, "startEvent");
+      instance.isWaitingAt(processInstanceEvent, "userTask");
+      instance.apply(processInstanceEvent, handler);
+      instance.hasPassed(processInstanceEvent, "userTask");
+      instance.isWaitingAt(processInstanceEvent, "userTaskWithLinkedForm");
+      instance.apply(processInstanceEvent, handlerWithLinkedForm);
+      instance.hasPassed(processInstanceEvent, "userTaskWithLinkedForm");
+      instance.isWaitingAt(processInstanceEvent, "userTaskWithEmbeddedForm");
+      instance.apply(processInstanceEvent, handlerWithEmbeddedForm);
+      instance.hasPassed(processInstanceEvent, "userTaskWithEmbeddedForm");
+      instance.hasPassed(processInstanceEvent, "endEvent");
+      instance.isCompleted(processInstanceEvent);
+    }
+
+    @Override
     public String getBpmnProcessId() {
       return "simpleUserTask";
     }
@@ -294,22 +332,6 @@ public class UserTaskTest {
       } catch (IOException e) {
         return null;
       }
-    }
-
-    @Override
-    protected void execute(TestCaseInstance instance, ProcessInstanceEvent processInstanceEvent) {
-      instance.hasPassed(processInstanceEvent, "startEvent");
-      instance.isWaitingAt(processInstanceEvent, "userTask");
-      instance.apply(processInstanceEvent, handler);
-      instance.hasPassed(processInstanceEvent, "userTask");
-      instance.isWaitingAt(processInstanceEvent, "userTaskWithLinkedForm");
-      instance.apply(processInstanceEvent, handlerWithLinkedForm);
-      instance.hasPassed(processInstanceEvent, "userTaskWithLinkedForm");
-      instance.isWaitingAt(processInstanceEvent, "userTaskWithEmbeddedForm");
-      instance.apply(processInstanceEvent, handlerWithEmbeddedForm);
-      instance.hasPassed(processInstanceEvent, "userTaskWithEmbeddedForm");
-      instance.hasPassed(processInstanceEvent, "endEvent");
-      instance.isCompleted(processInstanceEvent);
     }
   }
 }

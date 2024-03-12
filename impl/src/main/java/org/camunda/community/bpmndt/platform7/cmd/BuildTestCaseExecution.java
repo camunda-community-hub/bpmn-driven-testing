@@ -41,6 +41,12 @@ public class BuildTestCaseExecution implements BiConsumer<List<GeneratorStrategy
         strategy.applyHandlerAfter(builder);
       }
 
+      if (activity.getType() == TestCaseActivityType.LINK_THROW) {
+        // since there is no activity for an intermediate link throw event
+        // a process instance will not pass and will never wait at such an activity
+        continue;
+      }
+
       if (activity.hasPrevious(TestCaseActivityType.EVENT_BASED_GATEWAY)) {
         // assert that event based gateway has been passed
         ctx.getStrategy(activity.getPrevious().getId()).hasPassed(builder);
@@ -48,9 +54,6 @@ public class BuildTestCaseExecution implements BiConsumer<List<GeneratorStrategy
 
       if (activity.getType() == TestCaseActivityType.EVENT_BASED_GATEWAY) {
         strategy.isWaitingAt(builder);
-      } else if (activity.getType() == TestCaseActivityType.LINK_THROW) {
-        // since there is no activity for an intermediate link throw event
-        // a process instance will not pass and will never wait at such an activity
       } else if ((activity.hasNext()) || activity.isProcessEnd()) {
         strategy.hasPassed(builder);
       } else if (activity.getType() == TestCaseActivityType.SCOPE) {

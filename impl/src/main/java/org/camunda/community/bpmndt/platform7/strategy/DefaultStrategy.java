@@ -25,12 +25,12 @@ import com.squareup.javapoet.TypeSpec;
  */
 public class DefaultStrategy implements GeneratorStrategy {
 
-  public static TypeName CALL_ACTIVITY = TypeName.get(CallActivityHandler.class);
-  public static TypeName EVENT = TypeName.get(EventHandler.class);
-  public static TypeName EXTERNAL_TASK = TypeName.get(ExternalTaskHandler.class);
-  public static TypeName JOB = TypeName.get(JobHandler.class);
-  public static TypeName OTHER = TypeName.get(Void.class);
-  public static TypeName USER_TASK = TypeName.get(UserTaskHandler.class);
+  public static final TypeName CALL_ACTIVITY = TypeName.get(CallActivityHandler.class);
+  public static final TypeName EVENT = TypeName.get(EventHandler.class);
+  public static final TypeName EXTERNAL_TASK = TypeName.get(ExternalTaskHandler.class);
+  public static final TypeName JOB = TypeName.get(JobHandler.class);
+  public static final TypeName OTHER = TypeName.get(Void.class);
+  public static final TypeName USER_TASK = TypeName.get(UserTaskHandler.class);
 
   protected final TestCaseActivity activity;
   protected final String literal;
@@ -227,7 +227,7 @@ public class DefaultStrategy implements GeneratorStrategy {
   }
 
   /**
-   * If the activity has the {@code asyncAfter} flag set, it must be handled. If it is the last activity and it does not end the process, the asynchronous
+   * If the activity has the {@code asyncAfter} flag set, it must be handled. If it is the last activity and does not end the process, the asynchronous
    * continuation after should not be handled - the execution must wait!
    */
   @Override

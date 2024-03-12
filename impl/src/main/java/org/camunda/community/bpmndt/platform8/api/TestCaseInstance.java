@@ -9,7 +9,9 @@ import java.util.function.Predicate;
 
 import org.camunda.community.bpmndt.platform8.api.TestCaseInstanceMemo.ElementMemo;
 import org.camunda.community.bpmndt.platform8.api.TestCaseInstanceMemo.JobMemo;
+import org.camunda.community.bpmndt.platform8.api.TestCaseInstanceMemo.MessageSubscriptionMemo;
 import org.camunda.community.bpmndt.platform8.api.TestCaseInstanceMemo.ProcessInstanceMemo;
+import org.camunda.community.bpmndt.platform8.api.TestCaseInstanceMemo.TimerMemo;
 
 import io.camunda.zeebe.client.ZeebeClient;
 import io.camunda.zeebe.client.api.response.ProcessInstanceEvent;
@@ -18,6 +20,8 @@ import io.camunda.zeebe.process.test.filters.RecordStream;
 import io.camunda.zeebe.protocol.record.Record;
 import io.camunda.zeebe.protocol.record.intent.JobIntent;
 import io.camunda.zeebe.protocol.record.intent.ProcessInstanceIntent;
+import io.camunda.zeebe.protocol.record.intent.ProcessMessageSubscriptionIntent;
+import io.camunda.zeebe.protocol.record.intent.TimerIntent;
 
 /**
  * Link between a test case and its execution, utilizing a process instance that was instantiated by a {@link TestCaseExecutor} and handlers (e.g.
@@ -67,6 +71,14 @@ public class TestCaseInstance implements AutoCloseable {
     handler.apply(this, processInstanceEvent);
   }
 
+  public void apply(ProcessInstanceEvent processInstanceEvent, MessageEventHandler handler) {
+    handler.apply(this, processInstanceEvent);
+  }
+
+  public void apply(ProcessInstanceEvent processInstanceEvent, TimerEventHandler handler) {
+    handler.apply(this, processInstanceEvent);
+  }
+
   public void apply(ProcessInstanceEvent processInstanceEvent, UserTaskHandler handler) {
     handler.apply(this, processInstanceEvent);
   }
@@ -78,12 +90,12 @@ public class TestCaseInstance implements AutoCloseable {
         return false;
       }
 
-      ElementMemo element = processInstance.elements.get(bpmnElementId);
+      ElementMemo element = processInstance.getElement(bpmnElementId);
       return element != null && element.state == ProcessInstanceIntent.ELEMENT_COMPLETED;
     });
 
     if (!hasPassed) {
-      String message = "expected process instance %d to has passed BPMN element %s, but was not";
+      String message = "expected process instance %d to has passed BPMN element %s, but has not";
       throw new AssertionError(String.format(message, processInstanceEvent.getProcessInstanceKey(), bpmnElementId));
     }
   }
@@ -95,12 +107,12 @@ public class TestCaseInstance implements AutoCloseable {
         return false;
       }
 
-      ElementMemo element = processInstance.elements.get(bpmnElementId);
+      ElementMemo element = processInstance.getElement(bpmnElementId);
       return element != null && element.state == ProcessInstanceIntent.ELEMENT_TERMINATED;
     });
 
     if (!hasTerminated) {
-      String message = "expected process instance %d to has terminated BPMN element %s, but was not";
+      String message = "expected process instance %d to has terminated BPMN element %s, but has not";
       throw new AssertionError(String.format(message, processInstanceEvent.getProcessInstanceKey(), bpmnElementId));
     }
   }
@@ -128,12 +140,22 @@ public class TestCaseInstance implements AutoCloseable {
         return false;
       }
 
-      JobMemo job = processInstance.jobs.get(bpmnElementId);
-      if (job == null) {
-        return false;
+      JobMemo job = processInstance.getJob(bpmnElementId);
+      if (job != null) {
+        return job.state == JobIntent.CREATED;
       }
 
-      return job.state == JobIntent.CREATED;
+      MessageSubscriptionMemo messageSubscription = processInstance.getMessageSubscription(bpmnElementId);
+      if (messageSubscription != null) {
+        return messageSubscription.state == ProcessMessageSubscriptionIntent.CREATED;
+      }
+
+      TimerMemo timer = processInstance.getTimer(bpmnElementId);
+      if (timer != null) {
+        return timer.state == TimerIntent.CREATED;
+      }
+
+      return false;
     });
 
     if (!isWaitingAt) {
@@ -150,13 +172,49 @@ public class TestCaseInstance implements AutoCloseable {
         throw new IllegalStateException(String.format(message, processInstanceEvent.getProcessInstanceKey()));
       }
 
-      JobMemo jobMemo = processInstance.jobs.get(bpmnElementId);
-      if (jobMemo == null) {
+      JobMemo job = processInstance.getJob(bpmnElementId);
+      if (job == null) {
         String message = "job %s could not be found";
         throw new IllegalStateException(String.format(message, bpmnElementId));
       }
 
-      return jobMemo;
+      return job;
+    });
+  }
+
+  MessageSubscriptionMemo getMessageSubscription(ProcessInstanceEvent processInstanceEvent, String bpmnElementId) {
+    return select(memo -> {
+      ProcessInstanceMemo processInstance = memo.processInstances.get(processInstanceEvent.getProcessInstanceKey());
+      if (processInstance == null) {
+        String message = "process instance %d could not be found";
+        throw new IllegalStateException(String.format(message, processInstanceEvent.getProcessInstanceKey()));
+      }
+
+      MessageSubscriptionMemo messageSubscription = processInstance.getMessageSubscription(bpmnElementId);
+      if (messageSubscription == null) {
+        String message = "message subscription %s could not be found";
+        throw new IllegalStateException(String.format(message, bpmnElementId));
+      }
+
+      return messageSubscription;
+    });
+  }
+
+  TimerMemo getTimer(ProcessInstanceEvent processInstanceEvent, String bpmnElementId) {
+    return select(memo -> {
+      ProcessInstanceMemo processInstance = memo.processInstances.get(processInstanceEvent.getProcessInstanceKey());
+      if (processInstance == null) {
+        String message = "process instance %d could not be found";
+        throw new IllegalStateException(String.format(message, processInstanceEvent.getProcessInstanceKey()));
+      }
+
+      TimerMemo timer = processInstance.getTimer(bpmnElementId);
+      if (timer == null) {
+        String message = "timer %s could not be found";
+        throw new IllegalStateException(String.format(message, bpmnElementId));
+      }
+
+      return timer;
     });
   }
 

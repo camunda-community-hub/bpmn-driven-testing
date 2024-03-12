@@ -115,9 +115,9 @@ public class JobHandler {
   }
 
   /**
-   * Throws an BPMN error using the given error message as well as specified variables.
+   * Throws an BPMN error using the given error message as well as the specified variables.
    * <p>
-   * This action can be used, if there is no related job worker implementation yet.
+   * This action can be used, if there is no related registered job worker yet.
    */
   public void throwBpmnError(String errorMessage) {
     if (element.getErrorCode() == null) {

@@ -227,9 +227,9 @@ public class GeneratorSimpleTest {
     assertThat(typeSpec).hasMethods(6);
 
     assertThat(typeSpec.methodSpecs.get(1)).containsCode("// startEvent: subProcessStartEvent");
-    assertThat(typeSpec.methodSpecs.get(1)).containsCode("assertThat(pi).hasPassed(\"subProcessStartEvent\");");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(processInstanceEvent, \"subProcessStartEvent\");");
     assertThat(typeSpec.methodSpecs.get(1)).containsCode("// endEvent: subProcessEndEvent");
-    assertThat(typeSpec.methodSpecs.get(1)).containsCode("assertThat(pi).hasPassed(\"subProcessEndEvent\");");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(processInstanceEvent, \"subProcessEndEvent\");");
   }
 
   @Test
@@ -242,14 +242,24 @@ public class GeneratorSimpleTest {
     assertThat(typeSpec).hasMethods(7);
 
     assertThat(typeSpec.fieldSpecs.get(0)).hasName("timerCatchEvent");
-    assertThat(typeSpec.fieldSpecs.get(0)).hasType(DefaultStrategy.OTHER);
+    assertThat(typeSpec.fieldSpecs.get(0).type).isEqualTo(DefaultStrategy.TIMER_EVENT);
 
     assertThat(typeSpec.methodSpecs.get(6)).hasName("handleTimerCatchEvent");
-    assertThat(typeSpec.methodSpecs.get(6)).hasReturnType(DefaultStrategy.OTHER);
+    assertThat(typeSpec.methodSpecs.get(6)).hasReturnType(DefaultStrategy.TIMER_EVENT);
 
-    String expected = "timerCatchEvent = new %s(getProcessEngine(), \"timerCatchEvent\");";
-    assertThat(typeSpec.methodSpecs.get(0)).containsCode(String.format(expected, DefaultStrategy.OTHER));
+    String expected;
+
+    expected = "timerCatchEvent = new %s(timerCatchEventElement);";
+    assertThat(typeSpec.methodSpecs.get(0)).containsCode(String.format(expected, DefaultStrategy.TIMER_EVENT));
+
+    expected = "timerCatchEventElement.setId(\"timerCatchEvent\");";
+    assertThat(typeSpec.methodSpecs.get(0)).containsCode(expected);
+    expected = "imerCatchEventElement.setTimeDuration(\"PT1H\");";
+    assertThat(typeSpec.methodSpecs.get(0)).containsCode(expected);
+
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.isWaitingAt(processInstanceEvent, \"timerCatchEvent\");");
     assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.apply(timerCatchEvent);");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(processInstanceEvent, \"timerCatchEvent\");");
   }
 
   @Test
@@ -267,13 +277,27 @@ public class GeneratorSimpleTest {
     assertThat(typeSpec.methodSpecs.get(6)).hasName("handleUserTask");
     assertThat(typeSpec.methodSpecs.get(6)).hasReturnType(DefaultStrategy.USER_TASK);
 
-    String expected = "userTask = new %s(userTaskElement);";
+    String expected;
+
+    expected = "userTask = new %s(userTaskElement);";
     assertThat(typeSpec.methodSpecs.get(0)).containsCode(String.format(expected, DefaultStrategy.USER_TASK));
+
+    expected = "userTaskElement.setId(\"userTask\");";
+    assertThat(typeSpec.methodSpecs.get(0)).containsCode(expected);
+    expected = "userTaskElement.setAssignee(\"=\\\"simpleAssignee\\\"\");";
+    assertThat(typeSpec.methodSpecs.get(0)).containsCode(expected);
+    expected = "userTaskElement.setCandidateGroups(\"=[\\\"simpleGroupA\\\", \\\"simpleGroupB\\\"]\");";
+    assertThat(typeSpec.methodSpecs.get(0)).containsCode(expected);
+    expected = "userTaskElement.setCandidateUsers(\"=[\\\"simpleUserA\\\", \\\"simpleUserB\\\"]\");";
+    assertThat(typeSpec.methodSpecs.get(0)).containsCode(expected);
+    expected = "userTaskElement.setDueDate(\"=\\\"2023-02-17T00:00:00Z\\\"\");";
+    assertThat(typeSpec.methodSpecs.get(0)).containsCode(expected);
+    expected = "userTaskElement.setFollowUpDate(\"=\\\"2023-02-18T00:00:00Z\\\"\");";
+    assertThat(typeSpec.methodSpecs.get(0)).containsCode(expected);
+
     assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.isWaitingAt(processInstanceEvent, \"userTask\");");
     assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.apply(userTask);");
     assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(processInstanceEvent, \"userTask\");");
-
-    System.out.println(typeSpec);
   }
 
   /**
@@ -290,8 +314,6 @@ public class GeneratorSimpleTest {
     assertThat(isFile.test("org/example/simpleasync/TC_startEvent__endEvent.java")).isTrue();
     assertThat(isFile.test("org/example/simplecallactivity/TC_startEvent__endEvent.java")).isTrue();
     assertThat(isFile.test("org/example/simplecollaboration/TC_startEvent__endEvent.java")).isTrue();
-    assertThat(isFile.test("org/example/simpleconditionalcatchevent/TC_startEvent__endEvent.java")).isTrue();
-    assertThat(isFile.test("org/example/simpleexternaltask/TC_startEvent__endEvent.java")).isTrue();
     assertThat(isFile.test("org/example/simplemessagecatchevent/TC_startEvent__endEvent.java")).isTrue();
     assertThat(isFile.test("org/example/simplereceivetask/TC_startEvent__endEvent.java")).isTrue();
     assertThat(isFile.test("org/example/simplesignalcatchevent/TC_startEvent__endEvent.java")).isTrue();

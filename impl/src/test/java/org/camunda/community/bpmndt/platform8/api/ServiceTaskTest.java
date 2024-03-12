@@ -216,6 +216,16 @@ public class ServiceTaskTest {
   private class TestCase extends AbstractJUnit5TestCase {
 
     @Override
+    protected void execute(TestCaseInstance instance, ProcessInstanceEvent processInstanceEvent) {
+      instance.hasPassed(processInstanceEvent, "startEvent");
+      instance.isWaitingAt(processInstanceEvent, "serviceTask");
+      instance.apply(processInstanceEvent, handler);
+      instance.hasPassed(processInstanceEvent, "serviceTask");
+      instance.hasPassed(processInstanceEvent, "endEvent");
+      instance.isCompleted(processInstanceEvent);
+    }
+
+    @Override
     public String getBpmnProcessId() {
       return "simpleServiceTask";
     }
@@ -237,16 +247,6 @@ public class ServiceTaskTest {
       } catch (IOException e) {
         return null;
       }
-    }
-
-    @Override
-    protected void execute(TestCaseInstance instance, ProcessInstanceEvent processInstanceEvent) {
-      instance.hasPassed(processInstanceEvent, "startEvent");
-      instance.isWaitingAt(processInstanceEvent, "serviceTask");
-      instance.apply(processInstanceEvent, handler);
-      instance.hasPassed(processInstanceEvent, "serviceTask");
-      instance.hasPassed(processInstanceEvent, "endEvent");
-      instance.isCompleted(processInstanceEvent);
     }
   }
 }

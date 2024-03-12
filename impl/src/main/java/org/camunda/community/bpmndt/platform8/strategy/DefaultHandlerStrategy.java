@@ -9,6 +9,7 @@ import org.camunda.community.bpmndt.model.platform8.BpmnElementType;
 
 import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.MethodSpec.Builder;
 import com.squareup.javapoet.TypeSpec;
 
 /**
@@ -76,6 +77,16 @@ public class DefaultHandlerStrategy extends DefaultStrategy {
   @Override
   public CodeBlock getHandler() {
     return CodeBlock.of(literal);
+  }
+
+  @Override
+  public void hasPassed(Builder methodBuilder) {
+    BpmnElement next = element.getNext();
+    if (next.getType().isBoundaryEvent() && next.isAttachedTo(element)) {
+      methodBuilder.addStatement("instance.hasTerminated(processInstanceEvent, $S)", element.getId());
+    } else {
+      super.hasPassed(methodBuilder);
+    }
   }
 
   @Override

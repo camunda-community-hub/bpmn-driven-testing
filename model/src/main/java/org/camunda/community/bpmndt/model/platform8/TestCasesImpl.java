@@ -21,14 +21,9 @@ import io.camunda.zeebe.model.bpmn.Bpmn;
 import io.camunda.zeebe.model.bpmn.BpmnModelInstance;
 import io.camunda.zeebe.model.bpmn.instance.BoundaryEvent;
 import io.camunda.zeebe.model.bpmn.instance.Definitions;
-import io.camunda.zeebe.model.bpmn.instance.Error;
-import io.camunda.zeebe.model.bpmn.instance.Escalation;
 import io.camunda.zeebe.model.bpmn.instance.IntermediateCatchEvent;
 import io.camunda.zeebe.model.bpmn.instance.IntermediateThrowEvent;
-import io.camunda.zeebe.model.bpmn.instance.Message;
 import io.camunda.zeebe.model.bpmn.instance.Process;
-import io.camunda.zeebe.model.bpmn.instance.ReceiveTask;
-import io.camunda.zeebe.model.bpmn.instance.Signal;
 
 class TestCasesImpl implements TestCases {
 
@@ -169,25 +164,13 @@ class TestCasesImpl implements TestCases {
     element.attachedTo = event.getAttachedTo().getId();
 
     if (eventSupport.isError()) {
-      Error error = eventSupport.getError();
-
       element.type = BpmnElementType.ERROR_BOUNDARY;
-      element.eventCode = error != null ? error.getErrorCode() : null;
     } else if (eventSupport.isEscalation()) {
-      Escalation escalation = eventSupport.getEscalation();
-
       element.type = BpmnElementType.ESCALATION_BOUNDARY;
-      element.eventCode = escalation != null ? escalation.getEscalationCode() : null;
     } else if (eventSupport.isMessage()) {
-      Message message = eventSupport.getMessage();
-
       element.type = BpmnElementType.MESSAGE_BOUNDARY;
-      element.eventName = message != null ? message.getName() : null;
     } else if (eventSupport.isSignal()) {
-      Signal signal = eventSupport.getSignal();
-
       element.type = BpmnElementType.SIGNAL_BOUNDARY;
-      element.eventName = signal != null ? signal.getName() : null;
     } else if (eventSupport.isTimer()) {
       element.type = BpmnElementType.TIMER_BOUNDARY;
     } else {
@@ -200,15 +183,9 @@ class TestCasesImpl implements TestCases {
     BpmnEventSupport eventSupport = new BpmnEventSupport(event);
 
     if (eventSupport.isMessage()) {
-      Message message = eventSupport.getMessage();
-
       element.type = BpmnElementType.MESSAGE_CATCH;
-      element.eventName = message != null ? message.getName() : null;
     } else if (eventSupport.isSignal()) {
-      Signal signal = eventSupport.getSignal();
-
       element.type = BpmnElementType.SIGNAL_CATCH;
-      element.eventName = signal != null ? signal.getName() : null;
     } else if (eventSupport.isTimer()) {
       element.type = BpmnElementType.TIMER_CATCH;
     } else {
@@ -285,12 +262,12 @@ class TestCasesImpl implements TestCases {
         handleIntermediateCatchEvent(element);
       } else if (bpmnSupport.isBoundaryEvent(flowNodeId)) {
         handleBoundaryEvent(element);
+      } else if (bpmnSupport.isSendTask(flowNodeId)) {
+        // handle send task as service task
+        element.type = BpmnElementType.SERVICE_TASK;
       } else if (bpmnSupport.isReceiveTask(flowNodeId)) {
         // handle receive task as message catch event
-        Message message = element.getFlowNode(ReceiveTask.class).getMessage();
-
         element.type = BpmnElementType.MESSAGE_CATCH;
-        element.eventName = message != null ? message.getName() : null;
       } else if (bpmnSupport.isIntermediateThrowEvent(flowNodeId)) {
         handleIntermediateThrowEvent(element);
       } else {
