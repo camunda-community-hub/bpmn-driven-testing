@@ -9,6 +9,7 @@ import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeName;
 
 import io.camunda.zeebe.model.bpmn.instance.BoundaryEvent;
+import io.camunda.zeebe.model.bpmn.instance.Error;
 import io.camunda.zeebe.model.bpmn.instance.ErrorEventDefinition;
 import io.camunda.zeebe.model.bpmn.instance.ExtensionElements;
 import io.camunda.zeebe.model.bpmn.instance.UserTask;
@@ -78,8 +79,11 @@ public class UserTaskStrategy extends DefaultHandlerStrategy {
       BpmnEventSupport eventSupport = new BpmnEventSupport(event);
 
       ErrorEventDefinition errorEventDefinition = eventSupport.getErrorDefinition();
-      if (errorEventDefinition != null && errorEventDefinition.getError() != null) {
-        methodBuilder.addStatement("$LElement.setErrorCode($S)", literal, errorEventDefinition.getError().getErrorCode());
+      if (errorEventDefinition != null) {
+        Error error = errorEventDefinition.getError();
+        if (error != null && error.getErrorCode() != null) {
+          methodBuilder.addStatement("$LElement.setErrorCode($S)", literal, errorEventDefinition.getError().getErrorCode());
+        }
       }
     }
   }

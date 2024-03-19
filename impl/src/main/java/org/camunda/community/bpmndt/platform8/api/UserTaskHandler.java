@@ -4,17 +4,16 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import org.camunda.community.bpmndt.platform8.api.TestCaseInstanceElement.UserTaskElement;
 import org.camunda.community.bpmndt.platform8.api.TestCaseInstanceMemo.JobMemo;
 
+import io.camunda.zeebe.client.ZeebeClient;
 import io.camunda.zeebe.client.api.JsonMapper;
 import io.camunda.zeebe.client.api.command.ThrowErrorCommandStep1.ThrowErrorCommandStep2;
-import io.camunda.zeebe.client.api.response.ActivatedJob;
 import io.camunda.zeebe.client.api.response.ProcessInstanceEvent;
-import io.camunda.zeebe.client.api.worker.JobClient;
-import io.camunda.zeebe.client.api.worker.JobWorker;
 import io.camunda.zeebe.process.test.assertions.BpmnAssert;
 import io.camunda.zeebe.process.test.assertions.ProcessInstanceAssert;
 import io.camunda.zeebe.protocol.Protocol;
@@ -26,7 +25,7 @@ public class UserTaskHandler {
   private final Map<String, Object> variableMap = new HashMap<>();
 
   private Consumer<ProcessInstanceAssert> verifier;
-  private io.camunda.zeebe.client.api.worker.JobHandler action;
+  private BiConsumer<ZeebeClient, Long> action;
   private String errorMessage;
   private Object variables;
 
@@ -57,12 +56,6 @@ public class UserTaskHandler {
 
   @SuppressWarnings("unchecked")
   void apply(TestCaseInstance instance, ProcessInstanceEvent processInstanceEvent) {
-    JobMemo job = instance.getJob(processInstanceEvent, element.getId());
-    if (!Protocol.USER_TASK_JOB_TYPE.equals(job.type)) {
-      String message = "expected job %s to be of type '%s', but was '%s'";
-      throw new AssertionError(String.format(message, element.getId(), Protocol.USER_TASK_JOB_TYPE, job.type));
-    }
-
     if (verifier != null) {
       verifier.accept(BpmnAssert.assertThat(processInstanceEvent));
     }
@@ -81,6 +74,12 @@ public class UserTaskHandler {
     }
     if (followUpDateExpressionConsumer != null) {
       followUpDateExpressionConsumer.accept(element.getFollowUpDate());
+    }
+
+    JobMemo job = instance.getJob(processInstanceEvent, element.getId());
+    if (!Protocol.USER_TASK_JOB_TYPE.equals(job.type)) {
+      String message = "expected job %s to be of type '%s', but was '%s'";
+      throw new AssertionError(String.format(message, element.getId(), Protocol.USER_TASK_JOB_TYPE, job.type));
     }
 
     String assignee = job.getCustomHeader(Protocol.USER_TASK_ASSIGNEE_HEADER_NAME);
@@ -166,12 +165,10 @@ public class UserTaskHandler {
     }
 
     if (action != null) {
-      try (JobWorker ignored = instance.client.newWorker().jobType(job.type).handler(action).open()) {
-        if (element.getErrorCode() == null) {
-          instance.hasPassed(processInstanceEvent, element.getId());
-        } else {
-          instance.hasTerminated(processInstanceEvent, element.getId());
-        }
+      action.accept(instance.client, job.key);
+
+      if (element.getErrorCode() != null) {
+        instance.hasTerminated(processInstanceEvent, element.getId());
       }
     }
   }
@@ -188,22 +185,23 @@ public class UserTaskHandler {
   }
 
   /**
-   * Completes the user task with a custom action, when the process instance is waiting at the corresponding element.
+   * Completes the user task using a custom action, when the process instance is waiting at the corresponding element.
    *
-   * @param action A specific action that accepts the related {@link JobClient} and {@link ActivatedJob} - a Zeebe job handler.
+   * @param action A specific action that accepts a {@link ZeebeClient} and the related job key.
+   * @see ZeebeClient#newCompleteCommand(long)
    */
-  public void complete(io.camunda.zeebe.client.api.worker.JobHandler action) {
+  public void complete(BiConsumer<ZeebeClient, Long> action) {
     if (action == null) {
       throw new IllegalArgumentException("action is null");
     }
     this.action = action;
   }
 
-  void complete(JobClient client, ActivatedJob job) {
+  void complete(ZeebeClient client, long jobKey) {
     if (variables != null) {
-      client.newCompleteCommand(job).variables(variables).send();
+      client.newCompleteCommand(jobKey).variables(variables).send();
     } else {
-      client.newCompleteCommand(job).variables(variableMap).send();
+      client.newCompleteCommand(jobKey).variables(variableMap).send();
     }
   }
 
@@ -212,7 +210,7 @@ public class UserTaskHandler {
    * cases.
    *
    * <pre>
-   * tc.handleUserTask().customize(this::prepareJob);
+   * tc.handleUserTask().customize(this::prepare);
    * </pre>
    *
    * @param customizer A function that accepts a {@link UserTaskHandler}.
@@ -237,15 +235,15 @@ public class UserTaskHandler {
     this.action = this::throwBpmnError;
   }
 
-  void throwBpmnError(JobClient client, ActivatedJob job) {
-    ThrowErrorCommandStep2 throwErrorCommandStep2 = client.newThrowErrorCommand(job)
+  void throwBpmnError(ZeebeClient client, long jobKey) {
+    ThrowErrorCommandStep2 throwErrorCommandStep2 = client.newThrowErrorCommand(jobKey)
         .errorCode(element.getErrorCode())
         .errorMessage(errorMessage);
 
     if (variables != null) {
-      throwErrorCommandStep2.variables(variables).send();
+      throwErrorCommandStep2.variables(variables).send().join();
     } else {
-      throwErrorCommandStep2.variables(variableMap).send();
+      throwErrorCommandStep2.variables(variableMap).send().join();
     }
   }
 

@@ -3,13 +3,16 @@ package org.camunda.community.bpmndt.platform8.strategy;
 import org.camunda.community.bpmndt.model.platform8.BpmnElement;
 import org.camunda.community.bpmndt.model.platform8.BpmnElementType;
 import org.camunda.community.bpmndt.model.platform8.BpmnEventSupport;
-import org.camunda.community.bpmndt.platform8.api.TestCaseInstanceElement.UserTaskElement;
+import org.camunda.community.bpmndt.platform8.api.TestCaseInstanceElement.JobElement;
 
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeName;
 
 import io.camunda.zeebe.model.bpmn.instance.BoundaryEvent;
+import io.camunda.zeebe.model.bpmn.instance.Error;
 import io.camunda.zeebe.model.bpmn.instance.ErrorEventDefinition;
+import io.camunda.zeebe.model.bpmn.instance.ExtensionElements;
+import io.camunda.zeebe.model.bpmn.instance.zeebe.ZeebeTaskDefinition;
 
 public class JobStrategy extends DefaultHandlerStrategy {
 
@@ -19,7 +22,7 @@ public class JobStrategy extends DefaultHandlerStrategy {
 
   @Override
   public TypeName getHandlerType() {
-    return USER_TASK;
+    return JOB;
   }
 
   @Override
@@ -43,8 +46,20 @@ public class JobStrategy extends DefaultHandlerStrategy {
   @Override
   public void initHandlerElement(MethodSpec.Builder methodBuilder) {
     methodBuilder.addCode("\n// $L: $L\n", element.getTypeName(), element.getId());
-    methodBuilder.addStatement("$T $LElement = new $T()", UserTaskElement.class, literal, UserTaskElement.class);
+    methodBuilder.addStatement("$T $LElement = new $T()", JobElement.class, literal, JobElement.class);
     methodBuilder.addStatement("$LElement.setId($S)", literal, element.getId());
+
+    ExtensionElements extensionElements = element.getFlowNode().getExtensionElements();
+
+    ZeebeTaskDefinition taskDefinition = (ZeebeTaskDefinition) extensionElements.getUniqueChildElementByType(ZeebeTaskDefinition.class);
+    if (taskDefinition != null) {
+      if (taskDefinition.getRetries() != null) {
+        methodBuilder.addStatement("$LElement.setRetries($S)", literal, taskDefinition.getRetries());
+      }
+      if (taskDefinition.getType() != null) {
+        methodBuilder.addStatement("$LElement.setType($S)", literal, taskDefinition.getType());
+      }
+    }
 
     BpmnElement next = element.getNext();
     if (!next.getType().isBoundaryEvent()) {
@@ -56,8 +71,11 @@ public class JobStrategy extends DefaultHandlerStrategy {
       BpmnEventSupport eventSupport = new BpmnEventSupport(event);
 
       ErrorEventDefinition errorEventDefinition = eventSupport.getErrorDefinition();
-      if (errorEventDefinition != null && errorEventDefinition.getError() != null) {
-        methodBuilder.addStatement("$LElement.setErrorCode($S)", literal, errorEventDefinition.getError().getErrorCode());
+      if (errorEventDefinition != null) {
+        Error error = errorEventDefinition.getError();
+        if (error != null && error.getErrorCode() != null) {
+          methodBuilder.addStatement("$LElement.setErrorCode($S)", literal, errorEventDefinition.getError().getErrorCode());
+        }
       }
     }
   }

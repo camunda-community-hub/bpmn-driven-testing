@@ -1,6 +1,7 @@
 package org.camunda.community.bpmndt.model.platform8;
 
 import static io.camunda.zeebe.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_BOUNDARY_EVENT;
+import static io.camunda.zeebe.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_BUSINESS_RULE_TASK;
 import static io.camunda.zeebe.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_CALL_ACTIVITY;
 import static io.camunda.zeebe.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_END_EVENT;
 import static io.camunda.zeebe.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_EVENT_BASED_GATEWAY;
@@ -8,6 +9,7 @@ import static io.camunda.zeebe.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_I
 import static io.camunda.zeebe.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_INTERMEDIATE_THROW_EVENT;
 import static io.camunda.zeebe.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_PROCESS;
 import static io.camunda.zeebe.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_RECEIVE_TASK;
+import static io.camunda.zeebe.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_SCRIPT_TASK;
 import static io.camunda.zeebe.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_SEND_TASK;
 import static io.camunda.zeebe.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_SERVICE_TASK;
 import static io.camunda.zeebe.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_START_EVENT;
@@ -118,8 +120,16 @@ public class BpmnSupport {
     return is(flowNodeId, BPMN_ELEMENT_BOUNDARY_EVENT);
   }
 
+  public boolean isBusinessRuleTask(String flowNodeId) {
+    return is(flowNodeId, BPMN_ELEMENT_BUSINESS_RULE_TASK);
+  }
+
   public boolean isCallActivity(String flowNodeId) {
     return is(flowNodeId, BPMN_ELEMENT_CALL_ACTIVITY);
+  }
+
+  public boolean isEndEvent(String flowNodeId) {
+    return is(flowNodeId, BPMN_ELEMENT_END_EVENT);
   }
 
   public boolean isEventBasedGateway(String flowNodeId) {
@@ -169,6 +179,10 @@ public class BpmnSupport {
 
   public boolean isReceiveTask(String flowNodeId) {
     return is(flowNodeId, BPMN_ELEMENT_RECEIVE_TASK);
+  }
+
+  public boolean isScriptTask(String flowNodeId) {
+    return is(flowNodeId, BPMN_ELEMENT_SCRIPT_TASK);
   }
 
   public boolean isSendTask(String flowNodeId) {

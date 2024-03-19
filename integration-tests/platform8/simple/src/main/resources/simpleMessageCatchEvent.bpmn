@@ -26,7 +26,7 @@
       <bpmn:messageEventDefinition id="MessageEventDefinition_0xtfbxh" messageRef="Message_0mn11hi" />
     </bpmn:intermediateCatchEvent>
   </bpmn:process>
-  <bpmn:message id="Message_0mn11hi" name="simpleMessage">
+  <bpmn:message id="Message_0mn11hi" name="=&#34;simpleMessage&#34;">
     <bpmn:extensionElements>
       <zeebe:subscription correlationKey="=&#34;simple&#34;" />
     </bpmn:extensionElements>

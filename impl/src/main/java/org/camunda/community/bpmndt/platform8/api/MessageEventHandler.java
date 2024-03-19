@@ -2,7 +2,6 @@ package org.camunda.community.bpmndt.platform8.api;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import org.camunda.community.bpmndt.platform8.api.TestCaseInstanceElement.MessageEventElement;
@@ -21,10 +20,11 @@ public class MessageEventHandler {
   private final Map<String, Object> variableMap = new HashMap<>();
 
   private Consumer<ProcessInstanceAssert> verifier;
-  private BiConsumer<ZeebeClient, String> action;
+  private Correlation action;
   private Object variables;
 
   private Consumer<String> correlationKeyExpressionConsumer;
+  private Consumer<String> messageNameExpressionConsumer;
 
   private String expectedCorrelationKey;
   private String expectedMessageName;
@@ -46,6 +46,9 @@ public class MessageEventHandler {
     if (correlationKeyExpressionConsumer != null) {
       correlationKeyExpressionConsumer.accept(element.getCorrelationKey());
     }
+    if (messageNameExpressionConsumer != null) {
+      messageNameExpressionConsumer.accept(element.getMessageName());
+    }
 
     MessageSubscriptionMemo messageSubscription = instance.getMessageSubscription(processInstanceEvent, element.getId());
 
@@ -57,7 +60,7 @@ public class MessageEventHandler {
       correlationKeyConsumer.accept(messageSubscription.correlationKey);
     }
 
-    if (expectedMessageName != null && !expectedMessageName.equals(messageSubscription.correlationKey)) {
+    if (expectedMessageName != null && !expectedMessageName.equals(messageSubscription.messageName)) {
       String message = "expected message event %s to have message name '%s', but was '%s'";
       throw new AssertionError(String.format(message, element.getId(), expectedMessageName, messageSubscription.messageName));
     }
@@ -65,31 +68,42 @@ public class MessageEventHandler {
       messageNameConsumer.accept(messageSubscription.messageName);
     }
 
-    action.accept(instance.client, messageSubscription.correlationKey);
-
-    instance.hasPassed(processInstanceEvent, element.getId());
+    action.correlate(instance.client, messageSubscription.messageName, messageSubscription.correlationKey);
   }
 
+  /**
+   * Correlates the message, when the process instance is waiting at the corresponding element, using specified variables.
+   *
+   * @see #withVariable(String, Object)
+   * @see #withVariables(Object)
+   * @see #withVariableMap(Map)
+   */
   public void correlate() {
     action = this::correlate;
   }
 
-  public void correlate(BiConsumer<ZeebeClient, String> action) {
+  /**
+   * Correlates the message using a custom action, when the process instance is waiting at the corresponding element.
+   *
+   * @param action A specific action that implements the {@link Correlation} or accepts a {@link ZeebeClient}, the message name and the correlation key.
+   * @see ZeebeClient#newPublishMessageCommand()
+   */
+  public void correlate(Correlation action) {
     if (action == null) {
       throw new IllegalArgumentException("action is null");
     }
     this.action = action;
   }
 
-  void correlate(ZeebeClient client, String correlationKey) {
+  void correlate(ZeebeClient client, String messageName, String correlationKey) {
     PublishMessageCommandStep3 publishMessageCommandStep3 = client.newPublishMessageCommand()
-        .messageName(element.getMessageName())
-        .correlationKey(element.getCorrelationKey());
+        .messageName(messageName)
+        .correlationKey(correlationKey);
 
     if (variables != null) {
-      publishMessageCommandStep3.variables(variables).send();
+      publishMessageCommandStep3.variables(variables).send().join();
     } else {
-      publishMessageCommandStep3.variables(variableMap).send();
+      publishMessageCommandStep3.variables(variableMap).send().join();
     }
   }
 
@@ -119,6 +133,72 @@ public class MessageEventHandler {
    */
   public MessageEventHandler verify(Consumer<ProcessInstanceAssert> verifier) {
     this.verifier = verifier;
+    return this;
+  }
+
+  /**
+   * Verifies that the message event has a specific correlation key.
+   *
+   * @param expectedCorrelationKey The expected correlation key.
+   * @return The handler.
+   */
+  public MessageEventHandler verifyCorrelationKey(String expectedCorrelationKey) {
+    this.expectedCorrelationKey = expectedCorrelationKey;
+    return this;
+  }
+
+  /**
+   * Verifies that the message event has a specific correlation key, using a consumer.
+   *
+   * @param correlationKeyConsumer A consumer asserting the correlation key.
+   * @return The handler.
+   */
+  public MessageEventHandler verifyCorrelationKey(Consumer<String> correlationKeyConsumer) {
+    this.correlationKeyConsumer = correlationKeyConsumer;
+    return this;
+  }
+
+  /**
+   * Verifies that the message event has a specific correlation key FEEL expression (see "Message" section), using a consumer function.
+   *
+   * @param correlationKeyExpressionConsumer A consumer asserting the correlation key expression.
+   * @return The handler.
+   */
+  public MessageEventHandler verifyCorrelationKeyExpression(Consumer<String> correlationKeyExpressionConsumer) {
+    this.correlationKeyExpressionConsumer = correlationKeyExpressionConsumer;
+    return this;
+  }
+
+  /**
+   * Verifies that the message event has a specific message name.
+   *
+   * @param expectedMessageName The expected message name.
+   * @return The handler.
+   */
+  public MessageEventHandler verifyMessageName(String expectedMessageName) {
+    this.expectedMessageName = expectedMessageName;
+    return this;
+  }
+
+  /**
+   * Verifies that the message event has a specific message name, using a consumer.
+   *
+   * @param messageNameConsumer A consumer asserting the message name.
+   * @return The handler.
+   */
+  public MessageEventHandler verifyMessageName(Consumer<String> messageNameConsumer) {
+    this.messageNameConsumer = messageNameConsumer;
+    return this;
+  }
+
+  /**
+   * Verifies that the message event has a specific message name FEEL expression (see "Message" section), using a consumer function.
+   *
+   * @param messageNameExpressionConsumer A consumer asserting the message name expression.
+   * @return The handler.
+   */
+  public MessageEventHandler verifyMessageNameExpression(Consumer<String> messageNameExpressionConsumer) {
+    this.messageNameExpressionConsumer = messageNameExpressionConsumer;
     return this;
   }
 
@@ -166,5 +246,21 @@ public class MessageEventHandler {
     }
     this.variableMap.putAll(variableMap);
     return this;
+  }
+
+  /**
+   * Interface for custom actions that need to correlate a message.
+   */
+  public interface Correlation {
+
+    /**
+     * Correlates the message.
+     *
+     * @param client         A Zeebe client.
+     * @param messageName    The actual message name.
+     * @param correlationKey The actual correlation key.
+     * @see ZeebeClient#newPublishMessageCommand()
+     */
+    void correlate(ZeebeClient client, String messageName, String correlationKey);
   }
 }

@@ -52,10 +52,8 @@ public class MessageEventStrategy extends DefaultHandlerStrategy {
         methodBuilder.addStatement("$LElement.setCorrelationKey($S)", literal, subscription.getCorrelationKey());
       }
 
-      if (message != null) {
-        if (message.getName() != null) {
-          methodBuilder.addStatement("$LElement.setMessageName($S)", literal, message.getName());
-        }
+      if (message != null && message.getName() != null) {
+        methodBuilder.addStatement("$LElement.setMessageName($S)", literal, message.getName());
       }
     }
   }

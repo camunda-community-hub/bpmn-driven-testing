@@ -1,5 +1,8 @@
 package org.camunda.community.bpmndt.platform8.api;
 
+import static com.google.common.truth.Truth.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -28,13 +31,24 @@ public class MessageCatchEventTest {
   @BeforeEach
   public void setUp() {
     MessageEventElement element = new MessageEventElement();
+    element.setCorrelationKey("=\"simple\"");
     element.setId("messageCatchEvent");
+    element.setMessageName("=\"simpleMessage\"");
 
     handler = new MessageEventHandler(element);
   }
 
   @Test
   public void testExecute() {
+    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+  }
+
+  @Test
+  public void testExecuteWithCustomAction() {
+    handler.correlate((client, messageName, correlationKey) ->
+        client.newPublishMessageCommand().messageName(messageName).correlationKey(correlationKey).send()
+    );
+
     tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
   }
 
@@ -46,6 +60,70 @@ public class MessageCatchEventTest {
         .withVariable("x", "test")
         .verify(ProcessInstanceAssert::isCompleted)
         .execute();
+  }
+
+  @Test
+  public void testVerifyCorrelationKey() {
+    handler.verifyCorrelationKey("wrong correlation key");
+
+    AssertionError e = assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
+    assertThat(e).hasMessageThat().contains("'wrong correlation key'");
+    assertThat(e).hasMessageThat().contains("'simple'");
+
+    handler.verifyCorrelationKey("simple");
+
+    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+
+    handler.verifyCorrelationKey(correlationKey -> assertThat(correlationKey).isEqualTo("wrong correlation key"));
+
+    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
+
+    handler.verifyCorrelationKey(correlationKey -> assertThat(correlationKey).isEqualTo("simple"));
+
+    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+  }
+
+  @Test
+  public void testVerifyCorrelationKeyExpression() {
+    handler.verifyCorrelationKeyExpression(expr -> assertThat(expr).isEqualTo("wrong correlation key expression"));
+
+    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
+
+    handler.verifyCorrelationKeyExpression(expr -> assertThat(expr).isEqualTo("=\"simple\""));
+
+    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+  }
+
+  @Test
+  public void testVerifyMessageName() {
+    handler.verifyMessageName("wrong message name");
+
+    AssertionError e = assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
+    assertThat(e).hasMessageThat().contains("'wrong message name'");
+    assertThat(e).hasMessageThat().contains("'simpleMessage'");
+
+    handler.verifyMessageName("simpleMessage");
+
+    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+
+    handler.verifyMessageName(messageName -> assertThat(messageName).isEqualTo("wrong message name"));
+
+    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
+
+    handler.verifyMessageName(messageName -> assertThat(messageName).isEqualTo("simpleMessage"));
+
+    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+  }
+
+  @Test
+  public void testVerifyMessageNameExpression() {
+    handler.verifyMessageNameExpression(expr -> assertThat(expr).isEqualTo("wrong message name expression"));
+
+    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
+
+    handler.verifyMessageNameExpression(expr -> assertThat(expr).isEqualTo("=\"simpleMessage\""));
+
+    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
   }
 
   private class TestCase extends AbstractJUnit5TestCase {

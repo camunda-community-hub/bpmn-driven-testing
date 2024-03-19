@@ -18,7 +18,7 @@
     <bpmn:sequenceFlow id="Flow_0w3lwpc" sourceRef="startEvent" targetRef="sendTask" />
     <bpmn:sendTask id="sendTask">
       <bpmn:extensionElements>
-        <zeebe:taskDefinition type="=&#34;sendTaskType&#34;" retries="=3" />
+        <zeebe:taskDefinition type="sendTaskType" />
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_0w3lwpc</bpmn:incoming>
       <bpmn:outgoing>Flow_09dqy2q</bpmn:outgoing>

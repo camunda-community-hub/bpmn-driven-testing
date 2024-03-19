@@ -11,6 +11,7 @@ import org.camunda.community.bpmndt.platform8.api.TestCaseInstanceMemo.ElementMe
 import org.camunda.community.bpmndt.platform8.api.TestCaseInstanceMemo.JobMemo;
 import org.camunda.community.bpmndt.platform8.api.TestCaseInstanceMemo.MessageSubscriptionMemo;
 import org.camunda.community.bpmndt.platform8.api.TestCaseInstanceMemo.ProcessInstanceMemo;
+import org.camunda.community.bpmndt.platform8.api.TestCaseInstanceMemo.SignalSubscriptionMemo;
 import org.camunda.community.bpmndt.platform8.api.TestCaseInstanceMemo.TimerMemo;
 
 import io.camunda.zeebe.client.ZeebeClient;
@@ -18,10 +19,7 @@ import io.camunda.zeebe.client.api.response.ProcessInstanceEvent;
 import io.camunda.zeebe.process.test.api.ZeebeTestEngine;
 import io.camunda.zeebe.process.test.filters.RecordStream;
 import io.camunda.zeebe.protocol.record.Record;
-import io.camunda.zeebe.protocol.record.intent.JobIntent;
 import io.camunda.zeebe.protocol.record.intent.ProcessInstanceIntent;
-import io.camunda.zeebe.protocol.record.intent.ProcessMessageSubscriptionIntent;
-import io.camunda.zeebe.protocol.record.intent.TimerIntent;
 
 /**
  * Link between a test case and its execution, utilizing a process instance that was instantiated by a {@link TestCaseExecutor} and handlers (e.g.
@@ -39,6 +37,7 @@ public class TestCaseInstance implements AutoCloseable {
   private Future<?> consumeRecordStreamTask;
 
   private volatile SelectTask<?> selectTask;
+  private volatile RuntimeException selectTaskException;
   private volatile SelectAndTestTask selectAndTestTask;
 
   TestCaseInstance(ZeebeTestEngine engine, ZeebeClient client, long taskTimeout) {
@@ -75,6 +74,10 @@ public class TestCaseInstance implements AutoCloseable {
     handler.apply(this, processInstanceEvent);
   }
 
+  public void apply(ProcessInstanceEvent processInstanceEvent, SignalEventHandler handler) {
+    handler.apply(this, processInstanceEvent);
+  }
+
   public void apply(ProcessInstanceEvent processInstanceEvent, TimerEventHandler handler) {
     handler.apply(this, processInstanceEvent);
   }
@@ -95,7 +98,7 @@ public class TestCaseInstance implements AutoCloseable {
     });
 
     if (!hasPassed) {
-      String message = "expected process instance %d to has passed BPMN element %s, but has not";
+      String message = "expected process instance %d to have passed BPMN element %s, but has not";
       throw new AssertionError(String.format(message, processInstanceEvent.getProcessInstanceKey(), bpmnElementId));
     }
   }
@@ -112,7 +115,7 @@ public class TestCaseInstance implements AutoCloseable {
     });
 
     if (!hasTerminated) {
-      String message = "expected process instance %d to has terminated BPMN element %s, but has not";
+      String message = "expected process instance %d to have terminated BPMN element %s, but has not";
       throw new AssertionError(String.format(message, processInstanceEvent.getProcessInstanceKey(), bpmnElementId));
     }
   }
@@ -140,26 +143,26 @@ public class TestCaseInstance implements AutoCloseable {
         return false;
       }
 
+      ElementMemo element = processInstance.getElement(bpmnElementId);
+      if (element == null) {
+        return false;
+      }
+      if (element.state == ProcessInstanceIntent.ELEMENT_ACTIVATED) {
+        return true;
+      }
+
+      // special check for elements with a task definition
+      // needed because a job worker could already have completed or terminated the related job
       JobMemo job = processInstance.getJob(bpmnElementId);
-      if (job != null) {
-        return job.state == JobIntent.CREATED;
+      if (job == null) {
+        return false;
       }
 
-      MessageSubscriptionMemo messageSubscription = processInstance.getMessageSubscription(bpmnElementId);
-      if (messageSubscription != null) {
-        return messageSubscription.state == ProcessMessageSubscriptionIntent.CREATED;
-      }
-
-      TimerMemo timer = processInstance.getTimer(bpmnElementId);
-      if (timer != null) {
-        return timer.state == TimerIntent.CREATED;
-      }
-
-      return false;
+      return element.state == ProcessInstanceIntent.ELEMENT_COMPLETED || element.state == ProcessInstanceIntent.ELEMENT_TERMINATED;
     });
 
     if (!isWaitingAt) {
-      String message = "expected process instance %d to be waiting at %s, but was not";
+      String message = "expected process instance %d to be waiting at BPMN element %s, but was not";
       throw new AssertionError(String.format(message, processInstanceEvent.getProcessInstanceKey(), bpmnElementId));
     }
   }
@@ -197,6 +200,30 @@ public class TestCaseInstance implements AutoCloseable {
       }
 
       return messageSubscription;
+    });
+  }
+
+  SignalSubscriptionMemo getSignalSubscription(ProcessInstanceEvent processInstanceEvent, String bpmnElementId) {
+    return select(memo -> {
+      ProcessInstanceMemo processInstance = memo.processInstances.get(processInstanceEvent.getProcessInstanceKey());
+      if (processInstance == null) {
+        String message = "process instance %d could not be found";
+        throw new IllegalStateException(String.format(message, processInstanceEvent.getProcessInstanceKey()));
+      }
+
+      ElementMemo element = processInstance.getElement(bpmnElementId);
+      if (element == null || element.state != ProcessInstanceIntent.ELEMENT_ACTIVATED) {
+        String message = "element %s of process instance %d has not been activated";
+        throw new IllegalStateException(String.format(message, bpmnElementId, processInstanceEvent.getProcessInstanceKey()));
+      }
+
+      return memo.signalSubscriptions.stream()
+          .filter(signalSubscription -> signalSubscription.catchEventInstanceKey == element.key)
+          .findFirst()
+          .orElseThrow(() -> {
+            String message = "element %s of process instance %d has no signal subscription";
+            throw new IllegalStateException(String.format(message, bpmnElementId, processInstanceEvent.getProcessInstanceKey()));
+          });
     });
   }
 
@@ -249,8 +276,15 @@ public class TestCaseInstance implements AutoCloseable {
         selectTask = null;
 
         synchronized (task) {
-          task.select(memo);
-          task.notify();
+          try {
+            task.select(memo);
+          } catch (RuntimeException e) {
+            selectTaskException = e;
+          }
+
+          if (task.result != null) {
+            task.notify();
+          }
         }
       }
 
@@ -278,12 +312,17 @@ public class TestCaseInstance implements AutoCloseable {
     SelectTask<T> task = new SelectTask<>(selector);
 
     selectTask = task;
+    selectTaskException = null;
     try {
       synchronized (selectTask) {
         task.wait(taskTimeout);
       }
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
+    }
+
+    if (selectTaskException != null) {
+      throw selectTaskException;
     }
 
     return task.result;

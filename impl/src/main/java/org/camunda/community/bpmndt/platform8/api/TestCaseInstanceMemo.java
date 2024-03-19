@@ -1,6 +1,8 @@
 package org.camunda.community.bpmndt.platform8.api;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import io.camunda.zeebe.protocol.record.Record;
@@ -8,22 +10,26 @@ import io.camunda.zeebe.protocol.record.RecordType;
 import io.camunda.zeebe.protocol.record.intent.JobIntent;
 import io.camunda.zeebe.protocol.record.intent.ProcessInstanceIntent;
 import io.camunda.zeebe.protocol.record.intent.ProcessMessageSubscriptionIntent;
+import io.camunda.zeebe.protocol.record.intent.SignalSubscriptionIntent;
 import io.camunda.zeebe.protocol.record.intent.TimerIntent;
 import io.camunda.zeebe.protocol.record.value.BpmnElementType;
 import io.camunda.zeebe.protocol.record.value.JobRecordValue;
 import io.camunda.zeebe.protocol.record.value.ProcessInstanceRecordValue;
 import io.camunda.zeebe.protocol.record.value.ProcessMessageSubscriptionRecordValue;
+import io.camunda.zeebe.protocol.record.value.SignalSubscriptionRecordValue;
 import io.camunda.zeebe.protocol.record.value.TimerRecordValue;
 
 public class TestCaseInstanceMemo {
 
   final Map<Long, ProcessInstanceMemo> processInstances = new HashMap<>();
+  final List<SignalSubscriptionMemo> signalSubscriptions = new ArrayList<>(0);
 
   void apply(Record<?> record) {
     if (record.getRecordType() != RecordType.EVENT) {
       return;
     }
 
+    // TODO remove
     System.out.println(record);
 
     switch (record.getValueType()) {
@@ -35,6 +41,9 @@ public class TestCaseInstanceMemo {
         break;
       case PROCESS_INSTANCE:
         handleProcessInstance(record);
+        break;
+      case SIGNAL_SUBSCRIPTION:
+        handleSignalSubscription(record);
         break;
       case TIMER:
         handleTimer(record);
@@ -48,6 +57,8 @@ public class TestCaseInstanceMemo {
     if (record.getIntent() == JobIntent.CREATED) {
       JobMemo job = new JobMemo();
       job.id = recordValue.getElementId();
+      job.key = record.getKey();
+      job.retries = recordValue.getRetries();
       job.state = JobIntent.CREATED;
       job.type = recordValue.getType();
 
@@ -75,28 +86,39 @@ public class TestCaseInstanceMemo {
   }
 
   private void handleProcessInstance(Record<?> record) {
+    ProcessInstanceIntent state = (ProcessInstanceIntent) record.getIntent();
     ProcessInstanceRecordValue recordValue = (ProcessInstanceRecordValue) record.getValue();
 
-    if (record.getIntent() == ProcessInstanceIntent.ELEMENT_ACTIVATED) {
-      if (recordValue.getBpmnElementType() == BpmnElementType.PROCESS) {
+    if (recordValue.getBpmnElementType() == BpmnElementType.PROCESS) {
+      if (state == ProcessInstanceIntent.ELEMENT_ACTIVATED) {
         ProcessInstanceMemo processInstance = new ProcessInstanceMemo();
         processInstance.key = recordValue.getProcessInstanceKey();
         processInstance.state = ProcessInstanceIntent.ELEMENT_ACTIVATED;
-        processInstances.put(processInstance.key, processInstance);
-      }
-    } else if (record.getIntent() == ProcessInstanceIntent.ELEMENT_COMPLETED || record.getIntent() == ProcessInstanceIntent.ELEMENT_TERMINATED) {
-      ProcessInstanceIntent state = (ProcessInstanceIntent) record.getIntent();
 
-      if (recordValue.getBpmnElementType() == BpmnElementType.PROCESS) {
+        processInstances.put(processInstance.key, processInstance);
+      } else if (state == ProcessInstanceIntent.ELEMENT_COMPLETED || state == ProcessInstanceIntent.ELEMENT_TERMINATED) {
         ProcessInstanceMemo processInstance = processInstances.get(recordValue.getProcessInstanceKey());
         processInstance.state = state;
-      } else {
-        ElementMemo element = new ElementMemo();
-        element.id = recordValue.getElementId();
-        element.state = state;
-
-        processInstances.get(recordValue.getProcessInstanceKey()).put(element);
       }
+    } else {
+      ElementMemo element = new ElementMemo();
+      element.id = recordValue.getElementId();
+      element.key = record.getKey();
+      element.state = state;
+
+      processInstances.get(recordValue.getProcessInstanceKey()).put(element);
+    }
+  }
+
+  private void handleSignalSubscription(Record<?> record) {
+    SignalSubscriptionRecordValue recordValue = (SignalSubscriptionRecordValue) record.getValue();
+
+    if (record.getIntent() == SignalSubscriptionIntent.CREATED) {
+      SignalSubscriptionMemo signalSubscription = new SignalSubscriptionMemo();
+      signalSubscription.catchEventInstanceKey = recordValue.getCatchEventInstanceKey();
+      signalSubscription.signalName = recordValue.getSignalName();
+
+      signalSubscriptions.add(signalSubscription);
     }
   }
 
@@ -117,12 +139,15 @@ public class TestCaseInstanceMemo {
   static class ElementMemo {
 
     String id;
+    long key;
     ProcessInstanceIntent state;
   }
 
   static class JobMemo {
 
     String id;
+    long key;
+    int retries;
     JobIntent state;
     String type;
 
@@ -192,6 +217,12 @@ public class TestCaseInstanceMemo {
       }
       timers.put(timer.id, timer);
     }
+  }
+
+  static class SignalSubscriptionMemo {
+
+    long catchEventInstanceKey;
+    String signalName;
   }
 
   static class TimerMemo {

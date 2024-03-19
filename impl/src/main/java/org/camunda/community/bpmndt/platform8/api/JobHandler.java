@@ -2,16 +2,15 @@ package org.camunda.community.bpmndt.platform8.api;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import org.camunda.community.bpmndt.platform8.api.TestCaseInstanceElement.JobElement;
 import org.camunda.community.bpmndt.platform8.api.TestCaseInstanceMemo.JobMemo;
 
+import io.camunda.zeebe.client.ZeebeClient;
 import io.camunda.zeebe.client.api.command.ThrowErrorCommandStep1.ThrowErrorCommandStep2;
-import io.camunda.zeebe.client.api.response.ActivatedJob;
 import io.camunda.zeebe.client.api.response.ProcessInstanceEvent;
-import io.camunda.zeebe.client.api.worker.JobClient;
-import io.camunda.zeebe.client.api.worker.JobWorker;
 import io.camunda.zeebe.process.test.assertions.BpmnAssert;
 import io.camunda.zeebe.process.test.assertions.ProcessInstanceAssert;
 
@@ -25,14 +24,17 @@ public class JobHandler {
   private final Map<String, Object> variableMap = new HashMap<>();
 
   private Consumer<ProcessInstanceAssert> verifier;
-  private io.camunda.zeebe.client.api.worker.JobHandler action;
+  private BiConsumer<ZeebeClient, Long> action;
   private String errorMessage;
   private Object variables;
 
+  private Consumer<String> retriesExpressionConsumer;
   private Consumer<String> typeExpressionConsumer;
 
+  private Integer expectedRetries;
   private String expectedType;
 
+  private Consumer<Integer> retriesConsumer;
   private Consumer<String> typeConsumer;
 
   JobHandler(JobElement element) {
@@ -44,11 +46,23 @@ public class JobHandler {
       verifier.accept(BpmnAssert.assertThat(processInstanceEvent));
     }
 
+    if (retriesExpressionConsumer != null) {
+      retriesExpressionConsumer.accept(element.getRetries());
+    }
     if (typeExpressionConsumer != null) {
       typeExpressionConsumer.accept(element.getType());
     }
 
     JobMemo job = instance.getJob(processInstanceEvent, element.getId());
+
+    if (expectedRetries != null && !expectedRetries.equals(job.retries)) {
+      String message = "expected job %s to have a retry count of %d, but was %d";
+      throw new AssertionError(String.format(message, element.getId(), expectedRetries, job.retries));
+    }
+    if (retriesConsumer != null) {
+      retriesConsumer.accept(job.retries);
+    }
+
     if (expectedType != null && !expectedType.equals(job.type)) {
       String message = "expected job %s to be of type '%s', but was '%s'";
       throw new AssertionError(String.format(message, element.getId(), expectedType, job.type));
@@ -58,12 +72,12 @@ public class JobHandler {
     }
 
     if (action != null) {
-      try (JobWorker ignored = instance.client.newWorker().jobType(job.type).handler(action).open()) {
-        if (element.getErrorCode() == null) {
-          instance.hasPassed(processInstanceEvent, element.getId());
-        } else {
-          instance.hasTerminated(processInstanceEvent, element.getId());
-        }
+      action.accept(instance.client, job.key);
+
+      if (element.getErrorCode() == null) {
+        instance.hasPassed(processInstanceEvent, element.getId());
+      } else {
+        instance.hasTerminated(processInstanceEvent, element.getId());
       }
     }
   }
@@ -73,7 +87,7 @@ public class JobHandler {
    * cases.
    *
    * <pre>
-   * tc.handleJob().customize(this::prepareJob);
+   * tc.handleJob().customize(this::prepare);
    * </pre>
    *
    * @param customizer A function that accepts a {@link JobHandler}.
@@ -100,17 +114,21 @@ public class JobHandler {
   /**
    * Executes a custom action that handles the job, when the process instance is waiting at the corresponding element.
    *
-   * @param action A specific action that accepts the related {@link JobClient} and {@link ActivatedJob} - a Zeebe job handler.
+   * @param action A specific action that accepts a {@link ZeebeClient} and the related job key.
+   * @see ZeebeClient#newCompleteCommand(long)
    */
-  public void execute(io.camunda.zeebe.client.api.worker.JobHandler action) {
+  public void execute(BiConsumer<ZeebeClient, Long> action) {
+    if (action == null) {
+      throw new IllegalArgumentException("action is null");
+    }
     this.action = action;
   }
 
-  void execute(JobClient client, ActivatedJob job) {
+  void execute(ZeebeClient client, long jobKey) {
     if (variables != null) {
-      client.newCompleteCommand(job).variables(variables).send();
+      client.newCompleteCommand(jobKey).variables(variables).send().join();
     } else {
-      client.newCompleteCommand(job).variables(variableMap).send();
+      client.newCompleteCommand(jobKey).variables(variableMap).send().join();
     }
   }
 
@@ -118,6 +136,10 @@ public class JobHandler {
    * Throws an BPMN error using the given error message as well as the specified variables.
    * <p>
    * This action can be used, if there is no related registered job worker yet.
+   *
+   * @see #withVariable(String, Object)
+   * @see #withVariables(Object)
+   * @see #withVariableMap(Map)
    */
   public void throwBpmnError(String errorMessage) {
     if (element.getErrorCode() == null) {
@@ -128,8 +150,8 @@ public class JobHandler {
     this.action = this::throwBpmnError;
   }
 
-  void throwBpmnError(JobClient client, ActivatedJob job) {
-    ThrowErrorCommandStep2 throwErrorCommandStep2 = client.newThrowErrorCommand(job)
+  void throwBpmnError(ZeebeClient client, long jobKey) {
+    ThrowErrorCommandStep2 throwErrorCommandStep2 = client.newThrowErrorCommand(jobKey)
         .errorCode(element.getErrorCode())
         .errorMessage(errorMessage);
 
@@ -154,6 +176,39 @@ public class JobHandler {
   }
 
   /**
+   * Verifies that the job has a specific number of retries.
+   *
+   * @param expectedRetries The expected retry count.
+   * @return The handler.
+   */
+  public JobHandler verifyRetries(Integer expectedRetries) {
+    this.expectedRetries = expectedRetries;
+    return this;
+  }
+
+  /**
+   * Verifies that the job has a specific number of retries, using a consumer.
+   *
+   * @param retriesConsumer A consumer asserting the retry count.
+   * @return The handler.
+   */
+  public JobHandler verifyRetries(Consumer<Integer> retriesConsumer) {
+    this.retriesConsumer = retriesConsumer;
+    return this;
+  }
+
+  /**
+   * Verifies that the job has a specific "retries" FEEL expression (see "Task definition" section), using a consumer function.
+   *
+   * @param retriesExpressionConsumer A consumer asserting the "retries" expression.
+   * @return The handler.
+   */
+  public JobHandler verifyRetriesExpression(Consumer<String> retriesExpressionConsumer) {
+    this.retriesExpressionConsumer = retriesExpressionConsumer;
+    return this;
+  }
+
+  /**
    * Verifies that the job is of the given type.
    *
    * @param expectedType The expected type.
@@ -165,7 +220,7 @@ public class JobHandler {
   }
 
   /**
-   * Verifies that the job is of the given type.
+   * Verifies that the job is of the given type, using a consumer.
    *
    * @param typeConsumer A consumer asserting the type.
    * @return The handler.

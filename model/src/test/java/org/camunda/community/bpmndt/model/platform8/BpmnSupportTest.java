@@ -46,9 +46,26 @@ public class BpmnSupportTest {
   }
 
   @Test
+  public void testIsBusinessRuleTask() {
+    BpmnSupport bpmnSupport = of(simple.resolve("simpleBusinessRuleTask.bpmn"));
+    assertThat(bpmnSupport.isBusinessRuleTask("businessRuleTask")).isTrue();
+  }
+
+  @Test
   public void testIsCallActivity() {
     BpmnSupport bpmnSupport = of(simple.resolve("simpleCallActivity.bpmn"));
     assertThat(bpmnSupport.isCallActivity("callActivity")).isTrue();
+  }
+
+  @Test
+  public void testIsEndEvent() {
+    BpmnSupport bpmnSupport;
+
+    bpmnSupport = of(simple.resolve("simple.bpmn"));
+    assertThat(bpmnSupport.isEndEvent("endEvent")).isTrue();
+
+    bpmnSupport = of(simple.resolve("simpleMessageEndEvent.bpmn"));
+    assertThat(bpmnSupport.isEndEvent("messageEndEvent")).isTrue();
   }
 
   @Test
@@ -98,6 +115,12 @@ public class BpmnSupportTest {
   public void testIsReceiveTask() {
     BpmnSupport bpmnSupport = of(simple.resolve("simpleReceiveTask.bpmn"));
     assertThat(bpmnSupport.isReceiveTask("receiveTask")).isTrue();
+  }
+
+  @Test
+  public void testIsScriptTask() {
+    BpmnSupport bpmnSupport = of(simple.resolve("simpleScriptTask.bpmn"));
+    assertThat(bpmnSupport.isScriptTask("scriptTask")).isTrue();
   }
 
   @Test

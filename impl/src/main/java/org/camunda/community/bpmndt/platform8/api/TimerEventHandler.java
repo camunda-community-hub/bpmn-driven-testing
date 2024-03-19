@@ -30,8 +30,6 @@ public class TimerEventHandler {
   }
 
   void apply(TestCaseInstance instance, ProcessInstanceEvent processInstanceEvent) {
-    TimerMemo timer = instance.getTimer(processInstanceEvent, element.getId());
-
     if (verifier != null) {
       verifier.accept(BpmnAssert.assertThat(processInstanceEvent));
     }
@@ -43,6 +41,7 @@ public class TimerEventHandler {
       timeDurationExpressionConsumer.accept(element.getTimeDuration());
     }
 
+    TimerMemo timer = instance.getTimer(processInstanceEvent, element.getId());
     if (timeDateConsumer != null) {
       Instant dueDateInstant = Instant.ofEpochMilli(timer.dueDate);
       LocalDateTime dueDate = LocalDateTime.ofInstant(dueDateInstant, ZoneId.systemDefault());
@@ -53,8 +52,6 @@ public class TimerEventHandler {
     }
 
     instance.engine.increaseTime(Duration.ofMillis(timer.dueDate - System.currentTimeMillis()));
-
-    instance.hasPassed(processInstanceEvent, element.getId());
   }
 
   /**
@@ -76,7 +73,7 @@ public class TimerEventHandler {
   }
 
   /**
-   * Verifies the user task's waiting state.
+   * Verifies the user timer event's waiting state.
    *
    * @param verifier Verifier that accepts an {@link ProcessInstanceAssert} instance.
    * @return The handler.

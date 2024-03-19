@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="simulate-sub-process-definition" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.20.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.4.0">
+  <bpmn:process id="bpmndt-simulate-sub-process" isExecutable="true">
+    <bpmn:startEvent id="startEvent">
+      <bpmn:outgoing>f1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="f1" sourceRef="startEvent" targetRef="simulateSubProcess" />
+    <bpmn:serviceTask id="simulateSubProcess">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="=&#34;bpmndt:simulate:&#34; + processId" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>f1</bpmn:incoming>
+      <bpmn:outgoing>f2</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="f2" sourceRef="simulateSubProcess" targetRef="endEvent" />
+    <bpmn:endEvent id="endEvent">
+      <bpmn:incoming>f2</bpmn:incoming>
+    </bpmn:endEvent>
+  </bpmn:process>
+</bpmn:definitions>

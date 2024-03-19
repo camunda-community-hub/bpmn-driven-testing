@@ -21,9 +21,12 @@ import io.camunda.zeebe.model.bpmn.Bpmn;
 import io.camunda.zeebe.model.bpmn.BpmnModelInstance;
 import io.camunda.zeebe.model.bpmn.instance.BoundaryEvent;
 import io.camunda.zeebe.model.bpmn.instance.Definitions;
+import io.camunda.zeebe.model.bpmn.instance.EndEvent;
+import io.camunda.zeebe.model.bpmn.instance.ExtensionElements;
 import io.camunda.zeebe.model.bpmn.instance.IntermediateCatchEvent;
 import io.camunda.zeebe.model.bpmn.instance.IntermediateThrowEvent;
 import io.camunda.zeebe.model.bpmn.instance.Process;
+import io.camunda.zeebe.model.bpmn.instance.zeebe.ZeebeTaskDefinition;
 
 class TestCasesImpl implements TestCases {
 
@@ -178,6 +181,18 @@ class TestCasesImpl implements TestCases {
     }
   }
 
+  private void handleEndEvent(BpmnElementImpl element) {
+    EndEvent event = element.getFlowNode(EndEvent.class);
+    BpmnEventSupport eventSupport = new BpmnEventSupport(event);
+
+    if (eventSupport.isMessage()) {
+      // handle message end event as service task
+      element.type = BpmnElementType.SERVICE_TASK;
+    } else {
+      element.type = BpmnElementType.OTHER;
+    }
+  }
+
   private void handleIntermediateCatchEvent(BpmnElementImpl element) {
     IntermediateCatchEvent event = element.getFlowNode(IntermediateCatchEvent.class);
     BpmnEventSupport eventSupport = new BpmnEventSupport(event);
@@ -199,6 +214,21 @@ class TestCasesImpl implements TestCases {
 
     if (eventSupport.isLink()) {
       element.type = BpmnElementType.LINK_THROW;
+    } else if (eventSupport.isMessage()) {
+      // handle message throw event as service task
+      element.type = BpmnElementType.SERVICE_TASK;
+    } else {
+      element.type = BpmnElementType.OTHER;
+    }
+  }
+
+  private void handleTask(BpmnElementImpl element) {
+    ExtensionElements extensionElements = element.getFlowNode().getExtensionElements();
+
+    ZeebeTaskDefinition taskDefinition = (ZeebeTaskDefinition) extensionElements.getUniqueChildElementByType(ZeebeTaskDefinition.class);
+    if (taskDefinition != null) {
+      // handle business rule or script task with task definition as service task
+      element.type = BpmnElementType.SERVICE_TASK;
     } else {
       element.type = BpmnElementType.OTHER;
     }
@@ -262,14 +292,20 @@ class TestCasesImpl implements TestCases {
         handleIntermediateCatchEvent(element);
       } else if (bpmnSupport.isBoundaryEvent(flowNodeId)) {
         handleBoundaryEvent(element);
+      } else if (bpmnSupport.isIntermediateThrowEvent(flowNodeId)) {
+        handleIntermediateThrowEvent(element);
+      } else if (bpmnSupport.isEndEvent(flowNodeId)) {
+        handleEndEvent(element);
+      } else if (bpmnSupport.isBusinessRuleTask(flowNodeId)) {
+        handleTask(element);
       } else if (bpmnSupport.isSendTask(flowNodeId)) {
         // handle send task as service task
         element.type = BpmnElementType.SERVICE_TASK;
       } else if (bpmnSupport.isReceiveTask(flowNodeId)) {
         // handle receive task as message catch event
         element.type = BpmnElementType.MESSAGE_CATCH;
-      } else if (bpmnSupport.isIntermediateThrowEvent(flowNodeId)) {
-        handleIntermediateThrowEvent(element);
+      } else if (bpmnSupport.isScriptTask(flowNodeId)) {
+        handleTask(element);
       } else {
         element.type = BpmnElementType.OTHER;
       }

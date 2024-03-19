@@ -29,6 +29,17 @@ public class TestCasesTest {
   }
 
   @Test
+  public void testBusinessRuleTask() {
+    TestCases testCases = TestCases.of(Platform8TestPaths.simple("simpleBusinessRuleTask.bpmn"));
+    assertThat(testCases.get()).hasSize(1);
+
+    TestCase testCase = testCases.get().get(0);
+    assertThat(testCase.getElements()).hasSize(3);
+
+    assertThat(testCase.getElements().get(1).getType()).isEqualTo(BpmnElementType.SERVICE_TASK);
+  }
+
+  @Test
   public void testCollaboration() {
     TestCases testCases = TestCases.of(Platform8TestPaths.advanced("collaboration.bpmn"));
     assertThat(testCases.get()).hasSize(4);
@@ -143,6 +154,28 @@ public class TestCasesTest {
   }
 
   @Test
+  public void testMessageEndEvent() {
+    TestCases testCases = TestCases.of(Platform8TestPaths.simple("simpleMessageEndEvent.bpmn"));
+    assertThat(testCases.get()).hasSize(1);
+
+    TestCase testCase = testCases.get().get(0);
+    assertThat(testCase.getElements()).hasSize(2);
+
+    assertThat(testCase.getElements().get(1).getType()).isEqualTo(BpmnElementType.SERVICE_TASK);
+  }
+
+  @Test
+  public void testMessageThrowEvent() {
+    TestCases testCases = TestCases.of(Platform8TestPaths.simple("simpleMessageThrowEvent.bpmn"));
+    assertThat(testCases.get()).hasSize(1);
+
+    TestCase testCase = testCases.get().get(0);
+    assertThat(testCase.getElements()).hasSize(3);
+
+    assertThat(testCase.getElements().get(1).getType()).isEqualTo(BpmnElementType.SERVICE_TASK);
+  }
+
+  @Test
   public void testMultiInstanceScopeNested() {
     TestCases testCases = TestCases.of(Platform8TestPaths.advancedMultiInstance("scopeNested.bpmn"));
     assertThat(testCases.get()).hasSize(3);
@@ -211,6 +244,39 @@ public class TestCasesTest {
     TestCases testCases = TestCases.of(Platform8TestPaths.simple("special/noTestCases.bpmn"));
     assertThat(testCases.get()).hasSize(0);
     assertThat(testCases.isEmpty()).isTrue();
+  }
+
+  @Test
+  public void testReceiveTask() {
+    TestCases testCases = TestCases.of(Platform8TestPaths.simple("simpleReceiveTask.bpmn"));
+    assertThat(testCases.get()).hasSize(1);
+
+    TestCase testCase = testCases.get().get(0);
+    assertThat(testCase.getElements()).hasSize(3);
+
+    assertThat(testCase.getElements().get(1).getType()).isEqualTo(BpmnElementType.MESSAGE_CATCH);
+  }
+
+  @Test
+  public void testScriptTask() {
+    TestCases testCases = TestCases.of(Platform8TestPaths.simple("simpleScriptTask.bpmn"));
+    assertThat(testCases.get()).hasSize(1);
+
+    TestCase testCase = testCases.get().get(0);
+    assertThat(testCase.getElements()).hasSize(3);
+
+    assertThat(testCase.getElements().get(1).getType()).isEqualTo(BpmnElementType.SERVICE_TASK);
+  }
+
+  @Test
+  public void testSendTask() {
+    TestCases testCases = TestCases.of(Platform8TestPaths.simple("simpleSendTask.bpmn"));
+    assertThat(testCases.get()).hasSize(1);
+
+    TestCase testCase = testCases.get().get(0);
+    assertThat(testCase.getElements()).hasSize(3);
+
+    assertThat(testCase.getElements().get(1).getType()).isEqualTo(BpmnElementType.SERVICE_TASK);
   }
 
   @Test

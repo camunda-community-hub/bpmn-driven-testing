@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.camunda.zeebe.client.ZeebeClient;
 import io.camunda.zeebe.client.api.JsonMapper;
+import io.camunda.zeebe.client.api.command.ClientStatusException;
 import io.camunda.zeebe.client.api.command.CreateProcessInstanceCommandStep1.CreateProcessInstanceCommandStep3;
 import io.camunda.zeebe.client.api.command.DeployResourceCommandStep1;
 import io.camunda.zeebe.client.api.command.DeployResourceCommandStep1.DeployResourceCommandStep2;
@@ -266,6 +267,17 @@ public class TestCaseExecutor {
   void executeTestCase(ProcessInstanceEvent processInstanceEvent, ZeebeClient client) {
     try (TestCaseInstance testCaseInstance = new TestCaseInstance(engine, client, taskTimeout)) {
       testCase.execute(testCaseInstance, processInstanceEvent);
+    } catch (Throwable t) {
+      // cancel not process instance of failed test
+      // to ensure that message is not correlated with an old process instance
+      // when the same correlation key is used
+      try {
+        client.newCancelInstanceCommand(processInstanceEvent.getProcessInstanceKey()).send().join();
+      } catch (ClientStatusException e) {
+        // ignore exception
+      }
+
+      throw t;
     }
 
     if (verifier != null) {

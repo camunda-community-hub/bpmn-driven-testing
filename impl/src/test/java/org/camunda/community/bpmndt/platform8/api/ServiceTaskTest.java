@@ -39,6 +39,7 @@ public class ServiceTaskTest {
   public void setUp() {
     JobElement element = new JobElement();
     element.setId("serviceTask");
+    element.setRetries("=3");
     element.setType("=\"serviceTaskType\"");
 
     handler = new JobHandler(element);
@@ -53,6 +54,15 @@ public class ServiceTaskTest {
     try (JobWorker ignored = workerBuilder.open()) {
       tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
     }
+  }
+
+  @Test
+  public void testExecuteWithCustomAction() {
+    handler.execute((client, jobKey) -> {
+      client.newCompleteCommand(jobKey).send();
+    });
+
+    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
   }
 
   @Test
@@ -125,6 +135,52 @@ public class ServiceTaskTest {
         .withVariables(variables)
         .verify(ProcessInstanceAssert::isCompleted)
         .execute();
+  }
+
+  @Test
+  public void testVerifyRetries() {
+    JobWorkerBuilderStep3 workerBuilder = client.newWorker().jobType("serviceTaskType").handler((client, job) ->
+        client.newCompleteCommand(job).send()
+    );
+
+    handler.verifyRetries(2);
+
+    try (JobWorker ignored = workerBuilder.open()) {
+      AssertionError e = assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
+      assertThat(e).hasMessageThat().contains("but was 3");
+      assertThat(e).hasMessageThat().contains("retry count of 2");
+    }
+
+    handler.verifyRetries(3);
+
+    handler.verifyRetries(retries -> assertThat(retries).isEqualTo(2));
+
+    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
+
+    handler.verifyRetries(retries -> assertThat(retries).isEqualTo(3));
+
+    try (JobWorker ignored = workerBuilder.open()) {
+      tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+    }
+  }
+
+  @Test
+  public void testVerifyRetriesExpression() {
+    JobWorkerBuilderStep3 workerBuilder = client.newWorker().jobType("serviceTaskType").handler((client, job) ->
+        client.newCompleteCommand(job).send()
+    );
+
+    handler.verifyRetriesExpression(expr -> assertThat(expr).isEqualTo("wrong retries expression"));
+
+    try (JobWorker ignored = workerBuilder.open()) {
+      assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
+    }
+
+    handler.verifyRetriesExpression(expr -> assertThat(expr).isEqualTo("=3"));
+
+    try (JobWorker ignored = workerBuilder.open()) {
+      tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+    }
   }
 
   @Test

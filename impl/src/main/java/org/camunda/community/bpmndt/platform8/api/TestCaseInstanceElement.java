@@ -23,6 +23,7 @@ public abstract class TestCaseInstanceElement {
   public static class JobElement extends TestCaseInstanceElement {
 
     private String errorCode;
+    private String retries;
     private String type;
 
     /**
@@ -34,17 +35,20 @@ public abstract class TestCaseInstanceElement {
       return errorCode;
     }
 
-    /**
-     * Returns the job type - e.g. the service task type, handled by a Zeebe client job worker.
-     *
-     * @return The job's type.
-     */
+    public String getRetries() {
+      return retries;
+    }
+
     public String getType() {
       return type;
     }
 
     public void setErrorCode(String errorCode) {
       this.errorCode = errorCode;
+    }
+
+    public void setRetries(String retries) {
+      this.retries = retries;
     }
 
     public void setType(String type) {
@@ -71,6 +75,19 @@ public abstract class TestCaseInstanceElement {
 
     public void setMessageName(String messageName) {
       this.messageName = messageName;
+    }
+  }
+
+  public static class SignalEventElement extends TestCaseInstanceElement {
+
+    private String signalName;
+
+    public String getSignalName() {
+      return signalName;
+    }
+
+    public void setSignalName(String signalName) {
+      this.signalName = signalName;
     }
   }
 
