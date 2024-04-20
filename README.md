@@ -2,8 +2,8 @@
 [![](https://img.shields.io/badge/Community%20Extension-An%20open%20source%20community%20maintained%20project-FF4700)](https://github.com/camunda-community-hub/community)
 [![](https://img.shields.io/badge/Lifecycle-Incubating-blue)](https://github.com/Camunda-Community-Hub/community/blob/main/extension-lifecycle.md#incubating-)
 ![Compatible with: Camunda Platform 7](https://img.shields.io/badge/Compatible%20with-Camunda%20Platform%207-26d07c)
-[![Maven plugin](https://img.shields.io/maven-central/v/org.camunda.community/bpmn-driven-testing-maven-plugin.svg?label=Maven%20plugin)](https://central.sonatype.com/artifact/org.camunda.community/bpmn-driven-testing-maven-plugin/0.9.0/versions)
-[![Gradle plugin](https://img.shields.io/maven-central/v/org.camunda.community/bpmn-driven-testing-gradle-plugin.svg?label=Gradle%20plugin)](https://central.sonatype.com/artifact/org.camunda.community/bpmn-driven-testing-gradle-plugin/0.9.0/versions)
+[![Maven plugin](https://img.shields.io/maven-central/v/org.camunda.community/bpmn-driven-testing-maven-plugin.svg?label=Maven%20plugin)](https://central.sonatype.com/artifact/org.camunda.community/bpmn-driven-testing-maven-plugin/0.10.0/versions)
+[![Gradle plugin](https://img.shields.io/maven-central/v/org.camunda.community/bpmn-driven-testing-gradle-plugin.svg?label=Gradle%20plugin)](https://central.sonatype.com/artifact/org.camunda.community/bpmn-driven-testing-gradle-plugin/0.10.0/versions)
 
 [Camunda Platform 7](https://docs.camunda.org/manual/latest/) extension, which is able to generate test code based on an extended BPMN model.
 
@@ -16,6 +16,8 @@ The extension consists of:
 
 - [Camunda Modeler plugin](camunda-modeler-plugin) for a visual selection and the management of test cases
 - [Maven plugin](maven-plugin) / [Gradle plugin](gradle-plugin) for generation of JUnit 5 based test code
+
+:warning: Version [0.10.0](https://github.com/camunda-community-hub/bpmn-driven-testing/tree/0.10.0) supports only [Camunda 7.21](https://docs.camunda.org/manual/7.21/) (Java 11+) and drops test code generation for JUnit 4. For older Camunda versions (Java 8+) and JUnit 4 support, please rely on version [0.9.0](https://github.com/camunda-community-hub/bpmn-driven-testing/tree/0.9.0).
 
 ## Features
 - Visual test case selection
@@ -32,7 +34,7 @@ The extension consists of:
 - Spring/Spring Boot test support - see `advanced-spring*` under [integration tests](integration-tests/)
 - Testing of arbitrary paths through a BPMN process
 - Test case validation and migration, when a BPMN process was changed - see [docs](docs/test-case-validation-and-migration.md)
-- [camunda-process-test-coverage](https://github.com/camunda-community-hub/camunda-process-test-coverage) extension support - see `coverage-*` under [integration tests](integration-tests/)
+- [camunda-process-test-coverage](https://github.com/camunda-community-hub/camunda-process-test-coverage) extension support - see `coverage*` under [integration tests](integration-tests/)
 
 ## How does it work?
 
@@ -72,9 +74,9 @@ When the BPMN model is saved, the selected test cases are attached to the BPMN p
 ```
 
 ### Generate test code
-To generate the code for the selected test cases, a developer must run the **generator** goal of the [bpmn-driven-testing-maven-plugin](maven-plugin).
+To generate the code for the selected test cases, a developer must run the **generator** goal of the [bpmn-driven-testing-maven-plugin](maven-plugin) or the **generateTestCases** task of the [bpmn-driven-testing-gradle-plugin](gradle-plugin).
 
-The goal finds all *.bpmn files under `src/main/resources` and looks for BPMN processes with a `bpmndt:testCases` extension element.
+The goal (or task) finds all *.bpmn files under `src/main/resources` and looks for BPMN processes with a `bpmndt:testCases` extension element.
 Each test case will result in a [JUnit 5 extension](https://junit.org/junit5/docs/current/api/org.junit.jupiter.api/org/junit/jupiter/api/extension/Extension.html) - in this example: `generated.order_fulfillment.TC_Happy_Path`.
 
 ### Implement tests

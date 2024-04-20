@@ -19,7 +19,7 @@ build/
 
 # camunda-modeler-plugin
 .nyc_output/
-coverage/
+camunda-modeler-plugin/coverage/
 bpmn-driven-testing-plugin.zip
 dist/
 node_modules/
