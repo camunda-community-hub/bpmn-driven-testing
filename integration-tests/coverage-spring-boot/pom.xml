@@ -11,11 +11,11 @@
 
     <!-- Versions -->
     <assertj.version>3.24.2</assertj.version>
-    <camunda.bpm.version>7.19.0</camunda.bpm.version>
+    <camunda.bpm.version>7.21.0</camunda.bpm.version>
     <camunda.bpm.assert.version>15.0.0</camunda.bpm.assert.version>
     <camunda.process.test.coverage.version>2.3.1</camunda.process.test.coverage.version>
-    <h2.version>2.2.220</h2.version>
-    <spring.boot.version>2.7.18</spring.boot.version>
+    <h2.version>2.2.224</h2.version>
+    <spring.boot.version>3.2.4</spring.boot.version>
 
     <plugin.version>1.0.0-SNAPSHOT</plugin.version>
   </properties>
@@ -104,8 +104,7 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.8.1</version>
         <configuration>
-          <source>1.8</source>
-          <target>1.8</target>
+          <release>21</release>
         </configuration>
       </plugin>
 

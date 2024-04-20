@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:bpmndt="http://camunda.org/schema/extension/bpmn-driven-testing" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_0sgrexf" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.4.0">
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:bpmndt="http://camunda.org/schema/extension/bpmn-driven-testing" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" id="Definitions_0zs8n50" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.20.0">
   <bpmn:collaboration id="Collaboration_097o4i6">
     <bpmn:participant id="Participant_1wj4hy7" processRef="simpleMessageThrowEvent" />
     <bpmn:participant id="Participant_06zu32j" name="External system" />
     <bpmn:messageFlow id="Flow_1rfi3l9" sourceRef="messageThrowEvent" targetRef="Participant_06zu32j" />
   </bpmn:collaboration>
-  <bpmn:process id="simpleMessageThrowEvent" isExecutable="true">
+  <bpmn:process id="simpleMessageThrowEvent" isExecutable="true" camunda:historyTimeToLive="0">
     <bpmn:extensionElements>
       <bpmndt:testCases>
         <bpmndt:testCase>

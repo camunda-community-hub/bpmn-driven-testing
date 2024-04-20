@@ -414,6 +414,11 @@ public class ExternalTaskHandler {
     }
 
     @Override
+    public Date getCreateTime() {
+      return task.getCreateTime();
+    }
+
+    @Override
     public String getProcessInstanceId() {
       return task.getProcessInstanceId();
     }
