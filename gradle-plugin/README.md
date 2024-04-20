@@ -136,7 +136,7 @@ Since the latest Gradle dependencies are not available via Maven Central or othe
 this module uses a [local Maven repository](local-repository) that contains the required dependencies.
 For the development within an IDE, it is recommended to add the `lib/` directory of a local Gradle installation manually to the classpath.
 
-The development is done with Gradle in version `7.5.1`.
+The development is done with Gradle in version `8.5`.
 
 ## Testing
 Beside unit tests, a set of [integration tests](../integration-tests) exist,

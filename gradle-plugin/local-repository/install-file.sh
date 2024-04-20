@@ -3,7 +3,7 @@
 artifact_id="$1"
 
 if [[ $artifact_id == plugins/* ]]; then
-  sub_directory="lib/plugins"  
+  sub_directory="lib/plugins"
 else
   sub_directory="lib"
 fi

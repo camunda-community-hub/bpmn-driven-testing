@@ -22,8 +22,7 @@ public class GradlePlugin implements Plugin<Project> {
   private static final Logger LOGGER = LoggerFactory.getLogger(GradlePlugin.class);
 
   /**
-   * Name of the test source set, which must contain "test" to indicate that the source set contains
-   * test code. Otherwise Eclipse will not recognize it!
+   * Name of the test source set, which must contain "test" to indicate that the source set contains test code. Otherwise, Eclipse will not recognize it!
    */
   private static final String SOURCE_SET_NAME = "bpmndtTestCases";
 
@@ -33,7 +32,8 @@ public class GradlePlugin implements Plugin<Project> {
     GradleExtension extension = project.getExtensions().create(Constants.EXTENSION_NAME, GradleExtension.class);
 
     // add test source directory
-    Path testSourcePath = project.getBuildDir().toPath().resolve(Constants.EXTENSION_NAME);
+    Path buildPath = project.getLayout().getBuildDirectory().get().getAsFile().toPath();
+    Path testSourcePath = buildPath.resolve(Constants.EXTENSION_NAME);
     try {
       Files.createDirectories(testSourcePath);
     } catch (IOException e) {
