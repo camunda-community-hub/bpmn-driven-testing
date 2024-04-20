@@ -20,10 +20,11 @@
   </modules>
 
   <properties>
-    <version.java>1.8</version.java>
+    <version.java>21</version.java>
+    <maven.compiler.release>11</maven.compiler.release> <!-- https://docs.camunda.org/manual/latest/introduction/supported-environments/#java -->
 
     <!-- Versions -->
-    <camunda.bpm.version>7.19.0</camunda.bpm.version>
+    <camunda.bpm.version>7.21.0</camunda.bpm.version>
     <google.truth.version>1.1.5</google.truth.version>
     <junit.jupiter.version>5.9.3</junit.jupiter.version>
     <robotframework.version>4.1.2</robotframework.version>

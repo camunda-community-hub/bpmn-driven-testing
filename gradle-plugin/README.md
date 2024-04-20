@@ -80,9 +80,9 @@ Add dependencies, which are required to execute the generated test code:
 
 ```groovy
 dependencies {
-  implementation 'org.camunda.bpm:camunda-engine:7.19.0'
+  implementation 'org.camunda.bpm:camunda-engine:7.21.0'
 
-  testImplementation 'com.h2database:h2:2.2.220'
+  testImplementation 'com.h2database:h2:2.2.224'
   testImplementation 'org.assertj:assertj-core:3.24.2'
   testImplementation 'org.camunda.bpm.assert:camunda-bpm-assert:15.0.0'
   testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.3'
@@ -99,12 +99,12 @@ For **Spring** based testing, additional dependencies are required:
 
 ```groovy
 dependencies {
-  implementation 'org.camunda.bpm:camunda-engine-spring:7.19.0'
-  implementation 'org.springframework:spring-beans:5.3.31'
-  implementation 'org.springframework:spring-context:5.3.31'
-  implementation 'org.springframework:spring-jdbc:5.3.31'
+  implementation 'org.camunda.bpm:camunda-engine-spring:7.21.0'
+  implementation 'org.springframework:spring-beans:6.1.5'
+  implementation 'org.springframework:spring-context:6.1.5'
+  implementation 'org.springframework:spring-jdbc:6.1.5'
 
-  testImplementation 'org.springframework:spring-test:5.3.31'
+  testImplementation 'org.springframework:spring-test:6.1.5'
 }
 ```
 
@@ -112,9 +112,9 @@ For **Spring Boot** based testing, additional dependencies are required:
 
 ```groovy
 dependencies {
-  implementation 'org.camunda.bpm.springboot:camunda-bpm-spring-boot-starter:7.19.0'
+  implementation 'org.camunda.bpm.springboot:camunda-bpm-spring-boot-starter:7.21.0'
 
-  testImplementation 'org.springframework.boot:spring-boot-starter-test:2.7.18'
+  testImplementation 'org.springframework.boot:spring-boot-starter-test:3.2.4'
 }
 ```
 
@@ -122,12 +122,12 @@ Recommended versions:
 
 | Dependency         | Version |
 |:-------------------|:--------|
-| Camunda BPM        | 7.19.0  |
+| Camunda BPM        | 7.21.0  |
 | Camunda BPM Assert | 15.0.0  |
 | JUnit 5 (Jupiter)  | 5.9.3   |
 | Assertj            | 3.24.2  |
-| Spring Framework   | 5.3.31  |
-| Spring Boot        | 2.7.18  |
+| Spring Framework   | 6.1.5  |
+| Spring Boot        | 3.2.4  |
 
 ## Development
 :warning: This and the subsequent sections are only important for Gradle plugin development!

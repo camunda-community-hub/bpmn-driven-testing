@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:bpmndt="http://camunda.org/schema/extension/bpmn-driven-testing" id="Definitions_08b7m1u" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.4.0">
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:bpmndt="http://camunda.org/schema/extension/bpmn-driven-testing" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" id="Definitions_0zs8n50" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.20.0">
   <bpmn:collaboration id="collaboration">
     <bpmn:participant id="participantA" name="A" processRef="processA" />
     <bpmn:participant id="participantB" name="B" processRef="processB" />
@@ -7,7 +7,7 @@
     <bpmn:messageFlow id="Flow_0mhxhj6" sourceRef="endEventA" targetRef="startEventB" />
     <bpmn:messageFlow id="Flow_0djqt2p" sourceRef="endEventB" targetRef="startEventC" />
   </bpmn:collaboration>
-  <bpmn:process id="processA" isExecutable="true">
+  <bpmn:process id="processA" isExecutable="true" camunda:historyTimeToLive="0">
     <bpmn:extensionElements>
       <bpmndt:testCases>
         <bpmndt:testCase>
@@ -40,7 +40,7 @@
     <bpmn:sequenceFlow id="Flow_1bq8ys4" sourceRef="startEventA" targetRef="subProcessA" />
     <bpmn:sequenceFlow id="Flow_1edvm7b" sourceRef="subProcessA" targetRef="endEventA" />
   </bpmn:process>
-  <bpmn:process id="processB" isExecutable="true">
+  <bpmn:process id="processB" isExecutable="true" camunda:historyTimeToLive="0">
     <bpmn:startEvent id="startEventB">
       <bpmn:outgoing>Flow_1u5pz1w</bpmn:outgoing>
     </bpmn:startEvent>
@@ -61,7 +61,7 @@
     <bpmn:sequenceFlow id="Flow_1u5pz1w" sourceRef="startEventB" targetRef="subProcessB" />
     <bpmn:sequenceFlow id="Flow_12sfx37" sourceRef="subProcessB" targetRef="endEventB" />
   </bpmn:process>
-  <bpmn:process id="processC" isExecutable="true">
+  <bpmn:process id="processC" isExecutable="true" camunda:historyTimeToLive="0">
     <bpmn:extensionElements>
       <bpmndt:testCases>
         <bpmndt:testCase>
