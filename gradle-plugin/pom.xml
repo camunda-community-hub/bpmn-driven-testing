@@ -11,7 +11,7 @@
 
   <properties>
     <!-- Versions -->
-    <gradle.version>7.5.1</gradle.version>
+    <gradle.version>8.5</gradle.version>
     <groovy.version>3.0.19</groovy.version>
   </properties>
 
@@ -56,7 +56,25 @@
 
     <dependency>
       <groupId>org.gradle</groupId>
+      <artifactId>gradle-platform-jvm</artifactId>
+      <version>${gradle.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.gradle</groupId>
       <artifactId>gradle-plugins</artifactId>
+      <version>${gradle.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.gradle</groupId>
+      <artifactId>gradle-plugins-java</artifactId>
+      <version>${gradle.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.gradle</groupId>
+      <artifactId>gradle-plugins-java-base</artifactId>
       <version>${gradle.version}</version>
       <scope>provided</scope>
     </dependency>
