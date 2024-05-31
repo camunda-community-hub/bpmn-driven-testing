@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:bpmndt="http://camunda.org/schema/extension/bpmn-driven-testing" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_1dl1p1u" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.20.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.4.0">
+  <bpmn:process id="serviceTaskSignal" isExecutable="true">
+    <bpmn:extensionElements>
+      <bpmndt:testCases>
+        <bpmndt:testCase>
+          <bpmndt:path>
+            <bpmndt:node>startEvent</bpmndt:node>
+            <bpmndt:node>serviceTask</bpmndt:node>
+            <bpmndt:node>signalBoundaryEvent</bpmndt:node>
+            <bpmndt:node>endEvent</bpmndt:node>
+          </bpmndt:path>
+        </bpmndt:testCase>
+      </bpmndt:testCases>
+    </bpmn:extensionElements>
+    <bpmn:startEvent id="startEvent">
+      <bpmn:outgoing>Flow_1ibv9sw</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_1ibv9sw" sourceRef="startEvent" targetRef="serviceTask" />
+    <bpmn:serviceTask id="serviceTask">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="serviceTaskType" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1ibv9sw</bpmn:incoming>
+      <bpmn:outgoing>Flow_0c3dque</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="Event_0c8w7hx">
+      <bpmn:incoming>Flow_0c3dque</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_0c3dque" sourceRef="serviceTask" targetRef="Event_0c8w7hx" />
+    <bpmn:boundaryEvent id="signalBoundaryEvent" attachedToRef="serviceTask">
+      <bpmn:outgoing>Flow_097tb02</bpmn:outgoing>
+      <bpmn:signalEventDefinition id="SignalEventDefinition_06rcv2s" signalRef="Signal_2ap22sp" />
+    </bpmn:boundaryEvent>
+    <bpmn:endEvent id="endEvent">
+      <bpmn:incoming>Flow_097tb02</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_097tb02" sourceRef="signalBoundaryEvent" targetRef="endEvent" />
+  </bpmn:process>
+  <bpmn:signal id="Signal_2ap22sp" name="advancedSignal" />
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="serviceTaskSignal">
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="startEvent">
+        <dc:Bounds x="179" y="99" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1pp8iiy_di" bpmnElement="serviceTask">
+        <dc:Bounds x="270" y="77" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0c8w7hx_di" bpmnElement="Event_0c8w7hx">
+        <dc:Bounds x="432" y="99" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_18hdv7g_di" bpmnElement="endEvent">
+        <dc:Bounds x="432" y="222" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0ttwtw7_di" bpmnElement="signalBoundaryEvent">
+        <dc:Bounds x="302" y="139" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1ibv9sw_di" bpmnElement="Flow_1ibv9sw">
+        <di:waypoint x="215" y="117" />
+        <di:waypoint x="270" y="117" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0c3dque_di" bpmnElement="Flow_0c3dque">
+        <di:waypoint x="370" y="117" />
+        <di:waypoint x="432" y="117" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_097tb02_di" bpmnElement="Flow_097tb02">
+        <di:waypoint x="320" y="175" />
+        <di:waypoint x="320" y="240" />
+        <di:waypoint x="432" y="240" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

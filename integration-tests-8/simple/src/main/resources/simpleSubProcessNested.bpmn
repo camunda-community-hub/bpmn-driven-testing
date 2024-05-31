@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:bpmndt="http://camunda.org/schema/extension/bpmn-driven-testing" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_04gmdzn" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.20.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.4.0">
+  <bpmn:process id="simpleSubProcessNested" isExecutable="true">
+    <bpmn:extensionElements>
+      <bpmndt:testCases>
+        <bpmndt:testCase>
+          <bpmndt:path>
+            <bpmndt:node>startEvent</bpmndt:node>
+            <bpmndt:node>subProcessStartEvent</bpmndt:node>
+            <bpmndt:node>nestedSubProcessStartEvent</bpmndt:node>
+            <bpmndt:node>userTask</bpmndt:node>
+            <bpmndt:node>nestedSubProcessEndEvent</bpmndt:node>
+            <bpmndt:node>subProcessEndEvent</bpmndt:node>
+            <bpmndt:node>endEvent</bpmndt:node>
+          </bpmndt:path>
+        </bpmndt:testCase>
+      </bpmndt:testCases>
+    </bpmn:extensionElements>
+    <bpmn:startEvent id="startEvent">
+      <bpmn:outgoing>Flow_0gxms6o</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:subProcess id="Activity_0eijyal">
+      <bpmn:incoming>Flow_0gxms6o</bpmn:incoming>
+      <bpmn:outgoing>Flow_1ywhm7a</bpmn:outgoing>
+      <bpmn:startEvent id="subProcessStartEvent">
+        <bpmn:outgoing>Flow_1v88c7c</bpmn:outgoing>
+      </bpmn:startEvent>
+      <bpmn:subProcess id="Activity_08cd3q9">
+        <bpmn:incoming>Flow_1v88c7c</bpmn:incoming>
+        <bpmn:outgoing>Flow_1gorzcx</bpmn:outgoing>
+        <bpmn:startEvent id="nestedSubProcessStartEvent">
+          <bpmn:outgoing>Flow_0o9daf3</bpmn:outgoing>
+        </bpmn:startEvent>
+        <bpmn:sequenceFlow id="Flow_0o9daf3" sourceRef="nestedSubProcessStartEvent" targetRef="userTask" />
+        <bpmn:endEvent id="nestedSubProcessEndEvent">
+          <bpmn:incoming>Flow_1hlufqc</bpmn:incoming>
+        </bpmn:endEvent>
+        <bpmn:sequenceFlow id="Flow_1hlufqc" sourceRef="userTask" targetRef="nestedSubProcessEndEvent" />
+        <bpmn:userTask id="userTask">
+          <bpmn:extensionElements>
+            <zeebe:formDefinition formKey="simple" />
+          </bpmn:extensionElements>
+          <bpmn:incoming>Flow_0o9daf3</bpmn:incoming>
+          <bpmn:outgoing>Flow_1hlufqc</bpmn:outgoing>
+        </bpmn:userTask>
+      </bpmn:subProcess>
+      <bpmn:sequenceFlow id="Flow_1v88c7c" sourceRef="subProcessStartEvent" targetRef="Activity_08cd3q9" />
+      <bpmn:endEvent id="subProcessEndEvent">
+        <bpmn:incoming>Flow_1gorzcx</bpmn:incoming>
+      </bpmn:endEvent>
+      <bpmn:sequenceFlow id="Flow_1gorzcx" sourceRef="Activity_08cd3q9" targetRef="subProcessEndEvent" />
+    </bpmn:subProcess>
+    <bpmn:sequenceFlow id="Flow_0gxms6o" sourceRef="startEvent" targetRef="Activity_0eijyal" />
+    <bpmn:endEvent id="endEvent">
+      <bpmn:incoming>Flow_1ywhm7a</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_1ywhm7a" sourceRef="Activity_0eijyal" targetRef="endEvent" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="simpleSubProcessNested">
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="startEvent">
+        <dc:Bounds x="179" y="229" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0eijyal_di" bpmnElement="Activity_0eijyal" isExpanded="true">
+        <dc:Bounds x="260" y="80" width="620" height="330" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0uipaml_di" bpmnElement="subProcessStartEvent">
+        <dc:Bounds x="300" y="229" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_08cd3q9_di" bpmnElement="Activity_08cd3q9" isExpanded="true">
+        <dc:Bounds x="380" y="147" width="370" height="200" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1wx9sk7_di" bpmnElement="nestedSubProcessStartEvent">
+        <dc:Bounds x="420" y="229" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_15busfa_di" bpmnElement="nestedSubProcessEndEvent">
+        <dc:Bounds x="672" y="229" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0rmz8rp_di" bpmnElement="userTask">
+        <dc:Bounds x="510" y="207" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_0o9daf3_di" bpmnElement="Flow_0o9daf3">
+        <di:waypoint x="456" y="247" />
+        <di:waypoint x="510" y="247" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1hlufqc_di" bpmnElement="Flow_1hlufqc">
+        <di:waypoint x="610" y="247" />
+        <di:waypoint x="672" y="247" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Event_10skbta_di" bpmnElement="subProcessEndEvent">
+        <dc:Bounds x="802" y="229" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1v88c7c_di" bpmnElement="Flow_1v88c7c">
+        <di:waypoint x="336" y="247" />
+        <di:waypoint x="380" y="247" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1gorzcx_di" bpmnElement="Flow_1gorzcx">
+        <di:waypoint x="750" y="247" />
+        <di:waypoint x="802" y="247" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Event_0djd3v0_di" bpmnElement="endEvent">
+        <dc:Bounds x="932" y="227" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_0gxms6o_di" bpmnElement="Flow_0gxms6o">
+        <di:waypoint x="215" y="247" />
+        <di:waypoint x="260" y="247" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1ywhm7a_di" bpmnElement="Flow_1ywhm7a">
+        <di:waypoint x="880" y="245" />
+        <di:waypoint x="932" y="245" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
