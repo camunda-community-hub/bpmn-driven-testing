@@ -9,7 +9,6 @@ import {
   MODE_VIEW,
   PLUGIN_VIEW_PARENT_CLASS_NAME,
   PLUGIN_VIEW_STYLE,
-  SUPPORTED_TYPE,
   UNSUPPORTED_ELEMENT_TYPES
 } from "./constants";
 
@@ -100,11 +99,7 @@ export default class Plugin {
   }
 
   show() {
-    const { mode, testCases, type } = this;
-    if (type !== SUPPORTED_TYPE) {
-      // do not show in case of Camunda Platform 8 (type"cloud-bpmn")
-      return;
-    }
+    const { mode, testCases } = this;
 
     if (mode) {
       mode.updateMarkers();
