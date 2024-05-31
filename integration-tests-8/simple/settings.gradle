@@ -1,0 +1,19 @@
+pluginManagement {
+  plugins {
+    id 'org.camunda.community.bpmndt'
+  }
+
+  resolutionStrategy {
+    eachPlugin {
+      if (requested.id.toString() == 'org.camunda.community.bpmndt') {
+        def pluginVersion = startParameter.projectProperties['plugin.version'] ?: '0.11.0-SNAPSHOT'
+        useModule("org.camunda.community:bpmn-driven-testing-8-gradle-plugin:${pluginVersion}")
+      }
+    }
+  }
+
+  repositories {
+    mavenLocal()
+    mavenCentral()
+  }
+}

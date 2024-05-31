@@ -1,0 +1,36 @@
+plugins {
+  id 'java'
+  id 'org.camunda.community.bpmndt'
+}
+
+repositories {
+  mavenLocal()
+  mavenCentral()
+}
+
+dependencies {
+  testImplementation 'io.camunda:zeebe-process-test-extension:8.4.4'
+  testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.1'
+  testImplementation 'com.google.truth:truth:1.1.5'
+
+  testCompileOnly 'org.immutables:annotate:2.10.0'
+  testCompileOnly 'org.immutables:value-annotations:2.10.0'
+
+  testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.1'
+}
+
+compileJava {
+  options.release = 21
+}
+
+test {
+  useJUnitPlatform()
+
+  testLogging {
+    afterSuite { desc, result ->
+      if (!desc.parent) {
+        println "Tests run: ${result.testCount}, Failures: ${result.failedTestCount}, Skipped: ${result.skippedTestCount}"
+      }
+    }
+  }
+}
