@@ -14,9 +14,13 @@
 
   <modules>
     <module>gradle-plugin</module>
+    <module>gradle-plugin-8</module>
     <module>impl</module>
+    <module>impl-8</module>
     <module>maven-plugin</module>
+    <module>maven-plugin-8</module>
     <module>model</module>
+    <module>model-8</module>
   </modules>
 
   <properties>
@@ -25,6 +29,7 @@
 
     <!-- Versions -->
     <camunda.bpm.version>7.21.0</camunda.bpm.version>
+    <camunda.zeebe.version>8.4.4</camunda.zeebe.version>
     <google.truth.version>1.1.5</google.truth.version>
     <javapoet.version>1.13.0</javapoet.version>
     <junit.jupiter.version>5.10.1</junit.jupiter.version>
@@ -49,15 +54,34 @@
       </dependency>
       <dependency>
         <groupId>org.camunda.community</groupId>
+        <artifactId>bpmn-driven-testing-impl-8</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.camunda.community</groupId>
         <artifactId>bpmn-driven-testing-model</artifactId>
         <version>${project.version}</version>
       </dependency>
+      <dependency>
+        <groupId>org.camunda.community</groupId>
+        <artifactId>bpmn-driven-testing-model-8</artifactId>
+        <version>${project.version}</version>
+      </dependency>
 
-      <!-- Camunda -->
+      <!-- Camunda 7 -->
       <dependency>
         <groupId>org.camunda.bpm</groupId>
         <artifactId>camunda-bom</artifactId>
         <version>${camunda.bpm.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+
+      <!-- Camunda 8 -->
+      <dependency>
+        <groupId>io.camunda</groupId>
+        <artifactId>zeebe-bom</artifactId>
+        <version>${camunda.zeebe.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
