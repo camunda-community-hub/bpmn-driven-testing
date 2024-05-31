@@ -30,7 +30,9 @@ public class MultiInstanceScopeHandler<T extends MultiInstanceScopeHandler<?>> {
 
   private final String activityId;
 
-  /** ID of the multi instance scope. */
+  /**
+   * ID of the multi instance scope.
+   */
   private final String scopeId;
 
   private final Map<Integer, BiFunction<ProcessInstanceAssert, Integer, Boolean>> actions;
@@ -87,30 +89,25 @@ public class MultiInstanceScopeHandler<T extends MultiInstanceScopeHandler<?>> {
   }
 
   /**
-   * Applies the multi instance loop for the given index. Please note: This method will be overriden
-   * by generated multi instance scope handler classes.
-   * 
-   * @param pi The process instance, used to execute the test case.
-   * 
+   * Applies the multi instance loop for the given index. Please note: This method will be overridden by generated multi instance scope handler classes.
+   *
+   * @param pi        The process instance, used to execute the test case.
    * @param loopIndex The current loop index.
-   * 
-   * @return {@code true}, if the multi instance execution should be continued. Otherwise
-   *         {@code false}.
+   * @return {@code true}, if the multi instance execution should be continued. Otherwise {@code false}.
    */
   protected boolean apply(ProcessInstance pi, int loopIndex) {
     return true;
   }
 
   /**
-   * Customizes the handler, using the given {@link Consumer} function. This method can be used to
-   * apply a common customization needed for different test cases.
-   * 
+   * Customizes the handler, using the given {@link Consumer} function. This method can be used to apply a common customization needed for different test
+   * cases.
+   *
    * <pre>
    * tc.handleMultiInstanceScope().customize(this::prepareMultiInstanceScope);
    * </pre>
-   * 
+   *
    * @param customizer A function that accepts a suitable {@link MultiInstanceScopeHandler}.
-   * 
    * @return The handler.
    */
   @SuppressWarnings("unchecked")
@@ -123,13 +120,11 @@ public class MultiInstanceScopeHandler<T extends MultiInstanceScopeHandler<?>> {
 
   /**
    * Executes a custom action, which handles the activities within the scope, for a given loop index.
-   * 
+   *
    * @param loopIndex A specific loop index (>= 0).
-   * 
-   * @param action A specific action that accepts the related process instance as
-   *        {@link ProcessInstanceAssert} and the loop index. It returns a boolean value that
-   *        indicates if the multi instance loop should be continued or not (e.g. in case of a
-   *        boundary event that will be triggered afterwards).
+   * @param action    A specific action that accepts the related process instance as {@link ProcessInstanceAssert} and the loop index. It returns a boolean
+   *                  value that indicates if the multi instance loop should be continued or not (e.g. in case of a boundary event that will be triggered
+   *                  afterward).
    */
   @SuppressWarnings("unchecked")
   public T execute(int loopIndex, BiFunction<ProcessInstanceAssert, Integer, Boolean> action) {
@@ -162,9 +157,8 @@ public class MultiInstanceScopeHandler<T extends MultiInstanceScopeHandler<?>> {
 
   /**
    * Checks if the multi instance scope is ended or not.
-   * 
+   *
    * @param pi The related process instance.
-   * 
    * @return {@code true}, if the multi instance scope is ended. Otherwise {@code false}.
    */
   protected boolean isEnded(ProcessInstance pi) {
@@ -184,30 +178,26 @@ public class MultiInstanceScopeHandler<T extends MultiInstanceScopeHandler<?>> {
   }
 
   /**
-   * Determines if the multi instance loop is sequentially executed or not. Please note: If the multi
-   * instance loop is defined as parallel, this method will be overridden by generated multi instance
-   * handler classes.
-   * 
-   * @return {@code true}, if execution is done sequentially. {@code false}, if execution is done in
-   *         parallel.
+   * Determines if the multi instance loop is sequentially executed or not. Please note: If the multi instance loop is defined as parallel, this method will be
+   * overridden by generated multi instance handler classes.
+   *
+   * @return {@code true}, if execution is done sequentially. {@code false}, if execution is done in parallel.
    */
   protected boolean isSequential() {
     return true;
   }
 
   private boolean nullSafeBoolean(Boolean value) {
-    return value != null && value.booleanValue();
+    return value != null && value;
   }
 
   /**
-   * Registers the given call activity handler at the test case instance, so that it will be executed
-   * when the custom call activity behavior is applied.<br>
-   * Since there can be multiple handlers (one for each loop index), it is necessary to register the
-   * correct one before the next multi instance loop is executed.
-   * 
+   * Registers the given call activity handler at the test case instance, so that it will be executed when the custom call activity behavior is applied.<br>
+   * Since there can be multiple handlers (one for each loop index), it is necessary to register the correct one before the next multi instance loop is
+   * executed.
+   *
    * @param activityId The ID of the call activity.
-   * 
-   * @param handler The call activity handler to be executed next.
+   * @param handler    The call activity handler to be executed next.
    */
   protected void registerCallActivityHandler(String activityId, CallActivityHandler handler) {
     instance.registerCallActivityHandler(activityId, handler);
@@ -215,11 +205,9 @@ public class MultiInstanceScopeHandler<T extends MultiInstanceScopeHandler<?>> {
 
   /**
    * Verifies the state before the multi instance loop with the given index is executed.
-   * 
+   *
    * @param loopIndex A specific loop index (>= 0).
-   * 
-   * @param verifier Verifier that accepts an {@link ProcessInstanceAssert} and the loop index.
-   * 
+   * @param verifier  Verifier that accepts an {@link ProcessInstanceAssert} and the loop index.
    * @return The handler.
    */
   @SuppressWarnings("unchecked")
@@ -230,10 +218,8 @@ public class MultiInstanceScopeHandler<T extends MultiInstanceScopeHandler<?>> {
 
   /**
    * Verifies that the multi instance loop is executed n-times.
-   * 
-   * @param loopCount The expected loop count at the point of time when the multi instance scope is
-   *        left (finished or terminated by a boundary event).
-   * 
+   *
+   * @param loopCount The expected loop count at the point of time when the multi instance scope is left (finished or terminated by a boundary event).
    * @return The handler.
    */
   @SuppressWarnings("unchecked")
@@ -244,7 +230,7 @@ public class MultiInstanceScopeHandler<T extends MultiInstanceScopeHandler<?>> {
 
   /**
    * Verifies that the multi instance loop execution is done in parallel.
-   * 
+   *
    * @return The handler.
    */
   @SuppressWarnings("unchecked")
@@ -255,7 +241,7 @@ public class MultiInstanceScopeHandler<T extends MultiInstanceScopeHandler<?>> {
 
   /**
    * Verifies that the multi instance loop is sequentially executed.
-   * 
+   *
    * @return The handler.
    */
   @SuppressWarnings("unchecked")

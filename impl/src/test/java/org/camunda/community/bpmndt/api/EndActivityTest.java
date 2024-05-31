@@ -16,20 +16,17 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 public class EndActivityTest {
 
   @RegisterExtension
-  public TestCase tc = new TestCase();
+  TestCase tc = new TestCase();
 
   /**
-   * Tests if the execution is waiting after the test case's end activity, when it does not end the
-   * process.
+   * Tests if the execution is waiting after the test case's end activity, when it does not end the process.
    */
   @Test
   public void testExecute() {
-    tc.createExecutor().verify(pi -> {
-      pi.isNotEnded();
-    }).execute();
+    tc.createExecutor().verify(ProcessInstanceAssert::isNotEnded).execute();
   }
 
-  private class TestCase extends AbstractJUnit5TestCase<TestCase> {
+  private static class TestCase extends AbstractJUnit5TestCase<TestCase> {
 
     @Override
     protected void execute(ProcessInstance pi) {

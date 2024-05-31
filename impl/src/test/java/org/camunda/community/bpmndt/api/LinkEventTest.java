@@ -16,14 +16,14 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 public class LinkEventTest {
 
   @RegisterExtension
-  public TestCase tc = new TestCase();
+  TestCase tc = new TestCase();
 
   @Test
   public void testExecute() {
     tc.createExecutor().withVariable("forkA", true).execute();
   }
 
-  private class TestCase extends AbstractJUnit5TestCase<TestCase> {
+  private static class TestCase extends AbstractJUnit5TestCase<TestCase> {
 
     @Override
     protected void execute(ProcessInstance pi) {

@@ -59,7 +59,7 @@ public class GeneratorSimpleTest {
 
     result = generator.getResult();
 
-    String fileName = testInfo.getTestMethod().get().getName().replace("test", "") + ".bpmn";
+    String fileName = testInfo.getTestMethod().orElseThrow().getName().replace("test", "") + ".bpmn";
     bpmnFile = ctx.getMainResourcePath().resolve(StringUtils.uncapitalize(fileName));
   }
 
@@ -108,7 +108,7 @@ public class GeneratorSimpleTest {
   public void testSimpleSpringEnabled() {
     ctx.setSpringEnabled(true);
 
-    // overridde auto built BPMN file path
+    // override auto built BPMN file path
     bpmnFile = ctx.getMainResourcePath().resolve("simple.bpmn");
 
     generator.generateTestCases(ctx, bpmnFile);
@@ -432,9 +432,7 @@ public class GeneratorSimpleTest {
   public void testGenerate() {
     generator.generate(ctx);
 
-    Predicate<String> isFile = (className) -> {
-      return Files.isRegularFile(ctx.getTestSourcePath().resolve(className));
-    };
+    Predicate<String> isFile = (className) -> Files.isRegularFile(ctx.getTestSourcePath().resolve(className));
 
     // test cases
     assertThat(isFile.test("org/example/simple/TC_startEvent__endEvent.java")).isTrue();

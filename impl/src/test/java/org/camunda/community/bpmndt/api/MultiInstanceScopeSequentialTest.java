@@ -24,7 +24,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 public class MultiInstanceScopeSequentialTest {
 
   @RegisterExtension
-  public TestCase tc = new TestCase();
+  TestCase tc = new TestCase();
 
   private MultiInstanceScopeHandler<?> handler;
 
@@ -245,7 +245,7 @@ public class MultiInstanceScopeSequentialTest {
   private static class ServiceTask implements JavaDelegate {
 
     @Override
-    public void execute(DelegateExecution execution) throws Exception {
+    public void execute(DelegateExecution execution) {
       // nothing to do here
     }
   }

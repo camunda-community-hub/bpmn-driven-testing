@@ -23,7 +23,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 public class CallActivityTest {
 
   @RegisterExtension
-  public TestCase tc = new TestCase().withTenantId("tenant-x");
+  TestCase tc = new TestCase().withTenantId("tenant-x");
 
   private CallActivityHandler handler;
 
@@ -80,15 +80,13 @@ public class CallActivityTest {
     handler.waitForBoundaryEvent();
     assertThat(handler.isWaitingForBoundaryEvent()).isTrue();
 
-    AssertionError e = assertThrows(AssertionError.class, () -> {
-      executor.execute();
-    });
+    AssertionError e = assertThrows(AssertionError.class, () -> executor.execute());
 
     // has passed start event, but not call activity
     assertThat(e.getMessage()).contains("it passed [startEvent]");
   }
 
-  private class TestCase extends AbstractJUnit5TestCase<TestCase> {
+  private static class TestCase extends AbstractJUnit5TestCase<TestCase> {
 
     @Override
     protected void execute(ProcessInstance pi) {

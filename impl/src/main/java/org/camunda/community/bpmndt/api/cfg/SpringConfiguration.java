@@ -21,11 +21,9 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.transaction.PlatformTransactionManager;
 
 /**
- * Spring test configuration, used as superclass for the generated configuration.<br>
- * If data source and/or transaction manager are not provided by the application context, this
- * configuration will initialize and provide them to the process engine configuration.<br>
- * Moreover, if the application context provides a list of process engine plugins, this list will be
- * preferred in favor of the process engine plugins that are configured on the Maven plugin
+ * Spring test configuration, used as superclass for the generated configuration.<br> If data source and/or transaction manager are not provided by the
+ * application context, this configuration will initialize and provide them to the process engine configuration.<br> Moreover, if the application context
+ * provides a list of process engine plugins, this list will be preferred in favor of the process engine plugins that are configured on the Maven plugin
  * execution - see parameter {@code processEnginePlugins}.
  */
 @Configuration
@@ -45,7 +43,7 @@ public class SpringConfiguration implements InitializingBean {
   private ProcessEngine processEngine;
 
   @Override
-  public void afterPropertiesSet() throws Exception {
+  public void afterPropertiesSet() {
     DataSource dataSource = initDataSource();
 
     List<ProcessEnginePlugin> processEnginePlugins = initProcessEnginePlugins();
@@ -68,9 +66,9 @@ public class SpringConfiguration implements InitializingBean {
   }
 
   /**
-   * Returns a list of process engine plugins that are registered at the process engine. The list may
-   * be empty, if there are no plugins to register. This method should be overridden by subclasses.
-   * 
+   * Returns a list of process engine plugins that are registered at the process engine. The list may be empty, if there are no plugins to register. This method
+   * should be overridden by subclasses.
+   *
    * @return A list of process engine plugins.
    */
   protected List<ProcessEnginePlugin> getProcessEnginePlugins() {
@@ -83,7 +81,7 @@ public class SpringConfiguration implements InitializingBean {
     }
 
     // use random database name to avoid SQL errors during schema create/drop
-    String url = String.format("jdbc:h2:mem:bpmndt-%s;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE", UUID.randomUUID().toString());
+    String url = String.format("jdbc:h2:mem:bpmndt-%s;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE", UUID.randomUUID());
 
     DriverManagerDataSource dataSource = new DriverManagerDataSource();
     dataSource.setDriverClassName("org.h2.Driver");

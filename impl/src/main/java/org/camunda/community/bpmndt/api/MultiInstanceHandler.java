@@ -13,11 +13,9 @@ import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.community.bpmndt.api.JobHandler.Cardinality;
 
 /**
- * Fluent API for multi instance activites (call activities or tasks). This class does not support
- * multi instances scopes like sub processes or transactions.
+ * Fluent API for multi instance activities (call activities or tasks). This class does not support multi instances scopes like sub processes or transactions.
  *
  * @param <T> The generated multi instance handler type.
- * 
  * @param <U> The activity handler type (e.g. {@code UserTaskHandler}).
  */
 public class MultiInstanceHandler<T extends MultiInstanceHandler<?, ?>, U> {
@@ -29,7 +27,9 @@ public class MultiInstanceHandler<T extends MultiInstanceHandler<?, ?>, U> {
 
   private final String activityId;
 
-  /** ID of the multi instance scope. */
+  /**
+   * ID of the multi instance scope.
+   */
   private final String scopeId;
 
   private final Map<Integer, JobHandler> handlersBefore;
@@ -72,16 +72,12 @@ public class MultiInstanceHandler<T extends MultiInstanceHandler<?, ?>, U> {
   }
 
   /**
-   * Applies the multi instance loop for the given index. Please note: This method will be overriden
-   * by generated multi instance handler classes in case of call activities, external tasks and user
-   * tasks.
-   * 
-   * @param pi The process instance, used to execute the test case.
-   * 
+   * Applies the multi instance loop for the given index. Please note: This method will be overridden by generated multi instance handler classes in case of
+   * call activities, external tasks and user tasks.
+   *
+   * @param pi        The process instance, used to execute the test case.
    * @param loopIndex The current loop index.
-   * 
-   * @return {@code true}, if the multi instance execution should be continued. Otherwise
-   *         {@code false}.
+   * @return {@code true}, if the multi instance execution should be continued. Otherwise {@code false}.
    */
   protected boolean apply(ProcessInstance pi, int loopIndex) {
     handleBefore(loopIndex).apply(pi);
@@ -91,11 +87,9 @@ public class MultiInstanceHandler<T extends MultiInstanceHandler<?, ?>, U> {
   }
 
   /**
-   * Creates a new activity handler. Please note: This method will be overridden by generated multi
-   * instance handler classes.
-   * 
+   * Creates a new activity handler. Please note: This method will be overridden by generated multi instance handler classes.
+   *
    * @param loopIndex The current loop index.
-   * 
    * @return The newly created handler.
    */
   protected U createHandler(int loopIndex) {
@@ -104,9 +98,8 @@ public class MultiInstanceHandler<T extends MultiInstanceHandler<?, ?>, U> {
 
   /**
    * Creates a new job handler for the asynchronous continuation after the activity.
-   * 
+   *
    * @param loopIndex The current loop index.
-   * 
    * @return The newly created job handler.
    */
   protected JobHandler createHandlerAfter(int loopIndex) {
@@ -115,9 +108,8 @@ public class MultiInstanceHandler<T extends MultiInstanceHandler<?, ?>, U> {
 
   /**
    * Creates a new job handler for the asynchronous continuation before the activity.
-   * 
+   *
    * @param loopIndex The current loop index.
-   * 
    * @return The newly created job handler.
    */
   protected JobHandler createHandlerBefore(int loopIndex) {
@@ -125,15 +117,14 @@ public class MultiInstanceHandler<T extends MultiInstanceHandler<?, ?>, U> {
   }
 
   /**
-   * Customizes the handler, using the given {@link Consumer} function. This method can be used to
-   * apply a common customization needed for different test cases.
-   * 
+   * Customizes the handler, using the given {@link Consumer} function. This method can be used to apply a common customization needed for different test
+   * cases.
+   *
    * <pre>
    * tc.handleMultiInstance().customize(this::prepareMultiInstance);
    * </pre>
-   * 
+   *
    * @param customizer A function that accepts a suitable {@link MultiInstanceHandler}.
-   * 
    * @return The handler.
    */
   @SuppressWarnings("unchecked")
@@ -165,9 +156,8 @@ public class MultiInstanceHandler<T extends MultiInstanceHandler<?, ?>, U> {
   }
 
   /**
-   * Returns the default activity handler, which is used when for a multi instance loop with a
-   * specific index no handler is defined.
-   * 
+   * Returns the default activity handler, which is used when for a multi instance loop with a specific index no handler is defined.
+   *
    * @return The default handler.
    */
   public U handle() {
@@ -176,9 +166,8 @@ public class MultiInstanceHandler<T extends MultiInstanceHandler<?, ?>, U> {
 
   /**
    * Returns the activity handler, which is applied on the multi instance loop with the given index.
-   * 
+   *
    * @param loopIndex A specific loop index.
-   * 
    * @return The handler for the given loop index.
    */
   public U handle(int loopIndex) {
@@ -186,9 +175,9 @@ public class MultiInstanceHandler<T extends MultiInstanceHandler<?, ?>, U> {
   }
 
   /**
-   * Returns the default job handler for the asynchronous continuation after the activity, which is
-   * used when for a multi instance loop with a specific index no handler is defined.
-   * 
+   * Returns the default job handler for the asynchronous continuation after the activity, which is used when for a multi instance loop with a specific index no
+   * handler is defined.
+   *
    * @return The default async after job handler.
    */
   public JobHandler handleAfter() {
@@ -196,12 +185,10 @@ public class MultiInstanceHandler<T extends MultiInstanceHandler<?, ?>, U> {
   }
 
   /**
-   * Returns the job handler for the asynchronous continuation after the activity, which is applied on
-   * the multi instance loop with the given index. This handler can be used to verify the process
-   * variables after the activity was executed the nth time.
-   * 
+   * Returns the job handler for the asynchronous continuation after the activity, which is applied on the multi instance loop with the given index. This
+   * handler can be used to verify the process variables after the activity was executed the nth time.
+   *
    * @param loopIndex A specific loop index.
-   * 
    * @return The async after job handler for the given loop index.
    */
   public JobHandler handleAfter(int loopIndex) {
@@ -209,9 +196,9 @@ public class MultiInstanceHandler<T extends MultiInstanceHandler<?, ?>, U> {
   }
 
   /**
-   * Returns the default job handler for the asynchronous continuation before the activity, which is
-   * used when for a multi instance loop with a specific index no handler is defined.
-   * 
+   * Returns the default job handler for the asynchronous continuation before the activity, which is used when for a multi instance loop with a specific index
+   * no handler is defined.
+   *
    * @return The default async before job handler.
    */
   public JobHandler handleBefore() {
@@ -219,12 +206,10 @@ public class MultiInstanceHandler<T extends MultiInstanceHandler<?, ?>, U> {
   }
 
   /**
-   * Returns the job handler for the asynchronous continuation before the activity, which is applied
-   * on the multi instance loop with the given index. This handler can be used to verify the process
-   * variables before the activity is executed the nth time.
-   * 
+   * Returns the job handler for the asynchronous continuation before the activity, which is applied on the multi instance loop with the given index. This
+   * handler can be used to verify the process variables before the activity is executed the nth time.
+   *
    * @param loopIndex A specific loop index.
-   * 
    * @return The async before job handler for the given loop index.
    */
   public JobHandler handleBefore(int loopIndex) {
@@ -233,9 +218,8 @@ public class MultiInstanceHandler<T extends MultiInstanceHandler<?, ?>, U> {
 
   /**
    * Checks if the multi instance scope is ended or not.
-   * 
+   *
    * @param pi The related process instance.
-   * 
    * @return {@code true}, if the multi instance scope is ended. Otherwise {@code false}.
    */
   protected boolean isEnded(ProcessInstance pi) {
@@ -261,23 +245,20 @@ public class MultiInstanceHandler<T extends MultiInstanceHandler<?, ?>, U> {
   }
 
   /**
-   * Determines if the multi instance loop is sequentially executed or not. Please note: If the multi
-   * instance loop is defined as parallel, this method will be overridden by generated multi instance
-   * handler classes.
-   * 
-   * @return {@code true}, if execution is done sequentially. {@code false}, if execution is done in
-   *         parallel.
+   * Determines if the multi instance loop is sequentially executed or not. Please note: If the multi instance loop is defined as parallel, this method will be
+   * overridden by generated multi instance handler classes.
+   *
+   * @return {@code true}, if execution is done sequentially. {@code false}, if execution is done in parallel.
    */
   protected boolean isSequential() {
     return true;
   }
 
   /**
-   * Registers the given call activity handler at the test case instance, so that it will be executed
-   * when the custom call activity behavior is applied.<br>
-   * Since there can be multiple handlers (one for each loop index), it is necessary to register the
-   * correct one before the next multi instance loop is executed.
-   * 
+   * Registers the given call activity handler at the test case instance, so that it will be executed when the custom call activity behavior is applied.<br>
+   * Since there can be multiple handlers (one for each loop index), it is necessary to register the correct one before the next multi instance loop is
+   * executed.
+   *
    * @param handler The handler to be executed next.
    */
   protected void registerCallActivityHandler(CallActivityHandler handler) {
@@ -286,10 +267,8 @@ public class MultiInstanceHandler<T extends MultiInstanceHandler<?, ?>, U> {
 
   /**
    * Verifies that the multi instance loop is executed n-times.
-   * 
-   * @param loopCount The expected loop count at the point of time when the multi instance is left
-   *        (finished or terminated by a boundary event).
-   * 
+   *
+   * @param loopCount The expected loop count at the point of time when the multi instance is left (finished or terminated by a boundary event).
    * @return The handler.
    */
   @SuppressWarnings("unchecked")
@@ -300,7 +279,7 @@ public class MultiInstanceHandler<T extends MultiInstanceHandler<?, ?>, U> {
 
   /**
    * Verifies that the multi instance loop execution is done in parallel.
-   * 
+   *
    * @return The handler.
    */
   @SuppressWarnings("unchecked")
@@ -311,7 +290,7 @@ public class MultiInstanceHandler<T extends MultiInstanceHandler<?, ?>, U> {
 
   /**
    * Verifies that the multi instance loop is sequentially executed.
-   * 
+   *
    * @return The handler.
    */
   @SuppressWarnings("unchecked")

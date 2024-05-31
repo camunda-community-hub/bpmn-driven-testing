@@ -14,8 +14,7 @@ import org.camunda.bpm.engine.impl.history.HistoryLevel;
 import org.h2.engine.Constants;
 
 /**
- * Plugin to configure a BPMN Driven Testing conform process engine, used to execute generated test
- * cases.
+ * Plugin to configure a BPMN Driven Testing conform process engine, used to execute generated test cases.
  */
 public class BpmndtProcessEnginePlugin extends AbstractProcessEnginePlugin {
 
@@ -42,7 +41,7 @@ public class BpmndtProcessEnginePlugin extends AbstractProcessEnginePlugin {
 
     if (processEngineConfiguration.getDataSource() == null) {
       // use random database name to avoid SQL errors during schema create/drop
-      String url = String.format("jdbc:h2:mem:bpmndt-%s", UUID.randomUUID().toString());
+      String url = String.format("jdbc:h2:mem:bpmndt-%s", UUID.randomUUID());
 
       processEngineConfiguration.setJdbcUrl(url);
     }

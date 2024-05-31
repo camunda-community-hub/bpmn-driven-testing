@@ -32,12 +32,10 @@ public class JobHandler {
 
   /**
    * Creates a new job handler. This constructor is used in the context of multi instance activities.
-   * 
+   *
    * @param processEngine The used process engine.
-   * 
-   * @param activityId The ID of the related activity.
-   * 
-   * @param cardinality Expected job cardinality.
+   * @param activityId    The ID of the related activity.
+   * @param cardinality   Expected job cardinality.
    */
   public JobHandler(ProcessEngine processEngine, String activityId, Cardinality cardinality) {
     this.processEngine = processEngine;
@@ -59,7 +57,7 @@ public class JobHandler {
     } else if ((cardinality == Cardinality.ZERO_TO_ONE || cardinality == Cardinality.ZERO_TO_N) && jobs.isEmpty()) {
       return;
     }
-    
+
     Job job = jobs.get(0);
 
     if (verifier != null) {
@@ -70,15 +68,14 @@ public class JobHandler {
   }
 
   /**
-   * Customizes the handler, using the given {@link Consumer} function. This method can be used to
-   * apply a common customization needed for different test cases.
-   * 
+   * Customizes the handler, using the given {@link Consumer} function. This method can be used to apply a common customization needed for different test
+   * cases.
+   *
    * <pre>
    * tc.handleJob().customize(this::prepareJob);
    * </pre>
-   * 
+   *
    * @param customizer A function that accepts a {@link JobHandler}.
-   * 
    * @return The handler.
    */
   public JobHandler customize(Consumer<JobHandler> customizer) {
@@ -89,9 +86,9 @@ public class JobHandler {
   }
 
   /**
-   * Executes the job with an action that calls {@code executeJob}, when the process instance is
-   * waiting at the corresponding activity. Please note: this is the default behavior.
-   * 
+   * Executes the job with an action that calls {@code executeJob}, when the process instance is waiting at the corresponding activity. Please note: this is the
+   * default behavior.
+   *
    * @see ManagementService#executeJob(String)
    */
   public void execute() {
@@ -99,11 +96,9 @@ public class JobHandler {
   }
 
   /**
-   * Executes a custom action that handles the job, when the process instance is waiting at the
-   * corresponding activity.
-   * 
+   * Executes a custom action that handles the job, when the process instance is waiting at the corresponding activity.
+   *
    * @param action A specific action that accepts the related {@link Job}.
-   * 
    * @throws IllegalArgumentException if action is {@code null}.
    */
   public void execute(Consumer<Job> action) {
@@ -119,10 +114,8 @@ public class JobHandler {
 
   /**
    * Verifies the job's waiting state.
-   * 
-   * @param verifier Verifier that accepts an {@link ProcessInstanceAssert} and an {@link JobAssert}
-   *        instance.
-   * 
+   *
+   * @param verifier Verifier that accepts an {@link ProcessInstanceAssert} and an {@link JobAssert} instance.
    * @return The handler.
    */
   public JobHandler verify(BiConsumer<ProcessInstanceAssert, JobAssert> verifier) {
@@ -133,15 +126,23 @@ public class JobHandler {
   /**
    * Possible job cardinalities.
    */
-  public static enum Cardinality {
+  public enum Cardinality {
 
-    /** 1..n - parallel multi instance async before. */
+    /**
+     * 1..n - parallel multi instance async before.
+     */
     ONE_TO_N,
-    /** Default cardinality. */
+    /**
+     * Default cardinality.
+     */
     ONE,
-    /** 0..n - parallel multi instance async after. */
+    /**
+     * 0..n - parallel multi instance async after.
+     */
     ZERO_TO_N,
-    /** 0..1 - sequential multi instance async after. */
+    /**
+     * 0..1 - sequential multi instance async after.
+     */
     ZERO_TO_ONE,
   }
 }

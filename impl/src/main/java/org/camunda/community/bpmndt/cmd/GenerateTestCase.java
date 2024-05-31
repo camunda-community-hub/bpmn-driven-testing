@@ -28,7 +28,7 @@ import com.squareup.javapoet.TypeSpec;
 
 /**
  * Generates a test case, using a test framework (JUnit 4 or 5) specific superclass.
- * 
+ *
  * @see AbstractJUnit5TestCase
  */
 public class GenerateTestCase implements Consumer<TestCaseContext> {
@@ -55,7 +55,7 @@ public class GenerateTestCase implements Consumer<TestCaseContext> {
     classBuilder.addMethod(buildBeforeEach(strategies));
     classBuilder.addMethod(buildExecute(ctx, strategies));
 
-    classBuilder.addMethod(buildGetBpmnResourceName(gCtx, ctx));
+    classBuilder.addMethod(buildGetBpmnResourceName(ctx));
     classBuilder.addMethod(buildGetEnd(ctx));
     classBuilder.addMethod(buildGetProcessDefinitionKey(ctx));
 
@@ -116,9 +116,9 @@ public class GenerateTestCase implements Consumer<TestCaseContext> {
   }
 
   /**
-   * Overrides the {@code beforeEach} method of the {@link AbstractTestCase} to initialize the
-   * activity handlers (e.g. {@code UserTaskHandler}) that are required for a given test case.
-   * 
+   * Overrides the {@code beforeEach} method of the {@link AbstractTestCase} to initialize the activity handlers (e.g. {@code UserTaskHandler}) that are
+   * required for a given test case.
+   *
    * @return The {@code beforeEach} method.
    */
   protected MethodSpec buildBeforeEach(List<GeneratorStrategy> strategies) {
@@ -155,7 +155,7 @@ public class GenerateTestCase implements Consumer<TestCaseContext> {
     return builder.build();
   }
 
-  protected MethodSpec buildGetBpmnResourceName(GeneratorContext ctx, TestCaseContext testCaseContext) {
+  protected MethodSpec buildGetBpmnResourceName(TestCaseContext testCaseContext) {
     return MethodSpec.methodBuilder("getBpmnResourceName")
         .addAnnotation(Override.class)
         .addModifiers(Modifier.PROTECTED)

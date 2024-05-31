@@ -17,10 +17,9 @@ import org.camunda.bpm.engine.variable.Variables;
 import org.camunda.bpm.engine.variable.value.TypedValue;
 
 /**
- * Fluent API to handle conditional, message and signal intermediate catch or boundary events.<br>
- * Please note: Since conditional events rely on an expression to evaluate true, their wait state
- * cannot be handled automatically - set variables or use {@link #execute(Consumer)} with a custom
- * action, if the variable event is {@code delete}.
+ * Fluent API to handle conditional, message and signal intermediate catch or boundary events.<br> Please note: Since conditional events rely on an expression
+ * to evaluate true, their wait state cannot be handled automatically - set variables or use {@link #execute(Consumer)} with a custom action, if the variable
+ * event is {@code delete}.
  */
 public class EventHandler {
 
@@ -66,15 +65,14 @@ public class EventHandler {
   }
 
   /**
-   * Customizes the handler, using the given {@link Consumer} function. This method can be used to
-   * apply a common customization needed for different test cases.
-   * 
+   * Customizes the handler, using the given {@link Consumer} function. This method can be used to apply a common customization needed for different test
+   * cases.
+   *
    * <pre>
    * tc.handleEvent().customize(this::prepareEvent);
    * </pre>
-   * 
+   *
    * @param customizer A function that accepts a {@link EventHandler}.
-   * 
    * @return The handler.
    */
   public EventHandler customize(Consumer<EventHandler> customizer) {
@@ -85,11 +83,9 @@ public class EventHandler {
   }
 
   /**
-   * Executes a custom action that handles the intermediate catch event, when the process instance is
-   * waiting at the corresponding activity.
-   * 
+   * Executes a custom action that handles the intermediate catch event, when the process instance is waiting at the corresponding activity.
+   *
    * @param action A specific action that accepts an {@link EventSubscription}.
-   * 
    * @throws IllegalArgumentException if action is {@code null}.
    */
   public void execute(Consumer<EventSubscription> action) {
@@ -100,10 +96,9 @@ public class EventHandler {
   }
 
   /**
-   * Continues the waiting execution with an action that calls {@code messageEventReceived},
-   * {@code signalEventReceived} or {@code setVariables} (depending on the actual event type). Please
-   * note: this is the default behavior.
-   * 
+   * Continues the waiting execution with an action that calls {@code messageEventReceived}, {@code signalEventReceived} or {@code setVariables} (depending on
+   * the actual event type). Please note: this is the default behavior.
+   *
    * @see RuntimeService#messageEventReceived(String, String, java.util.Map)
    * @see RuntimeService#signalEventReceived(String, String, java.util.Map)
    * @see RuntimeService#setVariables(String, java.util.Map)
@@ -128,11 +123,9 @@ public class EventHandler {
   }
 
   /**
-   * Verifies the events's waiting state.
-   * 
-   * @param verifier Verifier that accepts an {@link ProcessInstanceAssert} instance and an
-   *        {@link EventSubscription}.
-   * 
+   * Verifies the events' waiting state.
+   *
+   * @param verifier Verifier that accepts an {@link ProcessInstanceAssert} instance and an {@link EventSubscription}.
    * @return The handler.
    */
   public EventHandler verify(BiConsumer<ProcessInstanceAssert, EventSubscription> verifier) {
@@ -142,11 +135,9 @@ public class EventHandler {
 
   /**
    * Sets a variable, which is passed to the execution when the default behavior is used.
-   * 
-   * @param name The name of the variable.
-   * 
+   *
+   * @param name  The name of the variable.
    * @param value The variable's value.
-   * 
    * @return The handler.
    */
   public EventHandler withVariable(String name, Object value) {
@@ -156,9 +147,8 @@ public class EventHandler {
 
   /**
    * Sets variables, which are passed to the execution when the default behavior is used.
-   * 
+   *
    * @param variables A map of variables to set.
-   * 
    * @return The handler.
    */
   public EventHandler withVariables(Map<String, Object> variables) {
@@ -168,11 +158,9 @@ public class EventHandler {
 
   /**
    * Sets a typed variable, which is passed to the execution when the default behavior is used.
-   * 
-   * @param name The name of the variable.
-   * 
+   *
+   * @param name  The name of the variable.
    * @param value The variable's typed value.
-   * 
    * @return The handler.
    */
   public EventHandler withVariableTyped(String name, TypedValue value) {

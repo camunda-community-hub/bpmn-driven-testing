@@ -19,13 +19,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
- * Tests if a process that is started with another process definition ID is sucessfully migrated to
- * process definition, which has been deployed (and instrumented) by the test case.
+ * Tests if a process that is started with another process definition ID is successfully migrated to process definition, which has been deployed (and
+ * instrumented) by the test case.
  */
 public class MigrationTest {
 
   @RegisterExtension
-  public TestCase tc = new TestCase();
+  TestCase tc = new TestCase();
 
   private JobHandler startEventAfter;
 
@@ -113,6 +113,8 @@ public class MigrationTest {
   private static class DoA implements JavaDelegate {
 
     @Override
-    public void execute(DelegateExecution execution) throws Exception {}
+    public void execute(DelegateExecution execution) {
+      // nothing to do here
+    }
   }
 }

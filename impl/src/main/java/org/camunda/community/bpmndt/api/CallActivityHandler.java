@@ -44,15 +44,14 @@ public class CallActivityHandler {
   }
 
   /**
-   * Customizes the handler, using the given {@link Consumer} function. This method can be used to
-   * apply a common customization needed for different test cases.
-   * 
+   * Customizes the handler, using the given {@link Consumer} function. This method can be used to apply a common customization needed for different test
+   * cases.
+   *
    * <pre>
    * tc.handleCallActivity().customize(this::prepareCallActivity);
    * </pre>
-   * 
+   *
    * @param customizer A function that accepts a {@link CallActivityHandler}.
-   * 
    * @return The handler.
    */
   public CallActivityHandler customize(Consumer<CallActivityHandler> customizer) {
@@ -64,24 +63,18 @@ public class CallActivityHandler {
 
   /**
    * Simulates the execution of a call activity.
-   * 
+   * <br>
    * 1. Gets the call activity definition and verifies it.
-   * 
+   * <br>
    * 2. Performs and verifies the variable mapping between super execution and stubbed sub instance.
-   * 
+   * <br>
    * 3. Create sub execution and propagate possible error or escalation events.
-   * 
-   * @param pi The current process instance.
-   * 
+   *
+   * @param pi        The current process instance.
    * @param execution The current execution.
-   * 
-   * @param behavior The call activity's original behavior.
-   * 
-   * @return {@code true}, if the execution should leave (continue). {@code false}, if the execution
-   *         should wait.
-   * 
-   * @throws Exception Exception If the occurrence of an error end event is simulated and the error
-   *         propagation fails.
+   * @param behavior  The call activity's original behavior.
+   * @return {@code true}, if the execution should leave (continue). {@code false}, if the execution should wait.
+   * @throws Exception Exception If the occurrence of an error end event is simulated and the error propagation fails.
    */
   protected boolean execute(ProcessInstance pi, ActivityExecution execution, CallActivityBehavior behavior) throws Exception {
     CallableElement callableElement = behavior.getCallableElement();
@@ -147,7 +140,7 @@ public class CallActivityHandler {
         .filter(method -> method.getName().equals(methodName))
         .findFirst();
 
-    if (!foundMethod.isPresent()) {
+    if (foundMethod.isEmpty()) {
       throw new RuntimeException(String.format("Class '%s' misses required method '%s'", CallableElement.class.getName(), methodName));
     }
 
@@ -168,7 +161,7 @@ public class CallActivityHandler {
 
   /**
    * Determines if the call activity is waiting for a boundary message, signal or timer event.
-   * 
+   *
    * @return {@code true}, if it is waiting for a boundary event. {@code false}, if not.
    */
   public boolean isWaitingForBoundaryEvent() {
@@ -177,9 +170,8 @@ public class CallActivityHandler {
 
   /**
    * Simulates the occurrence of an error end event within the called sub instance.
-   * 
-   * @param errorCode The error code of the attached boundary error event.
-   * 
+   *
+   * @param errorCode    The error code of the attached boundary error event.
    * @param errorMessage An error message or {@code null}.
    */
   public void simulateBpmnError(String errorCode, String errorMessage) {
@@ -193,7 +185,7 @@ public class CallActivityHandler {
 
   /**
    * Simulates the occurrence of an escalation end event within the called sub instance.
-   * 
+   *
    * @param escalationCode The escalation code of the attached boundary escalation event.
    */
   public void simulateEscalation(String escalationCode) {
@@ -206,12 +198,10 @@ public class CallActivityHandler {
   }
 
   /**
-   * Verifies the definition of the call activity and the state before it is executed (actually before
-   * the {@code mapInputVariables} method of a possible {@link DelegateVariableMapping} is invoked).
-   * 
-   * @param verifier Verifier that accepts an {@link ProcessInstanceAssert} and an
-   *        {@link CallActivityDefinition} instance.
-   * 
+   * Verifies the definition of the call activity and the state before it is executed (actually before the {@code mapInputVariables} method of a possible
+   * {@link DelegateVariableMapping} is invoked).
+   *
+   * @param verifier Verifier that accepts an {@link ProcessInstanceAssert} and an {@link CallActivityDefinition} instance.
    * @return The handler.
    */
   public CallActivityHandler verify(BiConsumer<ProcessInstanceAssert, CallActivityDefinition> verifier) {
@@ -226,14 +216,11 @@ public class CallActivityHandler {
   }
 
   /**
-   * Verifies the state after the {@code mapInputVariables} method of a possible
-   * {@link DelegateVariableMapping} was invoked.<br>
-   * Please note: This method can also be used to simulate the behavior of a called process. The
-   * variables set, will be available when the {@code mapOutputVariables} method of a possible
+   * Verifies the state after the {@code mapInputVariables} method of a possible {@link DelegateVariableMapping} was invoked.<br> Please note: This method can
+   * also be used to simulate the behavior of a called process. The variables set, will be available when the {@code mapOutputVariables} method of a possible
    * {@link DelegateVariableMapping} is invoked.
-   * 
+   *
    * @param inputVerifier Verifier that accepts the {@link VariableScope} of the sub process instance.
-   * 
    * @return The handler.
    */
   public CallActivityHandler verifyInput(Consumer<VariableScope> inputVerifier) {
@@ -248,11 +235,9 @@ public class CallActivityHandler {
   }
 
   /**
-   * Verifies the state after the {@code mapOutputVariables} method of a possible
-   * {@link DelegateVariableMapping} was invoked.
-   * 
+   * Verifies the state after the {@code mapOutputVariables} method of a possible {@link DelegateVariableMapping} was invoked.
+   *
    * @param outputVerifier Verifier that accepts the {@link VariableScope} of the super execution.
-   * 
    * @return The handler.
    */
   public CallActivityHandler verifyOutput(Consumer<VariableScope> outputVerifier) {
@@ -267,9 +252,8 @@ public class CallActivityHandler {
   }
 
   /**
-   * Lets the call activity become a wait state. This is required to wait for events (e.g. message,
-   * signal or timer events) that are attached as boundary events on the activity itself or on the
-   * surrounding scope (e.g. embedded subprocess).
+   * Lets the call activity become a wait state. This is required to wait for events (e.g. message, signal or timer events) that are attached as boundary events
+   * on the activity itself or on the surrounding scope (e.g. embedded subprocess).
    */
   public void waitForBoundaryEvent() {
     waitForBoundaryEvent = true;
@@ -277,9 +261,8 @@ public class CallActivityHandler {
 
   /**
    * Sets the error message, which is used when the next activity is an error boundary event.
-   * 
+   *
    * @param errorMessage An error message or {@code null}.
-   * 
    * @return The handler.
    */
   public CallActivityHandler withErrorMessage(String errorMessage) {
@@ -288,9 +271,8 @@ public class CallActivityHandler {
   }
 
   /**
-   * Internal class that provides a given variable map as {@link VariableScope}. This is required for
-   * the {@code mapOutputVariables} method of {@link DelegateVariableMapping}, which can be used to
-   * map variables between super execution and sub instance.
+   * Internal class that provides a given variable map as {@link VariableScope}. This is required for the {@code mapOutputVariables} method of
+   * {@link DelegateVariableMapping}, which can be used to map variables between super execution and sub instance.
    */
   private static class CallActivityVariableScope implements VariableScope {
 
@@ -412,7 +394,7 @@ public class CallActivityHandler {
 
     @Override
     public void removeVariables(Collection<String> variableNames) {
-      variableNames.stream().forEach(variables::remove);
+      variableNames.forEach(variables::remove);
     }
 
     @Override

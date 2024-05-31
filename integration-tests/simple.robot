@@ -90,7 +90,7 @@ Assert Test Code Generation
   # test cases generated
   Should contain  ${result.stdout}  Process: duplicateTestCaseNames
   Should contain  ${result.stdout}  Generating test case 'startEvent__endEvent'
-  Should contain  ${result.stdout}  Skipping test case #2: Name must be unique
+  Should contain  ${result.stdout}  Skipping test case #2: name 'startEvent__endEvent' must be unique
 
   Should contain  ${result.stdout}  Process: empty
   Should contain  ${result.stdout}  Test case #1 has an empty path

@@ -17,7 +17,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 public class MultiInstanceSequentialTest {
 
   @RegisterExtension
-  public TestCase tc = new TestCase();
+  TestCase tc = new TestCase();
 
   private MultiInstanceHandler<?, ?> handler;
 
@@ -62,9 +62,7 @@ public class MultiInstanceSequentialTest {
 
   @Test
   public void testVerifyParallelCustomized() {
-    handler.customize(it -> {
-      it.verifyParallel();
-    });
+    handler.customize(it -> it.verifyParallel());
 
     try {
       tc.createExecutor().execute();

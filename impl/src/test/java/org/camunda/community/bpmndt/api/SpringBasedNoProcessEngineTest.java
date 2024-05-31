@@ -33,8 +33,7 @@ public class SpringBasedNoProcessEngineTest {
   }
 
   /**
-   * Tests if an {@code IllegalStateException} is thrown, when a Spring based test does not provide
-   * the desired process engine.
+   * Tests if an {@code IllegalStateException} is thrown, when a Spring based test does not provide the desired process engine.
    */
   @Test
   public void testException() {
@@ -49,7 +48,7 @@ public class SpringBasedNoProcessEngineTest {
     assertThat(e.getMessage()).contains(PROCESS_ENGINE_NAME);
   }
 
-  private class TestCase extends AbstractJUnit5TestCase<TestCase> {
+  private static class TestCase extends AbstractJUnit5TestCase<TestCase> {
 
     @Override
     protected void execute(ProcessInstance pi) {
@@ -95,5 +94,6 @@ public class SpringBasedNoProcessEngineTest {
    */
   @Configuration
   public static class TestConfiguration {
+
   }
 }

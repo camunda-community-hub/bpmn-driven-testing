@@ -48,7 +48,7 @@ public class GeneratorMultiInstanceScopeTest {
 
     result = generator.getResult();
 
-    String fileName = testInfo.getTestMethod().get().getName().replace("test", "scope") + ".bpmn";
+    String fileName = testInfo.getTestMethod().orElseThrow().getName().replace("test", "scope") + ".bpmn";
     bpmnFile = ctx.getMainResourcePath().resolve(StringUtils.uncapitalize(fileName));
   }
 

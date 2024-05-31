@@ -74,9 +74,8 @@ public class ExternalTaskHandler {
   }
 
   /**
-   * Completes the external task, which is locked for 60 seconds by calling {@code complete}, using
-   * the specified variables and local variables, when the process instance is waiting at the
-   * corresponding activity. Please note: this is the default behavior.
+   * Completes the external task, which is locked for 60 seconds by calling {@code complete}, using the specified variables and local variables, when the
+   * process instance is waiting at the corresponding activity. Please note: this is the default behavior.
    *
    * @see ExternalTaskService#complete(String, String, java.util.Map, java.util.Map)
    */
@@ -90,15 +89,14 @@ public class ExternalTaskHandler {
   }
 
   /**
-   * Customizes the handler, using the given {@link Consumer} function. This method can be used to
-   * apply a common customization needed for different test cases.
-   * 
+   * Customizes the handler, using the given {@link Consumer} function. This method can be used to apply a common customization needed for different test
+   * cases.
+   *
    * <pre>
    * tc.handleExternalTask().customize(this::prepareExternalTask);
    * </pre>
-   * 
+   *
    * @param customizer A function that accepts a {@link ExternalTaskHandler}.
-   * 
    * @return The handler.
    */
   public ExternalTaskHandler customize(Consumer<ExternalTaskHandler> customizer) {
@@ -109,9 +107,8 @@ public class ExternalTaskHandler {
   }
 
   /**
-   * Executes a custom action that handles the external task, when the process instance is waiting at
-   * the corresponding activity.
-   * 
+   * Executes a custom action that handles the external task, when the process instance is waiting at the corresponding activity.
+   *
    * @param action A specific action that accepts the related topic name (String).
    */
   public void execute(Consumer<String> action) {
@@ -120,12 +117,10 @@ public class ExternalTaskHandler {
   }
 
   /**
-   * Executes a custom action that handles the external task, which has been queried (by process
-   * instance ID, activity ID and topic name) and locked before, when the process instance is waiting
-   * at the corresponding activity.
-   * 
+   * Executes a custom action that handles the external task, which has been queried (by process instance ID, activity ID and topic name) and locked before,
+   * when the process instance is waiting at the corresponding activity.
+   *
    * @param action A specific action that accepts an {@link ExternalTask}.
-   * 
    * @see ExternalTaskService#lock(String, String, long)
    */
   public void executeExternalTask(Consumer<ExternalTask> action) {
@@ -134,12 +129,10 @@ public class ExternalTaskHandler {
   }
 
   /**
-   * Executes a custom action that handles the external task, which has been queried (by process
-   * instance ID, activity ID and topic name) and locked before, when the process instance is waiting
-   * at the corresponding activity.
-   * 
+   * Executes a custom action that handles the external task, which has been queried (by process instance ID, activity ID and topic name) and locked before,
+   * when the process instance is waiting at the corresponding activity.
+   *
    * @param action A specific action that accepts an {@link LockedExternalTask}.
-   * 
    * @see ExternalTaskService#lock(String, String, long)
    */
   public void executeLockedExternalTask(Consumer<LockedExternalTask> action) {
@@ -148,13 +141,10 @@ public class ExternalTaskHandler {
   }
 
   /**
-   * Continues the execution with an action that calls {@code handleBpmnError} using the given error
-   * code and message as well as the specified variables.
-   * 
-   * @param errorCode The error code of the attached boundary error event.
-   * 
+   * Continues the execution with an action that calls {@code handleBpmnError} using the given error code and message as well as the specified variables.
+   *
+   * @param errorCode    The error code of the attached boundary error event.
    * @param errorMessage An error message or {@code null}.
-   * 
    * @see ExternalTaskService#handleBpmnError(String, String, String, String, java.util.Map)
    */
   public void handleBpmnError(String errorCode, String errorMessage) {
@@ -171,7 +161,7 @@ public class ExternalTaskHandler {
 
   /**
    * Determines if the external task is waiting for a boundary message, signal or timer event.
-   * 
+   *
    * @return {@code true}, if it is waiting for a boundary event. {@code false}, if not.
    */
   public boolean isWaitingForBoundaryEvent() {
@@ -215,10 +205,8 @@ public class ExternalTaskHandler {
 
   /**
    * Verifies the external task's waiting state.
-   * 
-   * @param verifier Verifier that accepts an {@link ProcessInstanceAssert} instance and the related
-   *        topic name (String).
-   * 
+   *
+   * @param verifier Verifier that accepts an {@link ProcessInstanceAssert} instance and the related topic name (String).
    * @return The handler.
    */
   public ExternalTaskHandler verify(BiConsumer<ProcessInstanceAssert, String> verifier) {
@@ -228,10 +216,8 @@ public class ExternalTaskHandler {
 
   /**
    * Verifies the external task's waiting state.
-   * 
-   * @param taskVerifier Verifier that accepts an {@link ExternalTaskAssert} instance and the task's
-   *        local variables.
-   * 
+   *
+   * @param taskVerifier Verifier that accepts an {@link ExternalTaskAssert} instance and the task's local variables.
    * @return The handler.
    */
   public ExternalTaskHandler verifyTask(BiConsumer<ExternalTaskAssert, Map<String, Object>> taskVerifier) {
@@ -240,9 +226,8 @@ public class ExternalTaskHandler {
   }
 
   /**
-   * Applies no action at the external task's wait state. This is required to wait for events (e.g.
-   * message, signal or timer events) that are attached as boundary events on the activity itself or
-   * on the surrounding scope (e.g. embedded subprocess).
+   * Applies no action at the external task's wait state. This is required to wait for events (e.g. message, signal or timer events) that are attached as
+   * boundary events on the activity itself or on the surrounding scope (e.g. embedded subprocess).
    */
   public void waitForBoundaryEvent() {
     action = null;
@@ -250,13 +235,10 @@ public class ExternalTaskHandler {
   }
 
   /**
-   * Sets the error message, which is used when the next activity is an error boundary event - in this
-   * case the handler's action is {@code handleBpmnError}.
-   * 
+   * Sets the error message, which is used when the next activity is an error boundary event - in this case the handler's action is {@code handleBpmnError}.
+   *
    * @param errorMessage An error message or {@code null}.
-   * 
    * @return The handler.
-   * 
    * @see #handleBpmnError(String, String)
    */
   public ExternalTaskHandler withErrorMessage(String errorMessage) {
@@ -266,13 +248,10 @@ public class ExternalTaskHandler {
 
   /**
    * Sets a local variable, which is passed to the execution when the default behavior is used.
-   * 
-   * @param name The name of the local variable.
-   * 
+   *
+   * @param name  The name of the local variable.
    * @param value The local variable's value.
-   * 
    * @return The handler.
-   * 
    * @see #complete()
    */
   public ExternalTaskHandler withLocalVariable(String name, Object value) {
@@ -282,11 +261,9 @@ public class ExternalTaskHandler {
 
   /**
    * Sets local variables, which are passed to the execution when the default behavior is used.
-   * 
+   *
    * @param localVariables A map of local variables to set.
-   * 
    * @return The handler.
-   * 
    * @see #complete()
    */
   public ExternalTaskHandler withLocalVariables(Map<String, Object> localVariables) {
@@ -296,13 +273,10 @@ public class ExternalTaskHandler {
 
   /**
    * Sets a typed local variable, which is passed to the execution when the default behavior is used.
-   * 
-   * @param name The name of the local variable.
-   * 
+   *
+   * @param name  The name of the local variable.
    * @param value The local variable's typed value.
-   * 
    * @return The handler.
-   * 
    * @see #complete()
    */
   public ExternalTaskHandler withLocalVariableTyped(String name, TypedValue value) {
@@ -312,13 +286,10 @@ public class ExternalTaskHandler {
 
   /**
    * Sets a variable, which is passed to the execution when a predefined behavior is used.
-   * 
-   * @param name The name of the variable.
-   * 
+   *
+   * @param name  The name of the variable.
    * @param value The variable's value.
-   * 
    * @return The handler.
-   * 
    * @see #complete()
    * @see #handleBpmnError(String, String)
    */
@@ -329,11 +300,9 @@ public class ExternalTaskHandler {
 
   /**
    * Sets variables, which are passed to the execution when a predefined behavior is used.
-   * 
+   *
    * @param variables A map of variables to set.
-   * 
    * @return The handler.
-   * 
    * @see #complete()
    * @see #handleBpmnError(String, String)
    */
@@ -344,13 +313,10 @@ public class ExternalTaskHandler {
 
   /**
    * Sets a typed variable, which is passed to the execution when a predefined behavior is used.
-   * 
-   * @param name The name of the variable.
-   * 
+   *
+   * @param name  The name of the variable.
    * @param value The variable's typed value.
-   * 
    * @return The handler.
-   * 
    * @see #complete()
    * @see #handleBpmnError(String, String)
    */
@@ -361,9 +327,8 @@ public class ExternalTaskHandler {
 
   /**
    * Wraps the given {@link ExternalTask} into a {@link LockedExternalTask}.
-   * 
+   *
    * @param task An external task that has been queried by the handler.
-   * 
    * @return The wrapped task.
    */
   protected LockedExternalTask wrap(ExternalTask task) {
@@ -375,9 +340,8 @@ public class ExternalTaskHandler {
   }
 
   /**
-   * Interal class that represents an {@link ExternalTask} as {@link LockedExternalTask}, since those
-   * interfaces are not inherited and most of the worker implementations deal with instances of
-   * {@link LockedExternalTask}s.
+   * Internal class that represents an {@link ExternalTask} as {@link LockedExternalTask}, since those interfaces are not inherited and most of the worker
+   * implementations deal with instances of {@link LockedExternalTask}s.
    */
   private static class WrappedTask implements LockedExternalTask {
 
@@ -495,8 +459,8 @@ public class ExternalTaskHandler {
   }
 
   /**
-   * Internal class that wraps an action that accepts {@link LockedExternalTask}s, so that it can work
-   * with {@link ExternalTask}s, which has been queried and locked by the handler.
+   * Internal class that wraps an action that accepts {@link LockedExternalTask}s, so that it can work with {@link ExternalTask}s, which has been queried and
+   * locked by the handler.
    */
   private static class WrappedTaskAction implements Consumer<ExternalTask> {
 

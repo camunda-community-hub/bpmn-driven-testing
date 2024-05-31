@@ -20,7 +20,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 public class AbstractTestCaseTest {
 
   @RegisterExtension
-  public TestCase tc = new TestCase();
+  TestCase tc = new TestCase();
 
   private RepositoryService repositoryService;
 
@@ -52,8 +52,7 @@ public class AbstractTestCaseTest {
   }
 
   /**
-   * Tests if the {@code Deployment} annotation works the same as when it is used with the
-   * {@code ProcessEngineRule} class.
+   * Tests if the {@code Deployment} annotation works the same as when it is used with the {@code ProcessEngineRule} class.
    */
   @Test
   @Deployment(resources = "bpmn/noTestCases.bpmn")
@@ -73,7 +72,7 @@ public class AbstractTestCaseTest {
     assertThat(deployment.getName()).isEqualTo("AbstractTestCaseTest.testDeploymentAnnotation");
   }
 
-  private class TestCase extends AbstractJUnit5TestCase<TestCase> {
+  private static class TestCase extends AbstractJUnit5TestCase<TestCase> {
 
     @Override
     protected void execute(ProcessInstance pi) {

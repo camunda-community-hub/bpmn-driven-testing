@@ -24,7 +24,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 public class MultiInstanceCallActivityTest {
 
   @RegisterExtension
-  public TestCase tc = new TestCase();
+  TestCase tc = new TestCase();
 
   private MultiInstanceCallActivityHandler handler;
 
@@ -135,7 +135,8 @@ public class MultiInstanceCallActivityTest {
     }
   }
 
-  private class MultiInstanceCallActivityHandler extends MultiInstanceHandler<MultiInstanceCallActivityHandler, CallActivityHandler> {
+  private static class MultiInstanceCallActivityHandler extends MultiInstanceHandler<MultiInstanceCallActivityHandler, CallActivityHandler> {
+
     public MultiInstanceCallActivityHandler(TestCaseInstance instance, String activityId) {
       super(instance, activityId);
     }

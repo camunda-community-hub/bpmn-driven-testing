@@ -15,29 +15,36 @@ import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.community.bpmndt.api.cfg.BpmndtParseListener;
 
 /**
- * Link between test case and it's execution, utilizing a process instance that was instantiated by
- * a {@link TestCaseExecutor} and handlers (e.g. {@code UserTaskHandler}) that are part of a test
- * case.
+ * Link between test case, and its execution, utilizing a process instance that was instantiated by a {@link TestCaseExecutor} and handlers (e.g.
+ * {@code UserTaskHandler}) that are part of a test case.
  */
 public class TestCaseInstance {
 
-  /** Name of the process engine to use. */
+  /**
+   * Name of the process engine to use.
+   */
   public static final String PROCESS_ENGINE_NAME = "bpmndt";
 
   private final Map<String, CallActivityHandler> callActivityHandlerMap;
 
   protected String end;
-  /** Key of the test case related process definition. */
+  /**
+   * Key of the test case related process definition.
+   */
   protected String processDefinitionKey;
   protected boolean processEnd;
   protected ProcessEngine processEngine;
   protected String start;
   protected String tenantId;
 
-  /** ID of BPMN resource deployment. */
+  /**
+   * ID of BPMN resource deployment.
+   */
   private String deploymentId;
 
-  /** ID of the deployed process definition. */
+  /**
+   * ID of the deployed process definition.
+   */
   private String processDefinitionId;
 
   private ProcessInstance pi;
@@ -105,23 +112,16 @@ public class TestCaseInstance {
         .filter(pd -> pd.getKey().equals(processDefinitionKey))
         .map(ProcessDefinition::getId)
         .findFirst()
-        .get();
+        .orElseThrow();
   }
 
   /**
-   * Executes a stubbed call activity using a {@link CallActivityHandler} that was registered for the
-   * given activity.
-   * 
+   * Executes a stubbed call activity using a {@link CallActivityHandler} that was registered for the given activity.
+   *
    * @param execution The current execution.
-   * 
-   * @param behavior The call activity's original behavior.
-   * 
-   * @return {@code true}, if the execution should leave the call activity. {@code false}, if the
-   *         execution should wait at the call activity.
-   * 
-   * @throws Exception If the occurrence of an error end event is simulated and the error propagation
-   *         fails.
-   * 
+   * @param behavior  The call activity's original behavior.
+   * @return {@code true}, if the execution should leave the call activity. {@code false}, if the execution should wait at the call activity.
+   * @throws Exception If the occurrence of an error end event is simulated and the error propagation fails.
    * @see CallActivityHandler#simulateBpmnError(String, String)
    */
   public boolean execute(ActivityExecution execution, CallActivityBehavior behavior) throws Exception {
@@ -143,7 +143,7 @@ public class TestCaseInstance {
         .filter((parseListener) -> (parseListener instanceof BpmndtParseListener))
         .map(BpmndtParseListener.class::cast)
         .findFirst()
-        .get();
+        .orElseThrow();
   }
 
   public String getDeploymentId() {

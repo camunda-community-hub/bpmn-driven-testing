@@ -19,7 +19,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 public class CallActivityMessageTest {
 
   @RegisterExtension
-  public TestCase tc = new TestCase();
+  TestCase tc = new TestCase();
 
   private CallActivityHandler handler;
 

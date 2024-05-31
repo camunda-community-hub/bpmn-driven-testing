@@ -11,7 +11,7 @@ import org.camunda.community.bpmndt.model.TestCaseActivityScope;
 
 public class TestCaseContext {
 
-  private final List<TestCaseActivity> multiInstanceActivities = new LinkedList<>();
+  private final List<TestCaseActivity> multiInstances = new LinkedList<>();
   private final List<TestCaseActivityScope> multiInstanceScopes = new LinkedList<>();
   private final Map<String, GeneratorStrategy> strategies = new HashMap<>();
 
@@ -22,8 +22,8 @@ public class TestCaseContext {
   private String resourceName;
   private TestCase testCase;
 
-  public void addMultiInstanceActivity(TestCaseActivity activity) {
-    multiInstanceActivities.add(activity);
+  public void addMultiInstance(TestCaseActivity activity) {
+    multiInstances.add(activity);
   }
 
   public void addMultiInstanceScope(TestCaseActivityScope scope) {
@@ -36,15 +36,15 @@ public class TestCaseContext {
 
   /**
    * Gets the name of the test case's class, starting with "TC_".
-   * 
+   *
    * @return The class name.
    */
   public String getClassName() {
     return className;
   }
 
-  public List<TestCaseActivity> getMultiInstanceActivities() {
-    return multiInstanceActivities;
+  public List<TestCaseActivity> getMultiInstances() {
+    return multiInstances;
   }
 
   public List<TestCaseActivityScope> getMultiInstanceScopes() {
@@ -57,7 +57,7 @@ public class TestCaseContext {
 
   /**
    * Gets the name of the test case's package, which is the lowered process ID as Java literal.
-   * 
+   *
    * @return The package name.
    */
   public String getPackageName() {
@@ -66,7 +66,7 @@ public class TestCaseContext {
 
   /**
    * Gets the name of the BPMN resources within the classpath.
-   * 
+   *
    * @return The BPMN classpath resource name.
    */
   public String getResourceName() {
@@ -75,9 +75,8 @@ public class TestCaseContext {
 
   /**
    * Returns the strategy of the activity with the given ID.
-   * 
+   *
    * @param activityId ID of an existing activity.
-   * 
    * @return The strategy.
    */
   public GeneratorStrategy getStrategy(String activityId) {
@@ -86,7 +85,7 @@ public class TestCaseContext {
 
   /**
    * Returns the underlying test case.
-   * 
+   *
    * @return The test case.
    */
   public TestCase getTestCase() {
@@ -95,7 +94,7 @@ public class TestCaseContext {
 
   /**
    * Determines whether the related test case has a duplicate name or not.
-   * 
+   *
    * @return {@code true}, if the test case's name is not unique. Otherwise {@code false}.
    */
   public boolean hasDuplicateName() {

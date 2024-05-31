@@ -14,17 +14,21 @@ import org.camunda.community.bpmndt.api.TestCaseInstance;
 
 /**
  * Custom BPMN parse listener that:
- * 
+ * <br>
  * 1. Overrides {@link CallActivityBehavior}s to make test cases independent of sub processes.
- * 
+ * <br>
  * 2. Enables asynchronous continuation for multi instance activities.
  */
 public class BpmndtParseListener extends AbstractBpmnParseListener {
 
-  /** Activity ID suffix of multi instance scopes. */
+  /**
+   * Activity ID suffix of multi instance scopes.
+   */
   private static final String MULTI_INSTANCE_SCOPE_SUFFIX = "#" + ActivityTypes.MULTI_INSTANCE_BODY;
 
-  /** The current test case instance. */
+  /**
+   * The current test case instance.
+   */
   private TestCaseInstance instance;
 
   private ActivityImpl findActivity(List<ActivityImpl> activities, String activityId) {
@@ -53,8 +57,8 @@ public class BpmndtParseListener extends AbstractBpmnParseListener {
   }
 
   /**
-   * Instruments the call activity by overriding it's behavior to allow isolated testing.
-   * 
+   * Instruments the call activity by overriding its behavior to allow isolated testing.
+   *
    * @param activity The current activity.
    */
   protected void instrumentCallActivity(ActivityImpl activity) {
@@ -73,7 +77,7 @@ public class BpmndtParseListener extends AbstractBpmnParseListener {
 
   /**
    * Instruments the end activity, if it does not end the process.
-   * 
+   *
    * @param activities A list of activities, which should also contain the end activity.
    */
   protected void instrumentEndActivity(List<ActivityImpl> activities) {
@@ -89,9 +93,8 @@ public class BpmndtParseListener extends AbstractBpmnParseListener {
 
   /**
    * Instruments the given activity, if it is a multi instance activity.
-   * 
-   * @param scope The surrounding scope.
-   * 
+   *
+   * @param scope    The surrounding scope.
    * @param activity The current activity.
    */
   protected void instrumentMultiInstanceActivity(ScopeImpl scope, ActivityImpl activity) {
@@ -107,9 +110,8 @@ public class BpmndtParseListener extends AbstractBpmnParseListener {
 
   /**
    * Instruments the given activity, if it is a multi instance scope.
-   * 
-   * @param scope The surrounding scope.
-   * 
+   *
+   * @param scope    The surrounding scope.
    * @param activity The current activity.
    */
   protected void instrumentMultiInstanceScope(ScopeImpl scope, ActivityImpl activity) {
@@ -142,7 +144,7 @@ public class BpmndtParseListener extends AbstractBpmnParseListener {
   public void parseProcess(Element processElement, ProcessDefinitionEntity processDefinition) {
     instrumentEndActivity(processDefinition.getActivities());
   }
-  
+
   @Override
   public void parseScriptTask(Element scriptTaskElement, ScopeImpl scope, ActivityImpl activity) {
     instrumentMultiInstanceActivity(scope, activity);
@@ -175,7 +177,7 @@ public class BpmndtParseListener extends AbstractBpmnParseListener {
 
   /**
    * Sets a reference to the related test case instance.
-   * 
+   *
    * @param instance The related instance.
    */
   public void setInstance(TestCaseInstance instance) {
@@ -195,10 +197,14 @@ public class BpmndtParseListener extends AbstractBpmnParseListener {
    */
   private static class CustomCallActivityBehavior extends CallActivityBehavior {
 
-    /** Related test case instance. */
+    /**
+     * Related test case instance.
+     */
     private final TestCaseInstance instance;
 
-    /** The activity's original behavior. */
+    /**
+     * The activity's original behavior.
+     */
     private final CallActivityBehavior behavior;
 
     private CustomCallActivityBehavior(TestCaseInstance instance, CallActivityBehavior behavior) {

@@ -40,21 +40,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class that is responsible for generating test code and writing the generated files to the test
- * source directory.
+ * Class that is responsible for generating test code and writing the generated files to the test source directory.
  */
 public class Generator {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(Generator.class);
 
   /**
-   * Converts the given BPMN element ID into a Java literal, which can be used when generating source
-   * code. The convertion lowers all characters and retains letters as well as digits. All other
-   * characters are converted into underscores. If the literal starts with a digit, an additional
-   * underscore is prepended.
-   * 
+   * Converts the given BPMN element ID into a Java literal, which can be used when generating source code. The conversion lowers all characters and retains
+   * letters as well as digits. All other characters are converted into underscores. If the literal starts with a digit, an additional underscore is prepended.
+   *
    * @param id The ID of a specific flow node or process.
-   * 
    * @return A Java conform literal.
    */
   public static String toJavaLiteral(String id) {
@@ -74,12 +70,10 @@ public class Generator {
   }
 
   /**
-   * Converts the given BPMN element ID into a literal, which can be used when generating source code.
-   * The convertion retains letters and digits. All other characters are converted into underscores.
-   * Moreover upper case is also retained.
-   * 
+   * Converts the given BPMN element ID into a literal, which can be used when generating source code. The conversion retains letters and digits. All other
+   * characters are converted into underscores. Moreover, upper case is also retained.
+   *
    * @param id The ID of a specific flow node or process.
-   * 
    * @return A conform literal.
    */
   public static String toLiteral(String id) {
@@ -189,7 +183,7 @@ public class Generator {
 
   protected void generateMultiInstanceHandlers(TestCaseContext ctx) {
     GenerateMultiInstanceHandler generate = new GenerateMultiInstanceHandler(ctx, result);
-    ctx.getMultiInstanceActivities().forEach(generate);
+    ctx.getMultiInstances().forEach(generate);
   }
 
   protected void generateMultiInstanceScopeHandlers(TestCaseContext ctx) {
@@ -243,7 +237,7 @@ public class Generator {
 
       // check for duplicate test case names
       if (ctx.hasDuplicateName()) {
-        LOGGER.warn("Skipping test case #{}: Name must be unique", i + 1, ctx.getName());
+        LOGGER.warn("Skipping test case #{}: name '{}' must be unique", i + 1, ctx.getName());
         continue;
       }
 
