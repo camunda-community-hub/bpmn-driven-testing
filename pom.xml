@@ -26,7 +26,8 @@
     <!-- Versions -->
     <camunda.bpm.version>7.21.0</camunda.bpm.version>
     <google.truth.version>1.1.5</google.truth.version>
-    <junit.jupiter.version>5.9.3</junit.jupiter.version>
+    <javapoet.version>1.13.0</javapoet.version>
+    <junit.jupiter.version>5.10.1</junit.jupiter.version>
     <robotframework.version>4.1.2</robotframework.version>
     <slf4j.version>1.7.36</slf4j.version>
   </properties>
@@ -61,6 +62,12 @@
         <scope>import</scope>
       </dependency>
 
+      <dependency>
+        <groupId>com.squareup</groupId>
+        <artifactId>javapoet</artifactId>
+        <version>${javapoet.version}</version>
+      </dependency>
+
       <!-- Test -->
       <dependency>
         <groupId>org.junit.jupiter</groupId>
@@ -93,7 +100,7 @@
       </dependency>
       <dependency>
         <groupId>org.slf4j</groupId>
-        <artifactId>slf4j-log4j12</artifactId>
+        <artifactId>slf4j-reload4j</artifactId>
         <version>${slf4j.version}</version>
       </dependency>
       <dependency>
@@ -107,6 +114,12 @@
   <build>
     <pluginManagement>
       <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.12.1</version>
+        </plugin>
+
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
