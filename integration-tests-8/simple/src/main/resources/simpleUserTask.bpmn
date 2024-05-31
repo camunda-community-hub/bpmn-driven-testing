@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:bpmndt="http://camunda.org/schema/extension/bpmn-driven-testing" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0cspg0n" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.20.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.4.0">
+  <bpmn:process id="simpleUserTask" isExecutable="true">
+    <bpmn:extensionElements>
+      <zeebe:userTaskForm id="UserTaskForm_0e64hjp">{}</zeebe:userTaskForm>
+      <bpmndt:testCases>
+        <bpmndt:testCase>
+          <bpmndt:path>
+            <bpmndt:node>startEvent</bpmndt:node>
+            <bpmndt:node>userTask</bpmndt:node>
+            <bpmndt:node>userTaskWithLinkedForm</bpmndt:node>
+            <bpmndt:node>userTaskWithEmbeddedForm</bpmndt:node>
+            <bpmndt:node>endEvent</bpmndt:node>
+          </bpmndt:path>
+        </bpmndt:testCase>
+      </bpmndt:testCases>
+    </bpmn:extensionElements>
+    <bpmn:startEvent id="startEvent">
+      <bpmn:outgoing>Flow_0ajwhqv</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_0ajwhqv" sourceRef="startEvent" targetRef="userTask" />
+    <bpmn:endEvent id="endEvent">
+      <bpmn:incoming>Flow_1tyy64t</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_0och7kl" sourceRef="userTask" targetRef="userTaskWithLinkedForm" />
+    <bpmn:userTask id="userTask" name="User task">
+      <bpmn:extensionElements>
+        <zeebe:assignmentDefinition assignee="=&#34;simpleAssignee&#34;" candidateGroups="=[&#34;simpleGroupA&#34;, &#34;simpleGroupB&#34;]" candidateUsers="=[&#34;simpleUserA&#34;, &#34;simpleUserB&#34;]" />
+        <zeebe:formDefinition formKey="simpleFormKey" />
+        <zeebe:taskSchedule dueDate="=&#34;2023-02-17T00:00:00Z&#34;" followUpDate="=&#34;2023-02-18T00:00:00Z&#34;" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0ajwhqv</bpmn:incoming>
+      <bpmn:outgoing>Flow_0och7kl</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_1w59658" sourceRef="userTaskWithLinkedForm" targetRef="userTaskWithEmbeddedForm" />
+    <bpmn:userTask id="userTaskWithLinkedForm" name="Linked form">
+      <bpmn:extensionElements>
+        <zeebe:formDefinition formId="simpleUserTask" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0och7kl</bpmn:incoming>
+      <bpmn:outgoing>Flow_1w59658</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_1tyy64t" sourceRef="userTaskWithEmbeddedForm" targetRef="endEvent" />
+    <bpmn:userTask id="userTaskWithEmbeddedForm" name="Embedded form">
+      <bpmn:extensionElements>
+        <zeebe:formDefinition formKey="camunda-forms:bpmn:UserTaskForm_0e64hjp" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1w59658</bpmn:incoming>
+      <bpmn:outgoing>Flow_1tyy64t</bpmn:outgoing>
+    </bpmn:userTask>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="simpleUserTask">
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="startEvent">
+        <dc:Bounds x="179" y="99" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1c1holl_di" bpmnElement="userTask">
+        <dc:Bounds x="270" y="77" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1m24kn0_di" bpmnElement="userTaskWithLinkedForm">
+        <dc:Bounds x="420" y="77" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1g3vhpw_di" bpmnElement="endEvent">
+        <dc:Bounds x="722" y="99" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_07s8jx0_di" bpmnElement="userTaskWithEmbeddedForm">
+        <dc:Bounds x="570" y="77" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_0ajwhqv_di" bpmnElement="Flow_0ajwhqv">
+        <di:waypoint x="215" y="117" />
+        <di:waypoint x="270" y="117" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0och7kl_di" bpmnElement="Flow_0och7kl">
+        <di:waypoint x="370" y="117" />
+        <di:waypoint x="420" y="117" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1w59658_di" bpmnElement="Flow_1w59658">
+        <di:waypoint x="520" y="117" />
+        <di:waypoint x="570" y="117" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1tyy64t_di" bpmnElement="Flow_1tyy64t">
+        <di:waypoint x="670" y="117" />
+        <di:waypoint x="722" y="117" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

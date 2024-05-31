@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:bpmndt="http://camunda.org/schema/extension/bpmn-driven-testing" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0b39n26" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.20.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.4.0">
+  <bpmn:process id="scopeZero" isExecutable="true">
+    <bpmn:extensionElements>
+      <bpmndt:testCases>
+        <bpmndt:testCase>
+          <bpmndt:path>
+            <bpmndt:node>startEvent</bpmndt:node>
+            <bpmndt:node>subProcessStartEvent</bpmndt:node>
+            <bpmndt:node>subProcessEndEvent</bpmndt:node>
+            <bpmndt:node>endEvent</bpmndt:node>
+          </bpmndt:path>
+        </bpmndt:testCase>
+      </bpmndt:testCases>
+    </bpmn:extensionElements>
+    <bpmn:startEvent id="startEvent">
+      <bpmn:outgoing>Flow_106wr5b</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:subProcess id="subProcess">
+      <bpmn:incoming>Flow_106wr5b</bpmn:incoming>
+      <bpmn:outgoing>Flow_0nfct5b</bpmn:outgoing>
+      <bpmn:multiInstanceLoopCharacteristics isSequential="true">
+        <bpmn:extensionElements>
+          <zeebe:loopCharacteristics inputCollection="=elements" />
+        </bpmn:extensionElements>
+      </bpmn:multiInstanceLoopCharacteristics>
+      <bpmn:startEvent id="subProcessStartEvent">
+        <bpmn:outgoing>Flow_1x89u8o</bpmn:outgoing>
+      </bpmn:startEvent>
+      <bpmn:endEvent id="subProcessEndEvent">
+        <bpmn:incoming>Flow_1x89u8o</bpmn:incoming>
+      </bpmn:endEvent>
+      <bpmn:sequenceFlow id="Flow_1x89u8o" sourceRef="subProcessStartEvent" targetRef="subProcessEndEvent" />
+    </bpmn:subProcess>
+    <bpmn:sequenceFlow id="Flow_106wr5b" sourceRef="startEvent" targetRef="subProcess" />
+    <bpmn:endEvent id="endEvent">
+      <bpmn:incoming>Flow_0nfct5b</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_0nfct5b" sourceRef="subProcess" targetRef="endEvent" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="scopeZero">
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="startEvent">
+        <dc:Bounds x="179" y="159" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_14z8aoj_di" bpmnElement="endEvent">
+        <dc:Bounds x="552" y="159" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1tl728f_di" bpmnElement="subProcess" isExpanded="true">
+        <dc:Bounds x="270" y="77" width="220" height="200" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1kbl3ba_di" bpmnElement="subProcessStartEvent">
+        <dc:Bounds x="310" y="159" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0tqrfmj_di" bpmnElement="subProcessEndEvent">
+        <dc:Bounds x="402" y="159" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1x89u8o_di" bpmnElement="Flow_1x89u8o">
+        <di:waypoint x="346" y="177" />
+        <di:waypoint x="402" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_106wr5b_di" bpmnElement="Flow_106wr5b">
+        <di:waypoint x="215" y="177" />
+        <di:waypoint x="270" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0nfct5b_di" bpmnElement="Flow_0nfct5b">
+        <di:waypoint x="490" y="177" />
+        <di:waypoint x="552" y="177" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

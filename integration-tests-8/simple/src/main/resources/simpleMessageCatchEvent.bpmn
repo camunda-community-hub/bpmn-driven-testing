@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:bpmndt="http://camunda.org/schema/extension/bpmn-driven-testing" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0jjl325" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.20.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.4.0">
+  <bpmn:process id="simpleMessageCatchEvent" isExecutable="true">
+    <bpmn:extensionElements>
+      <bpmndt:testCases>
+        <bpmndt:testCase>
+          <bpmndt:path>
+            <bpmndt:node>startEvent</bpmndt:node>
+            <bpmndt:node>messageCatchEvent</bpmndt:node>
+            <bpmndt:node>endEvent</bpmndt:node>
+          </bpmndt:path>
+        </bpmndt:testCase>
+      </bpmndt:testCases>
+    </bpmn:extensionElements>
+    <bpmn:startEvent id="startEvent">
+      <bpmn:outgoing>Flow_0mcii2n</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_0mcii2n" sourceRef="startEvent" targetRef="messageCatchEvent" />
+    <bpmn:endEvent id="endEvent">
+      <bpmn:incoming>Flow_055p7mf</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_055p7mf" sourceRef="messageCatchEvent" targetRef="endEvent" />
+    <bpmn:intermediateCatchEvent id="messageCatchEvent">
+      <bpmn:incoming>Flow_0mcii2n</bpmn:incoming>
+      <bpmn:outgoing>Flow_055p7mf</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_0xtfbxh" messageRef="Message_0mn11hi" />
+    </bpmn:intermediateCatchEvent>
+  </bpmn:process>
+  <bpmn:message id="Message_0mn11hi" name="=&#34;simpleMessage&#34;">
+    <bpmn:extensionElements>
+      <zeebe:subscription correlationKey="=&#34;simple&#34;" />
+    </bpmn:extensionElements>
+  </bpmn:message>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="simpleMessageCatchEvent">
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="startEvent">
+        <dc:Bounds x="179" y="79" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0nt0jud_di" bpmnElement="endEvent">
+        <dc:Bounds x="372" y="79" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0i93di7_di" bpmnElement="messageCatchEvent">
+        <dc:Bounds x="272" y="79" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_0mcii2n_di" bpmnElement="Flow_0mcii2n">
+        <di:waypoint x="215" y="97" />
+        <di:waypoint x="272" y="97" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_055p7mf_di" bpmnElement="Flow_055p7mf">
+        <di:waypoint x="308" y="97" />
+        <di:waypoint x="372" y="97" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

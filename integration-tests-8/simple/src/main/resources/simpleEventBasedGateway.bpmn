@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:bpmndt="http://camunda.org/schema/extension/bpmn-driven-testing" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0r5nz3q" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.20.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.4.0">
+  <bpmn:process id="simpleEventBasedGateway" isExecutable="true">
+    <bpmn:extensionElements>
+      <bpmndt:testCases>
+        <bpmndt:testCase>
+          <bpmndt:name>Message</bpmndt:name>
+          <bpmndt:path>
+            <bpmndt:node>startEvent</bpmndt:node>
+            <bpmndt:node>eventBasedGateway</bpmndt:node>
+            <bpmndt:node>messageCatchEvent</bpmndt:node>
+            <bpmndt:node>exclusiveGateway</bpmndt:node>
+            <bpmndt:node>endEvent</bpmndt:node>
+          </bpmndt:path>
+        </bpmndt:testCase>
+        <bpmndt:testCase>
+          <bpmndt:name>Timer</bpmndt:name>
+          <bpmndt:path>
+            <bpmndt:node>startEvent</bpmndt:node>
+            <bpmndt:node>eventBasedGateway</bpmndt:node>
+            <bpmndt:node>timerCatchEvent</bpmndt:node>
+            <bpmndt:node>exclusiveGateway</bpmndt:node>
+            <bpmndt:node>endEvent</bpmndt:node>
+          </bpmndt:path>
+        </bpmndt:testCase>
+        <bpmndt:testCase>
+          <bpmndt:path>
+            <bpmndt:node>startEvent</bpmndt:node>
+            <bpmndt:node>eventBasedGateway</bpmndt:node>
+          </bpmndt:path>
+        </bpmndt:testCase>
+      </bpmndt:testCases>
+    </bpmn:extensionElements>
+    <bpmn:startEvent id="startEvent">
+      <bpmn:outgoing>Flow_0ayxyf8</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_0ayxyf8" sourceRef="startEvent" targetRef="eventBasedGateway" />
+    <bpmn:exclusiveGateway id="exclusiveGateway">
+      <bpmn:incoming>Flow_0jeqn4w</bpmn:incoming>
+      <bpmn:incoming>Flow_0r7v6pa</bpmn:incoming>
+      <bpmn:outgoing>Flow_19qm9mr</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:endEvent id="endEvent">
+      <bpmn:incoming>Flow_19qm9mr</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_19qm9mr" sourceRef="exclusiveGateway" targetRef="endEvent" />
+    <bpmn:eventBasedGateway id="eventBasedGateway">
+      <bpmn:incoming>Flow_0ayxyf8</bpmn:incoming>
+      <bpmn:outgoing>Flow_0951000</bpmn:outgoing>
+      <bpmn:outgoing>Flow_0n22m4h</bpmn:outgoing>
+    </bpmn:eventBasedGateway>
+    <bpmn:intermediateCatchEvent id="messageCatchEvent">
+      <bpmn:incoming>Flow_0951000</bpmn:incoming>
+      <bpmn:outgoing>Flow_0jeqn4w</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_0dpbhfh" messageRef="Message_3qn8bvu" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:sequenceFlow id="Flow_0951000" sourceRef="eventBasedGateway" targetRef="messageCatchEvent" />
+    <bpmn:intermediateCatchEvent id="timerCatchEvent">
+      <bpmn:incoming>Flow_0n22m4h</bpmn:incoming>
+      <bpmn:outgoing>Flow_0r7v6pa</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerEventDefinition_1ruqj83">
+        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">= "PT1H"</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:intermediateCatchEvent>
+    <bpmn:sequenceFlow id="Flow_0n22m4h" sourceRef="eventBasedGateway" targetRef="timerCatchEvent" />
+    <bpmn:sequenceFlow id="Flow_0jeqn4w" sourceRef="messageCatchEvent" targetRef="exclusiveGateway" />
+    <bpmn:sequenceFlow id="Flow_0r7v6pa" sourceRef="timerCatchEvent" targetRef="exclusiveGateway" />
+  </bpmn:process>
+  <bpmn:message id="Message_3qn8bvu" name="simpleMessage">
+    <bpmn:extensionElements>
+      <zeebe:subscription correlationKey="=&#34;simple&#34;" />
+    </bpmn:extensionElements>
+  </bpmn:message>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="simpleEventBasedGateway">
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="startEvent">
+        <dc:Bounds x="179" y="89" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0o6v2pw_di" bpmnElement="exclusiveGateway" isMarkerVisible="true">
+        <dc:Bounds x="465" y="82" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1ts8f0h_di" bpmnElement="endEvent">
+        <dc:Bounds x="572" y="89" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0sx2stu_di" bpmnElement="eventBasedGateway">
+        <dc:Bounds x="265" y="82" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1xo6rq9_di" bpmnElement="messageCatchEvent">
+        <dc:Bounds x="372" y="89" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0lhmbu3_di" bpmnElement="timerCatchEvent">
+        <dc:Bounds x="372" y="202" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_0ayxyf8_di" bpmnElement="Flow_0ayxyf8">
+        <di:waypoint x="215" y="107" />
+        <di:waypoint x="265" y="107" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_19qm9mr_di" bpmnElement="Flow_19qm9mr">
+        <di:waypoint x="515" y="107" />
+        <di:waypoint x="572" y="107" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0951000_di" bpmnElement="Flow_0951000">
+        <di:waypoint x="315" y="107" />
+        <di:waypoint x="372" y="107" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0n22m4h_di" bpmnElement="Flow_0n22m4h">
+        <di:waypoint x="290" y="132" />
+        <di:waypoint x="290" y="220" />
+        <di:waypoint x="372" y="220" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0jeqn4w_di" bpmnElement="Flow_0jeqn4w">
+        <di:waypoint x="408" y="107" />
+        <di:waypoint x="465" y="107" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0r7v6pa_di" bpmnElement="Flow_0r7v6pa">
+        <di:waypoint x="408" y="220" />
+        <di:waypoint x="490" y="220" />
+        <di:waypoint x="490" y="132" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

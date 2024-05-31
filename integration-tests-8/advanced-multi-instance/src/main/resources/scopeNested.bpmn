@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:bpmndt="http://camunda.org/schema/extension/bpmn-driven-testing" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0f2mr0o" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.20.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.4.0">
+  <bpmn:process id="scopeNested" isExecutable="true">
+    <bpmn:extensionElements>
+      <bpmndt:testCases>
+        <bpmndt:testCase>
+          <bpmndt:path>
+            <bpmndt:node>startEvent</bpmndt:node>
+            <bpmndt:node>subProcessStartEvent</bpmndt:node>
+            <bpmndt:node>nestedSubProcessStartEvent</bpmndt:node>
+            <bpmndt:node>userTask</bpmndt:node>
+            <bpmndt:node>nestedSubProcessEndEvent</bpmndt:node>
+            <bpmndt:node>subProcessEndEvent</bpmndt:node>
+            <bpmndt:node>endEvent</bpmndt:node>
+          </bpmndt:path>
+        </bpmndt:testCase>
+        <bpmndt:testCase>
+          <bpmndt:path>
+            <bpmndt:node>subProcessStartEvent</bpmndt:node>
+            <bpmndt:node>nestedSubProcessStartEvent</bpmndt:node>
+            <bpmndt:node>userTask</bpmndt:node>
+            <bpmndt:node>nestedSubProcessEndEvent</bpmndt:node>
+            <bpmndt:node>subProcessEndEvent</bpmndt:node>
+            <bpmndt:node>endEvent</bpmndt:node>
+          </bpmndt:path>
+        </bpmndt:testCase>
+        <bpmndt:testCase>
+          <bpmndt:path>
+            <bpmndt:node>nestedSubProcessStartEvent</bpmndt:node>
+            <bpmndt:node>userTask</bpmndt:node>
+            <bpmndt:node>nestedSubProcessEndEvent</bpmndt:node>
+            <bpmndt:node>subProcessEndEvent</bpmndt:node>
+            <bpmndt:node>endEvent</bpmndt:node>
+          </bpmndt:path>
+        </bpmndt:testCase>
+      </bpmndt:testCases>
+    </bpmn:extensionElements>
+    <bpmn:startEvent id="startEvent">
+      <bpmn:outgoing>Flow_1r5wxyh</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:subProcess id="subProcess">
+      <bpmn:incoming>Flow_1r5wxyh</bpmn:incoming>
+      <bpmn:outgoing>Flow_1ibh6u6</bpmn:outgoing>
+      <bpmn:multiInstanceLoopCharacteristics isSequential="true">
+        <bpmn:extensionElements>
+          <zeebe:loopCharacteristics inputCollection="=elements" />
+        </bpmn:extensionElements>
+      </bpmn:multiInstanceLoopCharacteristics>
+      <bpmn:startEvent id="subProcessStartEvent">
+        <bpmn:outgoing>Flow_1k4xmos</bpmn:outgoing>
+      </bpmn:startEvent>
+      <bpmn:subProcess id="nestedSubProcess">
+        <bpmn:incoming>Flow_1k4xmos</bpmn:incoming>
+        <bpmn:outgoing>Flow_1o1nc5k</bpmn:outgoing>
+        <bpmn:multiInstanceLoopCharacteristics isSequential="true">
+          <bpmn:extensionElements>
+            <zeebe:loopCharacteristics inputCollection="=nestedElements" />
+          </bpmn:extensionElements>
+        </bpmn:multiInstanceLoopCharacteristics>
+        <bpmn:startEvent id="nestedSubProcessStartEvent">
+          <bpmn:outgoing>Flow_1byqfwx</bpmn:outgoing>
+        </bpmn:startEvent>
+        <bpmn:sequenceFlow id="Flow_1byqfwx" sourceRef="nestedSubProcessStartEvent" targetRef="userTask" />
+        <bpmn:endEvent id="nestedSubProcessEndEvent">
+          <bpmn:incoming>Flow_0gvftls</bpmn:incoming>
+        </bpmn:endEvent>
+        <bpmn:sequenceFlow id="Flow_0gvftls" sourceRef="userTask" targetRef="nestedSubProcessEndEvent" />
+        <bpmn:userTask id="userTask">
+          <bpmn:extensionElements>
+            <zeebe:formDefinition formKey="advanced" />
+          </bpmn:extensionElements>
+          <bpmn:incoming>Flow_1byqfwx</bpmn:incoming>
+          <bpmn:outgoing>Flow_0gvftls</bpmn:outgoing>
+        </bpmn:userTask>
+      </bpmn:subProcess>
+      <bpmn:sequenceFlow id="Flow_1k4xmos" sourceRef="subProcessStartEvent" targetRef="nestedSubProcess" />
+      <bpmn:endEvent id="subProcessEndEvent">
+        <bpmn:incoming>Flow_1o1nc5k</bpmn:incoming>
+      </bpmn:endEvent>
+      <bpmn:sequenceFlow id="Flow_1o1nc5k" sourceRef="nestedSubProcess" targetRef="subProcessEndEvent" />
+    </bpmn:subProcess>
+    <bpmn:sequenceFlow id="Flow_1r5wxyh" sourceRef="startEvent" targetRef="subProcess" />
+    <bpmn:endEvent id="endEvent">
+      <bpmn:incoming>Flow_1ibh6u6</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_1ibh6u6" sourceRef="subProcess" targetRef="endEvent" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="scopeNested">
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="startEvent">
+        <dc:Bounds x="179" y="229" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0cnvwmt_di" bpmnElement="subProcess" isExpanded="true">
+        <dc:Bounds x="260" y="80" width="600" height="330" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0u469zt_di" bpmnElement="subProcessStartEvent">
+        <dc:Bounds x="300" y="229" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_025xzgv_di" bpmnElement="nestedSubProcess" isExpanded="true">
+        <dc:Bounds x="370" y="147" width="360" height="200" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0s4rvt9_di" bpmnElement="nestedSubProcessStartEvent">
+        <dc:Bounds x="410" y="229" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0ir21ci_di" bpmnElement="nestedSubProcessEndEvent">
+        <dc:Bounds x="662" y="229" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_02f3vii_di" bpmnElement="userTask">
+        <dc:Bounds x="500" y="207" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1byqfwx_di" bpmnElement="Flow_1byqfwx">
+        <di:waypoint x="446" y="247" />
+        <di:waypoint x="500" y="247" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0gvftls_di" bpmnElement="Flow_0gvftls">
+        <di:waypoint x="600" y="247" />
+        <di:waypoint x="662" y="247" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Event_1t4gv30_di" bpmnElement="subProcessEndEvent">
+        <dc:Bounds x="782" y="229" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1k4xmos_di" bpmnElement="Flow_1k4xmos">
+        <di:waypoint x="336" y="247" />
+        <di:waypoint x="370" y="247" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1o1nc5k_di" bpmnElement="Flow_1o1nc5k">
+        <di:waypoint x="730" y="247" />
+        <di:waypoint x="782" y="247" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Event_0vpvkuj_di" bpmnElement="endEvent">
+        <dc:Bounds x="912" y="227" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1r5wxyh_di" bpmnElement="Flow_1r5wxyh">
+        <di:waypoint x="215" y="247" />
+        <di:waypoint x="260" y="247" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1ibh6u6_di" bpmnElement="Flow_1ibh6u6">
+        <di:waypoint x="860" y="245" />
+        <di:waypoint x="912" y="245" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

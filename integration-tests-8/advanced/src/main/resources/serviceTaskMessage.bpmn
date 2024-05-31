@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:bpmndt="http://camunda.org/schema/extension/bpmn-driven-testing" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0nn9u3r" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.20.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.4.0">
+  <bpmn:process id="serviceTaskMessage" isExecutable="true">
+    <bpmn:extensionElements>
+      <bpmndt:testCases>
+        <bpmndt:testCase>
+          <bpmndt:path>
+            <bpmndt:node>startEvent</bpmndt:node>
+            <bpmndt:node>serviceTask</bpmndt:node>
+            <bpmndt:node>messageBoundaryEvent</bpmndt:node>
+            <bpmndt:node>endEvent</bpmndt:node>
+          </bpmndt:path>
+        </bpmndt:testCase>
+      </bpmndt:testCases>
+    </bpmn:extensionElements>
+    <bpmn:startEvent id="startEvent">
+      <bpmn:outgoing>Flow_1m8knma</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_1m8knma" sourceRef="startEvent" targetRef="serviceTask" />
+    <bpmn:serviceTask id="serviceTask">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="serviceTaskType" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1m8knma</bpmn:incoming>
+      <bpmn:outgoing>Flow_0o4y1qw</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="Event_0yda1ay">
+      <bpmn:incoming>Flow_0o4y1qw</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_0o4y1qw" sourceRef="serviceTask" targetRef="Event_0yda1ay" />
+    <bpmn:boundaryEvent id="messageBoundaryEvent" attachedToRef="serviceTask">
+      <bpmn:outgoing>Flow_182r59v</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_1j0ma0v" messageRef="Message_1r24kcc" />
+    </bpmn:boundaryEvent>
+    <bpmn:endEvent id="endEvent">
+      <bpmn:incoming>Flow_182r59v</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_182r59v" sourceRef="messageBoundaryEvent" targetRef="endEvent" />
+  </bpmn:process>
+  <bpmn:message id="Message_1r24kcc" name="advancedMessage">
+    <bpmn:extensionElements>
+      <zeebe:subscription correlationKey="=&#34;advancedMessageKey&#34;" />
+    </bpmn:extensionElements>
+  </bpmn:message>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="serviceTaskMessage">
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="startEvent">
+        <dc:Bounds x="179" y="99" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0bsidne_di" bpmnElement="serviceTask">
+        <dc:Bounds x="270" y="77" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0yda1ay_di" bpmnElement="Event_0yda1ay">
+        <dc:Bounds x="432" y="99" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_13tdgt7_di" bpmnElement="endEvent">
+        <dc:Bounds x="432" y="222" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_11vucj9_di" bpmnElement="messageBoundaryEvent">
+        <dc:Bounds x="302" y="139" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1m8knma_di" bpmnElement="Flow_1m8knma">
+        <di:waypoint x="215" y="117" />
+        <di:waypoint x="270" y="117" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0o4y1qw_di" bpmnElement="Flow_0o4y1qw">
+        <di:waypoint x="370" y="117" />
+        <di:waypoint x="432" y="117" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_182r59v_di" bpmnElement="Flow_182r59v">
+        <di:waypoint x="320" y="175" />
+        <di:waypoint x="320" y="240" />
+        <di:waypoint x="432" y="240" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

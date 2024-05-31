@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:bpmndt="http://camunda.org/schema/extension/bpmn-driven-testing" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_1upykbu" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.20.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.4.0">
+  <bpmn:process id="simpleSignalCatchEvent" isExecutable="true">
+    <bpmn:extensionElements>
+      <bpmndt:testCases>
+        <bpmndt:testCase>
+          <bpmndt:path>
+            <bpmndt:node>startEvent</bpmndt:node>
+            <bpmndt:node>signalCatchEvent</bpmndt:node>
+            <bpmndt:node>endEvent</bpmndt:node>
+          </bpmndt:path>
+        </bpmndt:testCase>
+      </bpmndt:testCases>
+    </bpmn:extensionElements>
+    <bpmn:startEvent id="startEvent">
+      <bpmn:outgoing>Flow_1nw1on3</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_1nw1on3" sourceRef="startEvent" targetRef="signalCatchEvent" />
+    <bpmn:endEvent id="endEvent">
+      <bpmn:incoming>Flow_0644fxq</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_0644fxq" sourceRef="signalCatchEvent" targetRef="endEvent" />
+    <bpmn:intermediateCatchEvent id="signalCatchEvent">
+      <bpmn:incoming>Flow_1nw1on3</bpmn:incoming>
+      <bpmn:outgoing>Flow_0644fxq</bpmn:outgoing>
+      <bpmn:signalEventDefinition id="SignalEventDefinition_154bq1x" signalRef="Signal_155ggon" />
+    </bpmn:intermediateCatchEvent>
+  </bpmn:process>
+  <bpmn:signal id="Signal_155ggon" name="=&#34;simpleSignal&#34;" />
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="simpleSignalCatchEvent">
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="startEvent">
+        <dc:Bounds x="179" y="79" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_09rj4u0_di" bpmnElement="endEvent">
+        <dc:Bounds x="372" y="79" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1basm73_di" bpmnElement="signalCatchEvent">
+        <dc:Bounds x="272" y="79" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1nw1on3_di" bpmnElement="Flow_1nw1on3">
+        <di:waypoint x="215" y="97" />
+        <di:waypoint x="272" y="97" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0644fxq_di" bpmnElement="Flow_0644fxq">
+        <di:waypoint x="308" y="97" />
+        <di:waypoint x="372" y="97" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
