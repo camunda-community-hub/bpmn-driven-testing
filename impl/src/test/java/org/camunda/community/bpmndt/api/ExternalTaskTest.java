@@ -23,7 +23,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 public class ExternalTaskTest {
 
   @RegisterExtension
-  public TestCase tc = new TestCase();
+  TestCase tc = new TestCase();
 
   private ExternalTaskHandler handler;
 
@@ -143,9 +143,7 @@ public class ExternalTaskTest {
     handler.waitForBoundaryEvent();
     assertThat(handler.isWaitingForBoundaryEvent()).isTrue();
 
-    AssertionError e = assertThrows(AssertionError.class, () -> {
-      tc.createExecutor().execute();
-    });
+    AssertionError e = assertThrows(AssertionError.class, () -> tc.createExecutor().execute());
 
     // has not passed
     assertThat(e.getMessage()).contains("to have passed activities [externalTask, endEvent]");

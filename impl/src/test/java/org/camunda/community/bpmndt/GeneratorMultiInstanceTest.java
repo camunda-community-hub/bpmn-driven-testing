@@ -47,13 +47,12 @@ public class GeneratorMultiInstanceTest {
 
     result = generator.getResult();
 
-    String fileName = testInfo.getTestMethod().get().getName().replace("test", "") + ".bpmn";
+    String fileName = testInfo.getTestMethod().orElseThrow().getName().replace("test", "") + ".bpmn";
     bpmnFile = ctx.getMainResourcePath().resolve(StringUtils.uncapitalize(fileName));
   }
 
   /**
-   * Tests the code generation for multi instance call activities - {@code apply} method is generated
-   * differently.
+   * Tests the code generation for multi instance call activities - {@code apply} method is generated differently.
    */
   @Test
   public void testCallActivity() {
@@ -150,12 +149,11 @@ public class GeneratorMultiInstanceTest {
   }
 
   /**
-   * Tests the code generation for multi instance with other activities (no wait state) -
-   * {@code apply} and {@code createHandler} method are not overridden.
+   * Tests the code generation for multi instance with other activities (no wait state) - {@code apply} and {@code createHandler} method are not overridden.
    */
   @Test
   public void testManualTask() {
-    // overridde auto built BPMN file path
+    // override auto built BPMN file path
     bpmnFile = ctx.getMainResourcePath().resolve("sequential.bpmn");
 
     TypeName multiInstanceHandlerType = ClassName.get("org.example.sequential", "MultiInstanceManualTaskHandler");
@@ -188,8 +186,7 @@ public class GeneratorMultiInstanceTest {
   }
 
   /**
-   * Tests the code generation for parallel multi instance - {@code isSequential} method is
-   * overridden.
+   * Tests the code generation for parallel multi instance - {@code isSequential} method is overridden.
    */
   @Test
   public void testParallel() {
@@ -218,8 +215,7 @@ public class GeneratorMultiInstanceTest {
   }
 
   /**
-   * Tests the code generation for multi instance with wait state - {@code apply} and
-   * {@code createHandler} method are overridden.
+   * Tests the code generation for multi instance with wait state - {@code apply} and {@code createHandler} method are overridden.
    */
   @Test
   public void testUserTask() {

@@ -17,7 +17,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 public class ExternalTaskInputOutputTest {
 
   @RegisterExtension
-  public TestCase tc = new TestCase();
+  TestCase tc = new TestCase();
 
   private ExternalTaskHandler handler;
 

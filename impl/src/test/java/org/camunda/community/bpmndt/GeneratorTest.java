@@ -49,7 +49,7 @@ public class GeneratorTest {
 
     result = generator.getResult();
 
-    String fileName = testInfo.getTestMethod().get().getName().replace("test", "") + ".bpmn";
+    String fileName = testInfo.getTestMethod().orElseThrow().getName().replace("test", "") + ".bpmn";
     bpmnFile = ctx.getMainResourcePath().resolve(StringUtils.uncapitalize(fileName));
   }
 
@@ -73,8 +73,7 @@ public class GeneratorTest {
   }
 
   /**
-   * Should generate the first test case and skip the second. Since the second test case has the same
-   * name as the first, which is not allowed.
+   * Should generate the first test case and skip the second. Since the second test case has the same name as the first, which is not allowed.
    */
   @Test
   public void testDuplicateTestCaseNames() {
@@ -134,9 +133,7 @@ public class GeneratorTest {
   public void testGenerate() {
     generator.generate(ctx);
 
-    Predicate<String> isFile = (className) -> {
-      return Files.isRegularFile(ctx.getTestSourcePath().resolve(className));
-    };
+    Predicate<String> isFile = (className) -> Files.isRegularFile(ctx.getTestSourcePath().resolve(className));
 
     // test cases
     assertThat(isFile.test("org/example/duplicatetestcasenames/TC_startEvent__endEvent.java")).isTrue();
@@ -173,9 +170,7 @@ public class GeneratorTest {
 
     generator.generate(ctx);
 
-    Predicate<String> isFile = (className) -> {
-      return Files.isRegularFile(ctx.getTestSourcePath().resolve(className));
-    };
+    Predicate<String> isFile = (className) -> Files.isRegularFile(ctx.getTestSourcePath().resolve(className));
 
     // test cases
     assertThat(isFile.test("org/example/duplicatetestcasenames/TC_startEvent__endEvent.java")).isTrue();

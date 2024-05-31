@@ -36,15 +36,14 @@ public class TestCaseExecutor {
   }
 
   /**
-   * Customizes the executor, using the given {@link Consumer} function. This method can be used to
-   * apply a common customization needed for different test cases.
-   * 
+   * Customizes the executor, using the given {@link Consumer} function. This method can be used to apply a common customization needed for different test
+   * cases.
+   *
    * <pre>
    * tc.createExecutor().customize(this::prepareVariables).execute();
    * </pre>
-   * 
+   *
    * @param customizer A function that accepts a {@link TestCaseExecutor}.
-   * 
    * @return The executor.
    */
   public TestCaseExecutor customize(Consumer<TestCaseExecutor> customizer) {
@@ -56,7 +55,7 @@ public class TestCaseExecutor {
 
   /**
    * Create a new {@link ProcessInstance}, executes the actual test case and verifies the state after.
-   * 
+   *
    * @return The newly created process instance.
    */
   public ProcessInstance execute() {
@@ -74,9 +73,8 @@ public class TestCaseExecutor {
   }
 
   /**
-   * Executes the actual test case and verifies the state after, using the given
-   * {@link ProcessInstance}.
-   * 
+   * Executes the actual test case and verifies the state after, using the given {@link ProcessInstance}.
+   *
    * @param pi A process instance, used to execute the test case.
    */
   public void execute(ProcessInstance pi) {
@@ -106,11 +104,9 @@ public class TestCaseExecutor {
   }
 
   /**
-   * Executes the actual test case and verifies the state after, using the {@link ProcessInstance},
-   * identified by the given ID.
-   * 
+   * Executes the actual test case and verifies the state after, using the {@link ProcessInstance}, identified by the given ID.
+   *
    * @param processInstanceId The ID of an existing process instance.
-   * 
    * @return The identified process instance.
    */
   public ProcessInstance execute(String processInstanceId) {
@@ -150,14 +146,11 @@ public class TestCaseExecutor {
   }
 
   /**
-   * Unwraps and throws a possible {@link AssertionError} in case of a failed assertion within a
-   * {@link CallActivityHandler}'s verifier. If not unwrapped, a test will be marked as an error,
-   * instead of a failure!
-   * 
-   * @param e An exception that has been catched during process instance execution.
-   * 
-   * @return The original exception, if the cause of the given exception is {@code null} or not an
-   *         assertion error.
+   * Unwraps and throws a possible {@link AssertionError} in case of a failed assertion within a {@link CallActivityHandler}'s verifier. If not unwrapped, a
+   * test will be marked as an error, instead of a failure!
+   *
+   * @param e An exception that has been caught during process instance execution.
+   * @return The original exception, if the cause of the given exception is {@code null} or not an assertion error.
    */
   protected ProcessEngineException unwrapAssertionError(ProcessEngineException e) {
     if (e.getCause() instanceof AssertionError) {
@@ -169,9 +162,8 @@ public class TestCaseExecutor {
 
   /**
    * Verifies that state after the test case execution has finished.
-   * 
+   *
    * @param verifier Verifier that accepts an {@link ProcessInstanceAssert} instance.
-   * 
    * @return The executor.
    */
   public TestCaseExecutor verify(Consumer<ProcessInstanceAssert> verifier) {
@@ -180,16 +172,12 @@ public class TestCaseExecutor {
   }
 
   /**
-   * Registers a bean for the given key.<br>
-   * Please note: If Spring is enabled, the beans will be provided via Spring's application context
-   * (e.g. by providing a specific test configuration).
-   * 
-   * @param key The key, under which the bean is registered.
-   * 
+   * Registers a bean for the given key.<br> Please note: If Spring is enabled, the beans will be provided via Spring's application context (e.g. by providing a
+   * specific test configuration).
+   *
+   * @param key   The key, under which the bean is registered.
    * @param value The value.
-   * 
    * @return The executor.
-   * 
    * @see Mocks#register(String, Object)
    */
   public TestCaseExecutor withBean(String key, Object value) {
@@ -199,9 +187,8 @@ public class TestCaseExecutor {
 
   /**
    * Sets the business key of the process instance that will be created.
-   * 
+   *
    * @param businessKey A specific business key.
-   * 
    * @return The executor.
    */
   public TestCaseExecutor withBusinessKey(String businessKey) {
@@ -211,11 +198,9 @@ public class TestCaseExecutor {
 
   /**
    * Sets a variable on the process instance that will be created.
-   * 
-   * @param name The name of the variable.
-   * 
+   *
+   * @param name  The name of the variable.
    * @param value The variable's value.
-   * 
    * @return The executor.
    */
   public TestCaseExecutor withVariable(String name, Object value) {
@@ -225,9 +210,8 @@ public class TestCaseExecutor {
 
   /**
    * Sets variables on the process instance that will be created.
-   * 
+   *
    * @param variables A map of variables to set.
-   * 
    * @return The executor.
    */
   public TestCaseExecutor withVariables(Map<String, Object> variables) {
@@ -237,11 +221,9 @@ public class TestCaseExecutor {
 
   /**
    * Sets a typed variable on the process instance that will be started.
-   * 
-   * @param name The name of the variable.
-   * 
+   *
+   * @param name  The name of the variable.
    * @param value The variable's typed value.
-   * 
    * @return The executor.
    */
   public TestCaseExecutor withVariableTyped(String name, TypedValue value) {

@@ -17,7 +17,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 public class MultiInstanceUserTaskTest {
 
   @RegisterExtension
-  public TestCase tc = new TestCase();
+  TestCase tc = new TestCase();
 
   private MultiInstanceUserTaskHandler handler;
 
@@ -30,9 +30,7 @@ public class MultiInstanceUserTaskTest {
   public void testExecute() {
     handler.verifyLoopCount(3);
 
-    handler.handle().verify((pi, task) -> {
-      task.hasName("User task");
-    });
+    handler.handle().verify((pi, task) -> task.hasName("User task"));
 
     tc.createExecutor().execute();
   }
@@ -42,9 +40,7 @@ public class MultiInstanceUserTaskTest {
     handler.customize(it -> {
       it.verifyLoopCount(3);
 
-      it.handle().verify((pi, task) -> {
-        task.hasName("User task");
-      });
+      it.handle().verify((pi, task) -> task.hasName("User task"));
     });
 
     tc.createExecutor().execute();
@@ -88,7 +84,8 @@ public class MultiInstanceUserTaskTest {
     }
   }
 
-  private class MultiInstanceUserTaskHandler extends MultiInstanceHandler<MultiInstanceUserTaskHandler, UserTaskHandler> {
+  private static class MultiInstanceUserTaskHandler extends MultiInstanceHandler<MultiInstanceUserTaskHandler, UserTaskHandler> {
+
     public MultiInstanceUserTaskHandler(TestCaseInstance instance, String activityId) {
       super(instance, activityId);
     }

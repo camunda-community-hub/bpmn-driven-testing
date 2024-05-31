@@ -17,7 +17,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 public class MultiInstanceParallelTest {
 
   @RegisterExtension
-  public TestCase tc = new TestCase();
+  TestCase tc = new TestCase();
 
   private MultiInstanceParallelHandler handler;
 
@@ -88,6 +88,7 @@ public class MultiInstanceParallelTest {
   }
 
   private static class MultiInstanceParallelHandler extends MultiInstanceHandler<MultiInstanceParallelHandler, Void> {
+
     public MultiInstanceParallelHandler(TestCaseInstance instance, String activityId) {
       super(instance, activityId);
     }

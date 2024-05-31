@@ -63,8 +63,8 @@ public class GradlePlugin implements Plugin<Project> {
     }).get();
 
     // add generator task as test compile dependency
-    project.afterEvaluate(afterEvaluate -> {
-      afterEvaluate.getTasksByName(JavaPlugin.COMPILE_TEST_JAVA_TASK_NAME, false).forEach(task -> task.dependsOn(generatorTask));
-    });
+    project.afterEvaluate(afterEvaluate ->
+        afterEvaluate.getTasksByName(JavaPlugin.COMPILE_TEST_JAVA_TASK_NAME, false).forEach(task -> task.dependsOn(generatorTask))
+    );
   }
 }

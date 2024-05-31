@@ -17,7 +17,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 public class CallActivityErrorTest {
 
   @RegisterExtension
-  public TestCase tc = new TestCase();
+  TestCase tc = new TestCase();
 
   private CallActivityHandler handler;
 
@@ -32,7 +32,7 @@ public class CallActivityErrorTest {
     tc.createExecutor().execute();
   }
 
-  private class TestCase extends AbstractJUnit5TestCase<TestCase> {
+  private static class TestCase extends AbstractJUnit5TestCase<TestCase> {
 
     @Override
     protected void execute(ProcessInstance pi) {

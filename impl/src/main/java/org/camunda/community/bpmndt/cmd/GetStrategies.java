@@ -10,12 +10,9 @@ import org.camunda.community.bpmndt.TestCaseContext;
 import org.camunda.community.bpmndt.model.TestCaseActivity;
 
 /**
- * Function that provides the strategies of all activities, including scopes, that are on the same
- * nesting level during execution.
+ * Function that provides the strategies of all activities, including scopes, that are on the same nesting level during execution.
  */
 public class GetStrategies implements BiFunction<TestCaseContext, List<TestCaseActivity>, List<GeneratorStrategy>> {
-
-  private String scopeId;
 
   @Override
   public List<GeneratorStrategy> apply(TestCaseContext ctx, List<TestCaseActivity> activities) {
@@ -40,7 +37,7 @@ public class GetStrategies implements BiFunction<TestCaseContext, List<TestCaseA
     }
 
     int nestingLevel = activities.get(0).getNestingLevel();
-    scopeId = null;
+    String scopeId = null;
 
     for (TestCaseActivity activity : actualActivities) {
       if (activity.getNestingLevel() > nestingLevel && activity.hasMultiInstanceParent()) {

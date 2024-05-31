@@ -14,8 +14,7 @@ import java.util.function.Function;
 import org.camunda.community.bpmndt.Constants;
 
 /**
- * Collects the paths of all BPMN files within the project's resource directory
- * ({@code src/main/resources}).
+ * Collects the paths of all BPMN files within the project's resource directory ({@code src/main/resources}).
  */
 public class CollectBpmnFiles extends SimpleFileVisitor<Path> implements Function<Path, Collection<Path>> {
 
@@ -35,7 +34,7 @@ public class CollectBpmnFiles extends SimpleFileVisitor<Path> implements Functio
   }
 
   @Override
-  public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+  public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
     if (file.getFileName().toString().endsWith(Constants.BPMN_EXTENSION)) {
       bpmnFiles.add(file);
     }

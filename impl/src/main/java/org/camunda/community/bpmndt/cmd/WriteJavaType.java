@@ -37,12 +37,13 @@ public class WriteJavaType implements Consumer<Class<?>> {
     }
 
     InputStream resource = this.getClass().getClassLoader().getResourceAsStream(resourceName);
+    if (resource == null) {
+      throw new RuntimeException(String.format("Java type resource '%s' could not be found", resourceName));
+    }
 
     // write Java type
     try {
       FileUtils.copyInputStreamToFile(resource, javaTypePath.toFile());
-    } catch (NullPointerException e) {
-      throw new RuntimeException(String.format("Java type resource '%s' could not be found", resourceName), e);
     } catch (IOException e) {
       throw new RuntimeException(String.format("Java type '%s' could not be written", type.getName()), e);
     }

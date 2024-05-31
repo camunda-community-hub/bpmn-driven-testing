@@ -17,7 +17,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 public class JobTest {
 
   @RegisterExtension
-  public TestCase tc = new TestCase();
+  TestCase tc = new TestCase();
 
   private JobHandler handler;
 

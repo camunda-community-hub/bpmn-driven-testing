@@ -21,24 +21,22 @@ import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
 /**
- * Default strategy, used for all unhandled activities (with type
- * {@link TestCaseActivityType#OTHER}).
+ * Default strategy, used for all unhandled activities (with type {@link TestCaseActivityType#OTHER}).
  */
 public class DefaultStrategy implements GeneratorStrategy {
 
-  protected static TypeName CALL_ACTIVITY = TypeName.get(CallActivityHandler.class);
-  protected static TypeName EVENT = TypeName.get(EventHandler.class);
-  protected static TypeName EXTERNAL_TASK = TypeName.get(ExternalTaskHandler.class);
-  protected static TypeName JOB = TypeName.get(JobHandler.class);
-  protected static TypeName OTHER = TypeName.get(Void.class);
-  protected static TypeName USER_TASK = TypeName.get(UserTaskHandler.class);
+  protected static final TypeName CALL_ACTIVITY = TypeName.get(CallActivityHandler.class);
+  protected static final TypeName EVENT = TypeName.get(EventHandler.class);
+  protected static final TypeName EXTERNAL_TASK = TypeName.get(ExternalTaskHandler.class);
+  protected static final TypeName JOB = TypeName.get(JobHandler.class);
+  protected static final TypeName OTHER = TypeName.get(Void.class);
+  protected static final TypeName USER_TASK = TypeName.get(UserTaskHandler.class);
 
   protected final TestCaseActivity activity;
   protected final String literal;
 
   /**
-   * Indicates if the strategy is applied on a multi instance scope handler or not - see
-   * {@link #setMultiInstanceParent(boolean)}
+   * Indicates if the strategy is applied on a multi instance scope handler or not - see {@link #setMultiInstanceParent(boolean)}
    */
   protected boolean multiInstanceParent = false;
 
@@ -228,9 +226,8 @@ public class DefaultStrategy implements GeneratorStrategy {
   }
 
   /**
-   * If the activity has the {@code asyncAfter} flag set, it must be handled. If it is the last
-   * activity and it does not end the process, the asynchronous continuation after should not be
-   * handled - the execution must wait!
+   * If the activity has the {@code asyncAfter} flag set, it must be handled. If it is the last activity, and it does not end the process, the asynchronous
+   * continuation after should not be handled - the execution must wait!
    */
   @Override
   public boolean shouldHandleAfter() {
@@ -238,12 +235,10 @@ public class DefaultStrategy implements GeneratorStrategy {
   }
 
   /**
-   * If the activity has the {@code asyncBefore} flag set, or it is a call activity but not a multi
-   * instance.
-   * 
-   * @see BpmndtParseListener#parseCallActivity(org.camunda.bpm.engine.impl.util.xml.Element,
-   *      org.camunda.bpm.engine.impl.pvm.process.ScopeImpl,
-   *      org.camunda.bpm.engine.impl.pvm.process.ActivityImpl)
+   * If the activity has the {@code asyncBefore} flag set, or it is a call activity but not a multi instance.
+   *
+   * @see BpmndtParseListener#parseCallActivity(org.camunda.bpm.engine.impl.util.xml.Element, org.camunda.bpm.engine.impl.pvm.process.ScopeImpl,
+   * org.camunda.bpm.engine.impl.pvm.process.ActivityImpl)
    */
   @Override
   public boolean shouldHandleBefore() {

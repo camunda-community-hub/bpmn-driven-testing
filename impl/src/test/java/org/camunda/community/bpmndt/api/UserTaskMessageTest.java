@@ -19,7 +19,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 public class UserTaskMessageTest {
 
   @RegisterExtension
-  public TestCase tc = new TestCase();
+  TestCase tc = new TestCase();
 
   private UserTaskHandler handler;
 
@@ -45,7 +45,7 @@ public class UserTaskMessageTest {
       piAssert.hasPassed("startEvent").isWaitingAt("userTask");
 
       instance.apply(handler);
-      
+
       RuntimeService runtimeService = tc.getProcessEngine().getRuntimeService();
 
       EventSubscription eventSubscription = runtimeService.createEventSubscriptionQuery().singleResult();

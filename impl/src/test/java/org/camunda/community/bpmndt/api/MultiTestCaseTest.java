@@ -26,9 +26,9 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 public class MultiTestCaseTest {
 
   @RegisterExtension
-  public TestCase1 tc1 = new TestCase1();
+  TestCase1 tc1 = new TestCase1();
   @RegisterExtension
-  public TestCase2 tc2 = new TestCase2();
+  TestCase2 tc2 = new TestCase2();
 
   private CallActivityHandler handler1;
   private CallActivityHandler handler2;
@@ -47,9 +47,7 @@ public class MultiTestCaseTest {
   @Test
   @Deployment(resources = "bpmn/empty.bpmn")
   public void testExecute1() {
-    handler1.verify((pi, callActivity) -> {
-      pi.variables().containsEntry("a", "b");
-    });
+    handler1.verify((pi, callActivity) -> pi.variables().containsEntry("a", "b"));
 
     tc1.createExecutor().withVariable("a", "b").withBean("callActivityMapping", new CallActivityMapping()).execute();
 
@@ -60,9 +58,7 @@ public class MultiTestCaseTest {
 
   @Test
   public void testExecute2() {
-    handler2.verify((pi, callActivity) -> {
-      pi.variables().containsEntry("x", "y");
-    });
+    handler2.verify((pi, callActivity) -> pi.variables().containsEntry("x", "y"));
 
     tc2.createExecutor().withVariable("x", "y").withBean("callActivityMapping", new CallActivityMapping()).execute();
 
@@ -71,7 +67,7 @@ public class MultiTestCaseTest {
     assertThat(ProcessEngineTests.processDefinition("noTestCases")).isNotNull();
   }
 
-  private class TestCase1 extends AbstractJUnit5TestCase<TestCase1> {
+  private static class TestCase1 extends AbstractJUnit5TestCase<TestCase1> {
 
     @Override
     protected void execute(ProcessInstance pi) {
@@ -111,18 +107,18 @@ public class MultiTestCaseTest {
     }
   }
 
-  private class TestCase2 extends AbstractJUnit5TestCase<TestCase2> {
+  private static class TestCase2 extends AbstractJUnit5TestCase<TestCase2> {
 
     @Override
     protected void execute(ProcessInstance pi) {
       assertThat(pi).isNotNull();
 
       ProcessInstanceAssert piAssert = ProcessEngineTests.assertThat(pi);
-      
+
       piAssert.hasPassed("startEvent").isWaitingAt("callActivity");
 
       ProcessEngineTests.execute(ProcessEngineTests.job());
-      
+
       piAssert.hasPassed("callActivity", "endEvent").isEnded();
     }
 
@@ -151,7 +147,7 @@ public class MultiTestCaseTest {
     }
   }
 
-  private class CallActivityMapping implements DelegateVariableMapping {
+  private static class CallActivityMapping implements DelegateVariableMapping {
 
     @Override
     public void mapInputVariables(DelegateExecution superExecution, VariableMap subVariables) {

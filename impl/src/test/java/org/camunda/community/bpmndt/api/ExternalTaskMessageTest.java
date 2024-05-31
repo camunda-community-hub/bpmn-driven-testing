@@ -19,7 +19,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 public class ExternalTaskMessageTest {
 
   @RegisterExtension
-  public TestCase tc = new TestCase();
+  TestCase tc = new TestCase();
 
   private ExternalTaskHandler handler;
 
@@ -45,7 +45,7 @@ public class ExternalTaskMessageTest {
       piAssert.hasPassed("startEvent").isWaitingAt("externalTask");
 
       instance.apply(handler);
-      
+
       RuntimeService runtimeService = tc.getProcessEngine().getRuntimeService();
 
       EventSubscription eventSubscription = runtimeService.createEventSubscriptionQuery().singleResult();

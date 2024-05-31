@@ -17,11 +17,11 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 public class EventBasedGatewayTest {
 
   @RegisterExtension
-  public TestCase tc = new TestCase();
+  TestCase tc = new TestCase();
   @RegisterExtension
-  public MessageTestCase tcMessage = new MessageTestCase();
+  MessageTestCase tcMessage = new MessageTestCase();
   @RegisterExtension
-  public TimerTestCase tcTimer = new TimerTestCase();
+  TimerTestCase tcTimer = new TimerTestCase();
 
   private EventHandler messageCatchEventHandler;
   private JobHandler timerCatchEventHandler;
@@ -47,7 +47,7 @@ public class EventBasedGatewayTest {
     tcTimer.createExecutor().execute();
   }
 
-  private class TestCase extends AbstractJUnit5TestCase<TestCase> {
+  private static class TestCase extends AbstractJUnit5TestCase<TestCase> {
 
     @Override
     protected void execute(ProcessInstance pi) {

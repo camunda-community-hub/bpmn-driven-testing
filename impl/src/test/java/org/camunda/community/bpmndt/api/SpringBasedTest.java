@@ -30,7 +30,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 public class SpringBasedTest {
 
   @RegisterExtension
-  public TestCase tc = new TestCase();
+  TestCase tc = new TestCase();
 
   @Test
   public void testExecute() {
@@ -38,8 +38,7 @@ public class SpringBasedTest {
   }
 
   /**
-   * Tests that process engine plugins, that are provided by overriding the
-   * {@code getProcessEnginePlugins} method, are registered at the process engine.
+   * Tests that process engine plugins, that are provided by overriding the {@code getProcessEnginePlugins} method, are registered at the process engine.
    */
   @Test
   public void testConfiguration() {
@@ -52,7 +51,7 @@ public class SpringBasedTest {
     assertThat(configuration.getProcessEnginePlugins().get(1)).isInstanceOf(BpmndtProcessEnginePlugin.class);
   }
 
-  private class TestCase extends AbstractJUnit5TestCase<TestCase> {
+  private static class TestCase extends AbstractJUnit5TestCase<TestCase> {
 
     @Override
     protected void execute(ProcessInstance pi) {

@@ -22,27 +22,35 @@ import org.camunda.community.bpmndt.api.cfg.BpmndtProcessEnginePlugin;
 
 /**
  * Abstract superclass for test cases.
- * 
+ *
  * @param <T> The generated test case type.
  */
 public abstract class AbstractTestCase<T extends AbstractTestCase<?>> {
 
-  /** The related test class - must be provided by the concrete implementation. */
+  /**
+   * The related test class - must be provided by the concrete implementation.
+   */
   protected Class<?> testClass;
-  /** The test method, which will be executed - must be provided by the concrete implementation. */
+  /**
+   * The test method, which will be executed - must be provided by the concrete implementation.
+   */
   protected String testMethodName;
 
   protected TestCaseInstance instance;
 
-  /** ID of optional annotation based deployment. */
+  /**
+   * ID of optional annotation based deployment.
+   */
   private String annotationDeploymentId;
 
-  /** ID of optional tenant that is used for the process definition deployment. */
+  /**
+   * ID of optional tenant that is used for the process definition deployment.
+   */
   private String tenantId;
 
   /**
-   * Performs the setup for an test case execution by creating a {@link TestCaseInstance} and
-   * deploying the related BPMN resources. This method must be invoked before each test!
+   * Performs the setup for a test case execution by creating a {@link TestCaseInstance} and deploying the related BPMN resources. This method must be invoked
+   * before each test!
    */
   protected void beforeEach() {
     if (testClass == null) {
@@ -97,7 +105,7 @@ public abstract class AbstractTestCase<T extends AbstractTestCase<?>> {
   }
 
   /**
-   * Performs the teardown for an test case execution. This method must be invoked after each test!
+   * Performs the teardown for a test case execution. This method must be invoked after each test!
    */
   protected void afterEach() {
     Mocks.reset();
@@ -120,11 +128,10 @@ public abstract class AbstractTestCase<T extends AbstractTestCase<?>> {
   }
 
   /**
-   * Builds the process engine, used to execute the test case. The method registers custom
-   * {@link ProcessEnginePlugin}s as well as the {@link BpmndtProcessEnginePlugin}, which is required
-   * to configure a conform process engine.
-   * 
-   * @return The built process engine.
+   * Builds the process engine, used to execute the test case. The method registers custom {@link ProcessEnginePlugin}s as well as the
+   * {@link BpmndtProcessEnginePlugin}, which is required to configure a conform process engine.
+   *
+   * @return The newly created process engine.
    */
   protected ProcessEngine buildProcessEngine() {
     // must be added to a new list, since the provided list may not allow modifications
@@ -139,10 +146,9 @@ public abstract class AbstractTestCase<T extends AbstractTestCase<?>> {
   }
 
   /**
-   * Creates a new executor, used to specify variables, business key and/or mocks that are considered
-   * during test case execution. After the specification, {@link TestCaseExecutor#execute()} is called
-   * to create a new {@link ProcessInstance} and execute the test case.
-   * 
+   * Creates a new executor, used to specify variables, business key and/or mocks that are considered during test case execution. After the specification,
+   * {@link TestCaseExecutor#execute()} is called to create a new {@link ProcessInstance} and execute the test case.
+   *
    * @return The newly created executor.
    */
   public TestCaseExecutor createExecutor() {
@@ -151,15 +157,15 @@ public abstract class AbstractTestCase<T extends AbstractTestCase<?>> {
 
   /**
    * Executes the test case.
-   * 
+   *
    * @param pi A process instance, created especially for the test case.
    */
   protected abstract void execute(ProcessInstance pi);
 
   /**
-   * Returns an input stream that provides the BPMN resource with the process definition to be tested
-   * - either this method or {@link #getBpmnResourceName()} must be overridden!
-   * 
+   * Returns an input stream that provides the BPMN resource with the process definition to be tested - either this method or {@link #getBpmnResourceName()}
+   * must be overridden!
+   *
    * @return The BPMN resource as stream.
    */
   protected InputStream getBpmnResource() {
@@ -167,9 +173,9 @@ public abstract class AbstractTestCase<T extends AbstractTestCase<?>> {
   }
 
   /**
-   * Returns the name of the BPMN resource, that provides the process definition to be tested - either
-   * this method or {@link #getBpmnResource()} must be overridden!
-   * 
+   * Returns the name of the BPMN resource, that provides the process definition to be tested - either this method or {@link #getBpmnResource()} must be
+   * overridden!
+   *
    * @return The BPMN resource name, within {@code src/main/resources}.
    */
   protected String getBpmnResourceName() {
@@ -178,7 +184,7 @@ public abstract class AbstractTestCase<T extends AbstractTestCase<?>> {
 
   /**
    * Returns the ID of the process definition deployment.
-   * 
+   *
    * @return The deployment ID.
    */
   public String getDeploymentId() {
@@ -187,21 +193,21 @@ public abstract class AbstractTestCase<T extends AbstractTestCase<?>> {
 
   /**
    * Returns the ID of the test case's end activity.
-   * 
+   *
    * @return The end activity ID.
    */
   public abstract String getEnd();
 
   /**
    * Returns the key of the process definition that is tested.
-   * 
+   *
    * @return The process definition key.
    */
   public abstract String getProcessDefinitionKey();
 
   /**
    * Returns the process engine, used to execute the test case.
-   * 
+   *
    * @return The process engine.
    */
   public ProcessEngine getProcessEngine() {
@@ -209,11 +215,10 @@ public abstract class AbstractTestCase<T extends AbstractTestCase<?>> {
   }
 
   /**
-   * Provides custom {@link ProcessEnginePlugin}s to be registered when the process engine is built.
-   * By default, this method return an empty list. It can be overridden by any extending class.
-   * 
+   * Provides custom {@link ProcessEnginePlugin}s to be registered when the process engine is built. By default, this method return an empty list. It can be
+   * overridden by any extending class.
+   *
    * @return A list of process engine plugins to register.
-   * 
    * @see #buildProcessEngine()
    */
   protected List<ProcessEnginePlugin> getProcessEnginePlugins() {
@@ -222,15 +227,14 @@ public abstract class AbstractTestCase<T extends AbstractTestCase<?>> {
 
   /**
    * Returns the ID of the test case's start activity.
-   * 
+   *
    * @return The start activity ID.
    */
   public abstract String getStart();
 
   /**
-   * Determines if Spring based testing is enabled or not. This method returns {@code false}, if not
-   * overridden.
-   * 
+   * Determines if Spring based testing is enabled or not. This method returns {@code false}, if not overridden.
+   *
    * @return {@code true}, if the testing is Spring based. Otherwise {@code false}.
    */
   protected boolean isSpringEnabled() {
@@ -238,10 +242,9 @@ public abstract class AbstractTestCase<T extends AbstractTestCase<?>> {
   }
 
   /**
-   * Determines if the test case's end activity ends the process or not. This is the case if the
-   * activity is an end event and if the activity's parent scope is the process. This method returns
-   * {@code true}, if not overridden.
-   * 
+   * Determines if the test case's end activity ends the process or not. This is the case if the activity is an end event and if the activity's parent scope is
+   * the process. This method returns {@code true}, if not overridden.
+   *
    * @return {@code true}, if the test case's end activity ends the process. Otherwise {@code false}.
    */
   protected boolean isProcessEnd() {
@@ -250,9 +253,8 @@ public abstract class AbstractTestCase<T extends AbstractTestCase<?>> {
 
   /**
    * Sets the tenant ID to be used for the automatic process definition deployment.
-   * 
+   *
    * @param tenantId A specific tenant ID.
-   * 
    * @return The test case.
    */
   @SuppressWarnings("unchecked")

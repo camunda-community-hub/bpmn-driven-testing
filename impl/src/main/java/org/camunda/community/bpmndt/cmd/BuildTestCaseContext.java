@@ -25,8 +25,7 @@ import org.camunda.community.bpmndt.strategy.MultiInstanceStrategy;
 import org.camunda.community.bpmndt.strategy.UserTaskStrategy;
 
 /**
- * Builds a new test case context, used for code generation. An instance of this class needs to be
- * reused for all test cases of one BPMN process.
+ * Builds a new test case context, used for code generation. An instance of this class needs to be reused for all test cases of one BPMN process.
  */
 public class BuildTestCaseContext implements Function<TestCase, TestCaseContext> {
 
@@ -78,7 +77,7 @@ public class BuildTestCaseContext implements Function<TestCase, TestCaseContext>
       GeneratorStrategy strategy = createStrategy(activity);
       if (activity.isMultiInstance()) {
         strategy = new MultiInstanceStrategy(strategy, ctx);
-        ctx.addMultiInstanceActivity(activity);
+        ctx.addMultiInstance(activity);
       }
 
       ctx.addStrategy(strategy);

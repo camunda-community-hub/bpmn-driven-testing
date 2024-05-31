@@ -36,12 +36,10 @@ class TestCaseImpl implements TestCase {
   }
 
   /**
-   * Adds the ID of a flow node to the list of invalid node IDs, because it does not exists within the
-   * BPMN model instance. If at least one flow node ID is added, the test case is considered to be
-   * invalid, since its path is invalid.
-   * 
+   * Adds the ID of a flow node to the list of invalid node IDs, because it does not exist within the BPMN model instance. If at least one flow node ID is
+   * added, the test case is considered to be invalid, since its path is invalid.
+   *
    * @param flowNodeId A flow node ID of the test case.
-   * 
    * @see #getInvalidFlowNodeIds()
    * @see #hasInvalidPath()
    */
@@ -134,7 +132,7 @@ class TestCaseImpl implements TestCase {
 
   @Override
   public boolean hasEmptyPath() {
-    return getFlowNodeIds().size() == 0;
+    return getFlowNodeIds().isEmpty();
   }
 
   @Override

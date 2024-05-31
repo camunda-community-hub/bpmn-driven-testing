@@ -45,7 +45,7 @@ public class GradlePluginIT {
     arguments.add("./target/robot");
     arguments.add("../integration-tests");
 
-    int exitCode = RobotFramework.run(arguments.toArray(new String[arguments.size()]));
+    int exitCode = RobotFramework.run(arguments.toArray(new String[0]));
     assertThat(exitCode).isEqualTo(0);
   }
 }
