@@ -15,7 +15,7 @@
     <camunda.bpm.assert.version>15.0.0</camunda.bpm.assert.version>
     <camunda.process.test.coverage.version>2.3.1</camunda.process.test.coverage.version>
     <h2.version>2.2.224</h2.version>
-    <junit.jupiter.version>5.9.3</junit.jupiter.version>
+    <junit.jupiter.version>5.10.1</junit.jupiter.version>
     <slf4j.version>1.7.36</slf4j.version>
 
     <plugin.version>0.11.0-SNAPSHOT</plugin.version>
@@ -50,7 +50,7 @@
     <!-- Test -->
     <dependency>
       <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-log4j12</artifactId>
+      <artifactId>slf4j-reload4j</artifactId>
       <version>${slf4j.version}</version>
       <scope>test</scope>
     </dependency>
