@@ -34,7 +34,7 @@ pluginManagement {
   resolutionStrategy {
     eachPlugin {
       if (requested.id.toString() == 'org.camunda.community.bpmndt') {
-        useModule("org.camunda.community:bpmn-driven-testing-gradle-plugin:0.10.0")
+        useModule("org.camunda.community:bpmn-driven-testing-gradle-plugin:0.11.0")
       }
     }
   }
@@ -54,7 +54,7 @@ plugins {
 }
 ```
 
-Please see [Maven Central](https://central.sonatype.com/artifact/org.camunda.community/bpmn-driven-testing-gradle-plugin/0.10.0/versions) to get a specific version.
+Please see [Maven Central](https://central.sonatype.com/artifact/org.camunda.community/bpmn-driven-testing-gradle-plugin/0.11.0/versions) to get a specific version.
 
 ## Configuration
 Available properties:

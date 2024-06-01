@@ -3,8 +3,10 @@
 [![](https://img.shields.io/badge/Lifecycle-Incubating-blue)](https://github.com/Camunda-Community-Hub/community/blob/main/extension-lifecycle.md#incubating-)
 ![Compatible with: Camunda Platform 7](https://img.shields.io/badge/Compatible%20with-Camunda%20Platform%207-26d07c)
 ![Compatible with: Camunda Platform 8](https://img.shields.io/badge/Compatible%20with-Camunda%20Platform%208-26d07c)
-[![Maven plugin](https://img.shields.io/maven-central/v/org.camunda.community/bpmn-driven-testing-maven-plugin.svg?label=Maven%20plugin)](https://central.sonatype.com/artifact/org.camunda.community/bpmn-driven-testing-maven-plugin/0.10.0/versions)
-[![Gradle plugin](https://img.shields.io/maven-central/v/org.camunda.community/bpmn-driven-testing-gradle-plugin.svg?label=Gradle%20plugin)](https://central.sonatype.com/artifact/org.camunda.community/bpmn-driven-testing-gradle-plugin/0.10.0/versions)
+[![Maven plugin](https://img.shields.io/maven-central/v/org.camunda.community/bpmn-driven-testing-maven-plugin.svg?label=Maven%20plugin)](https://central.sonatype.com/artifact/org.camunda.community/bpmn-driven-testing-maven-plugin/0.11.0/versions)
+[![Gradle plugin](https://img.shields.io/maven-central/v/org.camunda.community/bpmn-driven-testing-gradle-plugin.svg?label=Gradle%20plugin)](https://central.sonatype.com/artifact/org.camunda.community/bpmn-driven-testing-gradle-plugin/0.11.0/versions)
+[![Maven plugin 8](https://img.shields.io/maven-central/v/org.camunda.community/bpmn-driven-testing-8-maven-plugin.svg?label=Maven%20plugin%208)](https://central.sonatype.com/artifact/org.camunda.community/bpmn-driven-testing-8-maven-plugin/0.11.0/versions)
+[![Gradle plugin 8](https://img.shields.io/maven-central/v/org.camunda.community/bpmn-driven-testing-8-gradle-plugin.svg?label=Gradle%20plugin%208)](https://central.sonatype.com/artifact/org.camunda.community/bpmn-driven-testing-8-gradle-plugin/0.11.0/versions)
 
 [Camunda Platform 7](https://docs.camunda.org/manual/latest/) / [Camunda Platform 8](https://docs.camunda.io/) extension, which is able to generate test code based on an extended BPMN model.
 
