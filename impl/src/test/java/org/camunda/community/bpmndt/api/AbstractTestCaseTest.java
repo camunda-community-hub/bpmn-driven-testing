@@ -41,7 +41,7 @@ public class AbstractTestCaseTest {
         .singleResult();
 
     assertThat(deployment).isNotNull();
-    assertThat(deployment.getName()).isEqualTo("TestCase");
+    assertThat(deployment.getName()).isEqualTo("org.camunda.community.bpmndt.api.AbstractTestCaseTest$TestCase.testDeployment");
 
     ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery()
         .deploymentId(tc.getDeploymentId())
@@ -52,7 +52,7 @@ public class AbstractTestCaseTest {
   }
 
   /**
-   * Tests if the {@code Deployment} annotation works the same as when it is used with the {@code ProcessEngineRule} class.
+   * Tests if the {@code Deployment} annotation works.
    */
   @Test
   @Deployment(resources = "bpmn/noTestCases.bpmn")
@@ -62,14 +62,14 @@ public class AbstractTestCaseTest {
         .singleResult();
 
     assertThat(processDefinition).isNotNull();
-    assertThat(processDefinition.getDeploymentId()).isNotEqualTo(tc.getDeploymentId());
+    assertThat(processDefinition.getDeploymentId()).isEqualTo(tc.getDeploymentId());
 
     org.camunda.bpm.engine.repository.Deployment deployment = repositoryService.createDeploymentQuery()
         .deploymentId(processDefinition.getDeploymentId())
         .singleResult();
 
     assertThat(deployment).isNotNull();
-    assertThat(deployment.getName()).isEqualTo("AbstractTestCaseTest.testDeploymentAnnotation");
+    assertThat(deployment.getName()).isEqualTo("org.camunda.community.bpmndt.api.AbstractTestCaseTest$TestCase.testDeploymentAnnotation");
   }
 
   private static class TestCase extends AbstractJUnit5TestCase<TestCase> {

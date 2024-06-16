@@ -12,7 +12,7 @@ public abstract class AbstractJUnit5TestCase<T extends AbstractTestCase<?>> exte
   @Override
   public void beforeEach(ExtensionContext context) {
     testClass = context.getRequiredTestClass();
-    testMethodName = context.getRequiredTestMethod().getName();
+    testMethod = context.getRequiredTestMethod();
 
     beforeEach();
   }

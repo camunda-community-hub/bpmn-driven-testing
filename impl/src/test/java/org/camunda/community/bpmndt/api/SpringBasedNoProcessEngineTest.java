@@ -40,7 +40,7 @@ public class SpringBasedNoProcessEngineTest {
     IllegalStateException e = assertThrows(IllegalStateException.class, () -> {
       TestCase testCase = new TestCase();
       testCase.testClass = this.getClass();
-      testCase.testMethodName = "testException";
+      testCase.testMethod = SpringBasedNoProcessEngineTest.class.getMethod("testException");
 
       testCase.beforeEach();
     });

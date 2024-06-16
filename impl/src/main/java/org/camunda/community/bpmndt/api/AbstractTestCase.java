@@ -1,10 +1,9 @@
 package org.camunda.community.bpmndt.api;
 
-import static org.camunda.bpm.engine.impl.test.TestHelper.annotationDeploymentSetUp;
-import static org.camunda.bpm.engine.impl.test.TestHelper.annotationDeploymentTearDown;
 import static org.camunda.community.bpmndt.api.TestCaseInstance.PROCESS_ENGINE_NAME;
 
 import java.io.InputStream;
+import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -14,8 +13,9 @@ import org.camunda.bpm.engine.ProcessEngines;
 import org.camunda.bpm.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.camunda.bpm.engine.impl.cfg.ProcessEnginePlugin;
 import org.camunda.bpm.engine.impl.cfg.StandaloneInMemProcessEngineConfiguration;
-import org.camunda.bpm.engine.repository.Deployment;
+import org.camunda.bpm.engine.repository.DeploymentBuilder;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
+import org.camunda.bpm.engine.test.Deployment;
 import org.camunda.bpm.engine.test.assertions.ProcessEngineTests;
 import org.camunda.bpm.engine.test.mock.Mocks;
 import org.camunda.community.bpmndt.api.cfg.BpmndtProcessEnginePlugin;
@@ -34,14 +34,9 @@ public abstract class AbstractTestCase<T extends AbstractTestCase<?>> {
   /**
    * The test method, which will be executed - must be provided by the concrete implementation.
    */
-  protected String testMethodName;
+  protected Method testMethod;
 
   protected TestCaseInstance instance;
-
-  /**
-   * ID of optional annotation based deployment.
-   */
-  private String annotationDeploymentId;
 
   /**
    * ID of optional tenant that is used for the process definition deployment.
@@ -56,8 +51,8 @@ public abstract class AbstractTestCase<T extends AbstractTestCase<?>> {
     if (testClass == null) {
       throw new IllegalStateException("Test class must not be null");
     }
-    if (testMethodName == null) {
-      throw new IllegalStateException("Test method name must not be null");
+    if (testMethod == null) {
+      throw new IllegalStateException("Test method must not be null");
     }
 
     ProcessEngine processEngine = ProcessEngines.getProcessEngine(PROCESS_ENGINE_NAME);
@@ -80,28 +75,43 @@ public abstract class AbstractTestCase<T extends AbstractTestCase<?>> {
     instance.start = getStart();
     instance.tenantId = tenantId;
 
-    String deploymentName = this.getClass().getSimpleName();
+    DeploymentBuilder deploymentBuilder = processEngine.getRepositoryService().createDeployment();
 
-    // deploy BPMN resource
+    // add BPMN resource
     if (getBpmnResourceName() != null) {
-      instance.deploy(deploymentName, getBpmnResourceName());
+      deploymentBuilder.addClasspathResource(getBpmnResourceName());
     } else {
-      instance.deploy(deploymentName, getBpmnResource());
+      deploymentBuilder.addInputStream(String.format("%s.bpmn", getProcessDefinitionKey()), getBpmnResource());
     }
 
-    String annotationDeploymentName = String.format("%s.%s", testClass.getSimpleName(), testMethodName);
-
-    Deployment annotationDeployment = processEngine.getRepositoryService().createDeploymentQuery()
-        .deploymentName(annotationDeploymentName)
-        .singleResult();
-
-    if (annotationDeployment != null) {
-      // already deployed by another test case
-      return;
+    // try to find Deployment annotation on test method
+    Deployment deploymentAnnotation = testMethod.getAnnotation(Deployment.class);
+    if (deploymentAnnotation != null) {
+      // add additional classpath resources
+      for (String resource : deploymentAnnotation.resources()) {
+        deploymentBuilder.addClasspathResource(resource);
+      }
     }
 
-    // perform optional annotation based deployment (via @Deployment) for DMN files and other resources
-    annotationDeploymentId = annotationDeploymentSetUp(processEngine, testClass, testMethodName);
+    // try to find Deployment annotation on test class
+    Class<?> deploymentAnnotationClass = testClass;
+    while (deploymentAnnotationClass != Object.class) {
+      deploymentAnnotation = deploymentAnnotationClass.getAnnotation(Deployment.class);
+      if (deploymentAnnotation != null) {
+        // add additional classpath resources
+        for (String resource : deploymentAnnotation.resources()) {
+          deploymentBuilder.addClasspathResource(resource);
+        }
+
+        break;
+      }
+      deploymentAnnotationClass = deploymentAnnotationClass.getSuperclass();
+    }
+
+    String deploymentName = String.format("%s.%s", this.getClass().getName(), testMethod.getName());
+
+    // deploy resources
+    instance.deploy(deploymentBuilder, deploymentName);
   }
 
   /**
@@ -116,15 +126,8 @@ public abstract class AbstractTestCase<T extends AbstractTestCase<?>> {
       return;
     }
 
-    // undeploy BPMN resource
+    // undeploy resources
     instance.undeploy();
-
-    if (annotationDeploymentId == null) {
-      return;
-    }
-
-    // undeploy annotation based deployment
-    annotationDeploymentTearDown(getProcessEngine(), annotationDeploymentId, testClass, testMethodName);
   }
 
   /**

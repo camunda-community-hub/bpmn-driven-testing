@@ -1,6 +1,5 @@
 package org.camunda.community.bpmndt.api;
 
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -77,21 +76,7 @@ public class TestCaseInstance {
     handler.apply(pi);
   }
 
-  protected void deploy(String deploymentName, InputStream bpmnResource) {
-    DeploymentBuilder deploymentBuilder = processEngine.getRepositoryService().createDeployment()
-        .addInputStream(String.format("%s.bpmn", getProcessDefinitionKey()), bpmnResource);
-
-    deploy(deploymentBuilder, deploymentName);
-  }
-
-  protected void deploy(String deploymentName, String bpmnResourceName) {
-    DeploymentBuilder deploymentBuilder = processEngine.getRepositoryService().createDeployment()
-        .addClasspathResource(bpmnResourceName);
-
-    deploy(deploymentBuilder, deploymentName);
-  }
-
-  private void deploy(DeploymentBuilder deploymentBuilder, String deploymentName) {
+  protected void deploy(DeploymentBuilder deploymentBuilder, String deploymentName) {
     BpmndtParseListener parseListener = findParseListener();
 
     // register instance at BpmndtParseListener,
