@@ -5,10 +5,13 @@ import static com.google.common.truth.Truth.assertThat;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.camunda.bpm.engine.delegate.DelegateExecution;
 import org.camunda.bpm.engine.delegate.DelegateVariableMapping;
 import org.camunda.bpm.engine.delegate.VariableScope;
+import org.camunda.bpm.engine.repository.ProcessDefinition;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.test.Deployment;
 import org.camunda.bpm.engine.test.assertions.ProcessEngineTests;
@@ -52,8 +55,14 @@ public class MultiTestCaseTest {
     tc1.createExecutor().withVariable("a", "b").withBean("callActivityMapping", new CallActivityMapping()).execute();
 
     // verify annotation deployment works
-    assertThat(ProcessEngineTests.processDefinition("empty")).isNotNull();
-    assertThat(ProcessEngineTests.processDefinition("no-test-cases")).isNull();
+    List<String> processDefinitionKeys = tc1.getProcessEngine().getRepositoryService().createProcessDefinitionQuery()
+        .deploymentId(tc1.getDeploymentId())
+        .list()
+        .stream()
+        .map(ProcessDefinition::getKey)
+        .collect(Collectors.toList());
+
+    assertThat(processDefinitionKeys).containsExactly("simpleCallActivity", "empty", "noTestCases");
   }
 
   @Test
@@ -63,8 +72,14 @@ public class MultiTestCaseTest {
     tc2.createExecutor().withVariable("x", "y").withBean("callActivityMapping", new CallActivityMapping()).execute();
 
     // verify annotation deployment works
-    assertThat(ProcessEngineTests.processDefinition("empty")).isNull();
-    assertThat(ProcessEngineTests.processDefinition("noTestCases")).isNotNull();
+    List<String> processDefinitionKeys = tc2.getProcessEngine().getRepositoryService().createProcessDefinitionQuery()
+        .deploymentId(tc2.getDeploymentId())
+        .list()
+        .stream()
+        .map(ProcessDefinition::getKey)
+        .collect(Collectors.toList());
+
+    assertThat(processDefinitionKeys).containsExactly("simpleCallActivity", "noTestCases");
   }
 
   private static class TestCase1 extends AbstractJUnit5TestCase<TestCase1> {

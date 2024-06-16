@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" xmlns:modeler="http://camunda.org/schema/modeler/1.0" xmlns:camunda="http://camunda.org/schema/1.0/dmn" id="Definitions_1vy07po" name="DRD" namespace="http://camunda.org/schema/1.0/dmn" exporter="Camunda Modeler" exporterVersion="5.20.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.20.0">
+  <decision id="simple" name="Square number" camunda:historyTimeToLive="0">
+    <decisionTable id="DecisionTable_0l3br3n" hitPolicy="FIRST">
+      <input id="Input_1">
+        <inputExpression id="InputExpression_1" typeRef="integer">
+          <text>value</text>
+        </inputExpression>
+      </input>
+      <output id="Output_1" name="squareNumber" typeRef="integer" />
+      <rule id="DecisionRule_19kfoie">
+        <inputEntry id="UnaryTests_1mht2xj">
+          <text>1</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1sov12q">
+          <text>1</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_00wyqrh">
+        <inputEntry id="UnaryTests_1boomno">
+          <text>2</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0dr27mn">
+          <text>4</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0zs1bc6">
+        <inputEntry id="UnaryTests_0rn3wfr">
+          <text>3</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0jlakmz">
+          <text>9</text>
+        </outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+  <dmndi:DMNDI>
+    <dmndi:DMNDiagram>
+      <dmndi:DMNShape dmnElementRef="simple">
+        <dc:Bounds height="80" width="180" x="160" y="100" />
+      </dmndi:DMNShape>
+    </dmndi:DMNDiagram>
+  </dmndi:DMNDI>
+</definitions>
