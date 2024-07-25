@@ -82,7 +82,7 @@ export default class PathFinder {
    * @returns The found elements.
    */
   _findIncoming(subProcessId) {
-    return this.elementRegistry.find(element => {
+    return this.elementRegistry.filter(element => {
       const { incoming } = element.businessObject;
 
       if (incoming) {
@@ -196,8 +196,14 @@ export default class PathFinder {
           return this._getEscalationBoundary($parent.id, eventDefinitions[0].escalationRef?.escalationCode);
         } else {
           // handle end events of embedded sub processes
-          const incoming = this._findIncoming($parent.id);
-          return incoming ? [ incoming.id ] : [];
+          this._findIncoming($parent.id).map(element => {
+            if (element.type === BPMN_SUB_PROCESS) {
+              element = this._findStartEvent(element.id);
+            } 
+            return element.id;
+          }).forEach(id => next.push(id));
+        
+          return next;
         }
       }
     }
