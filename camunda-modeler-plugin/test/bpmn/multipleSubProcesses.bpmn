@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_1kqaiak" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.25.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.21.0">
+  <bpmn:process id="MainProcess" isExecutable="true">
+    <bpmn:startEvent id="startEvent">
+      <bpmn:outgoing>Flow_05yxe7u</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_05yxe7u" sourceRef="startEvent" targetRef="SubprocessA" />
+    <bpmn:sequenceFlow id="Flow_0sxi7ie" sourceRef="SubprocessA" targetRef="SubprocessB" />
+    <bpmn:endEvent id="endEvent">
+      <bpmn:incoming>Flow_0vwbfxm</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_0vwbfxm" sourceRef="SubprocessB" targetRef="endEvent" />
+    <bpmn:subProcess id="SubprocessA">
+      <bpmn:incoming>Flow_05yxe7u</bpmn:incoming>
+      <bpmn:outgoing>Flow_0sxi7ie</bpmn:outgoing>
+      <bpmn:startEvent id="startEvent_SubprocessA">
+        <bpmn:outgoing>Flow_1w32nnz</bpmn:outgoing>
+      </bpmn:startEvent>
+      <bpmn:task id="activity_SubprocessA">
+        <bpmn:incoming>Flow_1w32nnz</bpmn:incoming>
+        <bpmn:outgoing>Flow_0apivrc</bpmn:outgoing>
+      </bpmn:task>
+      <bpmn:sequenceFlow id="Flow_1w32nnz" sourceRef="startEvent_SubprocessA" targetRef="activity_SubprocessA" />
+      <bpmn:endEvent id="endEvent_SubprocessA">
+        <bpmn:incoming>Flow_0apivrc</bpmn:incoming>
+      </bpmn:endEvent>
+      <bpmn:sequenceFlow id="Flow_0apivrc" sourceRef="activity_SubprocessA" targetRef="endEvent_SubprocessA" />
+    </bpmn:subProcess>
+    <bpmn:subProcess id="SubprocessB">
+      <bpmn:incoming>Flow_0sxi7ie</bpmn:incoming>
+      <bpmn:outgoing>Flow_0vwbfxm</bpmn:outgoing>
+      <bpmn:startEvent id="startEvent_SubprocessB">
+        <bpmn:outgoing>Flow_01m23c9</bpmn:outgoing>
+      </bpmn:startEvent>
+      <bpmn:task id="activity_SubprocessB">
+        <bpmn:incoming>Flow_01m23c9</bpmn:incoming>
+        <bpmn:outgoing>Flow_0cmxoag</bpmn:outgoing>
+      </bpmn:task>
+      <bpmn:sequenceFlow id="Flow_01m23c9" sourceRef="startEvent_SubprocessB" targetRef="activity_SubprocessB" />
+      <bpmn:endEvent id="endEvent_SubprocessB">
+        <bpmn:incoming>Flow_0cmxoag</bpmn:incoming>
+      </bpmn:endEvent>
+      <bpmn:sequenceFlow id="Flow_0cmxoag" sourceRef="activity_SubprocessB" targetRef="endEvent_SubprocessB" />
+    </bpmn:subProcess>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="MainProcess">
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="startEvent">
+        <dc:Bounds x="152" y="167" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_08epql8_di" bpmnElement="endEvent">
+        <dc:Bounds x="1002" y="167" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_14ewey3_di" bpmnElement="SubprocessA" isExpanded="true">
+        <dc:Bounds x="230" y="110" width="320" height="140" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1s46v8k_di" bpmnElement="startEvent_SubprocessA">
+        <dc:Bounds x="252" y="162" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1p9ugja_di" bpmnElement="activity_SubprocessA">
+        <dc:Bounds x="340" y="140" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0rwnrd4_di" bpmnElement="endEvent_SubprocessA">
+        <dc:Bounds x="492" y="162" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1w32nnz_di" bpmnElement="Flow_1w32nnz">
+        <di:waypoint x="288" y="180" />
+        <di:waypoint x="340" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0apivrc_di" bpmnElement="Flow_0apivrc">
+        <di:waypoint x="440" y="180" />
+        <di:waypoint x="492" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Activity_0vo4nea_di" bpmnElement="SubprocessB" isExpanded="true">
+        <dc:Bounds x="610" y="110" width="333" height="140" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1wxi9du_di" bpmnElement="activity_SubprocessB">
+        <dc:Bounds x="725" y="140" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_14k4t5b_di" bpmnElement="startEvent_SubprocessB">
+        <dc:Bounds x="630" y="162" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1f1ps1h_di" bpmnElement="endEvent_SubprocessB">
+        <dc:Bounds x="887" y="162" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_01m23c9_di" bpmnElement="Flow_01m23c9">
+        <di:waypoint x="666" y="180" />
+        <di:waypoint x="725" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0cmxoag_di" bpmnElement="Flow_0cmxoag">
+        <di:waypoint x="825" y="180" />
+        <di:waypoint x="887" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_05yxe7u_di" bpmnElement="Flow_05yxe7u">
+        <di:waypoint x="188" y="185" />
+        <di:waypoint x="230" y="185" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0vwbfxm_di" bpmnElement="Flow_0vwbfxm">
+        <di:waypoint x="943" y="185" />
+        <di:waypoint x="1002" y="185" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0sxi7ie_di" bpmnElement="Flow_0sxi7ie">
+        <di:waypoint x="550" y="180" />
+        <di:waypoint x="610" y="180" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

@@ -23,6 +23,9 @@ describe("PathFinder", () => {
   let subProcessErrorEscalation;
   let subProcessErrorEscalationNegative;
 
+  let multipleSubProcesses;
+  let multipleSubProcessesAdvanced;
+
   before(async () => {
     const moddle = new BpmnModdle();
 
@@ -35,6 +38,9 @@ describe("PathFinder", () => {
     
     subProcessErrorEscalation = await moddle.fromXML(readBpmnFile("subProcessErrorEscalation.bpmn"));
     subProcessErrorEscalationNegative = await moddle.fromXML(readBpmnFile("subProcessErrorEscalationNegative.bpmn"));
+
+    multipleSubProcesses = await moddle.fromXML(readBpmnFile("multipleSubProcesses.bpmn"));
+    multipleSubProcessesAdvanced = await moddle.fromXML(readBpmnFile("multipleSubProcessesAdvanced.bpmn"));
   });
 
   it("should find simple path", () => {
@@ -190,5 +196,30 @@ describe("PathFinder", () => {
     expect(path[2]).to.equal("startEventA");
     expect(path[3]).to.equal("linkThrowEventA");
     expect(path[4]).to.equal("linkCatchEventA");
+  });
+
+  it("should find path through embedded sub processes in sequential order", () => {
+    const pathFinder = createPathFinder(multipleSubProcesses);
+
+    const paths = pathFinder.find("startEvent", "endEvent");
+    expect(paths).to.have.lengthOf(1);
+
+    expect(paths[0]).to.have.lengthOf(8);
+    expect(paths[0]).to.deep.equal(["startEvent", "startEvent_SubprocessA", "activity_SubprocessA", "endEvent_SubprocessA", "startEvent_SubprocessB", "activity_SubprocessB", "endEvent_SubprocessB", "endEvent"]);
+
+  });
+
+  it("should find paths through embedded sub processes with branching paths", () => {
+    const pathFinder = createPathFinder(multipleSubProcessesAdvanced);
+
+    const paths = pathFinder.find("startEvent", "endEvent");
+    expect(paths).to.have.lengthOf(2);
+
+    expect(paths[0]).to.have.lengthOf(11);
+    expect(paths[0]).to.deep.equal(["startEvent", "startEvent_SubprocessA", "activity_SubprocessA", "endEvent_SubprocessA", "startEvent_SubprocessB", "activity_SubprocessB", "endEvent_SubprocessB", "startEvent_SubprocessD", "activity_SubprocessD", "endEvent_SubprocessD", "endEvent"]);
+
+    expect(paths[1]).to.have.lengthOf(11);
+    expect(paths[1]).to.deep.equal(["startEvent", "startEvent_SubprocessA", "activity_SubprocessA", "endEvent_SubprocessA", "startEvent_SubprocessC", "activity_SubprocessC", "endEvent_SubprocessC", "startEvent_SubprocessD", "activity_SubprocessD", "endEvent_SubprocessD", "endEvent"]);
+
   });
 });
