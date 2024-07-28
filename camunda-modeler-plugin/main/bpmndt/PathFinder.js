@@ -86,7 +86,7 @@ export default class PathFinder {
       const { incoming } = element.businessObject;
 
       if (incoming) {
-        return incoming.find(sequenceFlow => sequenceFlow.sourceRef.id === subProcessId);
+        return incoming.find(sequenceFlow => sequenceFlow.sourceRef.id === subProcessId) !== undefined;
       } else {
         return false;
       }
@@ -189,20 +189,23 @@ export default class PathFinder {
 
       if ($parent.$type === BPMN_SUB_PROCESS) {
         if (this._isErrorEventDefinition(eventDefinitions)) {
-          // handle error end events of embedded sub processes
+          // handle error end events of sub process
           return this._getErrorBoundary($parent.id, eventDefinitions[0].errorRef?.errorCode);
         } else if (this._isEscalationEventDefinition(eventDefinitions)) {
-          // handle escalation end events of embedded sub processes
+          // handle escalation end events of sub process
           return this._getEscalationBoundary($parent.id, eventDefinitions[0].escalationRef?.escalationCode);
         } else {
-          // handle end events of embedded sub processes
+          // handle end events of sub process
           this._findIncoming($parent.id).map(element => {
-            if (element.type === BPMN_SUB_PROCESS) {
-              element = this._findStartEvent(element.id);
-            } 
-            return element.id;
-          }).forEach(id => next.push(id));
-        
+            if (element.type !== BPMN_SUB_PROCESS) {
+              return element.id;
+            }
+
+            // try to find start event of sub process
+            const startEvent = this._findStartEvent(element.id);
+            return startEvent !== undefined ? startEvent.id : undefined;
+          }).filter(id => id !== undefined).forEach(id => next.push(id));
+
           return next;
         }
       }
