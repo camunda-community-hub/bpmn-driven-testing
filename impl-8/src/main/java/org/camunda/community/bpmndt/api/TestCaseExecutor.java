@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 import java.util.stream.StreamSupport;
 
@@ -112,6 +113,14 @@ public class TestCaseExecutor {
 
       var deploymentEvent = deployResourceCommandStep2.send().join();
 
+      try {
+        engine.waitForIdleState(Duration.ofSeconds(1L));
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+      } catch (TimeoutException e) {
+        throw new RuntimeException("failed to wait for engine idle state", e);
+      }
+
       BpmnAssert.assertThat(deploymentEvent).containsProcessesByBpmnProcessId(testCase.getBpmnProcessId());
 
       var processDefinitionKey = findProcessDefinitionKey(deploymentEvent);
@@ -168,8 +177,11 @@ public class TestCaseExecutor {
 
         try {
           TimeUnit.SECONDS.sleep(1L);
+          engine.waitForIdleState(Duration.ofSeconds(1L));
         } catch (InterruptedException e) {
           Thread.currentThread().interrupt();
+        } catch (TimeoutException e) {
+          throw new RuntimeException("failed to wait for engine idle state", e);
         }
 
         // find key of created process instance
@@ -215,6 +227,14 @@ public class TestCaseExecutor {
       throw new IllegalArgumentException("process instance event is null");
     }
 
+    try {
+      engine.waitForIdleState(Duration.ofSeconds(1L));
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+    } catch (TimeoutException e) {
+      throw new RuntimeException("failed to wait for engine idle state", e);
+    }
+
     try (ZeebeClient client = createClient()) {
       executeTestCase(client, processInstanceEvent.getProcessInstanceKey());
     }
@@ -226,6 +246,14 @@ public class TestCaseExecutor {
    * @param processInstanceKey The key of an existing process instance.
    */
   public void execute(long processInstanceKey) {
+    try {
+      engine.waitForIdleState(Duration.ofSeconds(1L));
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+    } catch (TimeoutException e) {
+      throw new RuntimeException("failed to wait for engine idle state", e);
+    }
+
     boolean exists = StreamSupport.stream(BpmnAssert.getRecordStream().processInstanceRecords().spliterator(), false)
         .anyMatch(record ->
             record.getRecordType() == RecordType.EVENT
