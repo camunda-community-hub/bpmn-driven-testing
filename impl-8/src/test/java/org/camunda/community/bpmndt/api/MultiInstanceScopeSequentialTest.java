@@ -69,7 +69,7 @@ class MultiInstanceScopeSequentialTest {
   }
 
   @Test
-  void testErrorContainsActiveElements() {
+  void testErrorContainsElementInstances() {
     var e = assertThrows(AssertionError.class, () -> tc.createExecutor(engine)
         .withTaskTimeout(1000)
         .withVariable("elements", List.of(1, 2, 3))
@@ -77,9 +77,9 @@ class MultiInstanceScopeSequentialTest {
         .execute()
     );
 
-    assertThat(e.getMessage()).contains("found active elements:");
-    assertThat(e.getMessage()).contains("  - multiInstanceScope");
-    assertThat(e.getMessage()).contains("  - userTask");
+    assertThat(e.getMessage()).contains("found element instances:");
+    assertThat(e.getMessage()).contains("  - multiInstanceScope (activated)");
+    assertThat(e.getMessage()).contains("  - userTask (activated)");
   }
 
   private class TestCase extends AbstractJUnit5TestCase {
