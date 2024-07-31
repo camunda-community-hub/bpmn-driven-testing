@@ -16,6 +16,7 @@ import org.camunda.community.bpmndt.api.CallActivityHandler;
 import org.camunda.community.bpmndt.api.EventHandler;
 import org.camunda.community.bpmndt.api.ExternalTaskHandler;
 import org.camunda.community.bpmndt.api.JobHandler;
+import org.camunda.community.bpmndt.api.ReceiveTaskHandler;
 import org.camunda.community.bpmndt.api.UserTaskHandler;
 import org.camunda.community.bpmndt.test.TestPaths;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,6 +36,7 @@ public class GeneratorSimpleTest {
   private static final TypeName EVENT_HANDLER = TypeName.get(EventHandler.class);
   private static final TypeName EXTERNAL_TASK_HANDLER = TypeName.get(ExternalTaskHandler.class);
   private static final TypeName JOB_HANDLER = TypeName.get(JobHandler.class);
+  private static final TypeName RECEIVE_TASK_HANDLER = TypeName.get(ReceiveTaskHandler.class);
   private static final TypeName USER_TASK_HANDLER = TypeName.get(UserTaskHandler.class);
 
   @TempDir
@@ -338,13 +340,13 @@ public class GeneratorSimpleTest {
     assertThat(typeSpec).hasMethods(7);
 
     assertThat(typeSpec.fieldSpecs.get(0)).hasName("receiveTask");
-    assertThat(typeSpec.fieldSpecs.get(0)).hasType(EVENT_HANDLER);
+    assertThat(typeSpec.fieldSpecs.get(0)).hasType(RECEIVE_TASK_HANDLER);
 
     assertThat(typeSpec.methodSpecs.get(6)).hasName("handleReceiveTask");
-    assertThat(typeSpec.methodSpecs.get(6)).hasReturnType(EVENT_HANDLER);
+    assertThat(typeSpec.methodSpecs.get(6)).hasReturnType(RECEIVE_TASK_HANDLER);
 
     String expected = "receiveTask = new %s(getProcessEngine(), \"receiveTask\", \"simpleMessage\");";
-    assertThat(typeSpec.methodSpecs.get(0)).containsCode(String.format(expected, EVENT_HANDLER));
+    assertThat(typeSpec.methodSpecs.get(0)).containsCode(String.format(expected, RECEIVE_TASK_HANDLER));
     assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.apply(receiveTask);");
   }
 

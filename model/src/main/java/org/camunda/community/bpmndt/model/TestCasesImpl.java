@@ -279,10 +279,9 @@ class TestCasesImpl implements TestCases {
       } else if (bpmnSupport.isBoundaryEvent(flowNodeId)) {
         handleBoundaryEvent(activity);
       } else if (bpmnSupport.isReceiveTask(flowNodeId)) {
-        // handle receive task as message catch event
         Message message = activity.getFlowNode(ReceiveTask.class).getMessage();
 
-        activity.type = TestCaseActivityType.MESSAGE_CATCH;
+        activity.type = TestCaseActivityType.RECEIVE_TASK;
         activity.eventName = message != null ? message.getName() : null;
       } else if (bpmnSupport.isIntermediateThrowEvent(flowNodeId)) {
         handleIntermediateThrowEvent(activity);

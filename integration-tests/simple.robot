@@ -163,6 +163,7 @@ Assert Test Code Generation
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/org/camunda/community/bpmndt/api/JobHandler.java
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/org/camunda/community/bpmndt/api/MultiInstanceHandler.java
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/org/camunda/community/bpmndt/api/MultiInstanceScopeHandler.java
+  Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/org/camunda/community/bpmndt/api/ReceiveTaskHandler.java
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/org/camunda/community/bpmndt/api/TestCaseInstance.java
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/org/camunda/community/bpmndt/api/TestCaseExecutor.java
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/org/camunda/community/bpmndt/api/UserTaskHandler.java
@@ -178,6 +179,7 @@ Assert Test Code Generation
   File should exist  ${testSources}/org/camunda/community/bpmndt/api/JobHandler.java
   File should exist  ${testSources}/org/camunda/community/bpmndt/api/MultiInstanceHandler.java
   File should exist  ${testSources}/org/camunda/community/bpmndt/api/MultiInstanceScopeHandler.java
+  File should exist  ${testSources}/org/camunda/community/bpmndt/api/ReceiveTaskHandler.java
   File should exist  ${testSources}/org/camunda/community/bpmndt/api/TestCaseInstance.java
   File should exist  ${testSources}/org/camunda/community/bpmndt/api/TestCaseExecutor.java
   File should exist  ${testSources}/org/camunda/community/bpmndt/api/UserTaskHandler.java

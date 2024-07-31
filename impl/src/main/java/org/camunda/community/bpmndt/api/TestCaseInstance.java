@@ -72,6 +72,10 @@ public class TestCaseInstance {
     handler.apply(pi);
   }
 
+  public void apply(ReceiveTaskHandler handler) {
+    handler.apply(pi);
+  }
+
   public void apply(UserTaskHandler handler) {
     handler.apply(pi);
   }

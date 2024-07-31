@@ -22,6 +22,7 @@ import org.camunda.community.bpmndt.strategy.ExternalTaskStrategy;
 import org.camunda.community.bpmndt.strategy.JobStrategy;
 import org.camunda.community.bpmndt.strategy.MultiInstanceScopeStrategy;
 import org.camunda.community.bpmndt.strategy.MultiInstanceStrategy;
+import org.camunda.community.bpmndt.strategy.ReceiveTaskStrategy;
 import org.camunda.community.bpmndt.strategy.UserTaskStrategy;
 
 /**
@@ -112,6 +113,8 @@ public class BuildTestCaseContext implements Function<TestCase, TestCaseContext>
         return new BoundaryEventStrategy(activity);
       case MESSAGE_CATCH:
         return new EventStrategy(activity);
+      case RECEIVE_TASK:
+        return new ReceiveTaskStrategy(activity);
       case SIGNAL_BOUNDARY:
         return new BoundaryEventStrategy(activity);
       case SIGNAL_CATCH:
