@@ -76,7 +76,7 @@ Add dependencies, which are required to execute the generated test code:
 
 ```groovy
 dependencies {
-  testImplementation 'io.camunda:zeebe-process-test-extension:8.4.4'
+  testImplementation 'io.camunda:zeebe-process-test-extension:8.5.5'
   testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.1'
 
   testCompileOnly 'org.immutables:annotate:2.10.0'
@@ -94,7 +94,7 @@ Recommended versions:
 
 | Dependency                   | Version |
 |:-----------------------------|:--------|
-| Zeebe Process Test Extension | 8.4.4   |
+| Zeebe Process Test Extension | 8.5.5   |
 | JUnit 5 (Jupiter)            | 5.10.1  |
 
 ## Testing
