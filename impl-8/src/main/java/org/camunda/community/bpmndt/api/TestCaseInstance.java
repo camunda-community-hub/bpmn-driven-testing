@@ -94,6 +94,10 @@ public class TestCaseInstance implements AutoCloseable {
     handler.apply(this, processInstanceKey);
   }
 
+  public void apply(long processInstanceKey, ReceiveTaskHandler handler) {
+    handler.apply(this, processInstanceKey);
+  }
+
   public void apply(long processInstanceKey, SignalEventHandler handler) {
     handler.apply(this, processInstanceKey);
   }

@@ -7,6 +7,7 @@ import org.camunda.community.bpmndt.api.CustomMultiInstanceHandler;
 import org.camunda.community.bpmndt.api.JobHandler;
 import org.camunda.community.bpmndt.api.MessageEventHandler;
 import org.camunda.community.bpmndt.api.OutboundConnectorHandler;
+import org.camunda.community.bpmndt.api.ReceiveTaskHandler;
 import org.camunda.community.bpmndt.api.SignalEventHandler;
 import org.camunda.community.bpmndt.api.TimerEventHandler;
 import org.camunda.community.bpmndt.api.UserTaskHandler;
@@ -25,6 +26,7 @@ public class DefaultStrategy implements GeneratorStrategy {
   public static final TypeName MESSAGE_EVENT = TypeName.get(MessageEventHandler.class);
   public static final TypeName OUTBOUND_CONNECTOR = TypeName.get(OutboundConnectorHandler.class);
   public static final TypeName OTHER = TypeName.get(Void.class);
+  public static final TypeName RECEIVE_TASK = TypeName.get(ReceiveTaskHandler.class);
   public static final TypeName SIGNAL_EVENT = TypeName.get(SignalEventHandler.class);
   public static final TypeName TIMER_EVENT = TypeName.get(TimerEventHandler.class);
   public static final TypeName USER_TASK = TypeName.get(UserTaskHandler.class);

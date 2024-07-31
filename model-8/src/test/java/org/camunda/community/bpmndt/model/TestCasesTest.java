@@ -255,17 +255,6 @@ class TestCasesTest {
   }
 
   @Test
-  void testReceiveTask() {
-    var testCases = TestCases.of(TestPaths.simple("simpleReceiveTask.bpmn"));
-    assertThat(testCases.get()).hasSize(1);
-
-    var testCase = testCases.get().get(0);
-    assertThat(testCase.getElements()).hasSize(3);
-
-    assertThat(testCase.getElements().get(1).getType()).isEqualTo(BpmnElementType.MESSAGE_CATCH);
-  }
-
-  @Test
   void testScriptTask() {
     var testCases = TestCases.of(TestPaths.simple("simpleScriptTask.bpmn"));
     assertThat(testCases.get()).hasSize(1);

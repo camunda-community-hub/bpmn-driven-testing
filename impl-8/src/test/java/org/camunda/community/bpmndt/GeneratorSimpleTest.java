@@ -230,13 +230,13 @@ class GeneratorSimpleTest {
     assertThat(typeSpec).hasMethods(8);
 
     assertThat(typeSpec.fieldSpecs.get(0)).hasName("receiveTask");
-    assertThat(typeSpec.fieldSpecs.get(0)).hasType(DefaultStrategy.MESSAGE_EVENT);
+    assertThat(typeSpec.fieldSpecs.get(0)).hasType(DefaultStrategy.RECEIVE_TASK);
 
     assertThat(typeSpec.methodSpecs.get(7)).hasName("handleReceiveTask");
-    assertThat(typeSpec.methodSpecs.get(7)).hasReturnType(DefaultStrategy.MESSAGE_EVENT);
+    assertThat(typeSpec.methodSpecs.get(7)).hasReturnType(DefaultStrategy.RECEIVE_TASK);
 
     var expected = "receiveTask = new %s(receiveTaskElement);";
-    assertThat(typeSpec.methodSpecs.get(0)).containsCode(String.format(expected, DefaultStrategy.MESSAGE_EVENT));
+    assertThat(typeSpec.methodSpecs.get(0)).containsCode(String.format(expected, DefaultStrategy.RECEIVE_TASK));
     assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.isWaitingAt(processInstanceKey, \"receiveTask\");");
     assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.apply(processInstanceKey, receiveTask);");
     assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(processInstanceKey, \"receiveTask\");");

@@ -300,8 +300,7 @@ class TestCasesImpl implements TestCases {
       } else if (bpmnSupport.isSendTask(flowNodeId)) {
         handleTask(element);
       } else if (bpmnSupport.isReceiveTask(flowNodeId)) {
-        // handle receive task as message catch event
-        element.type = BpmnElementType.MESSAGE_CATCH;
+        element.type = BpmnElementType.RECEIVE_TASK;
       } else if (bpmnSupport.isScriptTask(flowNodeId)) {
         handleTask(element);
       } else {

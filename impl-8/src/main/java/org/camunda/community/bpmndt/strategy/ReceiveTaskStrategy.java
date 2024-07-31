@@ -2,26 +2,38 @@ package org.camunda.community.bpmndt.strategy;
 
 import org.camunda.community.bpmndt.api.TestCaseInstanceElement.MessageEventElement;
 import org.camunda.community.bpmndt.model.BpmnElement;
-import org.camunda.community.bpmndt.model.BpmnElementType;
-import org.camunda.community.bpmndt.model.BpmnEventSupport;
 
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeName;
 
-import io.camunda.zeebe.model.bpmn.instance.BoundaryEvent;
-import io.camunda.zeebe.model.bpmn.instance.IntermediateCatchEvent;
-import io.camunda.zeebe.model.bpmn.instance.Message;
+import io.camunda.zeebe.model.bpmn.instance.ReceiveTask;
 import io.camunda.zeebe.model.bpmn.instance.zeebe.ZeebeSubscription;
 
-public class MessageEventStrategy extends DefaultHandlerStrategy {
+public class ReceiveTaskStrategy extends DefaultHandlerStrategy {
 
-  public MessageEventStrategy(BpmnElement element) {
+  public ReceiveTaskStrategy(BpmnElement element) {
     super(element);
   }
 
   @Override
   public TypeName getHandlerType() {
-    return MESSAGE_EVENT;
+    return RECEIVE_TASK;
+  }
+
+  @Override
+  public void initHandler(MethodSpec.Builder methodBuilder) {
+    super.initHandler(methodBuilder);
+
+    if (!element.hasNext()) {
+      return;
+    }
+
+    var next = element.getNext();
+    if (!next.getType().isBoundaryEvent()) {
+      return;
+    }
+
+    methodBuilder.addStatement("$L.waitForBoundaryEvent()", literal);
   }
 
   @Override
@@ -30,24 +42,7 @@ public class MessageEventStrategy extends DefaultHandlerStrategy {
     methodBuilder.addStatement("$T $LElement = new $T()", MessageEventElement.class, literal, MessageEventElement.class);
     methodBuilder.addStatement("$LElement.id = $S", literal, element.getId());
 
-    Message message = null;
-    if (element.getType() == BpmnElementType.MESSAGE_BOUNDARY) {
-      var event = element.getFlowNode(BoundaryEvent.class);
-      var eventSupport = new BpmnEventSupport(event);
-
-      var messageEventDefinition = eventSupport.getMessageDefinition();
-      if (messageEventDefinition != null) {
-        message = messageEventDefinition.getMessage();
-      }
-    } else if (element.getType() == BpmnElementType.MESSAGE_CATCH) {
-      var event = element.getFlowNode(IntermediateCatchEvent.class);
-      var eventSupport = new BpmnEventSupport(event);
-
-      var messageEventDefinition = eventSupport.getMessageDefinition();
-      if (messageEventDefinition != null) {
-        message = messageEventDefinition.getMessage();
-      }
-    }
+    var message = element.getFlowNode(ReceiveTask.class).getMessage();
 
     if (message != null) {
       var extensionElements = message.getExtensionElements();
