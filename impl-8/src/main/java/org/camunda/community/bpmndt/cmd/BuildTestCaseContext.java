@@ -21,6 +21,7 @@ import org.camunda.community.bpmndt.strategy.JobStrategy;
 import org.camunda.community.bpmndt.strategy.MessageBoundaryEventStrategy;
 import org.camunda.community.bpmndt.strategy.MessageEventStrategy;
 import org.camunda.community.bpmndt.strategy.OutboundConnectorStrategy;
+import org.camunda.community.bpmndt.strategy.ReceiveTaskStrategy;
 import org.camunda.community.bpmndt.strategy.SignalBoundaryEventStrategy;
 import org.camunda.community.bpmndt.strategy.SignalEventStrategy;
 import org.camunda.community.bpmndt.strategy.TimerBoundaryEventStrategy;
@@ -119,6 +120,8 @@ public class BuildTestCaseContext implements Function<TestCase, TestCaseContext>
         return new MessageEventStrategy(element);
       case OUTBOUND_CONNECTOR:
         return new OutboundConnectorStrategy(element);
+      case RECEIVE_TASK:
+        return new ReceiveTaskStrategy(element);
       case SERVICE_TASK:
         return new JobStrategy(element);
       case SIGNAL_BOUNDARY:

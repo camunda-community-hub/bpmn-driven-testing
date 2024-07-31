@@ -1,9 +1,13 @@
 package org.camunda.community.bpmndt.api;
 
+import static com.google.common.truth.Truth.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 
+import org.camunda.community.bpmndt.api.TestCaseInstanceElement.MessageEventElement;
 import org.camunda.community.bpmndt.test.TestPaths;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,15 +25,103 @@ class ReceiveTaskTest {
 
   ZeebeTestEngine engine;
 
-  private MessageEventHandler handler;
+  private ReceiveTaskHandler handler;
 
   @BeforeEach
   void setUp() {
-    handler = new MessageEventHandler("receiveTask");
+    var element = new MessageEventElement();
+    element.id = "receiveTask";
+    element.correlationKey = "=\"simple\"";
+    element.messageName = "=\"simpleMessage\"";
+
+    handler = new ReceiveTaskHandler(element);
   }
 
   @Test
   void testExecute() {
+    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+  }
+
+  @Test
+  void testExecuteWithCustomAction() {
+    handler.execute((client, messageName, correlationKey) ->
+        client.newPublishMessageCommand().messageName(messageName).correlationKey(correlationKey).send()
+    );
+
+    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+  }
+
+  @Test
+  void testVerify() {
+    handler.verify(processInstanceAssert -> processInstanceAssert.hasVariableWithValue("x", "test"));
+
+    tc.createExecutor(engine)
+        .withVariable("x", "test")
+        .verify(ProcessInstanceAssert::isCompleted)
+        .execute();
+  }
+
+  @Test
+  void testVerifyCorrelationKey() {
+    handler.verifyCorrelationKey("wrong correlation key");
+
+    var e = assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
+    assertThat(e).hasMessageThat().contains("'wrong correlation key'");
+    assertThat(e).hasMessageThat().contains("'simple'");
+
+    handler.verifyCorrelationKey("simple");
+
+    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+
+    handler.verifyCorrelationKey(correlationKey -> assertThat(correlationKey).isEqualTo("wrong correlation key"));
+
+    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
+
+    handler.verifyCorrelationKey(correlationKey -> assertThat(correlationKey).isEqualTo("simple"));
+
+    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+  }
+
+  @Test
+  void testVerifyCorrelationKeyExpression() {
+    handler.verifyCorrelationKeyExpression(expr -> assertThat(expr).isEqualTo("wrong correlation key expression"));
+
+    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
+
+    handler.verifyCorrelationKeyExpression(expr -> assertThat(expr).isEqualTo("=\"simple\""));
+
+    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+  }
+
+  @Test
+  void testVerifyMessageName() {
+    handler.verifyMessageName("wrong message name");
+
+    var e = assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
+    assertThat(e).hasMessageThat().contains("'wrong message name'");
+    assertThat(e).hasMessageThat().contains("'simpleMessage'");
+
+    handler.verifyMessageName("simpleMessage");
+
+    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+
+    handler.verifyMessageName(messageName -> assertThat(messageName).isEqualTo("wrong message name"));
+
+    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
+
+    handler.verifyMessageName(messageName -> assertThat(messageName).isEqualTo("simpleMessage"));
+
+    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+  }
+
+  @Test
+  void testVerifyMessageNameExpression() {
+    handler.verifyMessageNameExpression(expr -> assertThat(expr).isEqualTo("wrong message name expression"));
+
+    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
+
+    handler.verifyMessageNameExpression(expr -> assertThat(expr).isEqualTo("=\"simpleMessage\""));
+
     tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
   }
 

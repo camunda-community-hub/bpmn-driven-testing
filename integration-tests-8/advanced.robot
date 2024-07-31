@@ -23,6 +23,7 @@ mvn clean test
   Should contain  ${result.stdout}  Running org.example.it.CollaborationTest
   Should contain  ${result.stdout}  Running org.example.it.LinkEventTest
   Should contain  ${result.stdout}  Running org.example.it.OutboundConnectorErrorTest
+  Should contain  ${result.stdout}  Running org.example.it.ReceiveTaskTimerTest
   Should contain  ${result.stdout}  Running org.example.it.ServiceTaskErrorTest
   Should contain  ${result.stdout}  Running org.example.it.ServiceTaskMessageTest
   Should contain  ${result.stdout}  Running org.example.it.ServiceTaskSignalTest
