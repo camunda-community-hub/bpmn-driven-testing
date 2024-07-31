@@ -54,6 +54,7 @@ Add dependencies, which are required to execute the generated test code:
   <groupId>io.camunda</groupId>
   <artifactId>zeebe-process-test-extension</artifactId>
   <version>${camunda.zeebe.version}</version>
+  <scope>test</scope>
 </dependency>
 
 <dependency>
@@ -68,7 +69,7 @@ Recommended versions:
 
 | Dependency                   | Version |
 |:-----------------------------|:--------|
-| Zeebe Process Test Extension | 8.4.4   |
+| Zeebe Process Test Extension | 8.5.5   |
 | JUnit 5 (Jupiter)            | 5.10.1  |
 
 ## Testing

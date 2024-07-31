@@ -1,5 +1,6 @@
 package org.camunda.community.bpmndt.api;
 
+import java.net.URI;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -394,7 +395,7 @@ public class TestCaseExecutor {
     }
 
     return ZeebeClient.newClientBuilder()
-        .gatewayAddress(engine.getGatewayAddress())
+        .grpcAddress(URI.create("https://" + engine.getGatewayAddress()))
         .usePlaintext()
         .withJsonMapper(jsonMapper)
         .build();

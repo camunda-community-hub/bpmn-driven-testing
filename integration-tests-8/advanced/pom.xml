@@ -9,7 +9,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <!-- Versions -->
-    <camunda.zeebe.version>8.4.4</camunda.zeebe.version>
+    <camunda.zeebe.version>8.5.5</camunda.zeebe.version>
     <google.truth.version>1.1.5</google.truth.version>
     <junit.jupiter.version>5.10.1</junit.jupiter.version>
     <slf4j.version>1.7.36</slf4j.version>
