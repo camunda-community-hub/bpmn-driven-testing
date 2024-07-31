@@ -19,10 +19,16 @@ Moreover any breaking changes (e.g. a user task becomes a service task) in the B
 
 The extension consists of:
 
-- [Camunda Modeler plugin](camunda-modeler-plugin) for a visual selection and the management of test cases
-- Plugins for the generation of JUnit 5 based test code
-  - [Maven plugin](maven-plugin) / [Gradle plugin](gradle-plugin) for Camunda 7
-  - [Maven plugin 8](maven-plugin-8) / [Gradle plugin 8](gradle-plugin-8) for Camunda 8
+- Camunda Modeler plugin for a visual selection and the management of test cases
+- Maven and Gradle plugins for the generation of JUnit 5 based test code
+
+## Installation, configuration and usage
+For information on how to install, configure and use the plugins visit:
+- [Camunda Modeler plugin](camunda-modeler-plugin)
+- [bpmn-driven-testing-maven-plugin](maven-plugin)
+- [bpmn-driven-testing-8-maven-plugin](maven-plugin-8) (Camunda Platform 8)
+- [bpmn-driven-testing-gradle-plugin](gradle-plugin)
+- [bpmn-driven-testing-8-gradle-plugin](gradle-plugin-8) (Camunda Platform 8)
 
 :warning: Version [0.10.0](https://github.com/camunda-community-hub/bpmn-driven-testing/tree/0.10.0) supports [Camunda 7.21](https://docs.camunda.org/manual/7.21/) (Java 11+) and drops test code generation for JUnit 4. For older Camunda versions (Java 8+) and JUnit 4 support, please rely on version [0.9.0](https://github.com/camunda-community-hub/bpmn-driven-testing/tree/0.9.0).
 
@@ -35,22 +41,43 @@ The extension consists of:
   - Loop detection
 - Test case validation and migration, when a BPMN process was changed - see [docs](docs/test-case-validation-and-migration.md)
 - Testing of arbitrary paths through a BPMN process
-
-### Camunda 7 features
-- Generated test cases provide
+- Test case generation with
+  - Automatic process deployment and process instance start
   - Automatic handling of wait states
-  - Call activity stubbing for isolated testing - see [test](integration-tests/advanced/src/test/java/org/example/it/CallActivityWithMappingTest.java)
-  - [Fluent API](impl/src/main/java/org/camunda/community/bpmndt/api) to override default behavior, using *Handler
-  - Multi instance (activity/embedded subprocess) support - see [integration tests](integration-tests/advanced-multi-instance/src/test/java/org/example/it)
-- Spring/Spring Boot test support - see `advanced-spring*` under [integration tests](integration-tests/)
-- [camunda-process-test-coverage](https://github.com/camunda-community-hub/camunda-process-test-coverage) extension support - see `coverage*` under [integration tests](integration-tests/)
+  - Call activity stubbing/simulation for isolated testing
+  - Fluent API to override default behavior, using BPMN element specific handler
 
-### Camunda 8 features
-- Generated test cases provide
-  - Automatic handling of wait states
-  - Call activity simulation for isolated testing - see [test](integration-tests-8/simple/src/test/java/org/example/it/SimpleCallActivityTest.java)
-  - [Fluent API](impl-8/src/main/java/org/camunda/community/bpmndt/api) to override default behavior, using *Handler
-  - Custom test code execution to handle and verify multi instances - see [integration tests](integration-tests-8/advanced-multi-instance/src/test/java/org/example/it)
+### Details
+| Feature | Camunda Platform 7 | Camunda Platform 8 |
+|:--------|:-------------------|:-------------------|
+| Call activity support | Supported via stubbing - see [test](integration-tests/advanced/src/test/java/org/example/it/CallActivityWithMappingTest.java) | Supported via simulation. `TestCaseExecutor#simulateProcess` must be called for every BPMN process ID that should be simulated - see [test](integration-tests-8/simple/src/test/java/org/example/it/SimpleCallActivityTest.java) |
+| Multi instance support | Multi instance activities and embedded subprocesses are supported - see [tests](integration-tests/advanced-multi-instance/src/test/java/org/example/it) | No test code generation implemented yet. But a possibility to write custom test code to handle and verify multi instances exists - see [test](integration-tests-8/advanced-multi-instance/src/test/java/org/example/it/ScopeSequentialTest.java) |
+| Spring/Spring Boot test support | Supported - see `advanced-spring*` projects under [integration tests](integration-tests/) | Not needed, since the `TestCaseExecutor` requires only a `ZeebeTestEngine` instance that can be injected via `@ZeebeProcessTest` or `@ZeebeSpringTest` or be manually created |
+| Process test coverage extension support | Supported - see `coverage*` projects under [integration tests](integration-tests/) | Not verified yet |
+
+### Handler
+Handler classes provide APIs to perform BPMN element specific verifications and actions (e.g. complete a user task with variables or execute custom application code that completes a user task). Handler instances must be accessed via `handle*` methods of generated test cases.
+
+For Camunda Platform 7:
+- [CallActivityHandler](impl/src/main/java/org/camunda/community/bpmndt/api/CallActivityHandler.java)
+- [EventHandler](impl/src/main/java/org/camunda/community/bpmndt/api/EventHandler.java) for conditional, message and signal intermediate catch or boundary events
+- [ExternalTaskHandler](impl/src/main/java/org/camunda/community/bpmndt/api/ExternalTaskHandler.java)
+- [JobHandler](impl/src/main/java/org/camunda/community/bpmndt/api/JobHandler.java) for asynchronous continuation and timer catch events
+- [MultiInstanceHandler](impl/src/main/java/org/camunda/community/bpmndt/api/MultiInstanceHandler.java) for multi instance activities
+- [MultiInstanceScopeHandler](impl/src/main/java/org/camunda/community/bpmndt/api/MultiInstanceScopeHandler.java) for multi instance scopes (e.g. embedded subprocess)
+- [ReceiveTaskHandler](impl/src/main/java/org/camunda/community/bpmndt/api/ReceiveTaskHandler.java)
+- [UserTaskHandler](impl/src/main/java/org/camunda/community/bpmndt/api/UserTaskHandler.java)
+
+For Camunda Platform 8:
+- [CallActivityHandler](impl-8/src/main/java/org/camunda/community/bpmndt/api/CallActivityHandler.java)
+- [CustomMultiInstanceHandler](impl-8/src/main/java/org/camunda/community/bpmndt/api/CustomMultiInstanceHandler.java) for a custom handling of multi instance activities and scopes
+- [JobHandler](impl-8/src/main/java/org/camunda/community/bpmndt/api/JobHandler.java) for service, script, send or business rule tasks as well as intermediate message throw or message end events
+- [MessageEventHandler](impl-8/src/main/java/org/camunda/community/bpmndt/api/MessageEventHandler.java) for intermediate catch and boundary message events
+- [OutboundConnectorHandler](impl-8/src/main/java/org/camunda/community/bpmndt/api/OutboundConnectorHandler.java)
+- [ReceiveTaskHandler](impl-8/src/main/java/org/camunda/community/bpmndt/api/ReceiveTaskHandler.java)
+- [SignalEventHandler](impl-8/src/main/java/org/camunda/community/bpmndt/api/SignalEventHandler.java) for intermediate catch and boundary signal events
+- [TimerEventHandler](impl-8/src/main/java/org/camunda/community/bpmndt/api/TimerEventHandler.java) for intermediate catch and boundary timer events
+- [UserTaskHandler](impl-8/src/main/java/org/camunda/community/bpmndt/api/UserTaskHandler.java)
 
 ## How does it work?
 
@@ -95,12 +122,6 @@ To generate the code for the selected test cases, a developer must run the **gen
 The plugin finds all *.bpmn files under `src/main/resources` and looks for BPMN processes with a `bpmndt:testCases` extension element.
 Each test case will result in a [JUnit 5 extension](https://junit.org/junit5/docs/current/api/org.junit.jupiter.api/org/junit/jupiter/api/extension/Extension.html) - in this example: `generated.order_fulfillment.TC_Happy_Path`.
 
-For more information about plugin configuration and usage, please see:
-- [bpmn-driven-testing-maven-plugin](maven-plugin)
-- [bpmn-driven-testing-8-maven-plugin](maven-plugin-8)
-- [bpmn-driven-testing-gradle-plugin](gradle-plugin)
-- [bpmn-driven-testing-8-gradle-plugin](gradle-plugin-8)
-
 ### Camunda 7: Implement tests
 The generated test case class - in this example, `TC_Happy_Path` - must be imported and used as a JUnit 5 extension (a `public` or package-private field, which is annotated with `@RegisterExtension`).
 
@@ -114,7 +135,7 @@ which is used to specify variables, business key and/or [beans](https://docs.cam
 After the specification, `execute()` is called to create a new process instance and exeute the test case.
 
 Moreover the default behavior of wait states and call activities can be adjusted using fluent APIs.
-For each applicable flow node a "handle*" method is generated - for example: `handleCheckAvailabilityUserTask()`.
+For each applicable flow node a `handle*` method is generated - for example: `handleCheckAvailabilityUserTask()`.
 
 ```java
 import org.junit.jupiter.api.Test;
@@ -169,7 +190,7 @@ public TC_Happy_Path tc = new TC_Happy_Path();
 When calling `createExecutor()` on the test extension, a `ZeebeTestEngine` must be provided. The fluent `TestCaseExecutor` API allows to specificy variables, add additional resources, prepare the simulation of called processes and finally start a test case execution via `execute()`.
 
 Moreover the default behavior of wait states and call activities can be adjusted using fluent APIs.
-For each applicable flow node a "handle*" method is generated - for example: `handleCheckAvailabilityUserTask()` or `handleApproveOrderSendTask()`.
+For each applicable flow node a `handle*` method is generated - for example: `handleCheckAvailabilityUserTask()` or `handleApproveOrderSendTask()`.
 
 ```java
 import static com.google.common.truth.Truth.assertThat;
