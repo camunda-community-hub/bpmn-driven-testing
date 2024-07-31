@@ -27,6 +27,7 @@ mvn clean test
   Should contain  ${result.stdout}  Running org.example.it.ExternalTaskErrorTest
   Should contain  ${result.stdout}  Running org.example.it.ExternalTaskMessageTest
   Should contain  ${result.stdout}  Running org.example.it.LinkEventTest
+  Should contain  ${result.stdout}  Running org.example.it.ReceiveTaskTimerTest
   Should contain  ${result.stdout}  Running org.example.it.ServiceTaskTest
   Should contain  ${result.stdout}  Running org.example.it.SubProcessCallActivityMessageTest
   Should contain  ${result.stdout}  Running org.example.it.UserTaskErrorTest

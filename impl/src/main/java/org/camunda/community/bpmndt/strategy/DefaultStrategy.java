@@ -9,6 +9,7 @@ import org.camunda.community.bpmndt.api.CallActivityHandler;
 import org.camunda.community.bpmndt.api.EventHandler;
 import org.camunda.community.bpmndt.api.ExternalTaskHandler;
 import org.camunda.community.bpmndt.api.JobHandler;
+import org.camunda.community.bpmndt.api.ReceiveTaskHandler;
 import org.camunda.community.bpmndt.api.UserTaskHandler;
 import org.camunda.community.bpmndt.api.cfg.BpmndtParseListener;
 import org.camunda.community.bpmndt.model.TestCaseActivity;
@@ -30,6 +31,7 @@ public class DefaultStrategy implements GeneratorStrategy {
   protected static final TypeName EXTERNAL_TASK = TypeName.get(ExternalTaskHandler.class);
   protected static final TypeName JOB = TypeName.get(JobHandler.class);
   protected static final TypeName OTHER = TypeName.get(Void.class);
+  protected static final TypeName RECEIVE_TASK = TypeName.get(ReceiveTaskHandler.class);
   protected static final TypeName USER_TASK = TypeName.get(UserTaskHandler.class);
 
   protected final TestCaseActivity activity;

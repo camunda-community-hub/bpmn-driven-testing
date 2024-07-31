@@ -154,6 +154,7 @@ public class GeneratorTest {
     assertThat(isFile.test("org/camunda/community/bpmndt/api/ExternalTaskHandler.java")).isTrue();
     assertThat(isFile.test("org/camunda/community/bpmndt/api/JobHandler.java")).isTrue();
     assertThat(isFile.test("org/camunda/community/bpmndt/api/MultiInstanceHandler.java")).isTrue();
+    assertThat(isFile.test("org/camunda/community/bpmndt/api/ReceiveTaskHandler.java")).isTrue();
     assertThat(isFile.test("org/camunda/community/bpmndt/api/TestCaseInstance.java")).isTrue();
     assertThat(isFile.test("org/camunda/community/bpmndt/api/TestCaseExecutor.java")).isTrue();
     assertThat(isFile.test("org/camunda/community/bpmndt/api/UserTaskHandler.java")).isTrue();
@@ -195,6 +196,7 @@ public class GeneratorTest {
     assertThat(isFile.test("org/camunda/community/bpmndt/api/JobHandler.java")).isTrue();
     assertThat(isFile.test("org/camunda/community/bpmndt/api/MultiInstanceHandler.java")).isTrue();
     assertThat(isFile.test("org/camunda/community/bpmndt/api/MultiInstanceScopeHandler.java")).isTrue();
+    assertThat(isFile.test("org/camunda/community/bpmndt/api/ReceiveTaskHandler.java")).isTrue();
     assertThat(isFile.test("org/camunda/community/bpmndt/api/TestCaseInstance.java")).isTrue();
     assertThat(isFile.test("org/camunda/community/bpmndt/api/TestCaseExecutor.java")).isTrue();
     assertThat(isFile.test("org/camunda/community/bpmndt/api/UserTaskHandler.java")).isTrue();

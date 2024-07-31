@@ -19,6 +19,7 @@ import org.camunda.community.bpmndt.api.ExternalTaskHandler;
 import org.camunda.community.bpmndt.api.JobHandler;
 import org.camunda.community.bpmndt.api.MultiInstanceHandler;
 import org.camunda.community.bpmndt.api.MultiInstanceScopeHandler;
+import org.camunda.community.bpmndt.api.ReceiveTaskHandler;
 import org.camunda.community.bpmndt.api.TestCaseExecutor;
 import org.camunda.community.bpmndt.api.TestCaseInstance;
 import org.camunda.community.bpmndt.api.UserTaskHandler;
@@ -161,6 +162,7 @@ public class Generator {
     apiClasses.add(JobHandler.class);
     apiClasses.add(MultiInstanceHandler.class);
     apiClasses.add(MultiInstanceScopeHandler.class);
+    apiClasses.add(ReceiveTaskHandler.class);
     apiClasses.add(TestCaseInstance.class);
     apiClasses.add(TestCaseExecutor.class);
     apiClasses.add(UserTaskHandler.class);
