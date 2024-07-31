@@ -440,7 +440,7 @@ public class TestCaseExecutor {
         return recordValue.getProcessInstanceKey();
       }
     }
-    throw new RuntimeException("failed to find process instance key for signal start");
+    throw new RuntimeException(String.format("failed to find process instance key for process definition key %d", processDefinitionKey));
   }
 
   long findProcessInstanceKey(PublishMessageResponse publishMessageResponse) {

@@ -436,7 +436,7 @@ public class TestCaseInstance implements AutoCloseable {
   }
 
   private String withDetails(String message, long processInstanceKey) {
-    return withIncidents(withWaitStates(message, processInstanceKey), processInstanceKey);
+    return withIncidents(withElementInstances(message, processInstanceKey), processInstanceKey);
   }
 
   private String withIncidents(String message, long processInstanceKey) {
@@ -471,7 +471,7 @@ public class TestCaseInstance implements AutoCloseable {
     return messageBuilder.toString();
   }
 
-  private String withWaitStates(String message, long processInstanceKey) {
+  private String withElementInstances(String message, long processInstanceKey) {
     var elements = new LinkedHashMap<String, ProcessInstanceIntent>();
 
     var recordStream = RecordStream.of(engine.getRecordStreamSource());
@@ -490,20 +490,41 @@ public class TestCaseInstance implements AutoCloseable {
       elements.put(recordValue.getElementId(), state);
     }
 
-    var waitStates = elements.keySet().stream()
-        .filter(k -> elements.get(k) == ProcessInstanceIntent.ELEMENT_ACTIVATED)
+    var states = elements.keySet().stream()
+        .filter(k -> {
+          switch (elements.get(k)) {
+            case ELEMENT_ACTIVATED:
+            case ELEMENT_COMPLETED:
+            case ELEMENT_TERMINATED:
+              return true;
+            default:
+              return false;
+          }
+        })
+        .map(k -> {
+          switch (elements.get(k)) {
+            case ELEMENT_ACTIVATED:
+              return k + " (activated)";
+            case ELEMENT_COMPLETED:
+              return k + " (completed)";
+            case ELEMENT_TERMINATED:
+              return k + " (terminated)";
+            default:
+              return null;
+          }
+        })
         .collect(Collectors.toList());
 
-    if (waitStates.isEmpty()) {
+    if (states.isEmpty()) {
       return message;
     }
 
     var messageBuilder = new StringBuilder(message);
-    messageBuilder.append("\nfound active elements:");
+    messageBuilder.append("\nfound element instances:");
 
-    for (String waitState : waitStates) {
+    for (String state : states) {
       messageBuilder.append("\n  - ");
-      messageBuilder.append(waitState);
+      messageBuilder.append(state);
     }
 
     return messageBuilder.toString();
