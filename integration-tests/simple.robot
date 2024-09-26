@@ -23,6 +23,9 @@ mvn clean test
   Should contain  ${result.stdout}  Running org.example.it.SimpleCollaborationTest
   Should contain  ${result.stdout}  Running org.example.it.SimpleConditionalCatchEventTest
   Should contain  ${result.stdout}  Running org.example.it.SimpleEventBasedGatewayTest
+  Should contain  ${result.stdout}  Running org.example.it.SimpleExternalBusinessRuleTaskTest
+  Should contain  ${result.stdout}  Running org.example.it.SimpleExternalMessageThrowEventTest
+  Should contain  ${result.stdout}  Running org.example.it.SimpleExternalSendTaskTest
   Should contain  ${result.stdout}  Running org.example.it.SimpleExternalTaskTest
   Should contain  ${result.stdout}  Running org.example.it.SimpleMessageCatchEventTest
   Should contain  ${result.stdout}  Running org.example.it.SimpleMessageThrowEventTest
@@ -72,6 +75,9 @@ Assert Test Code Generation
   Should contain  ${result.stdout}  Found BPMN file: simpleCallActivity.bpmn
   Should contain  ${result.stdout}  Found BPMN file: simpleCollaboration.bpmn
   Should contain  ${result.stdout}  Found BPMN file: simpleConditionalCatchEvent.bpmn
+  Should contain  ${result.stdout}  Found BPMN file: simpleExternalBusinessRuleTask.bpmn
+  Should contain  ${result.stdout}  Found BPMN file: simpleExternalMessageThrowEvent.bpmn
+  Should contain  ${result.stdout}  Found BPMN file: simpleExternalSendTask.bpmn
   Should contain  ${result.stdout}  Found BPMN file: simpleExternalTask.bpmn
   Should contain  ${result.stdout}  Found BPMN file: simpleMessageCatchEvent.bpmn
   Should contain  ${result.stdout}  Found BPMN file: simpleMessageThrowEvent.bpmn
@@ -120,6 +126,9 @@ Assert Test Code Generation
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/simpleeventbasedgateway/TC_Message.java
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/simpleeventbasedgateway/TC_startEvent__eventBasedGateway.java
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/simpleeventbasedgateway/TC_Timer.java
+  Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/simpleexternalbusinessruletask/TC_startEvent__endEvent.java
+  Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/simpleexternalmessagethrowevent/TC_startEvent__endEvent.java
+  Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/simpleexternalsendtask/TC_startEvent__endEvent.java
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/simpleexternaltask/TC_startEvent__endEvent.java
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/simplemessagecatchevent/TC_startEvent__endEvent.java
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/simplemessagethrowevent/TC_startEvent__endEvent.java
@@ -140,6 +149,9 @@ Assert Test Code Generation
   File should exist  ${testSources}/generated/simpleeventbasedgateway/TC_Message.java
   File should exist  ${testSources}/generated/simpleeventbasedgateway/TC_startEvent__eventBasedGateway.java
   File should exist  ${testSources}/generated/simpleeventbasedgateway/TC_Timer.java
+  File should exist  ${testSources}/generated/simpleexternalbusinessruletask/TC_startEvent__endEvent.java
+  File should exist  ${testSources}/generated/simpleexternalmessagethrowevent/TC_startEvent__endEvent.java
+  File should exist  ${testSources}/generated/simpleexternalsendtask/TC_startEvent__endEvent.java
   File should exist  ${testSources}/generated/simpleexternaltask/TC_startEvent__endEvent.java
   File should exist  ${testSources}/generated/simplemessagecatchevent/TC_startEvent__endEvent.java
   File should exist  ${testSources}/generated/simplemessagethrowevent/TC_startEvent__endEvent.java

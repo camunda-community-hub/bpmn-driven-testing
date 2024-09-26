@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:bpmndt="http://camunda.org/schema/extension/bpmn-driven-testing" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0cy2jey" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.20.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.20.0">
+  <bpmn:process id="simpleExternalMessageThrowEvent" isExecutable="true" camunda:historyTimeToLive="180">
+    <bpmn:extensionElements>
+      <bpmndt:testCases>
+        <bpmndt:testCase>
+          <bpmndt:path>
+            <bpmndt:node>startEvent</bpmndt:node>
+            <bpmndt:node>externalMessageThrowEvent</bpmndt:node>
+            <bpmndt:node>endEvent</bpmndt:node>
+          </bpmndt:path>
+        </bpmndt:testCase>
+      </bpmndt:testCases>
+    </bpmn:extensionElements>
+    <bpmn:startEvent id="startEvent">
+      <bpmn:outgoing>Flow_0ll0rsa</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_0ll0rsa" sourceRef="startEvent" targetRef="externalMessageThrowEvent" />
+    <bpmn:endEvent id="endEvent">
+      <bpmn:incoming>Flow_1upmxrt</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_1upmxrt" sourceRef="externalMessageThrowEvent" targetRef="endEvent" />
+    <bpmn:intermediateThrowEvent id="externalMessageThrowEvent">
+      <bpmn:incoming>Flow_0ll0rsa</bpmn:incoming>
+      <bpmn:outgoing>Flow_1upmxrt</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_11agqmh" camunda:type="external" camunda:topic="test-topic" />
+    </bpmn:intermediateThrowEvent>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="simpleExternalMessageThrowEvent">
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="startEvent">
+        <dc:Bounds x="179" y="99" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_160d3xt_di" bpmnElement="endEvent">
+        <dc:Bounds x="372" y="99" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1rzedh4_di" bpmnElement="externalMessageThrowEvent">
+        <dc:Bounds x="272" y="99" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_0ll0rsa_di" bpmnElement="Flow_0ll0rsa">
+        <di:waypoint x="215" y="117" />
+        <di:waypoint x="272" y="117" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1upmxrt_di" bpmnElement="Flow_1upmxrt">
+        <di:waypoint x="308" y="117" />
+        <di:waypoint x="372" y="117" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
