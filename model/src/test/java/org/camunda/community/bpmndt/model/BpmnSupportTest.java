@@ -34,6 +34,24 @@ public class BpmnSupportTest {
   }
 
   @Test
+  public void testGetTopicName() {
+    bpmnSupport = of(simple.resolve("simpleExternalTask.bpmn"));
+    assertThat(bpmnSupport.getTopicName("externalTask")).isEqualTo("test-topic");
+
+    bpmnSupport = of(simple.resolve("simpleExternalBusinessRuleTask.bpmn"));
+    assertThat(bpmnSupport.getTopicName("externalBusinessRuleTask")).isEqualTo("test-topic");
+
+    bpmnSupport = of(simple.resolve("simpleExternalMessageThrowEvent.bpmn"));
+    assertThat(bpmnSupport.getTopicName("externalMessageThrowEvent")).isEqualTo("test-topic");
+
+    bpmnSupport = of(simple.resolve("simpleExternalSendTask.bpmn"));
+    assertThat(bpmnSupport.getTopicName("externalSendTask")).isEqualTo("test-topic");
+
+    bpmnSupport = of(simple.resolve("simpleUserTask.bpmn"));
+    assertThat(bpmnSupport.getTopicName("userTask")).isNull();
+  }
+
+  @Test
   public void testHas() {
     bpmnSupport = of(simple.resolve("simple.bpmn"));
     assertThat(bpmnSupport.has("startEvent")).isTrue();
@@ -62,6 +80,18 @@ public class BpmnSupportTest {
   public void testIsExternalTask() {
     bpmnSupport = of(simple.resolve("simpleExternalTask.bpmn"));
     assertThat(bpmnSupport.isExternalTask("externalTask")).isTrue();
+
+    bpmnSupport = of(simple.resolve("simpleExternalBusinessRuleTask.bpmn"));
+    assertThat(bpmnSupport.isExternalTask("externalBusinessRuleTask")).isTrue();
+
+    bpmnSupport = of(simple.resolve("simpleExternalMessageThrowEvent.bpmn"));
+    assertThat(bpmnSupport.isExternalTask("externalMessageThrowEvent")).isTrue();
+
+    bpmnSupport = of(simple.resolve("simpleExternalSendTask.bpmn"));
+    assertThat(bpmnSupport.isExternalTask("externalSendTask")).isTrue();
+
+    bpmnSupport = of(simple.resolve("simpleUserTask.bpmn"));
+    assertThat(bpmnSupport.isExternalTask("userTask")).isFalse();
   }
 
   @Test

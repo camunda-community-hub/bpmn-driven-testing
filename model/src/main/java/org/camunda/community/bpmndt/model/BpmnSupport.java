@@ -1,6 +1,7 @@
 package org.camunda.community.bpmndt.model;
 
 import static org.camunda.bpm.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_BOUNDARY_EVENT;
+import static org.camunda.bpm.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_BUSINESS_RULE_TASK;
 import static org.camunda.bpm.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_CALL_ACTIVITY;
 import static org.camunda.bpm.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_END_EVENT;
 import static org.camunda.bpm.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_EVENT_BASED_GATEWAY;
@@ -8,6 +9,7 @@ import static org.camunda.bpm.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_IN
 import static org.camunda.bpm.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_INTERMEDIATE_THROW_EVENT;
 import static org.camunda.bpm.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_PROCESS;
 import static org.camunda.bpm.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_RECEIVE_TASK;
+import static org.camunda.bpm.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_SEND_TASK;
 import static org.camunda.bpm.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_SERVICE_TASK;
 import static org.camunda.bpm.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_START_EVENT;
 import static org.camunda.bpm.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_USER_TASK;
@@ -21,12 +23,14 @@ import java.util.stream.Collectors;
 
 import org.camunda.bpm.model.bpmn.instance.Activity;
 import org.camunda.bpm.model.bpmn.instance.BaseElement;
+import org.camunda.bpm.model.bpmn.instance.BusinessRuleTask;
 import org.camunda.bpm.model.bpmn.instance.FlowElement;
 import org.camunda.bpm.model.bpmn.instance.FlowNode;
 import org.camunda.bpm.model.bpmn.instance.IntermediateThrowEvent;
 import org.camunda.bpm.model.bpmn.instance.MessageEventDefinition;
 import org.camunda.bpm.model.bpmn.instance.MultiInstanceLoopCharacteristics;
 import org.camunda.bpm.model.bpmn.instance.Process;
+import org.camunda.bpm.model.bpmn.instance.SendTask;
 import org.camunda.bpm.model.bpmn.instance.ServiceTask;
 import org.camunda.bpm.model.bpmn.instance.SubProcess;
 import org.camunda.bpm.model.xml.instance.ModelElementInstance;
@@ -135,6 +139,12 @@ public class BpmnSupport {
     if (is(flowNodeId, BPMN_ELEMENT_SERVICE_TASK)) {
       ServiceTask serviceTask = (ServiceTask) flowNodes.get(flowNodeId);
       return serviceTask.getCamundaTopic();
+    } else if (is(flowNodeId, BPMN_ELEMENT_SEND_TASK)) {
+      SendTask sendTask = (SendTask) flowNodes.get(flowNodeId);
+      return sendTask.getCamundaTopic();
+    } else if (is(flowNodeId, BPMN_ELEMENT_BUSINESS_RULE_TASK)) {
+      BusinessRuleTask businessRuleTask = (BusinessRuleTask) flowNodes.get(flowNodeId);
+      return businessRuleTask.getCamundaTopic();
     } else if (is(flowNodeId, BPMN_ELEMENT_INTERMEDIATE_THROW_EVENT)) {
       IntermediateThrowEvent event = (IntermediateThrowEvent) flowNodes.get(flowNodeId);
 
@@ -172,6 +182,12 @@ public class BpmnSupport {
     if (is(flowNodeId, BPMN_ELEMENT_SERVICE_TASK)) {
       ServiceTask serviceTask = (ServiceTask) flowNodes.get(flowNodeId);
       return "external".equals(serviceTask.getCamundaType());
+    } else if (is(flowNodeId, BPMN_ELEMENT_SEND_TASK)) {
+      SendTask sendTask = (SendTask) flowNodes.get(flowNodeId);
+      return "external".equals(sendTask.getCamundaType());
+    } else if (is(flowNodeId, BPMN_ELEMENT_BUSINESS_RULE_TASK)) {
+      BusinessRuleTask businessRuleTask = (BusinessRuleTask) flowNodes.get(flowNodeId);
+      return "external".equals(businessRuleTask.getCamundaType());
     } else if (is(flowNodeId, BPMN_ELEMENT_INTERMEDIATE_THROW_EVENT)) {
       IntermediateThrowEvent event = (IntermediateThrowEvent) flowNodes.get(flowNodeId);
 
