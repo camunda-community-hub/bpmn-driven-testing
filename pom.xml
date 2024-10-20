@@ -5,11 +5,11 @@
     <groupId>org.camunda.community</groupId>
     <artifactId>community-hub-release-parent</artifactId>
     <version>1.4.4</version>
-    <relativePath/>
+    <relativePath />
   </parent>
 
   <artifactId>bpmn-driven-testing-root</artifactId>
-  <version>0.13.0</version>
+  <version>0.13.1-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <modules>
