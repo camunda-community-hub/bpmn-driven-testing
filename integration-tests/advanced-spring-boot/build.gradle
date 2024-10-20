@@ -9,8 +9,8 @@ repositories {
 }
 
 dependencies {
-  implementation 'org.camunda.bpm.springboot:camunda-bpm-spring-boot-starter:7.21.0'
-  implementation 'org.camunda.bpm:camunda-engine-plugin-spin:7.21.0'
+  implementation 'org.camunda.bpm.springboot:camunda-bpm-spring-boot-starter:7.22.0'
+  implementation 'org.camunda.bpm:camunda-engine-plugin-spin:7.22.0'
   implementation 'org.camunda.spin:camunda-spin-dataformat-json-jackson:1.23.0'
 
   testImplementation 'org.hamcrest:hamcrest-core:2.2'

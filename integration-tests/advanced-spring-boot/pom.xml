@@ -11,7 +11,7 @@
 
     <!-- Versions -->
     <assertj.version>3.26.3</assertj.version>
-    <camunda.bpm.version>7.21.0</camunda.bpm.version>
+    <camunda.bpm.version>7.22.0</camunda.bpm.version>
     <camunda.bpm.assert.version>15.0.0</camunda.bpm.assert.version>
     <h2.version>2.2.224</h2.version>
     <spring.boot.version>3.3.4</spring.boot.version>

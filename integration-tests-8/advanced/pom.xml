@@ -9,7 +9,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <!-- Versions -->
-    <camunda.zeebe.version>8.5.5</camunda.zeebe.version>
+    <camunda.zeebe.version>8.6.3</camunda.zeebe.version>
     <google.truth.version>1.4.4</google.truth.version>
     <junit.jupiter.version>5.10.1</junit.jupiter.version>
     <slf4j.version>1.7.36</slf4j.version>
@@ -24,6 +24,18 @@
       <url>https://artifacts.camunda.com/artifactory/public/</url>
     </repository>
   </repositories>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency> <!-- https://github.com/camunda-community-hub/spring-zeebe/issues/920 -->
+        <groupId>io.grpc</groupId>
+        <artifactId>grpc-bom</artifactId>
+        <version>1.65.1</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
   <dependencies>
     <dependency>
@@ -44,6 +56,7 @@
       <groupId>io.camunda</groupId>
       <artifactId>zeebe-process-test-extension</artifactId>
       <version>${camunda.zeebe.version}</version>
+      <scope>test</scope>
     </dependency>
 
     <dependency>
