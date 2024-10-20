@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.camunda.community</groupId>
     <artifactId>bpmn-driven-testing-root</artifactId>
-    <version>0.13.0-SNAPSHOT</version>
+    <version>0.13.0</version>
   </parent>
 
   <artifactId>bpmn-driven-testing-8-maven-plugin</artifactId>
