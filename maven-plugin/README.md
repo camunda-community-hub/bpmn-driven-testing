@@ -12,7 +12,7 @@ Right click on `target/bpmndt` > `Mark Directory as` > `Test Sources Root`
 <plugin>
   <groupId>org.camunda.community</groupId>
   <artifactId>bpmn-driven-testing-maven-plugin</artifactId>
-  <version>0.12.0</version>
+  <version>0.13.0</version>
   <executions>
     <execution>
       <goals>
@@ -124,7 +124,7 @@ Recommended versions:
 
 | Dependency         | Version |
 |:-------------------|:--------|
-| Camunda BPM        | 7.21.0  |
+| Camunda BPM        | 7.22.0  |
 | Camunda BPM Assert | 15.0.0  |
 | JUnit 5 (Jupiter)  | 5.10.1   |
 | Assertj            | 3.26.3  |
