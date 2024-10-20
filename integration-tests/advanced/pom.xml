@@ -10,7 +10,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <!-- Versions -->
-    <assertj.version>3.24.2</assertj.version>
+    <assertj.version>3.26.3</assertj.version>
     <camunda.bpm.version>7.21.0</camunda.bpm.version>
     <camunda.bpm.assert.version>15.0.0</camunda.bpm.assert.version>
     <h2.version>2.2.224</h2.version>
@@ -100,7 +100,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>3.0.0-M6</version>
+        <version>3.5.0</version>
       </plugin>
 
       <plugin>

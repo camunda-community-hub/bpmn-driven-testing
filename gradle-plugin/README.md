@@ -83,7 +83,7 @@ dependencies {
   implementation 'org.camunda.bpm:camunda-engine:7.21.0'
 
   testImplementation 'com.h2database:h2:2.2.224'
-  testImplementation 'org.assertj:assertj-core:3.24.2'
+  testImplementation 'org.assertj:assertj-core:3.26.3'
   testImplementation 'org.camunda.bpm.assert:camunda-bpm-assert:15.0.0'
   testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.1'
 
@@ -100,11 +100,11 @@ For **Spring** based testing, additional dependencies are required:
 ```groovy
 dependencies {
   implementation 'org.camunda.bpm:camunda-engine-spring:7.21.0'
-  implementation 'org.springframework:spring-beans:6.1.5'
-  implementation 'org.springframework:spring-context:6.1.5'
-  implementation 'org.springframework:spring-jdbc:6.1.5'
+  implementation 'org.springframework:spring-beans:6.1.14'
+  implementation 'org.springframework:spring-context:6.1.14'
+  implementation 'org.springframework:spring-jdbc:6.1.14'
 
-  testImplementation 'org.springframework:spring-test:6.1.5'
+  testImplementation 'org.springframework:spring-test:6.1.14'
 }
 ```
 
@@ -114,7 +114,7 @@ For **Spring Boot** based testing, additional dependencies are required:
 dependencies {
   implementation 'org.camunda.bpm.springboot:camunda-bpm-spring-boot-starter:7.21.0'
 
-  testImplementation 'org.springframework.boot:spring-boot-starter-test:3.2.4'
+  testImplementation 'org.springframework.boot:spring-boot-starter-test:3.3.4'
 }
 ```
 
@@ -125,9 +125,9 @@ Recommended versions:
 | Camunda BPM        | 7.21.0  |
 | Camunda BPM Assert | 15.0.0  |
 | JUnit 5 (Jupiter)  | 5.10.1   |
-| Assertj            | 3.24.2  |
-| Spring Framework   | 6.1.5  |
-| Spring Boot        | 3.2.4  |
+| Assertj            | 3.26.3  |
+| Spring Framework   | 6.1.14  |
+| Spring Boot        | 3.3.4  |
 
 ## Development
 :warning: This and the subsequent sections are only important for Gradle plugin development!

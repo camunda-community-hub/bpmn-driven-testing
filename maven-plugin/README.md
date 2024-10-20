@@ -127,9 +127,9 @@ Recommended versions:
 | Camunda BPM        | 7.21.0  |
 | Camunda BPM Assert | 15.0.0  |
 | JUnit 5 (Jupiter)  | 5.10.1   |
-| Assertj            | 3.24.2  |
-| Spring Framework   | 6.1.5  |
-| Spring Boot        | 3.2.4  |
+| Assertj            | 3.26.3  |
+| Spring Framework   | 6.1.14  |
+| Spring Boot        | 3.3.4  |
 
 ## Testing
 :warning: This section is only important for Maven plugin development!

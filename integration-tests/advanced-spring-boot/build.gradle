@@ -16,8 +16,8 @@ dependencies {
   testImplementation 'org.hamcrest:hamcrest-core:2.2'
   testImplementation 'com.h2database:h2:2.2.224'
   testImplementation 'org.camunda.bpm.assert:camunda-bpm-assert:15.0.0'
-  testImplementation 'org.assertj:assertj-core:3.24.2'
-  testImplementation 'org.springframework.boot:spring-boot-starter-test:3.2.4'
+  testImplementation 'org.assertj:assertj-core:3.26.3'
+  testImplementation 'org.springframework.boot:spring-boot-starter-test:3.3.4'
   testImplementation 'org.junit.vintage:junit-vintage-engine:5.10.1'
 
   testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.1'
