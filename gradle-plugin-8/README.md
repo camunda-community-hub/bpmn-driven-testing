@@ -34,7 +34,7 @@ pluginManagement {
   resolutionStrategy {
     eachPlugin {
       if (requested.id.toString() == 'org.camunda.community.bpmndt') {
-        useModule("org.camunda.community:bpmn-driven-testing-8-gradle-plugin:0.12.0")
+        useModule("org.camunda.community:bpmn-driven-testing-8-gradle-plugin:0.13.0")
       }
     }
   }
@@ -76,7 +76,7 @@ Add dependencies, which are required to execute the generated test code:
 
 ```groovy
 dependencies {
-  testImplementation 'io.camunda:zeebe-process-test-extension:8.5.5'
+  testImplementation 'io.camunda:zeebe-process-test-extension:8.6.3'
   testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.1'
 
   testCompileOnly 'org.immutables:annotate:2.10.0'
@@ -94,7 +94,7 @@ Recommended versions:
 
 | Dependency                   | Version |
 |:-----------------------------|:--------|
-| Zeebe Process Test Extension | 8.5.5   |
+| Zeebe Process Test Extension | 8.6.3   |
 | JUnit 5 (Jupiter)            | 5.10.1  |
 
 ## Testing

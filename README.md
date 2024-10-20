@@ -30,6 +30,8 @@ For information on how to install, configure and use the plugins visit:
 - [bpmn-driven-testing-gradle-plugin](gradle-plugin)
 - [bpmn-driven-testing-8-gradle-plugin](gradle-plugin-8) (Camunda Platform 8)
 
+:warning: Version [0.13.0](https://github.com/camunda-community-hub/bpmn-driven-testing/tree/0.13.0) supports [Camunda 7.22](https://docs.camunda.org/manual/7.22/) and [Camunda 8.6](https://docs.camunda.io/docs/8.6/guides/)
+
 :warning: Version [0.10.0](https://github.com/camunda-community-hub/bpmn-driven-testing/tree/0.10.0) supports [Camunda 7.21](https://docs.camunda.org/manual/7.21/) (Java 11+) and drops test code generation for JUnit 4. For older Camunda versions (Java 8+) and JUnit 4 support, please rely on version [0.9.0](https://github.com/camunda-community-hub/bpmn-driven-testing/tree/0.9.0).
 
 ## Features

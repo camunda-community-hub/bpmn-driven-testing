@@ -34,7 +34,7 @@ pluginManagement {
   resolutionStrategy {
     eachPlugin {
       if (requested.id.toString() == 'org.camunda.community.bpmndt') {
-        useModule("org.camunda.community:bpmn-driven-testing-gradle-plugin:0.12.0")
+        useModule("org.camunda.community:bpmn-driven-testing-gradle-plugin:0.13.0")
       }
     }
   }
@@ -80,7 +80,7 @@ Add dependencies, which are required to execute the generated test code:
 
 ```groovy
 dependencies {
-  implementation 'org.camunda.bpm:camunda-engine:7.21.0'
+  implementation 'org.camunda.bpm:camunda-engine:7.22.0'
 
   testImplementation 'com.h2database:h2:2.2.224'
   testImplementation 'org.assertj:assertj-core:3.26.3'
@@ -99,7 +99,7 @@ For **Spring** based testing, additional dependencies are required:
 
 ```groovy
 dependencies {
-  implementation 'org.camunda.bpm:camunda-engine-spring:7.21.0'
+  implementation 'org.camunda.bpm:camunda-engine-spring:7.22.0'
   implementation 'org.springframework:spring-beans:6.1.14'
   implementation 'org.springframework:spring-context:6.1.14'
   implementation 'org.springframework:spring-jdbc:6.1.14'
@@ -112,7 +112,7 @@ For **Spring Boot** based testing, additional dependencies are required:
 
 ```groovy
 dependencies {
-  implementation 'org.camunda.bpm.springboot:camunda-bpm-spring-boot-starter:7.21.0'
+  implementation 'org.camunda.bpm.springboot:camunda-bpm-spring-boot-starter:7.22.0'
 
   testImplementation 'org.springframework.boot:spring-boot-starter-test:3.3.4'
 }
@@ -122,7 +122,7 @@ Recommended versions:
 
 | Dependency         | Version |
 |:-------------------|:--------|
-| Camunda BPM        | 7.21.0  |
+| Camunda BPM        | 7.22.0  |
 | Camunda BPM Assert | 15.0.0  |
 | JUnit 5 (Jupiter)  | 5.10.1   |
 | Assertj            | 3.26.3  |
