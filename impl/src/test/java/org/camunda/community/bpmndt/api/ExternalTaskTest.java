@@ -125,6 +125,21 @@ public class ExternalTaskTest {
   }
 
   @Test
+  public void testWithWorkerId() {
+    final String workerId = "test-worker";
+
+    handler.withWorkerId(workerId);
+
+    handler.executeLockedExternalTask(externalTask -> {
+      assertThat(externalTask.getWorkerId()).isEqualTo(workerId);
+
+      externalTaskService.complete(externalTask.getId(), externalTask.getWorkerId());
+    });
+
+    tc.createExecutor().execute();
+  }
+
+  @Test
   public void testVerify() {
     handler.withVariable("a", "b").verify((pi, topicName) -> {
       assertThat(pi).isNotNull();
