@@ -41,6 +41,7 @@ public class ExternalTaskHandler {
 
   private Consumer<String> action;
   private Consumer<ExternalTask> taskAction;
+  private String workerId;
 
   public ExternalTaskHandler(ProcessEngine processEngine, String activityId, String topicName) {
     this.processEngine = processEngine;
@@ -51,6 +52,7 @@ public class ExternalTaskHandler {
     localVariables = Variables.createVariables();
 
     taskAction = this::complete;
+    workerId = WORKER_ID;
   }
 
   protected void apply(ProcessInstance pi) {
@@ -191,7 +193,7 @@ public class ExternalTaskHandler {
     ExternalTaskService externalTaskService = processEngine.getExternalTaskService();
 
     try {
-      externalTaskService.lock(externalTask.getId(), WORKER_ID, TimeUnit.SECONDS.toMillis(60L));
+      externalTaskService.lock(externalTask.getId(), workerId, TimeUnit.SECONDS.toMillis(60L));
     } catch (BadUserRequestException e) {
       String msg = String.format("External task for activity '%s' and topic '%s' could not be locked: %s", activityId, topicName, e.getMessage());
       throw new AssertionError(msg, e);
@@ -322,6 +324,20 @@ public class ExternalTaskHandler {
    */
   public ExternalTaskHandler withVariableTyped(String name, TypedValue value) {
     variables.putValueTyped(name, value);
+    return this;
+  }
+
+  /**
+   * Sets a custom worker ID, which is used for {@code lock}, {@code complete} and {@code handleBpmnError} {@link ExternalTaskService} calls. If not set, the
+   * default value "bpmndt-worker" is used.
+   *
+   * @param workerId A specific worker ID to use.
+   * @return The handler.
+   */
+  public ExternalTaskHandler withWorkerId(String workerId) {
+    if (workerId != null && !workerId.isBlank()) {
+      this.workerId = workerId;
+    }
     return this;
   }
 
