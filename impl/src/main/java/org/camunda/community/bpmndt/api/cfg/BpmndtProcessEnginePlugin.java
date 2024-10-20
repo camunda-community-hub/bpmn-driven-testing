@@ -34,7 +34,6 @@ public class BpmndtProcessEnginePlugin extends AbstractProcessEnginePlugin {
     processEngineConfiguration.setCustomPostBPMNParseListeners(postParseListeners);
     processEngineConfiguration.setDatabaseSchemaUpdate(ProcessEngineConfigurationImpl.DB_SCHEMA_UPDATE_CREATE_DROP);
     processEngineConfiguration.setHistoryLevel(HistoryLevel.HISTORY_LEVEL_FULL);
-    processEngineConfiguration.setInitializeTelemetry(false);
     processEngineConfiguration.setJobExecutorActivate(false);
     processEngineConfiguration.setMetricsEnabled(false);
     processEngineConfiguration.setProcessEngineName(PROCESS_ENGINE_NAME);
