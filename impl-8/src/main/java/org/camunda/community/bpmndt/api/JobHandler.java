@@ -59,8 +59,9 @@ public class JobHandler {
     this.element = element;
   }
 
-  void apply(TestCaseInstance instance, long processInstanceKey) {
+  void apply(TestCaseInstance instance, long flowScopeKey) {
     if (verifier != null) {
+      var processInstanceKey = instance.getProcessInstanceKey(flowScopeKey);
       verifier.accept(new ProcessInstanceAssert(processInstanceKey, BpmnAssert.getRecordStream()));
     }
 
@@ -71,7 +72,7 @@ public class JobHandler {
       typeExpressionConsumer.accept(element.type);
     }
 
-    var job = instance.getJob(processInstanceKey, element.id);
+    var job = instance.getJob(flowScopeKey, element.id);
 
     if (expectedRetries != null && !expectedRetries.equals(job.retries)) {
       var message = "expected job %s to have a retry count of %d, but was %d";

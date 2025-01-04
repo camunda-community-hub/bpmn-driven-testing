@@ -14,18 +14,26 @@
             <bpmndt:node>endEvent</bpmndt:node>
           </bpmndt:path>
         </bpmndt:testCase>
+        <bpmndt:testCase>
+          <bpmndt:path>
+            <bpmndt:node>userTask</bpmndt:node>
+            <bpmndt:node>nestedSubProcessEndEvent</bpmndt:node>
+            <bpmndt:node>subProcessEndEvent</bpmndt:node>
+            <bpmndt:node>endEvent</bpmndt:node>
+          </bpmndt:path>
+        </bpmndt:testCase>
       </bpmndt:testCases>
     </bpmn:extensionElements>
     <bpmn:startEvent id="startEvent">
       <bpmn:outgoing>Flow_0gxms6o</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:subProcess id="Activity_0eijyal">
+    <bpmn:subProcess id="subProcess">
       <bpmn:incoming>Flow_0gxms6o</bpmn:incoming>
       <bpmn:outgoing>Flow_1ywhm7a</bpmn:outgoing>
       <bpmn:startEvent id="subProcessStartEvent">
         <bpmn:outgoing>Flow_1v88c7c</bpmn:outgoing>
       </bpmn:startEvent>
-      <bpmn:subProcess id="Activity_08cd3q9">
+      <bpmn:subProcess id="nestedSubProcess">
         <bpmn:incoming>Flow_1v88c7c</bpmn:incoming>
         <bpmn:outgoing>Flow_1gorzcx</bpmn:outgoing>
         <bpmn:startEvent id="nestedSubProcessStartEvent">
@@ -44,30 +52,30 @@
           <bpmn:outgoing>Flow_1hlufqc</bpmn:outgoing>
         </bpmn:userTask>
       </bpmn:subProcess>
-      <bpmn:sequenceFlow id="Flow_1v88c7c" sourceRef="subProcessStartEvent" targetRef="Activity_08cd3q9" />
+      <bpmn:sequenceFlow id="Flow_1v88c7c" sourceRef="subProcessStartEvent" targetRef="nestedSubProcess" />
       <bpmn:endEvent id="subProcessEndEvent">
         <bpmn:incoming>Flow_1gorzcx</bpmn:incoming>
       </bpmn:endEvent>
-      <bpmn:sequenceFlow id="Flow_1gorzcx" sourceRef="Activity_08cd3q9" targetRef="subProcessEndEvent" />
+      <bpmn:sequenceFlow id="Flow_1gorzcx" sourceRef="nestedSubProcess" targetRef="subProcessEndEvent" />
     </bpmn:subProcess>
-    <bpmn:sequenceFlow id="Flow_0gxms6o" sourceRef="startEvent" targetRef="Activity_0eijyal" />
+    <bpmn:sequenceFlow id="Flow_0gxms6o" sourceRef="startEvent" targetRef="subProcess" />
     <bpmn:endEvent id="endEvent">
       <bpmn:incoming>Flow_1ywhm7a</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:sequenceFlow id="Flow_1ywhm7a" sourceRef="Activity_0eijyal" targetRef="endEvent" />
+    <bpmn:sequenceFlow id="Flow_1ywhm7a" sourceRef="subProcess" targetRef="endEvent" />
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="simpleSubProcessNested">
       <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="startEvent">
         <dc:Bounds x="179" y="229" width="36" height="36" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0eijyal_di" bpmnElement="Activity_0eijyal" isExpanded="true">
+      <bpmndi:BPMNShape id="Activity_0eijyal_di" bpmnElement="subProcess" isExpanded="true">
         <dc:Bounds x="260" y="80" width="620" height="330" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_0uipaml_di" bpmnElement="subProcessStartEvent">
         <dc:Bounds x="300" y="229" width="36" height="36" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_08cd3q9_di" bpmnElement="Activity_08cd3q9" isExpanded="true">
+      <bpmndi:BPMNShape id="Activity_08cd3q9_di" bpmnElement="nestedSubProcess" isExpanded="true">
         <dc:Bounds x="380" y="147" width="370" height="200" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_1wx9sk7_di" bpmnElement="nestedSubProcessStartEvent">

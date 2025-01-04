@@ -38,27 +38,25 @@ class MultiInstanceScopeSequentialTest {
   void testExecute() {
     var elements = List.of(1, 2, 3);
 
-    handler.execute((testCaseInstance, processInstanceKey) -> {
+    handler.verifyLoopCount(3).executeLoop((testCaseInstance, flowScopeKey) -> {
       var userTaskHandler = new UserTaskHandler("userTask");
       var messageCatchEventHandler = new MessageEventHandler("messageCatchEvent");
       var serviceTaskHandler = new JobHandler("serviceTask");
       var callActivityHandler = new CallActivityHandler("callActivity");
 
-      for (int i = 0; i < elements.size(); i++) {
-        testCaseInstance.apply(processInstanceKey, userTaskHandler);
-        testCaseInstance.apply(processInstanceKey, messageCatchEventHandler);
+      testCaseInstance.apply(flowScopeKey, userTaskHandler);
+      testCaseInstance.apply(flowScopeKey, messageCatchEventHandler);
 
-        var workerBuilder = client.newWorker()
-            .jobType("advanced")
-            .handler((client, job) -> client.newCompleteCommand(job).send());
+      var workerBuilder = client.newWorker()
+          .jobType("advanced")
+          .handler((client, job) -> client.newCompleteCommand(job).send());
 
-        try (var ignored = workerBuilder.open()) {
-          testCaseInstance.apply(processInstanceKey, serviceTaskHandler);
-          testCaseInstance.hasPassed(processInstanceKey, "serviceTask");
-        }
-
-        testCaseInstance.apply(processInstanceKey, callActivityHandler);
+      try (var ignored = workerBuilder.open()) {
+        testCaseInstance.apply(flowScopeKey, serviceTaskHandler);
+        testCaseInstance.hasPassed(flowScopeKey, "serviceTask");
       }
+
+      testCaseInstance.apply(flowScopeKey, callActivityHandler);
     });
 
     tc.createExecutor(engine)
@@ -70,9 +68,9 @@ class MultiInstanceScopeSequentialTest {
 
   @Test
   void testErrorContainsElementInstances() {
-    var e = assertThrows(AssertionError.class, () -> tc.createExecutor(engine)
-        .withTaskTimeout(1000)
+    var e = assertThrows(RuntimeException.class, () -> tc.createExecutor(engine)
         .withVariable("elements", List.of(1, 2, 3))
+        .withWaitTimeout(1000)
         .verify(ProcessInstanceAssert::isCompleted)
         .execute()
     );

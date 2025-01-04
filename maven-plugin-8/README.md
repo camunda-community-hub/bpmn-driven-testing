@@ -82,7 +82,7 @@ The integration tests are implemented using the [Robot Framework](https://robotf
 To execute unit and integration tests, run:
 
 ```sh
-mvn clean integration-test -pl maven-plugin-8 -am
+mvn clean install -pl maven-plugin-8 -am
 ```
 
 The Robot test report is written to `target/robot/report.html`.

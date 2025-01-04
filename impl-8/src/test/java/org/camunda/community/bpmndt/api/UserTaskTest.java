@@ -133,7 +133,7 @@ class UserTaskTest {
   void testVerifyAssignee() {
     handler.verifyAssignee("wrong assignee");
 
-    var e = assertThrows(AssertionError.class, () -> tc.createExecutor(engine).withTaskTimeout(1000L).execute());
+    var e = assertThrows(AssertionError.class, () -> tc.createExecutor(engine).withWaitTimeout(1000L).execute());
     assertThat(e).hasMessageThat().contains("'wrong assignee'");
     assertThat(e).hasMessageThat().contains("'simpleAssignee'");
 
@@ -143,7 +143,7 @@ class UserTaskTest {
 
     handler.verifyAssignee(assignee -> assertThat(assignee).isEqualTo("wrong assignee"));
 
-    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).withTaskTimeout(1000L).execute());
+    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).withWaitTimeout(1000L).execute());
 
     handler.verifyAssignee(assignee -> assertThat(assignee).isEqualTo("simpleAssignee"));
 
@@ -154,7 +154,7 @@ class UserTaskTest {
   void testVerifyAssigneeExpression() {
     handler.verifyAssigneeExpression(expr -> assertThat(expr).isEqualTo("wrong assignee expression"));
 
-    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).withTaskTimeout(1000L).execute());
+    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).withWaitTimeout(1000L).execute());
 
     handler.verifyAssigneeExpression(expr -> assertThat(expr).isEqualTo("=\"simpleAssignee\""));
 
@@ -165,7 +165,7 @@ class UserTaskTest {
   void testVerifyCandidateGroups() {
     handler.verifyCandidateGroups(Arrays.asList("wrong group 1", "wrong group 2"));
 
-    var e = assertThrows(AssertionError.class, () -> tc.createExecutor(engine).withTaskTimeout(1000L).execute());
+    var e = assertThrows(AssertionError.class, () -> tc.createExecutor(engine).withWaitTimeout(1000L).execute());
     assertThat(e).hasMessageThat().contains("candidate group #0 'wrong group 1'");
     assertThat(e).hasMessageThat().contains("'simpleGroupA'");
 
@@ -175,7 +175,7 @@ class UserTaskTest {
 
     handler.verifyCandidateGroups(groups -> assertThat(groups).containsExactly("wrong group 1", "wrong group 2").inOrder());
 
-    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).withTaskTimeout(1000L).execute());
+    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).withWaitTimeout(1000L).execute());
 
     handler.verifyCandidateGroups(groups -> assertThat(groups).containsExactly("simpleGroupA", "simpleGroupB").inOrder());
 
@@ -186,7 +186,7 @@ class UserTaskTest {
   void testVerifyCandidateGroupsExpression() {
     handler.verifyCandidateGroupsExpression(expr -> assertThat(expr).isEqualTo("wrong candidate groups expression"));
 
-    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).withTaskTimeout(1000L).execute());
+    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).withWaitTimeout(1000L).execute());
 
     handler.verifyCandidateGroupsExpression(expr -> assertThat(expr).isEqualTo("=[\"simpleGroupA\", \"simpleGroupB\"]"));
 
@@ -197,7 +197,7 @@ class UserTaskTest {
   void testVerifyCandidateUsers() {
     handler.verifyCandidateUsers(Arrays.asList("wrong user 1", "wrong user 2"));
 
-    var e = assertThrows(AssertionError.class, () -> tc.createExecutor(engine).withTaskTimeout(1000L).execute());
+    var e = assertThrows(AssertionError.class, () -> tc.createExecutor(engine).withWaitTimeout(1000L).execute());
     assertThat(e).hasMessageThat().contains("candidate user #0 'wrong user 1'");
     assertThat(e).hasMessageThat().contains("'simpleUserA'");
 
@@ -207,7 +207,7 @@ class UserTaskTest {
 
     handler.verifyCandidateUsers(users -> assertThat(users).containsExactly("wrong user 1", "wrong user 2").inOrder());
 
-    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).withTaskTimeout(1000L).execute());
+    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).withWaitTimeout(1000L).execute());
 
     handler.verifyCandidateUsers(users -> assertThat(users).containsExactly("simpleUserA", "simpleUserB").inOrder());
 
@@ -218,7 +218,7 @@ class UserTaskTest {
   void testVerifyCandidateUsersExpression() {
     handler.verifyCandidateUsersExpression(expr -> assertThat(expr).isEqualTo("wrong candidate users expression"));
 
-    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).withTaskTimeout(1000L).execute());
+    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).withWaitTimeout(1000L).execute());
 
     handler.verifyCandidateUsersExpression(expr -> assertThat(expr).isEqualTo("=[\"simpleUserA\", \"simpleUserB\"]"));
 
@@ -229,7 +229,7 @@ class UserTaskTest {
   void testVerifyDueDate() {
     handler.verifyDueDate(dueDate -> assertThat(dueDate).isEqualTo("wrong due date"));
 
-    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).withTaskTimeout(1000L).execute());
+    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).withWaitTimeout(1000L).execute());
 
     handler.verifyDueDate(dueDate -> assertThat(dueDate).isEqualTo("2023-02-17T00:00Z"));
 
@@ -240,7 +240,7 @@ class UserTaskTest {
   void testVerifyDueDateExpression() {
     handler.verifyDueDateExpression(expr -> assertThat(expr).isEqualTo("wrong due date expression"));
 
-    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).withTaskTimeout(1000L).execute());
+    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).withWaitTimeout(1000L).execute());
 
     handler.verifyDueDateExpression(expr -> assertThat(expr).isEqualTo("=\"2023-02-17T00:00:00Z\""));
 
@@ -251,7 +251,7 @@ class UserTaskTest {
   void testVerifyFollowUpDate() {
     handler.verifyFollowUpDate(followUpDate -> assertThat(followUpDate).isEqualTo("wrong follow-up date"));
 
-    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).withTaskTimeout(1000L).execute());
+    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).withWaitTimeout(1000L).execute());
 
     handler.verifyFollowUpDate(followUpDate -> assertThat(followUpDate).isEqualTo("2023-02-18T00:00Z"));
 
@@ -262,7 +262,7 @@ class UserTaskTest {
   void testVerifyFollowUpDateExpression() {
     handler.verifyFollowUpDateExpression(expr -> assertThat(expr).isEqualTo("wrong follow-up date expression"));
 
-    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).withTaskTimeout(1000L).execute());
+    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).withWaitTimeout(1000L).execute());
 
     handler.verifyFollowUpDateExpression(expr -> assertThat(expr).isEqualTo("=\"2023-02-18T00:00:00Z\""));
 
@@ -273,12 +273,12 @@ class UserTaskTest {
   void testVerifyFormKey() {
     handler.verifyFormKey("wrong form key");
 
-    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).withTaskTimeout(1000L).execute());
+    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).withWaitTimeout(1000L).execute());
 
     handler.verifyFormKey((String) null);
     handler.verifyFormKey(formKey -> assertThat(formKey).isEqualTo("wrong form key"));
 
-    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).withTaskTimeout(1000L).execute());
+    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).withWaitTimeout(1000L).execute());
 
     handler.verifyFormKey("simpleFormKey");
     handler.verifyFormKey(formKey -> assertThat(formKey).isEqualTo("simpleFormKey"));

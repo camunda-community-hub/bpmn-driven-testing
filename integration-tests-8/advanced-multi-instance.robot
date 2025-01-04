@@ -24,8 +24,10 @@ mvn clean test
   Should contain  ${result.stdout}  Running org.example.it.SequentialTest
   Should contain  ${result.stdout}  Running org.example.it.UserTaskErrorTest
   Should contain  ${result.stdout}  Running org.example.it.UserTaskMessageTest
+  Should contain  ${result.stdout}  Running org.example.it.UserTaskSignalTest
+  Should contain  ${result.stdout}  Running org.example.it.UserTaskTimerTest
   # tests executed successfully
-  Should contain  ${result.stdout}  Failures: 0, Errors: 0, Skipped: 1
+  Should contain  ${result.stdout}  Failures: 0, Errors: 0, Skipped: 0
 
   Should be equal as integers  ${result.rc}  0
 
@@ -43,6 +45,6 @@ gradle clean build
   # tests executed
   Should contain  ${result.stdout}  finished executing tests
   # tests executed successfully
-  Should contain  ${result.stdout}  Failures: 0, Skipped: 1
+  Should contain  ${result.stdout}  Failures: 0, Skipped: 0
 
   Should be equal as integers  ${result.rc}  0

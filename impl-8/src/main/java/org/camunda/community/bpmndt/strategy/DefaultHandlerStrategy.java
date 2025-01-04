@@ -46,10 +46,10 @@ public class DefaultHandlerStrategy extends DefaultStrategy {
     if (element.hasPrevious(BpmnElementType.EVENT_BASED_GATEWAY)) {
       // if an event or job is part of an event based gateway
       // the process instance is waiting at the gateway and not at the event or job itself
-      methodBuilder.addStatement("instance.apply(processInstanceKey, $L)", getHandler());
+      methodBuilder.addStatement("instance.apply(flowScopeKey, $L)", getHandler());
     } else {
-      methodBuilder.addStatement("instance.isWaitingAt(processInstanceKey, $S)", element.getId());
-      methodBuilder.addStatement("instance.apply(processInstanceKey, $L)", getHandler());
+      methodBuilder.addStatement("instance.isWaitingAt(flowScopeKey, $S)", element.getId());
+      methodBuilder.addStatement("instance.apply(flowScopeKey, $L)", getHandler());
     }
 
     if (!element.hasNext()) {
@@ -65,7 +65,7 @@ public class DefaultHandlerStrategy extends DefaultStrategy {
       case MESSAGE_BOUNDARY:
       case SIGNAL_BOUNDARY:
       case TIMER_BOUNDARY:
-        methodBuilder.addStatement("instance.apply(processInstanceKey, $L)", Literal.toLiteral(next.getId()));
+        methodBuilder.addStatement("instance.apply(flowScopeKey, $L)", Literal.toLiteral(next.getId()));
     }
   }
 
@@ -77,7 +77,7 @@ public class DefaultHandlerStrategy extends DefaultStrategy {
   @Override
   public void hasPassed(Builder methodBuilder) {
     if (element.hasNext() && element.getNext().getType().isBoundaryEvent()) {
-      methodBuilder.addStatement("instance.hasTerminated(processInstanceKey, $S)", element.getId());
+      methodBuilder.addStatement("instance.hasTerminated(flowScopeKey, $S)", element.getId());
     } else {
       super.hasPassed(methodBuilder);
     }

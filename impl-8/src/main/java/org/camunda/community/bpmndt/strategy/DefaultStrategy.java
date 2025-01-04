@@ -77,7 +77,7 @@ public class DefaultStrategy implements GeneratorStrategy {
 
   @Override
   public void hasPassed(MethodSpec.Builder methodBuilder) {
-    methodBuilder.addStatement("instance.hasPassed(processInstanceKey, $S)", element.getId());
+    methodBuilder.addStatement("instance.hasPassed(flowScopeKey, $S)", element.getId());
   }
 
   @Override
@@ -97,6 +97,6 @@ public class DefaultStrategy implements GeneratorStrategy {
 
   @Override
   public void isWaitingAt(MethodSpec.Builder methodBuilder) {
-    methodBuilder.addStatement("instance.isWaitingAt(processInstanceKey, $S)", element.getId());
+    methodBuilder.addStatement("instance.isWaitingAt(flowScopeKey, $S)", element.getId());
   }
 }

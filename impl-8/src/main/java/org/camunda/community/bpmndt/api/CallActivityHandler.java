@@ -2,9 +2,11 @@ package org.camunda.community.bpmndt.api;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 import org.camunda.community.bpmndt.api.TestCaseInstanceElement.CallActivityElement;
+import org.camunda.community.bpmndt.api.TestCaseInstanceMemo.ProcessInstanceMemo;
 
 import io.camunda.zeebe.process.test.assertions.BpmnAssert;
 import io.camunda.zeebe.process.test.assertions.ProcessInstanceAssert;
@@ -61,7 +63,9 @@ public class CallActivityHandler {
     this.element = element;
   }
 
-  void apply(TestCaseInstance instance, long processInstanceKey) {
+  void apply(TestCaseInstance instance, long flowScopeKey) {
+    var processInstanceKey = instance.getProcessInstanceKey(flowScopeKey);
+
     if (verifier != null) {
       verifier.accept(new ProcessInstanceAssert(processInstanceKey, BpmnAssert.getRecordStream()));
     }
@@ -70,7 +74,7 @@ public class CallActivityHandler {
       processIdExpressionConsumer.accept(element.processId);
     }
 
-    var calledProcessInstance = instance.getCalledProcessInstance(processInstanceKey, element.id);
+    var calledProcessInstance = getCalledProcessInstance(instance, flowScopeKey);
     var job = instance.getJob(calledProcessInstance.key, SIMULATE_ELEMENT_ID);
 
     if (expectedProcessId != null && !expectedProcessId.equals(calledProcessInstance.bpmnProcessId)) {
@@ -116,7 +120,7 @@ public class CallActivityHandler {
         instance.getClient().newThrowErrorCommand(job.key).errorCode(DO_ESCALATION_CODE).send().join();
       }
 
-      instance.hasTerminated(processInstanceKey, element.id);
+      instance.hasTerminated(flowScopeKey, element.id);
     } else {
       // end called process instance
       if (variables != null) {
@@ -125,7 +129,7 @@ public class CallActivityHandler {
         instance.getClient().newCompleteCommand(job.key).variables(variableMap).send().join();
       }
 
-      instance.hasPassed(processInstanceKey, element.id);
+      instance.hasPassed(flowScopeKey, element.id);
     }
 
     if (outputVerifier != null) {
@@ -313,5 +317,31 @@ public class CallActivityHandler {
   public CallActivityHandler withErrorCode(String errorCode) {
     this.errorCode = errorCode;
     return this;
+  }
+
+  private ProcessInstanceMemo getCalledProcessInstance(TestCaseInstance instance, long flowScopeKey) {
+    return instance.select(memo -> {
+      var callActivity = memo.elements.stream().filter(e ->
+          e.flowScopeKey == flowScopeKey && Objects.equals(e.id, element.id)
+      ).findFirst();
+
+      if (callActivity.isEmpty()) {
+        var message = String.format("call activity %s of flow scope %d could not be found", element.id, flowScopeKey);
+        throw instance.createException(message, flowScopeKey);
+      }
+
+      var callActivityKey = callActivity.get().key;
+
+      var calledProcessInstance = memo.processInstances.stream().filter(
+          processInstance -> processInstance.parentElementInstanceKey == callActivityKey
+      ).findFirst();
+
+      if (calledProcessInstance.isEmpty()) {
+        var message = String.format("call activity %s of flow scope %d has not called a process", element.id, flowScopeKey);
+        throw instance.createException(message, flowScopeKey);
+      }
+
+      return calledProcessInstance.get();
+    });
   }
 }

@@ -37,7 +37,7 @@ mvn clean test
   Should contain  ${result.stdout}  Running org.example.it.SimpleTimerCatchEventTest
   Should contain  ${result.stdout}  Running org.example.it.SimpleUserTaskTest
   # tests executed successfully
-  Should contain  ${result.stdout}  Failures: 0, Errors: 0, Skipped: 0
+  Should contain  ${result.stdout}  Failures: 0, Errors: 0, Skipped: 1
 
   Should be equal as integers  ${result.rc}  0
 
@@ -57,7 +57,7 @@ gradle clean build
   # tests executed
   Should contain  ${result.stdout}  finished executing tests
   # tests executed successfully
-  Should contain  ${result.stdout}  Failures: 0, Skipped: 0
+  Should contain  ${result.stdout}  Failures: 0, Skipped: 1
 
   Should be equal as integers  ${result.rc}  0
 
@@ -147,7 +147,9 @@ Assert Test Code Generation
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/simplesignalstartevent/TC_signalStartEvent__endEvent.java
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/simplesubprocess/TC_startEvent__endEvent.java
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/simplesubprocess/TC_startEvent__subProcessEndEvent.java
+  Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/simplesubprocess/TC_subProcessStartEvent__endEvent.java
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/simplesubprocessnested/TC_startEvent__endEvent.java
+  Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/simplesubprocessnested/TC_userTask__endEvent.java
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/simpletimercatchevent/TC_startEvent__endEvent.java
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/simpleusertask/TC_startEvent__endEvent.java
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/duplicatetestcasenames/TC_startEvent__endEvent.java
@@ -174,7 +176,9 @@ Assert Test Code Generation
   File should exist  ${testSources}/generated/simplesignalstartevent/TC_signalStartEvent__endEvent.java
   File should exist  ${testSources}/generated/simplesubprocess/TC_startEvent__endEvent.java
   File should exist  ${testSources}/generated/simplesubprocess/TC_startEvent__subProcessEndEvent.java
+  File should exist  ${testSources}/generated/simplesubprocess/TC_subProcessStartEvent__endEvent.java
   File should exist  ${testSources}/generated/simplesubprocessnested/TC_startEvent__endEvent.java
+  File should exist  ${testSources}/generated/simplesubprocessnested/TC_userTask__endEvent.java
   File should exist  ${testSources}/generated/simpletimercatchevent/TC_startEvent__endEvent.java
   File should exist  ${testSources}/generated/simpleusertask/TC_startEvent__endEvent.java
   File should exist  ${testSources}/generated/duplicatetestcasenames/TC_startEvent__endEvent.java

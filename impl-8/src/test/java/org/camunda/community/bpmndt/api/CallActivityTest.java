@@ -126,9 +126,9 @@ class CallActivityTest {
 
   @Test
   void testErrorContainsIncidents() {
-    var e = assertThrows(AssertionError.class, () -> tc.createExecutor(engine)
-        .withTaskTimeout(1000L)
+    var e = assertThrows(RuntimeException.class, () -> tc.createExecutor(engine)
         .verify(ProcessInstanceAssert::isCompleted)
+        .withWaitTimeout(1000L)
         .execute()
     );
 

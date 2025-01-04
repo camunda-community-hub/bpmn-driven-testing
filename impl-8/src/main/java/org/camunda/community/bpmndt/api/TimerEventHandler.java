@@ -4,9 +4,11 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 import org.camunda.community.bpmndt.api.TestCaseInstanceElement.TimerEventElement;
+import org.camunda.community.bpmndt.api.TestCaseInstanceMemo.TimerMemo;
 
 import io.camunda.zeebe.process.test.assertions.BpmnAssert;
 import io.camunda.zeebe.process.test.assertions.ProcessInstanceAssert;
@@ -46,8 +48,9 @@ public class TimerEventHandler {
     this.element = element;
   }
 
-  void apply(TestCaseInstance instance, long processInstanceKey) {
+  void apply(TestCaseInstance instance, long flowScopeKey) {
     if (verifier != null) {
+      var processInstanceKey = instance.getProcessInstanceKey(flowScopeKey);
       verifier.accept(new ProcessInstanceAssert(processInstanceKey, BpmnAssert.getRecordStream()));
     }
 
@@ -58,7 +61,7 @@ public class TimerEventHandler {
       timeDurationExpressionConsumer.accept(element.timeDuration);
     }
 
-    var timer = instance.getTimer(processInstanceKey, element.id);
+    var timer = getTimer(instance, flowScopeKey);
 
     if (timeDateConsumer != null) {
       var dueDateInstant = Instant.ofEpochMilli(timer.dueDate);
@@ -155,5 +158,22 @@ public class TimerEventHandler {
   Duration toDuration(long dueDate, long creationDate) {
     long millis = Math.round((dueDate - creationDate + 999) / 1000 * 1000);
     return Duration.ofMillis(millis);
+  }
+
+  private TimerMemo getTimer(TestCaseInstance instance, long flowScopeKey) {
+    var flowScopeKeys = instance.getKeys(flowScopeKey);
+
+    return instance.select(memo -> {
+      var timer = memo.timers.stream().filter(t ->
+          flowScopeKeys.contains(t.flowScopeKey) && Objects.equals(t.elementId, element.id)
+      ).findFirst();
+
+      if (timer.isEmpty()) {
+        var message = String.format("element %s of flow scope %d has no timer", element.id, flowScopeKey);
+        throw instance.createException(message, flowScopeKey);
+      }
+
+      return timer.get();
+    });
   }
 }

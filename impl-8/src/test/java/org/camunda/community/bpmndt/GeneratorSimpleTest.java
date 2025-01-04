@@ -73,7 +73,7 @@ class GeneratorSimpleTest {
     assertThat(typeSpec.methodSpecs.get(0)).hasName("beforeEach");
     assertThat(typeSpec.methodSpecs.get(0).parameters).hasSize(0);
     assertThat(typeSpec.methodSpecs.get(1)).hasName("execute");
-    assertThat(typeSpec.methodSpecs.get(1)).hasParameters("instance", "processInstanceKey");
+    assertThat(typeSpec.methodSpecs.get(1)).hasParameters("instance", "flowScopeKey");
     assertThat(typeSpec.methodSpecs.get(1).parameters.get(0).type).isEqualTo(ClassName.get(TestCaseInstance.class));
     assertThat(typeSpec.methodSpecs.get(1).parameters.get(1).type).isEqualTo(TypeName.LONG);
     assertThat(typeSpec.methodSpecs.get(2)).hasName("getBpmnProcessId");
@@ -115,9 +115,9 @@ class GeneratorSimpleTest {
     expected = "callActivityElement.propagateAllParentVariables = true;";
     assertThat(typeSpec.methodSpecs.get(0)).containsCode(expected);
 
-    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.isWaitingAt(processInstanceKey, \"callActivity\");");
-    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.apply(processInstanceKey, callActivity);");
-    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(processInstanceKey, \"callActivity\");");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.isWaitingAt(flowScopeKey, \"callActivity\");");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.apply(flowScopeKey, callActivity);");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(flowScopeKey, \"callActivity\");");
   }
 
   @Test
@@ -147,6 +147,13 @@ class GeneratorSimpleTest {
     assertThat(typeSpec.methodSpecs.get(7)).hasName("handleMessageCatchEvent");
     assertThat(typeSpec.methodSpecs.get(7)).hasReturnType(DefaultStrategy.MESSAGE_EVENT);
 
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("// eventBasedGateway: eventBasedGateway");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.isWaitingAt(flowScopeKey, \"eventBasedGateway\");");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("// intermediateCatchEvent: messageCatchEvent");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.apply(flowScopeKey, messageCatchEvent);");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(flowScopeKey, \"eventBasedGateway\");");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(flowScopeKey, \"messageCatchEvent\");");
+
     typeSpec = result.getFiles().get(1).typeSpec;
     assertThat(typeSpec).hasFields(1);
     assertThat(typeSpec).hasMethods(8);
@@ -157,9 +164,19 @@ class GeneratorSimpleTest {
     assertThat(typeSpec.methodSpecs.get(7)).hasName("handleTimerCatchEvent");
     assertThat(typeSpec.methodSpecs.get(7)).hasReturnType(DefaultStrategy.TIMER_EVENT);
 
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("// eventBasedGateway: eventBasedGateway");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.isWaitingAt(flowScopeKey, \"eventBasedGateway\");");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("// intermediateCatchEvent: timerCatchEvent");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.apply(flowScopeKey, timerCatchEvent);");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(flowScopeKey, \"eventBasedGateway\");");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(flowScopeKey, \"timerCatchEvent\");");
+
     typeSpec = result.getFiles().get(2).typeSpec;
     assertThat(typeSpec).hasFields(0);
     assertThat(typeSpec).hasMethods(7);
+
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("// eventBasedGateway: eventBasedGateway");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.isWaitingAt(flowScopeKey, \"eventBasedGateway\");");
   }
 
   @Test
@@ -179,9 +196,9 @@ class GeneratorSimpleTest {
 
     var expected = "messageCatchEvent = new %s(messageCatchEventElement);";
     assertThat(typeSpec.methodSpecs.get(0)).containsCode(String.format(expected, DefaultStrategy.MESSAGE_EVENT));
-    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.isWaitingAt(processInstanceKey, \"messageCatchEvent\");");
-    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.apply(processInstanceKey, messageCatchEvent);");
-    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(processInstanceKey, \"messageCatchEvent\");");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.isWaitingAt(flowScopeKey, \"messageCatchEvent\");");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.apply(flowScopeKey, messageCatchEvent);");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(flowScopeKey, \"messageCatchEvent\");");
   }
 
   @Test
@@ -215,9 +232,9 @@ class GeneratorSimpleTest {
 
     var expected = "messageThrowEvent = new %s(messageThrowEventElement);";
     assertThat(typeSpec.methodSpecs.get(0)).containsCode(String.format(expected, DefaultStrategy.JOB));
-    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.isWaitingAt(processInstanceKey, \"messageThrowEvent\");");
-    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.apply(processInstanceKey, messageThrowEvent);");
-    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(processInstanceKey, \"messageThrowEvent\");");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.isWaitingAt(flowScopeKey, \"messageThrowEvent\");");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.apply(flowScopeKey, messageThrowEvent);");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(flowScopeKey, \"messageThrowEvent\");");
   }
 
   @Test
@@ -237,9 +254,9 @@ class GeneratorSimpleTest {
 
     var expected = "receiveTask = new %s(receiveTaskElement);";
     assertThat(typeSpec.methodSpecs.get(0)).containsCode(String.format(expected, DefaultStrategy.RECEIVE_TASK));
-    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.isWaitingAt(processInstanceKey, \"receiveTask\");");
-    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.apply(processInstanceKey, receiveTask);");
-    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(processInstanceKey, \"receiveTask\");");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.isWaitingAt(flowScopeKey, \"receiveTask\");");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.apply(flowScopeKey, receiveTask);");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(flowScopeKey, \"receiveTask\");");
   }
 
   @Test
@@ -258,9 +275,9 @@ class GeneratorSimpleTest {
 
     var expected = "signalCatchEvent = new %s(signalCatchEventElement);";
     assertThat(typeSpec.methodSpecs.get(0)).containsCode(String.format(expected, DefaultStrategy.SIGNAL_EVENT));
-    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.isWaitingAt(processInstanceKey, \"signalCatchEvent\");");
-    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.apply(processInstanceKey, signalCatchEvent);");
-    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(processInstanceKey, \"signalCatchEvent\");");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.isWaitingAt(flowScopeKey, \"signalCatchEvent\");");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.apply(flowScopeKey, signalCatchEvent);");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(flowScopeKey, \"signalCatchEvent\");");
   }
 
   @Test
@@ -281,18 +298,122 @@ class GeneratorSimpleTest {
   void testSimpleSubProcess() {
     generator.generateTestCases(ctx, bpmnFile);
 
-    // BPMN process contains 2 test cases
-    assertThat(result.getFiles()).hasSize(2);
+    assertThat(result.getFiles()).hasSize(3);
     assertThat(result.getFiles().get(0).typeSpec).hasName("TC_startEvent__endEvent");
     assertThat(result.getFiles().get(1).typeSpec).hasName("TC_startEvent__subProcessEndEvent");
+    assertThat(result.getFiles().get(2).typeSpec).hasName("TC_subProcessStartEvent__endEvent");
 
     var typeSpec = result.getFiles().get(0).typeSpec;
-    assertThat(typeSpec).hasMethods(7);
+    assertThat(typeSpec).hasMethods(8);
 
-    assertThat(typeSpec.methodSpecs.get(1)).containsCode("// startEvent: subProcessStartEvent");
-    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(processInstanceKey, \"subProcessStartEvent\");");
-    assertThat(typeSpec.methodSpecs.get(1)).containsCode("// endEvent: subProcessEndEvent");
-    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(processInstanceKey, \"subProcessEndEvent\");");
+    assertThat(typeSpec.methodSpecs.get(1)).hasName("execute");
+    assertThat(typeSpec.methodSpecs.get(1)).hasParameters("instance", "flowScopeKey");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("// startEvent: startEvent");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(flowScopeKey, \"startEvent\");");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("// subProcess: subProcess");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("executeSubProcess(instance, flowScopeKey);");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("// endEvent: endEvent");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(flowScopeKey, \"endEvent\");");
+
+    assertThat(typeSpec.methodSpecs.get(2)).hasName("executeSubProcess");
+    assertThat(typeSpec.methodSpecs.get(2)).hasParameters("instance", "parentFlowScopeKey");
+    assertThat(typeSpec.methodSpecs.get(2)).containsCode("long flowScopeKey = instance.getElementInstanceKey(parentFlowScopeKey, \"subProcess\");");
+    assertThat(typeSpec.methodSpecs.get(2)).containsCode("// startEvent: subProcessStartEvent");
+    assertThat(typeSpec.methodSpecs.get(2)).containsCode("instance.hasPassed(flowScopeKey, \"subProcessStartEvent\");");
+    assertThat(typeSpec.methodSpecs.get(2)).containsCode("// endEvent: subProcessEndEvent");
+    assertThat(typeSpec.methodSpecs.get(2)).containsCode("instance.hasPassed(flowScopeKey, \"subProcessEndEvent\");");
+
+    typeSpec = result.getFiles().get(2).typeSpec;
+    assertThat(typeSpec).hasMethods(9);
+
+    assertThat(typeSpec.methodSpecs.get(1)).hasName("execute");
+    assertThat(typeSpec.methodSpecs.get(1)).hasParameters("instance", "flowScopeKey");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("// subProcess: subProcess");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("executeSubProcess(instance, flowScopeKey);");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("// endEvent: endEvent");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(flowScopeKey, \"endEvent\");");
+
+    assertThat(typeSpec.methodSpecs.get(2)).hasName("executeSubProcess");
+    assertThat(typeSpec.methodSpecs.get(2)).hasParameters("instance", "parentFlowScopeKey");
+    assertThat(typeSpec.methodSpecs.get(2)).containsCode("long flowScopeKey = instance.getElementInstanceKey(parentFlowScopeKey, \"subProcess\");");
+    assertThat(typeSpec.methodSpecs.get(2)).containsCode("// startEvent: subProcessStartEvent");
+    assertThat(typeSpec.methodSpecs.get(2)).containsCode("instance.hasPassed(flowScopeKey, \"subProcessStartEvent\");");
+    assertThat(typeSpec.methodSpecs.get(2)).containsCode("// endEvent: subProcessEndEvent");
+    assertThat(typeSpec.methodSpecs.get(2)).containsCode("instance.hasPassed(flowScopeKey, \"subProcessEndEvent\");");
+  }
+
+  @Test
+  void testSimpleSubProcessNested() {
+    generator.generateTestCases(ctx, bpmnFile);
+
+    assertThat(result.getFiles()).hasSize(2);
+    assertThat(result.getFiles().get(0).typeSpec).hasName("TC_startEvent__endEvent");
+    assertThat(result.getFiles().get(1).typeSpec).hasName("TC_userTask__endEvent");
+
+    var typeSpec = result.getFiles().get(0).typeSpec;
+    assertThat(typeSpec).hasMethods(10);
+
+    assertThat(typeSpec.methodSpecs.get(1)).hasName("execute");
+    assertThat(typeSpec.methodSpecs.get(1)).hasParameters("instance", "flowScopeKey");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("// startEvent: startEvent");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(flowScopeKey, \"startEvent\");");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("// subProcess: subProcess");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("executeSubProcess(instance, flowScopeKey);");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("// endEvent: endEvent");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(flowScopeKey, \"endEvent\");");
+
+    assertThat(typeSpec.methodSpecs.get(2)).hasName("executeSubProcess");
+    assertThat(typeSpec.methodSpecs.get(2)).hasParameters("instance", "parentFlowScopeKey");
+    assertThat(typeSpec.methodSpecs.get(2)).containsCode("long flowScopeKey = instance.getElementInstanceKey(parentFlowScopeKey, \"subProcess\");");
+    assertThat(typeSpec.methodSpecs.get(2)).containsCode("// startEvent: subProcessStartEvent");
+    assertThat(typeSpec.methodSpecs.get(2)).containsCode("instance.hasPassed(flowScopeKey, \"subProcessStartEvent\");");
+    assertThat(typeSpec.methodSpecs.get(2)).containsCode("// subProcess: nestedSubProcess");
+    assertThat(typeSpec.methodSpecs.get(2)).containsCode("executeNestedSubProcess(instance, flowScopeKey);");
+    assertThat(typeSpec.methodSpecs.get(2)).containsCode("// endEvent: subProcessEndEvent");
+    assertThat(typeSpec.methodSpecs.get(2)).containsCode("instance.hasPassed(flowScopeKey, \"subProcessEndEvent\");");
+
+    assertThat(typeSpec.methodSpecs.get(3)).hasName("executeNestedSubProcess");
+    assertThat(typeSpec.methodSpecs.get(3)).hasParameters("instance", "parentFlowScopeKey");
+    assertThat(typeSpec.methodSpecs.get(3)).containsCode("long flowScopeKey = instance.getElementInstanceKey(parentFlowScopeKey, \"nestedSubProcess\");");
+    assertThat(typeSpec.methodSpecs.get(3)).containsCode("// startEvent: nestedSubProcessStartEvent");
+    assertThat(typeSpec.methodSpecs.get(3)).containsCode("instance.hasPassed(flowScopeKey, \"nestedSubProcessStartEvent\");");
+    assertThat(typeSpec.methodSpecs.get(3)).containsCode("// userTask: userTask");
+    assertThat(typeSpec.methodSpecs.get(3)).containsCode("instance.isWaitingAt(flowScopeKey, \"userTask\");");
+    assertThat(typeSpec.methodSpecs.get(3)).containsCode("instance.apply(flowScopeKey, userTask);");
+    assertThat(typeSpec.methodSpecs.get(3)).containsCode("instance.hasPassed(flowScopeKey, \"userTask\");");
+    assertThat(typeSpec.methodSpecs.get(3)).containsCode("// endEvent: nestedSubProcessEndEvent");
+    assertThat(typeSpec.methodSpecs.get(3)).containsCode("instance.hasPassed(flowScopeKey, \"nestedSubProcessEndEvent\");");
+
+    typeSpec = result.getFiles().get(1).typeSpec;
+    assertThat(typeSpec).hasMethods(11);
+
+    assertThat(typeSpec.methodSpecs.get(1)).hasName("execute");
+    assertThat(typeSpec.methodSpecs.get(1)).hasParameters("instance", "flowScopeKey");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("// subProcess: subProcess");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("executeSubProcess(instance, flowScopeKey);");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("// endEvent: endEvent");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(flowScopeKey, \"endEvent\");");
+
+    assertThat(typeSpec.methodSpecs.get(2)).hasName("executeSubProcess");
+    assertThat(typeSpec.methodSpecs.get(2)).hasParameters("instance", "parentFlowScopeKey");
+    assertThat(typeSpec.methodSpecs.get(2)).containsCode("long flowScopeKey = instance.getElementInstanceKey(parentFlowScopeKey, \"subProcess\");");
+    assertThat(typeSpec.methodSpecs.get(2)).containsCode("// subProcess: nestedSubProcess");
+    assertThat(typeSpec.methodSpecs.get(2)).containsCode("executeNestedSubProcess(instance, flowScopeKey);");
+    assertThat(typeSpec.methodSpecs.get(2)).containsCode("// endEvent: subProcessEndEvent");
+    assertThat(typeSpec.methodSpecs.get(2)).containsCode("instance.hasPassed(flowScopeKey, \"subProcessEndEvent\");");
+
+    assertThat(typeSpec.methodSpecs.get(3)).hasName("executeNestedSubProcess");
+    assertThat(typeSpec.methodSpecs.get(3)).hasParameters("instance", "parentFlowScopeKey");
+    assertThat(typeSpec.methodSpecs.get(3)).containsCode("long flowScopeKey = instance.getElementInstanceKey(parentFlowScopeKey, \"nestedSubProcess\");");
+    assertThat(typeSpec.methodSpecs.get(3)).containsCode("// userTask: userTask");
+    assertThat(typeSpec.methodSpecs.get(3)).containsCode("instance.isWaitingAt(flowScopeKey, \"userTask\");");
+    assertThat(typeSpec.methodSpecs.get(3)).containsCode("instance.apply(flowScopeKey, userTask);");
+    assertThat(typeSpec.methodSpecs.get(3)).containsCode("instance.hasPassed(flowScopeKey, \"userTask\");");
+    assertThat(typeSpec.methodSpecs.get(3)).containsCode("// endEvent: nestedSubProcessEndEvent");
+    assertThat(typeSpec.methodSpecs.get(3)).containsCode("instance.hasPassed(flowScopeKey, \"nestedSubProcessEndEvent\");");
+
+    assertThat(typeSpec.methodSpecs.get(9)).hasName("isProcessStart");
+    assertThat(typeSpec.methodSpecs.get(9)).containsCode("return false;");
   }
 
   @Test
@@ -318,9 +439,9 @@ class GeneratorSimpleTest {
     expected = "imerCatchEventElement.timeDuration = \"PT1H\";";
     assertThat(typeSpec.methodSpecs.get(0)).containsCode(expected);
 
-    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.isWaitingAt(processInstanceKey, \"timerCatchEvent\");");
-    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.apply(processInstanceKey, timerCatchEvent);");
-    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(processInstanceKey, \"timerCatchEvent\");");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.isWaitingAt(flowScopeKey, \"timerCatchEvent\");");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.apply(flowScopeKey, timerCatchEvent);");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(flowScopeKey, \"timerCatchEvent\");");
   }
 
   @Test
@@ -368,9 +489,9 @@ class GeneratorSimpleTest {
     expected = "userTaskElement.followUpDate = \"=\\\"2023-02-18T00:00:00Z\\\"\";";
     assertThat(typeSpec.methodSpecs.get(0)).containsCode(expected);
 
-    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.isWaitingAt(processInstanceKey, \"userTask\");");
-    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.apply(processInstanceKey, userTask);");
-    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(processInstanceKey, \"userTask\");");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.isWaitingAt(flowScopeKey, \"userTask\");");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.apply(flowScopeKey, userTask);");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(flowScopeKey, \"userTask\");");
   }
 
   /**

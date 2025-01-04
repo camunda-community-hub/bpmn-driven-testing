@@ -72,8 +72,9 @@ public class UserTaskHandler {
   }
 
   @SuppressWarnings("unchecked")
-  void apply(TestCaseInstance instance, long processInstanceKey) {
+  void apply(TestCaseInstance instance, long flowScopeKey) {
     if (verifier != null) {
+      var processInstanceKey = instance.getProcessInstanceKey(flowScopeKey);
       verifier.accept(new ProcessInstanceAssert(processInstanceKey, BpmnAssert.getRecordStream()));
     }
 
@@ -93,7 +94,7 @@ public class UserTaskHandler {
       followUpDateExpressionConsumer.accept(element.followUpDate);
     }
 
-    var job = instance.getJob(processInstanceKey, element.id);
+    var job = instance.getJob(flowScopeKey, element.id);
     if (!Protocol.USER_TASK_JOB_TYPE.equals(job.type)) {
       String message = "expected job %s to be of type '%s', but was '%s'";
       throw new AssertionError(String.format(message, element.id, Protocol.USER_TASK_JOB_TYPE, job.type));

@@ -13,7 +13,7 @@ public class CustomMultiInstanceStrategy extends DefaultHandlerStrategy {
   }
 
   public void applyHandler(MethodSpec.Builder methodBuilder) {
-    methodBuilder.addStatement("instance.apply(processInstanceKey, $L)", getHandler());
+    methodBuilder.addStatement("instance.apply(flowScopeKey, $L)", getHandler());
   }
 
   @Override
@@ -24,9 +24,9 @@ public class CustomMultiInstanceStrategy extends DefaultHandlerStrategy {
   @Override
   public void hasPassed(MethodSpec.Builder methodBuilder) {
     if (element.hasNext() && element.getNext().getType().isBoundaryEvent()) {
-      methodBuilder.addStatement("instance.hasTerminatedMultiInstance(processInstanceKey, $S)", element.getId());
+      methodBuilder.addStatement("instance.hasTerminatedMultiInstance(flowScopeKey, $S)", element.getId());
     } else {
-      methodBuilder.addStatement("instance.hasPassedMultiInstance(processInstanceKey, $S)", element.getId());
+      methodBuilder.addStatement("instance.hasPassedMultiInstance(flowScopeKey, $S)", element.getId());
     }
   }
 

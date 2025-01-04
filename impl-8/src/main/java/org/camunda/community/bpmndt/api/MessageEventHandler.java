@@ -56,8 +56,9 @@ public class MessageEventHandler {
     correlate();
   }
 
-  void apply(TestCaseInstance instance, long processInstanceKey) {
+  void apply(TestCaseInstance instance, long flowScopeKey) {
     if (verifier != null) {
+      var processInstanceKey = instance.getProcessInstanceKey(flowScopeKey);
       verifier.accept(new ProcessInstanceAssert(processInstanceKey, BpmnAssert.getRecordStream()));
     }
 
@@ -68,7 +69,7 @@ public class MessageEventHandler {
       messageNameExpressionConsumer.accept(element.messageName);
     }
 
-    var messageSubscription = instance.getMessageSubscription(processInstanceKey, element.id);
+    var messageSubscription = instance.getMessageSubscription(flowScopeKey, element.id);
 
     if (expectedCorrelationKey != null && !expectedCorrelationKey.equals(messageSubscription.correlationKey)) {
       var message = "expected message event %s to have correlation key '%s', but was '%s'";
