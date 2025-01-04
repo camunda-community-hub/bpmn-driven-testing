@@ -1,10 +1,12 @@
 package org.camunda.community.bpmndt.api;
 
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.camunda.community.bpmndt.api.TestCaseInstanceElement.MultiInstanceElement;
@@ -27,6 +29,11 @@ class MultiInstanceSequentialTest {
 
   private CustomMultiInstanceHandler handler;
 
+  private int executeCounter;
+
+  private long processInstanceKey;
+  private List<Long> elementInstanceKeys;
+
   @BeforeEach
   public void setUp() {
     MultiInstanceElement element = new MultiInstanceElement();
@@ -38,6 +45,25 @@ class MultiInstanceSequentialTest {
 
   @Test
   void testExecute() {
+    tc.createExecutor(engine)
+        .withVariable("elements", List.of(1, 2, 3))
+        .verify(ProcessInstanceAssert::isCompleted)
+        .execute();
+  }
+
+  @Test
+  void testLoopCount() {
+    handler.verifyLoopCount(2);
+
+    assertThrows(AssertionError.class, () ->
+        tc.createExecutor(engine)
+            .withVariable("elements", List.of(1, 2, 3))
+            .verify(ProcessInstanceAssert::isCompleted)
+            .execute()
+    );
+
+    handler.verifyLoopCount(3);
+
     tc.createExecutor(engine)
         .withVariable("elements", List.of(1, 2, 3))
         .verify(ProcessInstanceAssert::isCompleted)
@@ -61,6 +87,56 @@ class MultiInstanceSequentialTest {
         .withVariable("elements", List.of(1, 2, 3))
         .verify(ProcessInstanceAssert::isCompleted)
         .execute();
+  }
+
+  @Test
+  void testExecuteAction() {
+    handler.execute((instance, processInstanceKey) -> {
+      executeCounter++;
+
+      assertThat(instance).isNotNull();
+      this.processInstanceKey = processInstanceKey;
+    });
+
+    var processInstanceKey = tc.createExecutor(engine)
+        .withVariable("elements", List.of(1, 2, 3))
+        .verify(ProcessInstanceAssert::isCompleted)
+        .execute();
+
+    assertThat(executeCounter).isEqualTo(1);
+
+    assertThat(processInstanceKey).isEqualTo(this.processInstanceKey);
+  }
+
+  @Test
+  void testExecuteLoopAction() {
+    elementInstanceKeys = new ArrayList<>();
+
+    handler.executeLoop((instance, elementInstanceKey) -> {
+      executeCounter++;
+
+      assertThat(instance).isNotNull();
+      elementInstanceKeys.add(elementInstanceKey);
+    });
+
+    var processInstanceKey = tc.createExecutor(engine)
+        .withVariable("elements", List.of(1, 2, 3))
+        .verify(ProcessInstanceAssert::isCompleted)
+        .execute();
+
+    assertThat(executeCounter).isEqualTo(3);
+
+    assertThat(elementInstanceKeys).hasSize(3);
+    assertThat(elementInstanceKeys.get(0)).isGreaterThan(0);
+    assertThat(elementInstanceKeys.get(0)).isNotEqualTo(processInstanceKey);
+    assertThat(elementInstanceKeys.get(1)).isGreaterThan(0);
+    assertThat(elementInstanceKeys.get(1)).isNotEqualTo(processInstanceKey);
+    assertThat(elementInstanceKeys.get(2)).isGreaterThan(0);
+    assertThat(elementInstanceKeys.get(2)).isNotEqualTo(processInstanceKey);
+
+    assertThat(elementInstanceKeys.get(0)).isNotEqualTo(elementInstanceKeys.get(1));
+    assertThat(elementInstanceKeys.get(0)).isNotEqualTo(elementInstanceKeys.get(2));
+    assertThat(elementInstanceKeys.get(1)).isNotEqualTo(elementInstanceKeys.get(2));
   }
 
   private class TestCase extends AbstractJUnit5TestCase {

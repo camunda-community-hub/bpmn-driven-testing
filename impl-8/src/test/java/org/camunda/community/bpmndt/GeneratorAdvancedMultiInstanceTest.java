@@ -81,11 +81,11 @@ class GeneratorAdvancedMultiInstanceTest {
     expected = "subProcessElement.sequential = true;";
     assertThat(typeSpec.methodSpecs.get(0)).containsCode(expected);
 
-    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(processInstanceKey, \"startEvent\");");
-    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.apply(processInstanceKey, subProcess);");
-    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassedMultiInstance(processInstanceKey, \"subProcess\");");
-    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(processInstanceKey, \"join\");");
-    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(processInstanceKey, \"endEvent\");");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(flowScopeKey, \"startEvent\");");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.apply(flowScopeKey, subProcess);");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassedMultiInstance(flowScopeKey, \"subProcess\");");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(flowScopeKey, \"join\");");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(flowScopeKey, \"endEvent\");");
 
     // TC_Error
     javaFile = result.getFiles().get(1);
@@ -116,11 +116,11 @@ class GeneratorAdvancedMultiInstanceTest {
     expected = "subProcessElement.sequential = true;";
     assertThat(typeSpec.methodSpecs.get(0)).containsCode(expected);
 
-    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(processInstanceKey, \"startEvent\");");
-    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.apply(processInstanceKey, subProcess);");
-    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasTerminatedMultiInstance(processInstanceKey, \"subProcess\");");
-    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(processInstanceKey, \"subProcessErrorBoundaryEvent\");");
-    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(processInstanceKey, \"join\");");
-    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(processInstanceKey, \"endEvent\");");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(flowScopeKey, \"startEvent\");");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.apply(flowScopeKey, subProcess);");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasTerminatedMultiInstance(flowScopeKey, \"subProcess\");");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(flowScopeKey, \"subProcessErrorBoundaryEvent\");");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(flowScopeKey, \"join\");");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(flowScopeKey, \"endEvent\");");
   }
 }

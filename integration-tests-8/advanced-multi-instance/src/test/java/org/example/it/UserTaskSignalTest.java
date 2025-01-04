@@ -6,13 +6,13 @@ import org.camunda.community.bpmndt.api.UserTaskHandler;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import generated.usertaskmessage.TC_startEvent__endEvent;
+import generated.usertasksignal.TC_startEvent__endEvent;
 import io.camunda.zeebe.process.test.api.ZeebeTestEngine;
 import io.camunda.zeebe.process.test.assertions.ProcessInstanceAssert;
 import io.camunda.zeebe.process.test.extension.ZeebeProcessTest;
 
 @ZeebeProcessTest
-class UserTaskMessageTest {
+class UserTaskSignalTest {
 
   @RegisterExtension
   TC_startEvent__endEvent tc = new TC_startEvent__endEvent();
@@ -33,7 +33,7 @@ class UserTaskMessageTest {
       if (loopCount == 2) {
         userTaskHandler.waitForBoundaryEvent();
 
-        instance.apply(flowScopeKey, tc.handleMessageBoundaryEvent());
+        instance.apply(flowScopeKey, tc.handleSignalBoundaryEvent());
         instance.hasTerminated(flowScopeKey, "userTask");
       } else {
         instance.apply(flowScopeKey, userTaskHandler);

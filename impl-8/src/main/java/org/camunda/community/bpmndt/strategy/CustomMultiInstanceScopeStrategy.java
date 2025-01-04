@@ -8,14 +8,11 @@ import org.camunda.community.bpmndt.Literal;
 import org.camunda.community.bpmndt.api.TestCaseInstanceElement.MultiInstanceElement;
 import org.camunda.community.bpmndt.model.BpmnElement;
 import org.camunda.community.bpmndt.model.BpmnElementScope;
-import org.camunda.community.bpmndt.model.BpmnElementType;
 
 import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec.Builder;
-
-import io.camunda.zeebe.model.bpmn.instance.FlowNode;
 
 public class CustomMultiInstanceScopeStrategy implements GeneratorStrategy {
 
@@ -50,12 +47,12 @@ public class CustomMultiInstanceScopeStrategy implements GeneratorStrategy {
 
   @Override
   public void applyHandler(MethodSpec.Builder methodBuilder) {
-    methodBuilder.addStatement("instance.apply(processInstanceKey, $L)", getHandler());
+    methodBuilder.addStatement("instance.apply(flowScopeKey, $L)", getHandler());
   }
 
   @Override
   public BpmnElement getElement() {
-    return new BpmnElementWrapper(scope);
+    return scope;
   }
 
   @Override
@@ -81,9 +78,9 @@ public class CustomMultiInstanceScopeStrategy implements GeneratorStrategy {
 
     var element = scope.getElements().get(scope.getElements().size() - 1);
     if (element.hasNext() && element.getNext().getType().isBoundaryEvent()) {
-      methodBuilder.addStatement("instance.hasTerminatedMultiInstance(processInstanceKey, $S)", scope.getId());
+      methodBuilder.addStatement("instance.hasTerminatedMultiInstance(flowScopeKey, $S)", scope.getId());
     } else {
-      methodBuilder.addStatement("instance.hasPassedMultiInstance(processInstanceKey, $S)", scope.getId());
+      methodBuilder.addStatement("instance.hasPassedMultiInstance(flowScopeKey, $S)", scope.getId());
     }
   }
 
@@ -111,112 +108,5 @@ public class CustomMultiInstanceScopeStrategy implements GeneratorStrategy {
   @Override
   public void isWaitingAt(MethodSpec.Builder methodBuilder) {
     // nothing to do here
-  }
-
-  /**
-   * Wrapper class to use an {@link BpmnElementScope} as BPMN element.
-   */
-  private static class BpmnElementWrapper implements BpmnElement {
-
-    private final BpmnElementScope scope;
-
-    private BpmnElementWrapper(BpmnElementScope scope) {
-      this.scope = scope;
-    }
-
-    @Override
-    public FlowNode getFlowNode() {
-      return scope.getFlowNode();
-    }
-
-    @Override
-    public <T extends FlowNode> T getFlowNode(Class<T> flowNodeType) {
-      return flowNodeType.cast(scope.getFlowNode());
-    }
-
-    @Override
-    public String getId() {
-      return scope.getId();
-    }
-
-    @Override
-    public String getName() {
-      return scope.getName();
-    }
-
-    @Override
-    public int getNestingLevel() {
-      return scope.getNestingLevel();
-    }
-
-    @Override
-    public BpmnElement getNext() {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public BpmnElementScope getParent() {
-      return scope.getParent();
-    }
-
-    @Override
-    public BpmnElement getPrevious() {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public BpmnElementType getType() {
-      return BpmnElementType.SCOPE;
-    }
-
-    @Override
-    public String getTypeName() {
-      return scope.getTypeName();
-    }
-
-    @Override
-    public boolean hasMultiInstanceParent() {
-      return scope.hasParent() && scope.getParent().isMultiInstance();
-    }
-
-    @Override
-    public boolean hasNext() {
-      return false;
-    }
-
-    @Override
-    public boolean hasParent() {
-      return scope.hasParent();
-    }
-
-    @Override
-    public boolean hasPrevious() {
-      return false;
-    }
-
-    @Override
-    public boolean hasPrevious(BpmnElementType type) {
-      return false;
-    }
-
-    @Override
-    public boolean isAttachedTo(BpmnElement element) {
-      return false;
-    }
-
-    @Override
-    public boolean isMultiInstance() {
-      return scope.isMultiInstance();
-    }
-
-    @Override
-    public boolean isMultiInstanceSequential() {
-      return scope.isMultiInstanceSequential();
-    }
-
-    @Override
-    public boolean isProcessStart() {
-      return false;
-    }
   }
 }

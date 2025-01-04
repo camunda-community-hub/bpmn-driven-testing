@@ -3,14 +3,10 @@ package org.camunda.community.bpmndt;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.camunda.community.bpmndt.model.BpmnElement;
-import org.camunda.community.bpmndt.model.BpmnElementScope;
 import org.camunda.community.bpmndt.model.TestCase;
 
 public class TestCaseContext {
 
-  private final List<BpmnElement> multiInstances = new ArrayList<>();
-  private final List<BpmnElementScope> multiInstanceScopes = new ArrayList<>();
   private final List<GeneratorStrategy> strategies = new ArrayList<>();
 
   private String className;
@@ -19,14 +15,6 @@ public class TestCaseContext {
   private String packageName;
   private String resourceName;
   private TestCase testCase;
-
-  public void addMultiInstance(BpmnElement element) {
-    multiInstances.add(element);
-  }
-
-  public void addMultiInstanceScope(BpmnElementScope scope) {
-    multiInstanceScopes.add(scope);
-  }
 
   public void addStrategy(GeneratorStrategy strategy) {
     strategies.add(strategy);
@@ -39,14 +27,6 @@ public class TestCaseContext {
    */
   public String getClassName() {
     return className;
-  }
-
-  public List<BpmnElement> getMultiInstances() {
-    return multiInstances;
-  }
-
-  public List<BpmnElementScope> getMultiInstanceScopes() {
-    return multiInstanceScopes;
   }
 
   public String getName() {

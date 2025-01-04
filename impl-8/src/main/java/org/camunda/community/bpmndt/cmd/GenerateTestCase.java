@@ -6,12 +6,14 @@ import java.util.function.Consumer;
 
 import javax.lang.model.element.Modifier;
 
+import org.apache.commons.lang3.StringUtils;
 import org.camunda.community.bpmndt.GeneratorResult;
 import org.camunda.community.bpmndt.GeneratorStrategy;
 import org.camunda.community.bpmndt.TestCaseContext;
 import org.camunda.community.bpmndt.api.AbstractJUnit5TestCase;
 import org.camunda.community.bpmndt.api.AbstractTestCase;
 import org.camunda.community.bpmndt.api.TestCaseInstance;
+import org.camunda.community.bpmndt.model.BpmnElementType;
 import org.camunda.community.bpmndt.model.BpmnEventSupport;
 
 import com.squareup.javapoet.ClassName;
@@ -48,7 +50,8 @@ public class GenerateTestCase implements Consumer<TestCaseContext> {
     addHandlerFields(strategies, classBuilder);
 
     classBuilder.addMethod(buildBeforeEach(strategies));
-    classBuilder.addMethod(buildExecute(ctx, strategies));
+
+    buildExecute(strategies, classBuilder);
 
     classBuilder.addMethod(buildGetBpmnProcessId(ctx));
     classBuilder.addMethod(buildGetBpmnResourceName(ctx));
@@ -112,16 +115,37 @@ public class GenerateTestCase implements Consumer<TestCaseContext> {
     return builder.build();
   }
 
-  private MethodSpec buildExecute(TestCaseContext ctx, List<GeneratorStrategy> strategies) {
-    var builder = MethodSpec.methodBuilder("execute")
+  private void buildExecute(List<GeneratorStrategy> strategies, TypeSpec.Builder classBuilder) {
+    var executeBuilder = MethodSpec.methodBuilder("execute")
         .addAnnotation(Override.class)
         .addModifiers(Modifier.PROTECTED)
         .addParameter(TestCaseInstance.class, "instance")
-        .addParameter(TypeName.LONG, "processInstanceKey");
+        .addParameter(TypeName.LONG, "flowScopeKey");
 
-    new BuildTestCaseExecution().accept(strategies, builder);
+    new BuildTestCaseExecution().accept(strategies, executeBuilder);
 
-    return builder.build();
+    classBuilder.addMethod(executeBuilder.build());
+
+    // for each non multi instance scope, generate an execute method
+    for (GeneratorStrategy strategy : strategies) {
+      if (strategy.getElement().getType() != BpmnElementType.SCOPE || strategy.getElement().isMultiInstance()) {
+        continue;
+      }
+
+      var element = strategy.getElement();
+
+      var executeScopeBuilder = MethodSpec.methodBuilder(String.format("execute%s", StringUtils.capitalize(strategy.getLiteral())))
+          .addJavadoc(CodeBlock.builder().add("Executes $L: $L", element.getTypeName(), element.getId()).build())
+          .addModifiers(Modifier.PROTECTED)
+          .addParameter(TestCaseInstance.class, "instance")
+          .addParameter(TypeName.LONG, "parentFlowScopeKey");
+
+      executeScopeBuilder.addCode("long flowScopeKey = instance.getElementInstanceKey(parentFlowScopeKey, $S);\n", element.getId());
+
+      new BuildTestCaseExecution(element).accept(strategies, executeScopeBuilder);
+
+      classBuilder.addMethod(executeScopeBuilder.build());
+    }
   }
 
   private MethodSpec buildGetBpmnResourceName(TestCaseContext testCaseContext) {

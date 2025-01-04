@@ -1,6 +1,8 @@
 package org.camunda.community.bpmndt.cmd;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
@@ -24,6 +26,7 @@ import org.camunda.community.bpmndt.strategy.OutboundConnectorStrategy;
 import org.camunda.community.bpmndt.strategy.ReceiveTaskStrategy;
 import org.camunda.community.bpmndt.strategy.SignalBoundaryEventStrategy;
 import org.camunda.community.bpmndt.strategy.SignalEventStrategy;
+import org.camunda.community.bpmndt.strategy.SubProcessStrategy;
 import org.camunda.community.bpmndt.strategy.TimerBoundaryEventStrategy;
 import org.camunda.community.bpmndt.strategy.TimerEventStrategy;
 import org.camunda.community.bpmndt.strategy.UserTaskStrategy;
@@ -77,29 +80,46 @@ public class BuildTestCaseContext implements Function<TestCase, TestCaseContext>
     int nestingLevel = testCase.getStartElement().getNestingLevel();
     BpmnElementScope scope = null;
 
+    if (nestingLevel != 0) { // add strategies for all parent scopes
+      var parents = new ArrayList<BpmnElementScope>(1);
+
+      var current = testCase.getStartElement();
+      while (current.hasParent()) {
+        parents.add(current.getParent());
+        current = current.getParent();
+      }
+
+      Collections.reverse(parents);
+
+      for (BpmnElementScope parent : parents) {
+        ctx.addStrategy(new SubProcessStrategy(parent));
+      }
+    }
+
     // add strategies
     for (BpmnElement element : testCase.getElements()) {
       if (element.getNestingLevel() < nestingLevel) {
-        scope = null;
+        scope = null; // reset if multi instance scope is passed
       }
-
       if (scope != null) {
-        continue;
+        continue; // skip element with a multi instance parent scope
       }
 
-      if (scope == null && element.getNestingLevel() > nestingLevel && element.hasMultiInstanceParent()) {
-        scope = element.getParent();
-        ctx.addMultiInstanceScope(scope);
-        ctx.addStrategy(new CustomMultiInstanceScopeStrategy(scope));
-
+      if (element.getNestingLevel() > nestingLevel) {
         nestingLevel = element.getNestingLevel();
-        continue;
+
+        if (element.hasMultiInstanceParent()) {
+          scope = element.getParent();
+          ctx.addStrategy(new CustomMultiInstanceScopeStrategy(scope));
+          continue;
+        } else {
+          ctx.addStrategy(new SubProcessStrategy(element.getParent()));
+        }
       }
 
       var strategy = createStrategy(element);
       if (element.isMultiInstance()) {
         strategy = new CustomMultiInstanceStrategy(strategy);
-        ctx.addMultiInstance(element);
       }
 
       ctx.addStrategy(strategy);

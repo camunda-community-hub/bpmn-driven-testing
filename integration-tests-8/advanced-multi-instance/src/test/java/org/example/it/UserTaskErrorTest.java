@@ -19,23 +19,27 @@ class UserTaskErrorTest {
 
   ZeebeTestEngine engine;
 
+  private int loopCount;
+
   @Test
   void testExecute() {
     var elements = List.of(1, 2, 3);
 
     var userTaskHandler = new UserTaskHandler("userTask");
 
-    tc.handleUserTask().execute((testCaseInstance, processInstanceKey) -> {
-      for (int i = 0; i < elements.size(); i++) {
-        if (i == 2) {
-          userTaskHandler.throwBpmnError("ERROR_CODE", "test error message");
+    tc.handleUserTask().verifyLoopCount(3).executeLoop((instance, elementInstanceKey) -> {
+      var flowScopeKey = instance.getFlowScopeKey(elementInstanceKey);
 
-          testCaseInstance.apply(processInstanceKey, userTaskHandler);
-          testCaseInstance.hasTerminated(processInstanceKey, "userTask");
-        } else {
-          testCaseInstance.apply(processInstanceKey, userTaskHandler);
-        }
+      if (loopCount == 2) {
+        userTaskHandler.throwBpmnError("ERROR_CODE", "test error message");
+
+        instance.apply(flowScopeKey, userTaskHandler);
+        instance.hasTerminated(flowScopeKey, "userTask");
+      } else {
+        instance.apply(flowScopeKey, userTaskHandler);
       }
+
+      loopCount++;
     });
 
     tc.createExecutor(engine)

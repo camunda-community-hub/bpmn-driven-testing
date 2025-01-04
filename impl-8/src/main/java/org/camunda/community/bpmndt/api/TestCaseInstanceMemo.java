@@ -1,19 +1,21 @@
 package org.camunda.community.bpmndt.api;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import io.camunda.zeebe.protocol.record.Record;
 import io.camunda.zeebe.protocol.record.RecordType;
+import io.camunda.zeebe.protocol.record.intent.IncidentIntent;
 import io.camunda.zeebe.protocol.record.intent.JobIntent;
 import io.camunda.zeebe.protocol.record.intent.ProcessInstanceIntent;
 import io.camunda.zeebe.protocol.record.intent.ProcessMessageSubscriptionIntent;
 import io.camunda.zeebe.protocol.record.intent.SignalSubscriptionIntent;
 import io.camunda.zeebe.protocol.record.intent.TimerIntent;
 import io.camunda.zeebe.protocol.record.value.BpmnElementType;
+import io.camunda.zeebe.protocol.record.value.ErrorType;
+import io.camunda.zeebe.protocol.record.value.IncidentRecordValue;
 import io.camunda.zeebe.protocol.record.value.JobRecordValue;
 import io.camunda.zeebe.protocol.record.value.ProcessInstanceRecordValue;
 import io.camunda.zeebe.protocol.record.value.ProcessMessageSubscriptionRecordValue;
@@ -25,8 +27,16 @@ import io.camunda.zeebe.protocol.record.value.TimerRecordValue;
  */
 public class TestCaseInstanceMemo {
 
-  private final Map<Long, ProcessInstanceMemo> processInstances = new HashMap<>();
-  private final List<SignalSubscriptionMemo> signalSubscriptions = new ArrayList<>(0);
+  final List<ElementMemo> elements = new ArrayList<>();
+  final List<IncidentMemo> incidents = new ArrayList<>(0);
+  final List<JobMemo> jobs = new ArrayList<>();
+  final List<MessageSubscriptionMemo> messageSubscriptions = new ArrayList<>(0);
+  final List<ElementMemo> multiInstanceElements = new ArrayList<>(0);
+  final List<ProcessInstanceMemo> processInstances = new ArrayList<>();
+  final List<SignalSubscriptionMemo> signalSubscriptions = new ArrayList<>(0);
+  final List<TimerMemo> timers = new ArrayList<>(0);
+
+  final Map<Long, Long> keys = new HashMap<>();
 
   private final boolean printRecordStreamEnabled;
 
@@ -45,6 +55,9 @@ public class TestCaseInstanceMemo {
 
     try {
       switch (record.getValueType()) {
+        case INCIDENT:
+          handleIncident(record);
+          break;
         case JOB:
           handleJob(record);
           break;
@@ -62,29 +75,61 @@ public class TestCaseInstanceMemo {
           break;
       }
     } catch (RuntimeException e) {
-      System.err.printf("failed to process record: %s%n", record);
+      System.err.printf("failed to process record: %s%n: %s", record, e.getMessage());
     }
   }
 
-  Collection<ProcessInstanceMemo> getProcessInstances() {
-    return processInstances.values();
+  void clear() {
+    elements.clear();
+    incidents.clear();
+    jobs.clear();
+    messageSubscriptions.clear();
+    multiInstanceElements.clear();
+    processInstances.clear();
+    signalSubscriptions.clear();
+    timers.clear();
+
+    keys.clear();
   }
 
-  ProcessInstanceMemo getProcessInstance(long processInstanceKey) {
-    return processInstances.get(processInstanceKey);
+  long getProcessInstanceKey(long key) {
+    var current = key;
+    while (true) {
+      var parent = keys.get(current);
+      if (parent == null) {
+        break;
+      }
+      current = parent;
+    }
+    return current;
   }
 
-  Collection<SignalSubscriptionMemo> getSignalSubscriptions() {
-    return signalSubscriptions;
+  private void handleIncident(Record<?> record) {
+    var recordValue = (IncidentRecordValue) record.getValue();
+
+    if (record.getIntent() == IncidentIntent.CREATED) {
+      var incident = new IncidentMemo();
+      incident.elementId = recordValue.getElementId();
+      incident.errorMessage = recordValue.getErrorMessage();
+      incident.errorType = recordValue.getErrorType();
+      incident.processInstanceKey = recordValue.getProcessInstanceKey();
+
+      incidents.add(incident);
+    }
   }
 
   private void handleJob(Record<?> record) {
     var recordValue = (JobRecordValue) record.getValue();
 
     if (record.getIntent() == JobIntent.CREATED) {
+      var flowScopeKey = keys.get(recordValue.getElementInstanceKey());
+
       var job = new JobMemo();
-      job.id = recordValue.getElementId();
+      job.elementId = recordValue.getElementId();
+      job.elementInstanceKey = recordValue.getElementInstanceKey();
+      job.flowScopeKey = flowScopeKey != null ? flowScopeKey : -1;
       job.key = record.getKey();
+      job.processInstanceKey = recordValue.getProcessInstanceKey();
       job.retries = recordValue.getRetries();
       job.state = JobIntent.CREATED;
       job.type = recordValue.getType();
@@ -94,7 +139,7 @@ public class TestCaseInstanceMemo {
         job.customHeaders.putAll(recordValue.getCustomHeaders());
       }
 
-      processInstances.get(recordValue.getProcessInstanceKey()).put(job);
+      jobs.add(job);
     }
   }
 
@@ -102,13 +147,17 @@ public class TestCaseInstanceMemo {
     var recordValue = (ProcessMessageSubscriptionRecordValue) record.getValue();
 
     if (record.getIntent() == ProcessMessageSubscriptionIntent.CREATED) {
+      var flowScopeKey = keys.get(recordValue.getElementInstanceKey());
+
       var messageSubscription = new MessageSubscriptionMemo();
       messageSubscription.correlationKey = recordValue.getCorrelationKey();
-      messageSubscription.id = recordValue.getElementId();
+      messageSubscription.elementId = recordValue.getElementId();
+      messageSubscription.elementInstanceKey = recordValue.getElementInstanceKey();
+      messageSubscription.flowScopeKey = flowScopeKey != null ? flowScopeKey : -1;
       messageSubscription.messageName = recordValue.getMessageName();
-      messageSubscription.state = ProcessMessageSubscriptionIntent.CREATED;
+      messageSubscription.processInstanceKey = recordValue.getProcessInstanceKey();
 
-      processInstances.get(recordValue.getProcessInstanceKey()).put(messageSubscription);
+      messageSubscriptions.add(messageSubscription);
     }
   }
 
@@ -116,42 +165,54 @@ public class TestCaseInstanceMemo {
     var state = (ProcessInstanceIntent) record.getIntent();
     var recordValue = (ProcessInstanceRecordValue) record.getValue();
 
+    if (recordValue.getBpmnElementType() != BpmnElementType.PROCESS && state == ProcessInstanceIntent.ELEMENT_ACTIVATING) {
+      keys.put(record.getKey(), recordValue.getFlowScopeKey());
+      return;
+    }
+
+    boolean relevantState = state == ProcessInstanceIntent.ELEMENT_ACTIVATED
+        || state == ProcessInstanceIntent.ELEMENT_COMPLETED
+        || state == ProcessInstanceIntent.ELEMENT_TERMINATED;
+
+    if (!relevantState) {
+      return;
+    }
+
     if (recordValue.getBpmnElementType() == BpmnElementType.PROCESS) {
-      if (state == ProcessInstanceIntent.ELEMENT_ACTIVATED) {
-        var processInstance = new ProcessInstanceMemo();
-        processInstance.bpmnProcessId = recordValue.getBpmnProcessId();
-        processInstance.key = recordValue.getProcessInstanceKey();
-        processInstance.parentElementInstanceKey = recordValue.getParentElementInstanceKey();
-        processInstance.state = ProcessInstanceIntent.ELEMENT_ACTIVATED;
+      var processInstance = new ProcessInstanceMemo();
+      processInstance.bpmnProcessId = recordValue.getBpmnProcessId();
+      processInstance.key = recordValue.getProcessInstanceKey();
+      processInstance.parentElementInstanceKey = recordValue.getParentElementInstanceKey();
+      processInstance.state = state;
 
-        processInstances.put(processInstance.key, processInstance);
-      } else if (state == ProcessInstanceIntent.ELEMENT_COMPLETED || state == ProcessInstanceIntent.ELEMENT_TERMINATED) {
-        var processInstance = processInstances.get(recordValue.getProcessInstanceKey());
-        processInstance.state = state;
-      }
-    } else if (recordValue.getBpmnElementType() == BpmnElementType.MULTI_INSTANCE_BODY) {
-      var element = new ElementMemo();
-      element.id = recordValue.getElementId();
-      element.key = record.getKey();
-      element.state = state;
-
-      processInstances.get(recordValue.getProcessInstanceKey()).putMultiInstance(element);
+      processInstances.add(processInstance);
     } else {
       var element = new ElementMemo();
+      element.flowScopeKey = recordValue.getFlowScopeKey();
       element.id = recordValue.getElementId();
       element.key = record.getKey();
+      element.processInstanceKey = recordValue.getProcessInstanceKey();
       element.state = state;
 
-      processInstances.get(recordValue.getProcessInstanceKey()).put(element);
+      if (recordValue.getBpmnElementType() == BpmnElementType.MULTI_INSTANCE_BODY) {
+        multiInstanceElements.add(element);
+      } else {
+        elements.add(element);
+      }
     }
   }
 
   private void handleSignalSubscription(Record<?> record) {
-    SignalSubscriptionRecordValue recordValue = (SignalSubscriptionRecordValue) record.getValue();
+    var recordValue = (SignalSubscriptionRecordValue) record.getValue();
 
     if (record.getIntent() == SignalSubscriptionIntent.CREATED) {
+      var flowScopeKey = keys.get(recordValue.getCatchEventInstanceKey());
+
       var signalSubscription = new SignalSubscriptionMemo();
-      signalSubscription.catchEventId = recordValue.getCatchEventId();
+      signalSubscription.elementId = recordValue.getCatchEventId();
+      signalSubscription.elementInstanceKey = recordValue.getCatchEventInstanceKey();
+      signalSubscription.flowScopeKey = flowScopeKey != null ? flowScopeKey : -1;
+      signalSubscription.processInstanceKey = getProcessInstanceKey(recordValue.getCatchEventInstanceKey());
       signalSubscription.signalName = recordValue.getSignalName();
 
       signalSubscriptions.add(signalSubscription);
@@ -162,30 +223,44 @@ public class TestCaseInstanceMemo {
     var recordValue = (TimerRecordValue) record.getValue();
 
     if (record.getIntent() == TimerIntent.CREATED) {
+      var flowScopeKey = keys.get(recordValue.getElementInstanceKey());
+
       var timer = new TimerMemo();
       timer.creationDate = record.getTimestamp();
       timer.dueDate = recordValue.getDueDate();
-      timer.id = recordValue.getTargetElementId();
-      timer.state = TimerIntent.CREATED;
+      timer.elementId = recordValue.getTargetElementId();
+      timer.elementInstanceKey = recordValue.getElementInstanceKey();
+      timer.flowScopeKey = flowScopeKey != null ? flowScopeKey : -1;
+      timer.processInstanceKey = recordValue.getProcessInstanceKey();
 
-      var processInstance = processInstances.get(recordValue.getProcessInstanceKey());
-      if (processInstance != null) { // can be null, in case of timer start events
-        processInstance.put(timer);
-      }
+      timers.add(timer);
     }
   }
 
   static class ElementMemo {
 
+    long flowScopeKey;
     String id;
     long key;
+    long processInstanceKey;
     ProcessInstanceIntent state;
+  }
+
+  static class IncidentMemo {
+
+    String elementId;
+    String errorMessage;
+    ErrorType errorType;
+    long processInstanceKey;
   }
 
   static class JobMemo {
 
-    String id;
+    String elementId;
+    long elementInstanceKey;
+    long flowScopeKey;
     long key;
+    long processInstanceKey;
     int retries;
     JobIntent state;
     String type;
@@ -200,81 +275,27 @@ public class TestCaseInstanceMemo {
   static class MessageSubscriptionMemo {
 
     String correlationKey;
-    String id;
+    String elementId;
+    long elementInstanceKey;
+    long flowScopeKey;
     String messageName;
-    ProcessMessageSubscriptionIntent state;
+    long processInstanceKey;
   }
 
   static class ProcessInstanceMemo {
-
-    private final Map<String, ElementMemo> elements = new HashMap<>();
-
-    private Map<String, JobMemo> jobs;
-    private Map<String, MessageSubscriptionMemo> messageSubscriptions;
-    private Map<String, ElementMemo> multiInstances;
-    private Map<String, TimerMemo> timers;
 
     String bpmnProcessId;
     long key;
     long parentElementInstanceKey;
     ProcessInstanceIntent state;
-
-    ElementMemo getElement(String elementId) {
-      return elements.get(elementId);
-    }
-
-    JobMemo getJob(String elementId) {
-      return jobs != null ? jobs.get(elementId) : null;
-    }
-
-    MessageSubscriptionMemo getMessageSubscription(String elementId) {
-      return messageSubscriptions != null ? messageSubscriptions.get(elementId) : null;
-    }
-
-    ElementMemo getMultiInstance(String elementId) {
-      return multiInstances != null ? multiInstances.get(elementId) : null;
-    }
-
-    TimerMemo getTimer(String elementId) {
-      return timers != null ? timers.get(elementId) : null;
-    }
-
-    void put(ElementMemo element) {
-      elements.put(element.id, element);
-    }
-
-    void put(JobMemo job) {
-      if (jobs == null) {
-        jobs = new HashMap<>();
-      }
-      jobs.put(job.id, job);
-    }
-
-    void put(MessageSubscriptionMemo messageSubscription) {
-      if (messageSubscriptions == null) {
-        messageSubscriptions = new HashMap<>();
-      }
-      messageSubscriptions.put(messageSubscription.id, messageSubscription);
-    }
-
-    void put(TimerMemo timer) {
-      if (timers == null) {
-        timers = new HashMap<>();
-      }
-      timers.put(timer.id, timer);
-    }
-
-    void putMultiInstance(ElementMemo element) {
-      if (multiInstances == null) {
-        multiInstances = new HashMap<>();
-      }
-      multiInstances.put(element.id, element);
-    }
   }
 
   static class SignalSubscriptionMemo {
 
-    String catchEventId;
+    String elementId;
+    long elementInstanceKey;
+    long flowScopeKey;
+    long processInstanceKey;
     String signalName;
   }
 
@@ -282,7 +303,9 @@ public class TestCaseInstanceMemo {
 
     long creationDate;
     long dueDate;
-    String id;
-    TimerIntent state;
+    String elementId;
+    long elementInstanceKey;
+    long flowScopeKey;
+    long processInstanceKey;
   }
 }

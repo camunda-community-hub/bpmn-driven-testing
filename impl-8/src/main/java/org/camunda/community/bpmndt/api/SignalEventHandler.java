@@ -1,9 +1,11 @@
 package org.camunda.community.bpmndt.api;
 
+import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import org.camunda.community.bpmndt.api.TestCaseInstanceElement.SignalEventElement;
+import org.camunda.community.bpmndt.api.TestCaseInstanceMemo.SignalSubscriptionMemo;
 
 import io.camunda.zeebe.client.ZeebeClient;
 import io.camunda.zeebe.process.test.assertions.BpmnAssert;
@@ -49,8 +51,9 @@ public class SignalEventHandler {
     broadcast();
   }
 
-  void apply(TestCaseInstance instance, long processInstanceKey) {
+  void apply(TestCaseInstance instance, long flowScopeKey) {
     if (verifier != null) {
+      var processInstanceKey = instance.getProcessInstanceKey(flowScopeKey);
       verifier.accept(new ProcessInstanceAssert(processInstanceKey, BpmnAssert.getRecordStream()));
     }
 
@@ -58,7 +61,7 @@ public class SignalEventHandler {
       signalNameExpressionConsumer.accept(element.signalName);
     }
 
-    var signalSubscription = instance.getSignalSubscription(processInstanceKey, element.id);
+    var signalSubscription = getSignalSubscription(instance, flowScopeKey);
 
     if (expectedSignalName != null && !expectedSignalName.equals(signalSubscription.signalName)) {
       String message = "expected signal event %s to have signal name '%s', but was '%s'";
@@ -155,5 +158,22 @@ public class SignalEventHandler {
 
   void broadcast(ZeebeClient client, String signalName) {
     client.newBroadcastSignalCommand().signalName(signalName).send().join();
+  }
+
+  private SignalSubscriptionMemo getSignalSubscription(TestCaseInstance instance, long flowScopeKey) {
+    var flowScopeKeys = instance.getKeys(flowScopeKey);
+
+    return instance.select(memo -> {
+      var signalSubscription = memo.signalSubscriptions.stream().filter(s ->
+          flowScopeKeys.contains(s.flowScopeKey) && Objects.equals(s.elementId, element.id)
+      ).findFirst();
+
+      if (signalSubscription.isEmpty()) {
+        var message = String.format("element %s of flow scope %d has no signal subscription", element.id, flowScopeKey);
+        throw instance.createException(message, flowScopeKey);
+      }
+
+      return signalSubscription.get();
+    });
   }
 }

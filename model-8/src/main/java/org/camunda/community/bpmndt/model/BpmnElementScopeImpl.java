@@ -6,7 +6,6 @@ import java.util.Objects;
 
 import io.camunda.zeebe.model.bpmn.instance.FlowNode;
 import io.camunda.zeebe.model.bpmn.instance.MultiInstanceLoopCharacteristics;
-import io.camunda.zeebe.model.bpmn.instance.SubProcess;
 
 class BpmnElementScopeImpl implements BpmnElementScope {
 
@@ -41,8 +40,8 @@ class BpmnElementScopeImpl implements BpmnElementScope {
   }
 
   @Override
-  public <T extends SubProcess> T getFlowNode(Class<T> subProcessType) {
-    return subProcessType.cast(flowNode);
+  public <T extends FlowNode> T getFlowNode(Class<T> flowNodeType) {
+    return flowNodeType.cast(flowNode);
   }
 
   @Override
@@ -61,8 +60,23 @@ class BpmnElementScopeImpl implements BpmnElementScope {
   }
 
   @Override
+  public BpmnElement getNext() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public BpmnElementScope getParent() {
     return parent;
+  }
+
+  @Override
+  public BpmnElement getPrevious() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public BpmnElementType getType() {
+    return BpmnElementType.SCOPE;
   }
 
   @Override
@@ -76,8 +90,33 @@ class BpmnElementScopeImpl implements BpmnElementScope {
   }
 
   @Override
+  public boolean hasMultiInstanceParent() {
+    return hasParent() && getParent().isMultiInstance();
+  }
+
+  @Override
+  public boolean hasNext() {
+    return false;
+  }
+
+  @Override
   public boolean hasParent() {
     return parent != null;
+  }
+
+  @Override
+  public boolean hasPrevious() {
+    return false;
+  }
+
+  @Override
+  public boolean hasPrevious(BpmnElementType type) {
+    return false;
+  }
+
+  @Override
+  public boolean isAttachedTo(BpmnElement element) {
+    return false;
   }
 
   @Override
@@ -91,6 +130,11 @@ class BpmnElementScopeImpl implements BpmnElementScope {
       throw new IllegalStateException("scope is not a multi instance");
     }
     return multiInstanceLoopCharacteristics.isSequential();
+  }
+
+  @Override
+  public boolean isProcessStart() {
+    return false;
   }
 
   void addElement(BpmnElementImpl next) {

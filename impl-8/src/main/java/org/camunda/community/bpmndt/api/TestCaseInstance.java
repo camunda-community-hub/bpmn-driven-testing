@@ -1,113 +1,93 @@
 package org.camunda.community.bpmndt.api;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import org.camunda.community.bpmndt.api.TestCaseInstanceMemo.IncidentMemo;
 import org.camunda.community.bpmndt.api.TestCaseInstanceMemo.JobMemo;
 import org.camunda.community.bpmndt.api.TestCaseInstanceMemo.MessageSubscriptionMemo;
-import org.camunda.community.bpmndt.api.TestCaseInstanceMemo.ProcessInstanceMemo;
-import org.camunda.community.bpmndt.api.TestCaseInstanceMemo.SignalSubscriptionMemo;
-import org.camunda.community.bpmndt.api.TestCaseInstanceMemo.TimerMemo;
 
 import io.camunda.zeebe.client.ZeebeClient;
 import io.camunda.zeebe.process.test.api.ZeebeTestEngine;
 import io.camunda.zeebe.process.test.filters.RecordStream;
 import io.camunda.zeebe.protocol.record.Record;
-import io.camunda.zeebe.protocol.record.ValueType;
-import io.camunda.zeebe.protocol.record.intent.IncidentIntent;
 import io.camunda.zeebe.protocol.record.intent.ProcessInstanceIntent;
-import io.camunda.zeebe.protocol.record.value.BpmnElementType;
-import io.camunda.zeebe.protocol.record.value.IncidentRecordValue;
-import io.camunda.zeebe.protocol.record.value.ProcessInstanceRecordValue;
 
 /**
- * Link between a test case and its execution, utilizing a process instance that was instantiated by a {@link TestCaseExecutor} and handlers (e.g.
- * {@code UserTaskHandler}) that are part of a test case.
+ * Link between a test case and its execution.
+ * <p>
+ * This class is utilizing a process instance that was instantiated by a {@link TestCaseExecutor} and handlers (e.g. {@code UserTaskHandler}) that are part of a
+ * test case.
  */
 public class TestCaseInstance implements AutoCloseable {
 
   private final ZeebeTestEngine engine;
   private final ZeebeClient client;
 
-  private final long taskTimeout;
-  private final boolean printRecordStreamEnabled;
+  private final long waitTimeout;
 
-  private final ExecutorService executorService;
+  private final RecordStream recordStream;
+  private final TestCaseInstanceMemo memo;
 
-  private Future<?> consumeRecordStreamTask;
+  private int recordCount;
 
-  private volatile SelectTask<?> selectTask;
-  private volatile SelectAndTestTask selectAndTestTask;
-
-  TestCaseInstance(ZeebeTestEngine engine, ZeebeClient client, long taskTimeout, boolean printRecordStreamEnabled) {
+  TestCaseInstance(ZeebeTestEngine engine, ZeebeClient client, long waitTimeout, boolean printRecordStreamEnabled) {
     this.engine = engine;
     this.client = client;
 
-    this.taskTimeout = taskTimeout;
-    this.printRecordStreamEnabled = printRecordStreamEnabled;
+    this.waitTimeout = waitTimeout;
 
-    executorService = Executors.newSingleThreadScheduledExecutor();
-
-    consumeRecordStreamTask = executorService.submit(this::consumeRecordStream);
+    recordStream = RecordStream.of(engine.getRecordStreamSource());
+    memo = new TestCaseInstanceMemo(printRecordStreamEnabled);
   }
 
   public void close() {
-    if (consumeRecordStreamTask != null) {
-      consumeRecordStreamTask.cancel(true);
-      consumeRecordStreamTask = null;
-    }
-
-    executorService.shutdown();
-    try {
-      if (!executorService.awaitTermination(1, TimeUnit.SECONDS)) {
-        throw new IllegalStateException("failed to stop record stream consumption");
-      }
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-    }
+    memo.clear();
   }
 
-  public void apply(long processInstanceKey, CallActivityHandler handler) {
-    handler.apply(this, processInstanceKey);
+  public void apply(long flowScopeKey, CallActivityHandler handler) {
+    handler.apply(this, flowScopeKey);
   }
 
-  public void apply(long processInstanceKey, CustomMultiInstanceHandler handler) {
-    handler.apply(this, processInstanceKey);
+  public void apply(long flowScopeKey, CustomMultiInstanceHandler handler) {
+    handler.apply(this, flowScopeKey);
   }
 
-  public void apply(long processInstanceKey, JobHandler handler) {
-    handler.apply(this, processInstanceKey);
+  public void apply(long flowScopeKey, JobHandler handler) {
+    handler.apply(this, flowScopeKey);
   }
 
-  public void apply(long processInstanceKey, MessageEventHandler handler) {
-    handler.apply(this, processInstanceKey);
+  public void apply(long flowScopeKey, MessageEventHandler handler) {
+    handler.apply(this, flowScopeKey);
   }
 
-  public void apply(long processInstanceKey, OutboundConnectorHandler handler) {
-    handler.apply(this, processInstanceKey);
+  public void apply(long flowScopeKey, OutboundConnectorHandler handler) {
+    handler.apply(this, flowScopeKey);
   }
 
-  public void apply(long processInstanceKey, ReceiveTaskHandler handler) {
-    handler.apply(this, processInstanceKey);
+  public void apply(long flowScopeKey, ReceiveTaskHandler handler) {
+    handler.apply(this, flowScopeKey);
   }
 
-  public void apply(long processInstanceKey, SignalEventHandler handler) {
-    handler.apply(this, processInstanceKey);
+  public void apply(long flowScopeKey, SignalEventHandler handler) {
+    handler.apply(this, flowScopeKey);
   }
 
-  public void apply(long processInstanceKey, TimerEventHandler handler) {
-    handler.apply(this, processInstanceKey);
+  public void apply(long flowScopeKey, TimerEventHandler handler) {
+    handler.apply(this, flowScopeKey);
   }
 
-  public void apply(long processInstanceKey, UserTaskHandler handler) {
-    handler.apply(this, processInstanceKey);
+  public void apply(long flowScopeKey, UserTaskHandler handler) {
+    handler.apply(this, flowScopeKey);
+  }
+
+  public RuntimeException createException(String message, long flowScopeKey) {
+    return new Exception(memo, message, flowScopeKey);
   }
 
   public ZeebeClient getClient() {
@@ -118,228 +98,262 @@ public class TestCaseInstance implements AutoCloseable {
     return engine;
   }
 
-  public void hasPassed(long processInstanceKey, String elementId) {
-    boolean hasPassed = selectAndTest(memo -> {
-      var processInstance = memo.getProcessInstance(processInstanceKey);
-      if (processInstance == null) {
-        return false;
-      }
-
-      var element = processInstance.getElement(elementId);
-      return element != null && element.state == ProcessInstanceIntent.ELEMENT_COMPLETED;
-    });
-
-    if (!hasPassed) {
-      var message = withDetails("expected process instance %d to have passed BPMN element %s, but has not", processInstanceKey);
-      throw new AssertionError(String.format(message, processInstanceKey, elementId));
-    }
-  }
-
-  public void hasPassedMultiInstance(long processInstanceKey, String elementId) {
-    boolean hasPassed = selectAndTest(memo -> {
-      var processInstance = memo.getProcessInstance(processInstanceKey);
-      if (processInstance == null) {
-        return false;
-      }
-
-      var element = processInstance.getMultiInstance(elementId);
-      return element != null && element.state == ProcessInstanceIntent.ELEMENT_COMPLETED;
-    });
-
-    if (!hasPassed) {
-      var message = withDetails("expected process instance %d to have passed BPMN multi instance element %s, but has not", processInstanceKey);
-      throw new AssertionError(String.format(message, processInstanceKey, elementId));
-    }
-  }
-
-  public void hasTerminated(long processInstanceKey, String bpmnElementId) {
-    boolean hasTerminated = selectAndTest(memo -> {
-      var processInstance = memo.getProcessInstance(processInstanceKey);
-      if (processInstance == null) {
-        return false;
-      }
-
-      var element = processInstance.getElement(bpmnElementId);
-      return element != null && element.state == ProcessInstanceIntent.ELEMENT_TERMINATED;
-    });
-
-    if (!hasTerminated) {
-      var message = withDetails("expected process instance %d to have terminated BPMN element %s, but has not", processInstanceKey);
-      throw new AssertionError(String.format(message, processInstanceKey, bpmnElementId));
-    }
-  }
-
-  public void hasTerminatedMultiInstance(long processInstanceKey, String elementId) {
-    boolean hasTerminated = selectAndTest(memo -> {
-      var processInstance = memo.getProcessInstance(processInstanceKey);
-      if (processInstance == null) {
-        return false;
-      }
-
-      var element = processInstance.getMultiInstance(elementId);
-      return element != null && element.state == ProcessInstanceIntent.ELEMENT_TERMINATED;
-    });
-
-    if (!hasTerminated) {
-      var message = withDetails("expected process instance %d to have terminated BPMN multi instance element %s, but has not", processInstanceKey);
-      throw new AssertionError(String.format(message, processInstanceKey, elementId));
-    }
-  }
-
-  public void isCompleted(long processInstanceKey) {
-    boolean isCompleted = selectAndTest(memo -> {
-      var processInstance = memo.getProcessInstance(processInstanceKey);
-      if (processInstance == null) {
-        return false;
-      }
-
-      return processInstance.state == ProcessInstanceIntent.ELEMENT_COMPLETED;
-    });
-
-    if (!isCompleted) {
-      String message = withDetails("expected process instance %d to be completed, but was not", processInstanceKey);
-      throw new AssertionError(String.format(message, processInstanceKey));
-    }
-  }
-
-  public void isWaitingAt(long processInstanceKey, String elementId) {
-    boolean isWaitingAt = selectAndTest(memo -> {
-      var processInstance = memo.getProcessInstance(processInstanceKey);
-      if (processInstance == null) {
-        return false;
-      }
-
-      var element = processInstance.getElement(elementId);
-      if (element == null) {
-        return false;
-      }
-      if (element.state == ProcessInstanceIntent.ELEMENT_ACTIVATED) {
-        return true;
-      }
-
-      // special check for elements with a task definition
-      // needed because a job worker could already have completed or terminated the related job
-      var job = processInstance.getJob(elementId);
-      if (job == null) {
-        return false;
-      }
-
-      return element.state == ProcessInstanceIntent.ELEMENT_COMPLETED || element.state == ProcessInstanceIntent.ELEMENT_TERMINATED;
-    });
-
-    if (!isWaitingAt) {
-      var message = withIncidents("expected process instance %d to be waiting at BPMN element %s, but was not", processInstanceKey);
-      throw new AssertionError(String.format(message, processInstanceKey, elementId));
-    }
-  }
-
-  ProcessInstanceMemo getCalledProcessInstance(long processInstanceKey, String callActivityId) {
+  /**
+   * Returns the element instance key for a BPMN element within a given flow scope.
+   *
+   * @param flowScopeKey The key of an existing flow scope.
+   * @param elementId    The BPMN element ID.
+   * @return The element instance key.
+   * @throws RuntimeException If no such element instance exists.
+   */
+  public long getElementInstanceKey(long flowScopeKey, String elementId) {
     return select(memo -> {
-      var processInstance = memo.getProcessInstance(processInstanceKey);
-      if (processInstance == null) {
-        var message = withDetails("process instance %d could not be found", processInstanceKey);
-        throw new IllegalStateException(String.format(message, processInstanceKey));
+      var element = memo.elements.stream().filter(e ->
+          e.flowScopeKey == flowScopeKey && Objects.equals(e.id, elementId)
+      ).findFirst();
+
+      if (element.isEmpty()) {
+        var message = String.format("element %s of flow scope %d could not be found", elementId, flowScopeKey);
+        throw createException(message, flowScopeKey);
       }
 
-      var callActivity = processInstance.getElement(callActivityId);
-      if (callActivity == null) {
-        var message = withDetails("call activity %s of process instance %d could not be found", processInstanceKey);
-        throw new IllegalStateException(String.format(message, callActivityId, processInstanceKey));
-      }
-
-      return memo.getProcessInstances().stream()
-          .filter(pi -> pi.parentElementInstanceKey == callActivity.key)
-          .findFirst()
-          .orElseThrow(() -> {
-            var message = withDetails("call activity %s of process instance %d has not called a process", processInstanceKey);
-            return new IllegalStateException(String.format(message, callActivityId, processInstanceKey));
-          });
-    });
-  }
-
-  JobMemo getJob(long processInstanceKey, String elementId) {
-    return select(memo -> {
-      var processInstance = memo.getProcessInstance(processInstanceKey);
-      if (processInstance == null) {
-        var message = withDetails("process instance %d could not be found", processInstanceKey);
-        throw new IllegalStateException(String.format(message, processInstanceKey));
-      }
-
-      var job = processInstance.getJob(elementId);
-      if (job == null) {
-        var message = withDetails("job %s could not be found", processInstanceKey);
-        throw new IllegalStateException(String.format(message, elementId));
-      }
-
-      return job;
-    });
-  }
-
-  MessageSubscriptionMemo getMessageSubscription(long processInstanceKey, String elementId) {
-    return select(memo -> {
-      var processInstance = memo.getProcessInstance(processInstanceKey);
-      if (processInstance == null) {
-        var message = withDetails("process instance %d could not be found", processInstanceKey);
-        throw new IllegalStateException(String.format(message, processInstanceKey));
-      }
-
-      var messageSubscription = processInstance.getMessageSubscription(elementId);
-      if (messageSubscription == null) {
-        var message = withDetails("message subscription %s could not be found", processInstanceKey);
-        throw new IllegalStateException(String.format(message, elementId));
-      }
-
-      return messageSubscription;
-    });
-  }
-
-  SignalSubscriptionMemo getSignalSubscription(long processInstanceKey, String elementId) {
-    return select(memo -> {
-      var processInstance = memo.getProcessInstance(processInstanceKey);
-      if (processInstance == null) {
-        var message = withDetails("process instance %d could not be found", processInstanceKey);
-        throw new IllegalStateException(String.format(message, processInstanceKey));
-      }
-
-      return memo.getSignalSubscriptions().stream()
-          .filter(signalSubscription -> signalSubscription.catchEventId.equals(elementId))
-          .findFirst()
-          .orElseThrow(() -> {
-            var message = withDetails("element %s of process instance %d has no signal subscription", processInstanceKey);
-            return new IllegalStateException(String.format(message, elementId, processInstanceKey));
-          });
-    });
-  }
-
-  TimerMemo getTimer(long processInstanceKey, String elementId) {
-    return select(memo -> {
-      var processInstance = memo.getProcessInstance(processInstanceKey);
-      if (processInstance == null) {
-        var message = withDetails("process instance %d could not be found", processInstanceKey);
-        throw new IllegalStateException(String.format(message, processInstanceKey));
-      }
-
-      var timer = processInstance.getTimer(elementId);
-      if (timer == null) {
-        var message = withDetails("timer %s could not be found", processInstanceKey);
-        throw new IllegalStateException(String.format(message, elementId));
-      }
-
-      return timer;
+      return element.get().key;
     });
   }
 
   /**
-   * Consumes all records that has not been consumed already. Additionally select and/or select and test tasks that are waiting to be executed are handled using
-   * the memorization.
+   * Returns the flow scope key of an element instance.
+   *
+   * @param elementInstanceKey The key of an existing element instance.
+   * @return The flow scope key or {@code -1} if there is no mapping for the given element instance.
    */
-  private void consumeRecordStream() {
-    var recordStream = RecordStream.of(engine.getRecordStreamSource());
+  public long getFlowScopeKey(long elementInstanceKey) {
+    var flowScopeKey = memo.keys.get(elementInstanceKey);
+    return flowScopeKey != null ? flowScopeKey : -1;
+  }
 
-    var memo = new TestCaseInstanceMemo(printRecordStreamEnabled);
+  /**
+   * Returns the process instance key of an element instance.
+   *
+   * @param elementInstanceKey The key of an existing element instance.
+   * @return The process instance key.
+   */
+  public long getProcessInstanceKey(long elementInstanceKey) {
+    return memo.getProcessInstanceKey(elementInstanceKey);
+  }
 
-    int recordCount = 0;
+  /**
+   * Checks if a BPMN element has been passed within the given flow scope.
+   *
+   * @param flowScopeKey The key of an existing flow scope.
+   * @param elementId    The BPMN element ID to test.
+   * @throws RuntimeException If the BPMN element has not been passed (is not completed).
+   */
+  public void hasPassed(long flowScopeKey, String elementId) {
+    select(memo -> {
+      var hasPassed = memo.elements.stream().anyMatch(e ->
+          e.flowScopeKey == flowScopeKey
+              && Objects.equals(e.id, elementId)
+              && e.state == ProcessInstanceIntent.ELEMENT_COMPLETED
+      );
+
+      if (!hasPassed) {
+        var message = String.format("expected flow scope %d to have passed element %s, but has not", flowScopeKey, elementId);
+        throw createException(message, flowScopeKey);
+      }
+
+      return true;
+    });
+  }
+
+  /**
+   * Checks if a BPMN multi instance element has been passed within the given flow scope.
+   *
+   * @param flowScopeKey The key of an existing flow scope.
+   * @param elementId    The BPMN element ID to test.
+   * @throws RuntimeException If the BPMN multi instance element has not been passed (is not completed).
+   */
+  public void hasPassedMultiInstance(long flowScopeKey, String elementId) {
+    select(memo -> {
+      var hasPassed = memo.multiInstanceElements.stream().anyMatch(e ->
+          e.flowScopeKey == flowScopeKey
+              && Objects.equals(e.id, elementId)
+              && e.state == ProcessInstanceIntent.ELEMENT_COMPLETED
+      );
+
+      if (!hasPassed) {
+        var message = String.format("expected flow scope %d to have passed multi instance element %s, but has not", flowScopeKey, elementId);
+        throw createException(message, flowScopeKey);
+      }
+
+      return true;
+    });
+  }
+
+  /**
+   * Checks if a BPMN element has been terminated within the given flow scope.
+   *
+   * @param flowScopeKey The key of an existing flow scope.
+   * @param elementId    The BPMN element ID to test.
+   * @throws RuntimeException If the BPMN element has not been terminated.
+   */
+  public void hasTerminated(long flowScopeKey, String elementId) {
+    select(memo -> {
+      var hasTerminated = memo.elements.stream().anyMatch(e ->
+          e.flowScopeKey == flowScopeKey
+              && Objects.equals(e.id, elementId)
+              && e.state == ProcessInstanceIntent.ELEMENT_TERMINATED
+      );
+
+      if (!hasTerminated) {
+        var message = String.format("expected flow scope %d to have terminated element %s, but has not", flowScopeKey, elementId);
+        throw createException(message, flowScopeKey);
+      }
+
+      return true;
+    });
+  }
+
+  /**
+   * Checks if a BPMN multi instance element has been terminated within the given flow scope.
+   *
+   * @param flowScopeKey The key of an existing flow scope.
+   * @param elementId    The BPMN element ID to test.
+   * @throws RuntimeException If the BPMN multi instance element has not been terminated.
+   */
+  public void hasTerminatedMultiInstance(long flowScopeKey, String elementId) {
+    select(memo -> {
+      var hasTerminated = memo.multiInstanceElements.stream().anyMatch(e ->
+          e.flowScopeKey == flowScopeKey
+              && Objects.equals(e.id, elementId)
+              && e.state == ProcessInstanceIntent.ELEMENT_TERMINATED
+      );
+
+      if (!hasTerminated) {
+        var message = String.format("expected flow scope %d to have terminated multi instance element %s, but has not", flowScopeKey, elementId);
+        throw createException(message, flowScopeKey);
+      }
+
+      return true;
+    });
+  }
+
+  /**
+   * Checks if the given process instance is completed.
+   *
+   * @param processInstanceKey The key of an existing process instance.
+   * @throws RuntimeException If the process instance is not completed.
+   */
+  public void isCompleted(long processInstanceKey) {
+    select(memo -> {
+      var isCompleted = memo.processInstances.stream().anyMatch(processInstance ->
+          processInstance.key == processInstanceKey && processInstance.state == ProcessInstanceIntent.ELEMENT_COMPLETED
+      );
+
+      if (!isCompleted) {
+        var message = String.format("expected process instance %d to be completed, but was not", processInstanceKey);
+        throw createException(message, processInstanceKey);
+      }
+
+      return true;
+    });
+  }
+
+  /**
+   * Checks if a flow is waiting at a specific BPMN element.
+   *
+   * @param flowScopeKey The key of an existing flow scope.
+   * @param elementId    The BPMN element to test.
+   * @throws RuntimeException If the flow is not waiting at the BPMN element.
+   */
+  public void isWaitingAt(long flowScopeKey, String elementId) {
+    select(memo -> {
+      var isWaitingAt = memo.elements.stream().anyMatch(e ->
+          e.flowScopeKey == flowScopeKey
+              && Objects.equals(e.id, elementId)
+              && e.state == ProcessInstanceIntent.ELEMENT_ACTIVATED
+      );
+
+      if (!isWaitingAt) {
+        var message = String.format("expected flow scope %d to be waiting at element %s, but was not", flowScopeKey, elementId);
+        throw createException(message, flowScopeKey);
+      }
+
+      return true;
+    });
+  }
+
+  List<Long> getKeys(long key) {
+    var keys = new ArrayList<Long>(1);
+
+    var current = key;
     while (true) {
+      keys.add(current);
+
+      var parent = memo.keys.get(current);
+      if (parent == null) {
+        break;
+      }
+      current = parent;
+    }
+
+    return keys;
+  }
+
+  JobMemo getJob(long flowScopeKey, String elementId) {
+    return select(memo -> {
+      var job = memo.jobs.stream().filter(j ->
+          j.flowScopeKey == flowScopeKey && Objects.equals(j.elementId, elementId)
+      ).findFirst();
+
+      if (job.isEmpty()) {
+        var message = String.format("job for element %s of flow scope %d could not be found", elementId, flowScopeKey);
+        throw createException(message, flowScopeKey);
+      }
+
+      memo.jobs.remove(job.get());
+
+      return job.get();
+    });
+  }
+
+  MessageSubscriptionMemo getMessageSubscription(long flowScopeKey, String elementId) {
+    var flowScopeKeys = getKeys(flowScopeKey);
+
+    return select(memo -> {
+      var messageSubscription = memo.messageSubscriptions.stream().filter(s ->
+          flowScopeKeys.contains(s.flowScopeKey) && Objects.equals(s.elementId, elementId)
+      ).findFirst();
+
+      if (messageSubscription.isEmpty()) {
+        var message = String.format("element %s of flow scope %d has no message subscription", elementId, flowScopeKey);
+        throw createException(message, flowScopeKey);
+      }
+
+      memo.messageSubscriptions.remove(messageSubscription.get());
+
+      return messageSubscription.get();
+    });
+  }
+
+  /**
+   * Selects information from the memorization, using the given function.
+   * <p>
+   * The function is applied every 100ms until the result is not {@code null} or the wait timeout expired.
+   * <p>
+   *
+   * @param selector Selector function.
+   * @param <T>      The result type.
+   * @return The result.
+   */
+  <T> T select(Function<TestCaseInstanceMemo, T> selector) {
+    T result = null;
+    RuntimeException ex = null;
+
+    var a = System.currentTimeMillis();
+    var b = a;
+
+    while ((b - a) < waitTimeout) {
       int i = 0;
       for (Record<?> record : recordStream.records()) {
         i++;
@@ -354,212 +368,93 @@ public class TestCaseInstance implements AutoCloseable {
         memo.apply(record);
       }
 
-      if (selectTask != null) {
-        SelectTask<?> task = selectTask;
-
-        selectTask = null;
-
-        synchronized (task) {
-          task.select(memo);
-
-          if (task.result != null) {
-            task.notify();
-          }
-        }
+      try {
+        result = selector.apply(memo);
+      } catch (RuntimeException e) {
+        ex = e;
       }
 
-      if (selectAndTestTask != null) {
-        var task = selectAndTestTask;
-
-        if (task.selectAndTest(memo)) {
-          selectAndTestTask = null;
-
-          synchronized (task) {
-            task.notify();
-          }
-        }
+      if (result != null) {
+        return result;
       }
 
       try {
         TimeUnit.MILLISECONDS.sleep(100);
       } catch (InterruptedException e) {
-        return;
+        Thread.currentThread().interrupt();
       }
-    }
-  }
 
-  /**
-   * Selects information from the memorization, using the given function. The function is applied every 100ms until the result is not {@code null} or the task
-   * timeout expired.
-   *
-   * @param selector Selector function.
-   * @param <T>      The result type.
-   * @return The result.
-   */
-  private <T> T select(Function<TestCaseInstanceMemo, T> selector) {
-    SelectTask<T> task = new SelectTask<>(selector);
-
-    selectTask = task;
-    try {
-      synchronized (selectTask) {
-        task.wait(taskTimeout);
-      }
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
+      b = System.currentTimeMillis();
     }
 
-    if (task.e != null) {
-      throw new RuntimeException(task.e);
+    if (ex != null) {
+      throw new RuntimeException(ex);
     }
 
-    return task.result;
+    return null;
   }
 
-  /**
-   * Selects and tests information from the memorization, using the given predicate. The predicate is tested every 100ms until it is {@code true} or the task
-   * timeout expired.
-   *
-   * @param predicate The predicate to test.
-   * @return The test result.
-   */
-  private boolean selectAndTest(Predicate<TestCaseInstanceMemo> predicate) {
-    selectAndTestTask = new SelectAndTestTask(predicate);
-    try {
-      synchronized (selectAndTestTask) {
-        selectAndTestTask.wait(taskTimeout);
-      }
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
+  private static class Exception extends RuntimeException {
+
+    private final TestCaseInstanceMemo memo;
+    private final String message;
+    private final long flowScopeKey;
+
+    private Exception(TestCaseInstanceMemo memo, String message, long flowScopeKey) {
+      this.memo = memo;
+      this.message = message;
+      this.flowScopeKey = flowScopeKey;
     }
 
-    return selectAndTestTask == null; // if true, the reference is set to null
-  }
+    @Override
+    public String getMessage() {
+      var processInstanceKey = memo.getProcessInstanceKey(flowScopeKey);
 
-  private String withDetails(String message, long processInstanceKey) {
-    return withIncidents(withElementInstances(message, processInstanceKey), processInstanceKey);
-  }
+      var b = new StringBuilder(message);
 
-  private String withIncidents(String message, long processInstanceKey) {
-    var incidents = new LinkedList<IncidentRecordValue>();
+      var incidents = memo.incidents.stream().filter(i -> i.processInstanceKey == processInstanceKey).collect(Collectors.toList());
+      if (!incidents.isEmpty()) {
+        b.append("\nfound incidents:");
 
-    var recordStream = RecordStream.of(engine.getRecordStreamSource());
-    for (Record<?> record : recordStream.records()) {
-      if (record.getValueType() == ValueType.INCIDENT && record.getIntent() == IncidentIntent.CREATED) {
-        var incident = (IncidentRecordValue) record.getValue();
-        if (incident.getProcessInstanceKey() == processInstanceKey) {
-          incidents.add(incident);
+        for (IncidentMemo incident : incidents) {
+          b.append("\n  - element ");
+          b.append(incident.elementId);
+          b.append(": ");
+          b.append(incident.errorType.name());
+          b.append(": ");
+          b.append(incident.errorMessage);
         }
       }
-    }
 
-    if (incidents.isEmpty()) {
-      return message;
-    }
+      var elements = new LinkedHashMap<String, ProcessInstanceIntent>();
 
-    var messageBuilder = new StringBuilder(message);
-    messageBuilder.append("\nfound incidents:");
+      memo.elements.stream().filter(e -> e.processInstanceKey == processInstanceKey).forEach(e -> elements.put(e.id, e.state));
 
-    for (IncidentRecordValue incident : incidents) {
-      messageBuilder.append("\n  - element ");
-      messageBuilder.append(incident.getElementId());
-      messageBuilder.append(": ");
-      messageBuilder.append(incident.getErrorType().name());
-      messageBuilder.append(": ");
-      messageBuilder.append(incident.getErrorMessage());
-    }
+      var states = elements.keySet().stream()
+          .map(k -> {
+            switch (elements.get(k)) {
+              case ELEMENT_ACTIVATED:
+                return k + " (activated)";
+              case ELEMENT_COMPLETED:
+                return k + " (completed)";
+              case ELEMENT_TERMINATED:
+                return k + " (terminated)";
+              default:
+                return null;
+            }
+          })
+          .collect(Collectors.toList());
 
-    return messageBuilder.toString();
-  }
+      if (!states.isEmpty()) {
+        b.append("\nfound element instances:");
 
-  private String withElementInstances(String message, long processInstanceKey) {
-    var elements = new LinkedHashMap<String, ProcessInstanceIntent>();
-
-    var recordStream = RecordStream.of(engine.getRecordStreamSource());
-    for (Record<?> record : recordStream.records()) {
-      if (record.getValueType() != ValueType.PROCESS_INSTANCE) {
-        continue;
+        for (String state : states) {
+          b.append("\n  - ");
+          b.append(state);
+        }
       }
 
-      var recordValue = (ProcessInstanceRecordValue) record.getValue();
-      if (recordValue.getBpmnElementType() == BpmnElementType.PROCESS || recordValue.getProcessInstanceKey() != processInstanceKey) {
-        continue;
-      }
-
-      var state = (ProcessInstanceIntent) record.getIntent();
-
-      elements.put(recordValue.getElementId(), state);
-    }
-
-    var states = elements.keySet().stream()
-        .filter(k -> {
-          switch (elements.get(k)) {
-            case ELEMENT_ACTIVATED:
-            case ELEMENT_COMPLETED:
-            case ELEMENT_TERMINATED:
-              return true;
-            default:
-              return false;
-          }
-        })
-        .map(k -> {
-          switch (elements.get(k)) {
-            case ELEMENT_ACTIVATED:
-              return k + " (activated)";
-            case ELEMENT_COMPLETED:
-              return k + " (completed)";
-            case ELEMENT_TERMINATED:
-              return k + " (terminated)";
-            default:
-              return null;
-          }
-        })
-        .collect(Collectors.toList());
-
-    if (states.isEmpty()) {
-      return message;
-    }
-
-    var messageBuilder = new StringBuilder(message);
-    messageBuilder.append("\nfound element instances:");
-
-    for (String state : states) {
-      messageBuilder.append("\n  - ");
-      messageBuilder.append(state);
-    }
-
-    return messageBuilder.toString();
-  }
-
-  private static class SelectTask<T> {
-
-    final Function<TestCaseInstanceMemo, T> selector;
-
-    RuntimeException e;
-    T result;
-
-    SelectTask(Function<TestCaseInstanceMemo, T> selector) {
-      this.selector = selector;
-    }
-
-    void select(TestCaseInstanceMemo memo) {
-      try {
-        result = selector.apply(memo);
-      } catch (RuntimeException e) {
-        this.e = e;
-      }
-    }
-  }
-
-  private static class SelectAndTestTask {
-
-    final Predicate<TestCaseInstanceMemo> predicate;
-
-    SelectAndTestTask(Predicate<TestCaseInstanceMemo> predicate) {
-      this.predicate = predicate;
-    }
-
-    boolean selectAndTest(TestCaseInstanceMemo memo) {
-      return predicate.test(memo);
+      return b.toString();
     }
   }
 }

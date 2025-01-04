@@ -34,20 +34,16 @@ class MultiInstanceScopeNestedTest {
     var elements = List.of(1, 2, 3);
     var nestedElements = List.of(4, 5);
 
-    handler.execute((testCaseInstance, processInstanceKey) -> {
+    handler.verifyLoopCount(3).executeLoop((testCaseInstance, subProcessKey) -> {
       var nestedSubProcessHandler = new CustomMultiInstanceHandler("nestedSubProcess");
 
-      nestedSubProcessHandler.execute((__, ___) -> {
+      nestedSubProcessHandler.verifyLoopCount(2).executeLoop((__, nestedSubProcessKey) -> {
         var userTaskHandler = new UserTaskHandler("userTask");
 
-        for (int i = 0; i < nestedElements.size(); i++) {
-          testCaseInstance.apply(processInstanceKey, userTaskHandler);
-        }
+        testCaseInstance.apply(nestedSubProcessKey, userTaskHandler);
       });
 
-      for (int i = 0; i < elements.size(); i++) {
-        testCaseInstance.apply(processInstanceKey, nestedSubProcessHandler);
-      }
+      testCaseInstance.apply(subProcessKey, nestedSubProcessHandler);
     });
 
     tc.createExecutor(engine)

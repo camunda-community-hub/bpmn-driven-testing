@@ -177,7 +177,7 @@ class TestCasesTest {
   @Test
   void testMultiInstanceScopeNested() {
     var testCases = TestCases.of(TestPaths.advancedMultiInstance("scopeNested.bpmn"));
-    assertThat(testCases.get()).hasSize(3);
+    assertThat(testCases.get()).hasSize(1);
 
     var testCase = testCases.get().get(0);
     assertThat(testCase.getElements()).hasSize(7);
@@ -217,23 +217,6 @@ class TestCasesTest {
     assertThat(scope.hasParent()).isFalse();
     assertThat(scope.isMultiInstance()).isTrue();
     assertThat(scope.isMultiInstanceSequential()).isTrue();
-
-    testCase = testCases.get().get(1);
-    assertThat(testCase.getElements()).hasSize(6);
-    assertThat(testCase.getElements().get(0).getNestingLevel()).isEqualTo(1);
-    assertThat(testCase.getElements().get(1).getNestingLevel()).isEqualTo(2);
-    assertThat(testCase.getElements().get(2).getNestingLevel()).isEqualTo(2);
-    assertThat(testCase.getElements().get(3).getNestingLevel()).isEqualTo(2);
-    assertThat(testCase.getElements().get(4).getNestingLevel()).isEqualTo(1);
-    assertThat(testCase.getElements().get(5).getNestingLevel()).isEqualTo(0);
-
-    testCase = testCases.get().get(2);
-    assertThat(testCase.getElements()).hasSize(5);
-    assertThat(testCase.getElements().get(0).getNestingLevel()).isEqualTo(2);
-    assertThat(testCase.getElements().get(1).getNestingLevel()).isEqualTo(2);
-    assertThat(testCase.getElements().get(2).getNestingLevel()).isEqualTo(2);
-    assertThat(testCase.getElements().get(3).getNestingLevel()).isEqualTo(1);
-    assertThat(testCase.getElements().get(4).getNestingLevel()).isEqualTo(0);
   }
 
   @Test
@@ -290,7 +273,7 @@ class TestCasesTest {
   @Test
   void testSubProcessNested() {
     var testCases = TestCases.of(TestPaths.simple("simpleSubProcessNested.bpmn"));
-    assertThat(testCases.get()).hasSize(1);
+    assertThat(testCases.get()).hasSize(2);
 
     var testCase = testCases.get().get(0);
     assertThat(testCase.getElements()).hasSize(7);
@@ -302,5 +285,16 @@ class TestCasesTest {
       assertThat(element.hasParent()).isTrue();
       assertThat(element.getParent().isMultiInstance()).isFalse();
     }
+
+    testCase = testCases.get().get(1);
+    assertThat(testCase.getElements()).hasSize(4);
+
+    assertThat(testCase.getElements().get(0).hasParent()).isTrue();
+    assertThat(testCase.getElements().get(0).getParent().getId()).isEqualTo("nestedSubProcess");
+    assertThat(testCase.getElements().get(1).hasParent()).isTrue();
+    assertThat(testCase.getElements().get(1).getParent().getId()).isEqualTo("nestedSubProcess");
+    assertThat(testCase.getElements().get(2).hasParent()).isTrue();
+    assertThat(testCase.getElements().get(2).getParent().getId()).isEqualTo("subProcess");
+    assertThat(testCase.getElements().get(3).hasParent()).isFalse();
   }
 }
