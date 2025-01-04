@@ -51,7 +51,7 @@ public class TestCaseExecutor {
   private final List<String> additionalResources = new ArrayList<>(0);
 
   private ObjectMapper objectMapper;
-  private long taskTimeout = 5000;
+  private long waitTimeout = 5000;
   private boolean printRecordStreamEnabled;
   private String tenantId;
   private Object variables;
@@ -115,7 +115,7 @@ public class TestCaseExecutor {
       var deploymentEvent = deployResourceCommandStep2.send().join();
 
       try {
-        engine.waitForIdleState(Duration.ofSeconds(1L));
+        engine.waitForIdleState(Duration.ofMillis(waitTimeout));
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
       } catch (TimeoutException e) {
@@ -178,7 +178,7 @@ public class TestCaseExecutor {
 
         try {
           TimeUnit.SECONDS.sleep(1L);
-          engine.waitForIdleState(Duration.ofSeconds(1L));
+          engine.waitForIdleState(Duration.ofMillis(waitTimeout));
         } catch (InterruptedException e) {
           Thread.currentThread().interrupt();
         } catch (TimeoutException e) {
@@ -229,7 +229,7 @@ public class TestCaseExecutor {
     }
 
     try {
-      engine.waitForIdleState(Duration.ofSeconds(1L));
+      engine.waitForIdleState(Duration.ofMillis(waitTimeout));
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
     } catch (TimeoutException e) {
@@ -248,7 +248,7 @@ public class TestCaseExecutor {
    */
   public void execute(long processInstanceKey) {
     try {
-      engine.waitForIdleState(Duration.ofSeconds(1L));
+      engine.waitForIdleState(Duration.ofMillis(waitTimeout));
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
     } catch (TimeoutException e) {
@@ -335,9 +335,11 @@ public class TestCaseExecutor {
    *
    * @param taskTimeout The audit task timeout in milliseconds - the default value is {@code 5000}
    * @return The executor.
+   * @deprecated use {@link #withWaitTimeout(long)} instead.
    */
+  @Deprecated
   public TestCaseExecutor withTaskTimeout(long taskTimeout) {
-    this.taskTimeout = taskTimeout;
+    this.waitTimeout = taskTimeout;
     return this;
   }
 
@@ -386,6 +388,18 @@ public class TestCaseExecutor {
     return this;
   }
 
+  /**
+   * Specifies a timeout in milliseconds for tasks that audit the test engine's record stream (e.g. tasks that check process instance is waiting at or has
+   * passed a certain BPMN element) and for waiting that the engine's becomes idle.
+   *
+   * @param waitTimeout The wait timeout in milliseconds - the default value is {@code 5000}
+   * @return The executor.
+   */
+  public TestCaseExecutor withWaitTimeout(long waitTimeout) {
+    this.waitTimeout = waitTimeout;
+    return this;
+  }
+
   ZeebeClient createClient() {
     JsonMapper jsonMapper;
     if (objectMapper != null) {
@@ -402,7 +416,7 @@ public class TestCaseExecutor {
   }
 
   void executeTestCase(ZeebeClient client, long processInstanceKey) {
-    try (TestCaseInstance testCaseInstance = new TestCaseInstance(engine, client, taskTimeout, printRecordStreamEnabled)) {
+    try (TestCaseInstance testCaseInstance = new TestCaseInstance(engine, client, waitTimeout, printRecordStreamEnabled)) {
       testCase.execute(testCaseInstance, processInstanceKey);
     } catch (Throwable t) {
       // cancel not ended process instance of failed test
