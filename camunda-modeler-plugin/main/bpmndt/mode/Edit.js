@@ -1,5 +1,7 @@
 import React from "react";
 
+import { MODE_EDIT } from "../constants";
+
 import Container from "../ui/Container";
 
 export default class Edit extends React.Component {
@@ -7,6 +9,13 @@ export default class Edit extends React.Component {
     super(props);
 
     this.mode = props.mode;
+
+    this.actionToggle = {
+      icon: "fas fa-times",
+      onClick: () => this.mode.toggle(MODE_EDIT),
+      style: "secondary",
+      title: "Close modal"
+    };
   }
 
   render() {
@@ -20,7 +29,8 @@ export default class Edit extends React.Component {
         leftBottom: testCase.startType,
         rightTop: testCase.end,
         rightBottom: testCase.endType
-      }
+      },
+      actionRight: this.actionToggle,
     };
 
     return <Container model={model} />

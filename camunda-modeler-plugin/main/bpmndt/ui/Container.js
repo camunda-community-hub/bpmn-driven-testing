@@ -70,12 +70,16 @@ export default class Container extends React.Component {
         </div>
         <div className="row">
           <div className="col-6 text-center">
-            <h3>{content.leftTop}</h3>
-            <span>{content.leftBottom}</span>
+            <div className="text-overflow" title={content.leftTop}>
+              <b>{content.leftTop}</b>
+            </div>
+            <div className="text-overflow" title={content.leftBottom}>{content.leftBottom}</div>
           </div>
           <div className="col-6 text-center">
-            <h3>{content.rightTop}</h3>
-            <span>{content.rightBottom}</span>
+            <div className="text-overflow" title={content.rightTop}>
+              <b>{content.rightTop}</b>
+            </div>
+            <div className="text-overflow" title={content.rightBottom}>{content.rightBottom}</div>
           </div>
         </div>
       </div>
