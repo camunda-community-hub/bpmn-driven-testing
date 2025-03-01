@@ -162,5 +162,5 @@
     </pluginManagement>
   </build>
 
-  <url>https://github.com/camunda-community-hub/bpmn-driven-testing/maven-plugin-8</url>
+  <url>https://github.com/camunda-community-hub/bpmn-driven-testing/tree/master/maven-plugin-8</url>
 </project>
