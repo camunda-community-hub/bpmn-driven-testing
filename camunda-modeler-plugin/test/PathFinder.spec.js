@@ -22,6 +22,7 @@ describe("PathFinder", () => {
 
   let subProcessErrorEscalation;
   let subProcessErrorEscalationNegative;
+  let subProcessGateway;
 
   let multipleSubProcesses;
   let multipleSubProcessesAdvanced;
@@ -38,6 +39,7 @@ describe("PathFinder", () => {
     
     subProcessErrorEscalation = await moddle.fromXML(readBpmnFile("subProcessErrorEscalation.bpmn"));
     subProcessErrorEscalationNegative = await moddle.fromXML(readBpmnFile("subProcessErrorEscalationNegative.bpmn"));
+    subProcessGateway = await moddle.fromXML(readBpmnFile("subProcessGateway.bpmn"));
 
     multipleSubProcesses = await moddle.fromXML(readBpmnFile("multipleSubProcesses.bpmn"));
     multipleSubProcessesAdvanced = await moddle.fromXML(readBpmnFile("multipleSubProcessesAdvanced.bpmn"));
@@ -112,6 +114,19 @@ describe("PathFinder", () => {
 
     const paths = pathFinder.find("startEvent", "altEndEvent");
     expect(paths).to.have.lengthOf(0);
+  });
+
+  it("should find path through embedded sub process with subsequent labeled gateway", () => {
+    const pathFinder = createPathFinder(subProcessGateway);
+
+    const paths = pathFinder.find("startEvent", "endEvent");
+    expect(paths).to.have.lengthOf(2);
+
+    expect(paths[0]).to.have.lengthOf(7);
+    expect(paths[0]).to.deep.equal(["startEvent", "subProcessStartEvent", "subProcessEndEvent", "fork", "taskA", "join", "endEvent"]);
+
+    expect(paths[1]).to.have.lengthOf(7);
+    expect(paths[1]).to.deep.equal(["startEvent", "subProcessStartEvent", "subProcessEndEvent", "fork", "taskB", "join", "endEvent"]);
   });
 
   it("should find path through link events", () => {

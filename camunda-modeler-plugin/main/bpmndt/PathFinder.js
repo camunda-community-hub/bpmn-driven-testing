@@ -197,13 +197,15 @@ export default class PathFinder {
         } else {
           // handle end events of sub process
           this._findIncoming($parent.id).map(element => {
-            if (element.type !== BPMN_SUB_PROCESS) {
+            if (element.type === BPMN_SUB_PROCESS) {
+              // try to find start event of sub process
+              const startEvent = this._findStartEvent(element.id);
+              return startEvent !== undefined ? startEvent.id : undefined;
+            } else if (element.type === "label") {
+              return; // ignore label of subsequent gateway
+            } else {
               return element.id;
             }
-
-            // try to find start event of sub process
-            const startEvent = this._findStartEvent(element.id);
-            return startEvent !== undefined ? startEvent.id : undefined;
           }).filter(id => id !== undefined).forEach(id => next.push(id));
 
           return next;
