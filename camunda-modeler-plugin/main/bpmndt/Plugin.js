@@ -49,6 +49,7 @@ export default class Plugin {
     // subscribe events
     eventBus.on("commandStack.element.updateProperties.postExecuted", this._updateFlowNodeId);
     eventBus.on("diagram.destroy", this._destroy);
+    eventBus.on("drag.start", 1500, this._ignoreEvent);
     eventBus.on("editorActions.init", this._registerMenuActions);
     eventBus.on("element.click", 1500, this._handleClickElement);
     eventBus.on("element.dblclick", 3500, this._ignoreEvent);
