@@ -29,7 +29,7 @@ export default class PluginView extends React.Component {
 
   render() {
     const { plugin } = this.props;
-    
+
     const { mode } = plugin;
     if (!mode) {
       return null;
@@ -37,18 +37,23 @@ export default class PluginView extends React.Component {
 
     const component = this._createComponent(mode);
 
+    let viewClassName = "view";
+    if (mode.id !== MODE_EDIT) {
+      viewClassName += " view-lock"; 
+    }
+
     return (
       <div>
         <Modes activeModes={mode.activeModes} hidePlugin={this.hidePlugin} toggleMode={mode.toggle} />
 
-        <div className="view" style={component ? {} : {display: "none"}}>
+        <EditModal mode={mode} />
+        <EditModalBackdrop mode={mode} />
+
+        <div className={viewClassName} style={component ? {} : {display: "none"}}>
           <div className="view-container">
             {component}
           </div>
         </div>
-
-        <EditModal mode={mode} />
-        <EditModalBackdrop mode={mode} />
       </div>
     )
   }

@@ -44,7 +44,11 @@ export const PLUGIN_VIEW_PARENT_CLASS_NAME = "bjs-container";
 
 // style to apply when the plugin view is shown
 export const PLUGIN_VIEW_STYLE = `
-  .djs-element {cursor: pointer}
+  .djs-element .djs-hit-stroke,
+  .djs-element .djs-hit-click-stroke,
+  .djs-element .djs-hit-all {
+    cursor: pointer;
+  }
   .djs-minimap { display: none; }
   .djs-overlay-context-pad { display: none; }
   .djs-palette { display: none; }

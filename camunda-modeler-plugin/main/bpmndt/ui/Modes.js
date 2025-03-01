@@ -30,8 +30,13 @@ export default class Modes extends React.Component {
   }
 
   render() {
+    let modesClassName = "modes";
+    if (!this.props.activeModes.has(MODE_EDIT)) {
+      modesClassName += " modes-lock";
+    }
+
     return (
-      <div className="modes">
+      <div className={modesClassName}>
         <div style={{float: "left", marginBottom: "2rem"}}>
           <Button onClick={this.props.hidePlugin} title="Hide plugin view">
             <i className="fas fa-times" style={{"color": "#dc3545"}}></i>

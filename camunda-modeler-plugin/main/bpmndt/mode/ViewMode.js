@@ -21,9 +21,7 @@ export default class ViewMode extends BaseMode {
 
     this.testCaseIndex = testCaseIndex;
 
-    if (testCaseIndex !== -1) {
-      this.updateMarkers();
-    }
+    this.updateMarkers();
   }
 
   get testCases() {

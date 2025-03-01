@@ -1,23 +1,32 @@
 .bpmndt .modes {
   position: absolute;
-  top: 20px;
+  top: 0px;
   left: 20px;
-  width: 35px;
-  height: 35px;
+  width: 58px;
+  height: 100%;
+  padding-top: 20px;
   opacity: 1.0;
+}
+.bpmndt .modes-lock {
+  border-left: 1px dashed #555;
+  border-right: 1px dashed #555;
 }
 .bpmndt .view {
   position: absolute;
-  bottom: 20px;
+  bottom: 28px;
   width: 100%;
   height: 130px;
   opacity: 1.0;
+}
+.bpmndt .view-lock {
+  border-top: 1px dashed #555;
+  border-bottom: 1px dashed #555;
 }
 .bpmndt .view-container {
   position: absolute;
   left: 0px;
   right: 0px;
-  width: 700px;
+  width: 992px;
   height: 100%;
   margin-left: auto;
   margin-right: auto;
@@ -25,10 +34,10 @@
 }
 .bpmndt .modal-wrapper {
   position: absolute;
-  bottom: 150px;
+  bottom: 158px;
   left: 0;
   right: 0;
-  width: 700px;
+  width: 992px;
   margin-left: auto;
   margin-right: auto;
 }
@@ -74,6 +83,13 @@
 .bpmndt .text-center {
   text-align: center;
 }
+.bpmndt .text-overflow {
+  padding-left: 15px;
+  padding-right: 15px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
 .bpmndt .h-100 {
   height: 100%
@@ -87,7 +103,7 @@
 }
 .bpmndt .container-left {
   top: -16px;
-  left: 42px;
+  left: 64px;
   position: absolute;
 }
 .bpmndt .container-center {
@@ -98,7 +114,7 @@
 }
 .bpmndt .container-right {
   top: -16px;
-  right: 42px;
+  right: 64px;
   position: absolute;
 }
 .bpmndt .row {
@@ -255,10 +271,6 @@
   border-color: #80bdff;
   outline: 0;
   box-shadow: 0 0 0 0.2rem rgb(0 123 255 / 25%);
-}
-
-.bpmndt h3 {
-  margin-block-start: 0;
 }
 
 .bpmndt textarea {
