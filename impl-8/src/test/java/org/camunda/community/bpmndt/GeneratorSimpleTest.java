@@ -12,6 +12,7 @@ import java.util.function.Predicate;
 
 import org.apache.commons.lang3.StringUtils;
 import org.camunda.community.bpmndt.api.AbstractJUnit5TestCase;
+import org.camunda.community.bpmndt.api.CallActivityBindingType;
 import org.camunda.community.bpmndt.api.TestCaseInstance;
 import org.camunda.community.bpmndt.strategy.DefaultStrategy;
 import org.camunda.community.bpmndt.test.TestPaths;
@@ -108,6 +109,8 @@ class GeneratorSimpleTest {
 
     expected = "callActivityElement.id = \"callActivity\";";
     assertThat(typeSpec.methodSpecs.get(0)).containsCode(expected);
+    expected = "callActivityElement.bindingType = %s.LATEST;";
+    assertThat(typeSpec.methodSpecs.get(0)).containsCode(String.format(expected, ClassName.get(CallActivityBindingType.class)));
     expected = "callActivityElement.processId = \"=\\\"simple\\\"\";";
     assertThat(typeSpec.methodSpecs.get(0)).containsCode(expected);
     expected = "callActivityElement.propagateAllChildVariables = true;";

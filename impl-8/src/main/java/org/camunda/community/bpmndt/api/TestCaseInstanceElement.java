@@ -14,9 +14,11 @@ public abstract class TestCaseInstanceElement {
 
   public static class CallActivityElement extends TestCaseInstanceElement {
 
+    public CallActivityBindingType bindingType;
     public String processId;
     public boolean propagateAllChildVariables;
     public boolean propagateAllParentVariables;
+    public String versionTag;
   }
 
   public static class JobElement extends TestCaseInstanceElement {

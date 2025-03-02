@@ -12,7 +12,10 @@ import io.camunda.zeebe.process.test.assertions.BpmnAssert;
 import io.camunda.zeebe.process.test.assertions.ProcessInstanceAssert;
 
 /**
- * Fluent API to handle call activities. The called process must be simulated - see {@link TestCaseExecutor#simulateProcess(String)}
+ * Fluent API to handle call activities. The called process must be simulated.
+ *
+ * @see TestCaseExecutor#simulateProcess(String)
+ * @see TestCaseExecutor#simulateVersionedProcess(String, String)
  */
 public class CallActivityHandler {
 
@@ -35,11 +38,15 @@ public class CallActivityHandler {
   private Object variables;
   private boolean waitForBoundaryEvent;
 
+  private Consumer<CallActivityBindingType> bindingTypeConsumer;
   private Consumer<String> processIdExpressionConsumer;
+  private Consumer<String> versionTagConsumer;
 
+  private CallActivityBindingType expectedBindingType;
   private String expectedProcessId;
   private Boolean expectedPropagateAllChildVariables;
   private Boolean expectedPropagateAllParentVariables;
+  private String expectedVersionTag;
 
   private Consumer<String> processIdConsumer;
 
@@ -70,8 +77,24 @@ public class CallActivityHandler {
       verifier.accept(new ProcessInstanceAssert(processInstanceKey, BpmnAssert.getRecordStream()));
     }
 
+    if (bindingTypeConsumer != null) {
+      bindingTypeConsumer.accept(element.bindingType);
+    }
+    if (expectedBindingType != null && expectedBindingType != element.bindingType) {
+      var message = "expected call activity %s to have binding type %s, but was %s";
+      throw new AssertionError(String.format(message, element.id, expectedBindingType, element.bindingType));
+    }
+
     if (processIdExpressionConsumer != null) {
       processIdExpressionConsumer.accept(element.processId);
+    }
+
+    if (versionTagConsumer != null) {
+      versionTagConsumer.accept(element.versionTag);
+    }
+    if (expectedVersionTag != null && !expectedVersionTag.equals(element.versionTag)) {
+      var message = "expected call activity %s to have version tag '%s', but was '%s'";
+      throw new AssertionError(String.format(message, element.id, expectedVersionTag, element.versionTag));
     }
 
     var calledProcessInstance = getCalledProcessInstance(instance, flowScopeKey);
@@ -211,6 +234,28 @@ public class CallActivityHandler {
   }
 
   /**
+   * Verifies the call activity's binding type.
+   *
+   * @param expectedBindingType The expected binding type.
+   * @return The handler.
+   */
+  public CallActivityHandler verifyBindingType(CallActivityBindingType expectedBindingType) {
+    this.expectedBindingType = expectedBindingType;
+    return this;
+  }
+
+  /**
+   * Verifies the call activity's binding type, using a consumer.
+   *
+   * @param bindingTypeConsumer A consumer asserting the binding type.
+   * @return The handler.
+   */
+  public CallActivityHandler verifyBindingType(Consumer<CallActivityBindingType> bindingTypeConsumer) {
+    this.bindingTypeConsumer = bindingTypeConsumer;
+    return this;
+  }
+
+  /**
    * Verifies the call activity's input propagation, which parent variables have been propagated to the child process instance.
    *
    * @param inputVerifier Verifier that accepts an {@link ProcessInstanceAssert} instance, which is the child process instance, started by the call activity.
@@ -286,6 +331,28 @@ public class CallActivityHandler {
    */
   public CallActivityHandler verifyPropagateAllParentVariables(Boolean expectedPropagateAllParentVariables) {
     this.expectedPropagateAllParentVariables = expectedPropagateAllParentVariables;
+    return this;
+  }
+
+  /**
+   * Verifies the call activity's version tag.
+   *
+   * @param expectedVersionTag The expected version tag, when binding type is "version tag".
+   * @return The handler.
+   */
+  public CallActivityHandler verifyVersionTag(String expectedVersionTag) {
+    this.expectedVersionTag = expectedVersionTag;
+    return this;
+  }
+
+  /**
+   * Verifies the call activity's version tag, using a consumer.
+   *
+   * @param versionTagConsumer A consumer asserting the version tag, when binding type is "version tag".
+   * @return The handler.
+   */
+  public CallActivityHandler verifyVersionTag(Consumer<String> versionTagConsumer) {
+    this.versionTagConsumer = versionTagConsumer;
     return this;
   }
 

@@ -128,6 +128,7 @@ class GeneratorTest {
     // API classes
     assertThat(isFile.test("org/camunda/community/bpmndt/api/AbstractJUnit5TestCase.java")).isTrue();
     assertThat(isFile.test("org/camunda/community/bpmndt/api/AbstractTestCase.java")).isTrue();
+    assertThat(isFile.test("org/camunda/community/bpmndt/api/CallActivityBindingType.java")).isTrue();
     assertThat(isFile.test("org/camunda/community/bpmndt/api/CallActivityHandler.java")).isTrue();
     assertThat(isFile.test("org/camunda/community/bpmndt/api/CustomMultiInstanceHandler.java")).isTrue();
     assertThat(isFile.test("org/camunda/community/bpmndt/api/JobHandler.java")).isTrue();

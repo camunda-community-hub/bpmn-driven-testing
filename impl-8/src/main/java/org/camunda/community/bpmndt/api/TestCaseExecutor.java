@@ -6,9 +6,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -49,6 +51,7 @@ public class TestCaseExecutor {
 
   private final List<String> additionalResourceNames = new ArrayList<>(0);
   private final List<String> additionalResources = new ArrayList<>(0);
+  private final List<String> additionalResourceVersionTags = new ArrayList<>(0);
 
   private ObjectMapper objectMapper;
   private long waitTimeout = 5000;
@@ -90,6 +93,7 @@ public class TestCaseExecutor {
    */
   public long execute() {
     try (ZeebeClient client = createClient()) {
+      deployVersionedResources(client);
 
       var deployResourceCommandStep1 = client.newDeployResourceCommand();
 
@@ -102,10 +106,16 @@ public class TestCaseExecutor {
       }
 
       for (int i = 0; i < additionalResources.size(); i++) {
+        var versionTag = additionalResourceVersionTags.get(i);
+        if (versionTag != null) {
+          // skip versioned resources
+          continue;
+        }
+
         var resourceName = additionalResourceNames.get(i);
         var resource = additionalResources.get(i);
 
-        deployResourceCommandStep2.addResourceStringUtf8(resource, resourceName);
+        deployResourceCommandStep2 = deployResourceCommandStep2.addResourceStringUtf8(resource, resourceName);
       }
 
       if (tenantId != null) {
@@ -277,10 +287,37 @@ public class TestCaseExecutor {
    *
    * @param processId The ID of the process to simulate.
    * @return The executor.
+   * @see #simulateVersionedProcess(String, String)
    */
   public TestCaseExecutor simulateProcess(String processId) {
+    if (processId == null || processId.isBlank()) {
+      throw new IllegalArgumentException("process ID is null or blank");
+    }
     var resource = simulateSubProcessResource.replace("processId", processId);
     return withAdditionalResource(processId + ".bpmn", resource);
+  }
+
+  /**
+   * Simulates the process with the given ID by adding a stub process to a separate versioned resource deployment.
+   *
+   * @param processId  The ID of the process to simulate.
+   * @param versionTag A version tag, corresponding to a call activity's version tag.
+   * @return The executor.
+   * @see #simulateProcess(String)
+   */
+  public TestCaseExecutor simulateVersionedProcess(String processId, String versionTag) {
+    if (processId == null || processId.isBlank()) {
+      throw new IllegalArgumentException("process ID is null or blank");
+    }
+    if (versionTag == null || versionTag.isBlank()) {
+      throw new IllegalArgumentException("version tag is null or blank");
+    }
+
+    var resource = simulateSubProcessResource
+        .replace("processId", processId)
+        .replace("processVersion", versionTag);
+
+    return withAdditionalVersionedResource(processId + ".bpmn", resource, versionTag);
   }
 
   /**
@@ -300,10 +337,44 @@ public class TestCaseExecutor {
    * @param resourceName Name of the resource.
    * @param resource     The resource as UTF-8 string.
    * @return The executor.
+   * @see #withAdditionalVersionedResource(String, String, String)
    */
   public TestCaseExecutor withAdditionalResource(String resourceName, String resource) {
+    if (resourceName == null || resourceName.isBlank()) {
+      throw new IllegalArgumentException("resource name is null or blank");
+    }
+    if (resource == null) {
+      throw new IllegalArgumentException("resource is null");
+    }
     additionalResourceNames.add(resourceName);
     additionalResources.add(resource);
+    additionalResourceVersionTags.add(null);
+    return this;
+  }
+
+  /**
+   * Adds a resource to a separate versioned resource deployment ({@link ZeebeClient#newDeployResourceCommand()}). Versioned resources are needed to test
+   * business rule tasks with a DMN decision or user tasks with a form that have the binding type "version tag".
+   *
+   * @param resourceName Name of the resource.
+   * @param resource     The resource as UTF-8 string.
+   * @param versionTag   A specific version tag.
+   * @return The executor.
+   * @see #withAdditionalResource(String, String)
+   */
+  public TestCaseExecutor withAdditionalVersionedResource(String resourceName, String resource, String versionTag) {
+    if (resourceName == null || resourceName.isBlank()) {
+      throw new IllegalArgumentException("resource name is null or blank");
+    }
+    if (resource == null) {
+      throw new IllegalArgumentException("resource is null");
+    }
+    if (versionTag == null || versionTag.isBlank()) {
+      throw new IllegalArgumentException("version tag is null or blank");
+    }
+    additionalResourceNames.add(resourceName);
+    additionalResources.add(resource);
+    additionalResourceVersionTags.add(versionTag);
     return this;
   }
 
@@ -413,6 +484,39 @@ public class TestCaseExecutor {
         .usePlaintext()
         .withJsonMapper(jsonMapper)
         .build();
+  }
+
+  void deployVersionedResources(ZeebeClient client) {
+    var versionTags = additionalResourceVersionTags.stream().filter(Objects::nonNull).collect(Collectors.toSet());
+    for (String versionTag : versionTags) {
+      var deployResourceCommandStep1 = client.newDeployResourceCommand();
+
+      DeployResourceCommandStep2 deployResourceCommandStep2 = null;
+      for (int i = 0; i < additionalResources.size(); i++) {
+        if (!versionTag.equals(additionalResourceVersionTags.get(i))) {
+          continue;
+        }
+
+        var resourceName = additionalResourceNames.get(i);
+        var resource = additionalResources.get(i);
+
+        if (deployResourceCommandStep2 == null) {
+          deployResourceCommandStep2 = deployResourceCommandStep1.addResourceStringUtf8(resource, resourceName);
+        } else {
+          deployResourceCommandStep2 = deployResourceCommandStep2.addResourceStringUtf8(resource, resourceName);
+        }
+      }
+
+      if (deployResourceCommandStep2 == null) {
+        continue;
+      }
+
+      if (tenantId != null) {
+        deployResourceCommandStep2 = deployResourceCommandStep2.tenantId(tenantId);
+      }
+
+      deployResourceCommandStep2.send().join();
+    }
   }
 
   void executeTestCase(ZeebeClient client, long processInstanceKey) {

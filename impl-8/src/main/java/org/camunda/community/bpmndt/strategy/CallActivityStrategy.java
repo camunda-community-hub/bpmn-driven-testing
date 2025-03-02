@@ -1,5 +1,6 @@
 package org.camunda.community.bpmndt.strategy;
 
+import org.camunda.community.bpmndt.api.CallActivityBindingType;
 import org.camunda.community.bpmndt.api.TestCaseInstanceElement.CallActivityElement;
 import org.camunda.community.bpmndt.model.BpmnElement;
 import org.camunda.community.bpmndt.model.BpmnElementType;
@@ -9,6 +10,7 @@ import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeName;
 
 import io.camunda.zeebe.model.bpmn.instance.BoundaryEvent;
+import io.camunda.zeebe.model.bpmn.instance.zeebe.ZeebeBindingType;
 import io.camunda.zeebe.model.bpmn.instance.zeebe.ZeebeCalledElement;
 
 public class CallActivityStrategy extends DefaultHandlerStrategy {
@@ -62,12 +64,37 @@ public class CallActivityStrategy extends DefaultHandlerStrategy {
 
     var calledElement = (ZeebeCalledElement) extensionElements.getUniqueChildElementByType(ZeebeCalledElement.class);
     if (calledElement != null) {
+      var bindingType = mapBindingType(calledElement.getBindingType());
+      if (bindingType != null) {
+        methodBuilder.addStatement("$LElement.bindingType = $T.$L", literal, CallActivityBindingType.class, bindingType.name());
+      }
+
       if (calledElement.getProcessId() != null) {
         methodBuilder.addStatement("$LElement.processId = $S", literal, calledElement.getProcessId());
       }
 
+      if (calledElement.getVersionTag() != null) {
+        methodBuilder.addStatement("$LElement.versionTag = $S", literal, calledElement.getVersionTag());
+      }
+
       methodBuilder.addStatement("$LElement.propagateAllChildVariables = $L", literal, calledElement.isPropagateAllChildVariablesEnabled());
       methodBuilder.addStatement("$LElement.propagateAllParentVariables = $L", literal, calledElement.isPropagateAllParentVariablesEnabled());
+    }
+  }
+
+  private CallActivityBindingType mapBindingType(ZeebeBindingType source) {
+    if (source == null) {
+      return CallActivityBindingType.LATEST;
+    }
+    switch (source) {
+      case deployment:
+        return CallActivityBindingType.DEPLOYMENT;
+      case latest:
+        return CallActivityBindingType.LATEST;
+      case versionTag:
+        return CallActivityBindingType.VERSION_TAG;
+      default:
+        return null;
     }
   }
 }
