@@ -15,6 +15,8 @@ mvn clean test
   Should contain  ${result.stdout}  bpmn-driven-testing-8-maven-plugin:${VERSION}:generator
 
   # tests executed
+  Should contain  ${result.stdout}  Running org.example.it.CallActivityBindingDeploymentTest
+  Should contain  ${result.stdout}  Running org.example.it.CallActivityBindingVersionTagTest
   Should contain  ${result.stdout}  Running org.example.it.CallActivityErrorTest
   Should contain  ${result.stdout}  Running org.example.it.CallActivityEscalationTest
   Should contain  ${result.stdout}  Running org.example.it.CallActivityMessageTest

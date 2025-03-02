@@ -7,6 +7,7 @@ import java.util.TreeSet;
 
 import org.camunda.community.bpmndt.api.AbstractJUnit5TestCase;
 import org.camunda.community.bpmndt.api.AbstractTestCase;
+import org.camunda.community.bpmndt.api.CallActivityBindingType;
 import org.camunda.community.bpmndt.api.CallActivityHandler;
 import org.camunda.community.bpmndt.api.CustomMultiInstanceHandler;
 import org.camunda.community.bpmndt.api.JobHandler;
@@ -90,6 +91,7 @@ public class Generator {
 
     apiClasses.add(AbstractJUnit5TestCase.class);
     apiClasses.add(AbstractTestCase.class);
+    apiClasses.add(CallActivityBindingType.class);
     apiClasses.add(CallActivityHandler.class);
     apiClasses.add(CustomMultiInstanceHandler.class);
     apiClasses.add(JobHandler.class);

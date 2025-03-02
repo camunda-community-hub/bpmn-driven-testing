@@ -6,13 +6,13 @@ import org.camunda.community.bpmndt.api.CallActivityBindingType;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import generated.simplecallactivity.TC_startEvent__endEvent;
+import generated.callactivitybindingversiontag.TC_startEvent__endEvent;
 import io.camunda.zeebe.process.test.api.ZeebeTestEngine;
 import io.camunda.zeebe.process.test.assertions.ProcessInstanceAssert;
 import io.camunda.zeebe.process.test.extension.ZeebeProcessTest;
 
 @ZeebeProcessTest
-class SimpleCallActivityTest {
+class CallActivityBindingVersionTagTest {
 
   @RegisterExtension
   TC_startEvent__endEvent tc = new TC_startEvent__endEvent();
@@ -22,13 +22,10 @@ class SimpleCallActivityTest {
   @Test
   void testExecute() {
     tc.handleCallActivity()
-        .verifyBindingType(CallActivityBindingType.LATEST)
-        .verifyBindingType(bindingType -> assertThat(bindingType).isEqualTo(CallActivityBindingType.LATEST))
-        .verifyProcessId("simple")
-        .verifyProcessIdExpression(expr -> assertThat(expr).isEqualTo("=\"simple\""))
-        .verifyPropagateAllChildVariables(true)
-        .verifyPropagateAllParentVariables(true);
+        .verifyBindingType(CallActivityBindingType.VERSION_TAG)
+        .verifyVersionTag("v1")
+        .verifyVersionTag(versionTag -> assertThat(versionTag).isEqualTo("v1"));
 
-    tc.createExecutor(engine).simulateProcess("simple").verify(ProcessInstanceAssert::isCompleted).execute();
+    tc.createExecutor(engine).simulateVersionedProcess("advanced", "v1").verify(ProcessInstanceAssert::isCompleted).execute();
   }
 }

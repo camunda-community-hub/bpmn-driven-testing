@@ -74,7 +74,7 @@ class CallActivityTest {
   void testVerifyProcessId() {
     handler.verifyProcessId("wrong process ID");
 
-    var e = assertThrows(AssertionError.class, () -> tc.createExecutor(engine).customize(this::customize).execute());
+    var e = assertThrows(AssertionError.class, () -> tc.createExecutor(engine).customize(this::customize).withWaitTimeout(1000L).execute());
     assertThat(e).hasMessageThat().contains("'wrong process ID'");
     assertThat(e).hasMessageThat().contains("'simple'");
 
@@ -84,7 +84,7 @@ class CallActivityTest {
 
     handler.verifyProcessId(assignee -> assertThat(assignee).isEqualTo("wrong process ID"));
 
-    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).customize(this::customize).execute());
+    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).customize(this::customize).withWaitTimeout(1000L).execute());
 
     handler.verifyProcessId(processId -> assertThat(processId).isEqualTo("simple"));
 
@@ -95,7 +95,7 @@ class CallActivityTest {
   void testVerifyProcessIdExpression() {
     handler.verifyProcessIdExpression(expr -> assertThat(expr).isEqualTo("wrong process ID expression"));
 
-    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).customize(this::customize).execute());
+    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).customize(this::customize).withWaitTimeout(1000L).execute());
 
     handler.verifyProcessIdExpression(expr -> assertThat(expr).isEqualTo("=\"simple\""));
 
@@ -106,7 +106,7 @@ class CallActivityTest {
   void testVerifyPropagateAllChildVariables() {
     handler.verifyPropagateAllChildVariables(false);
 
-    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).customize(this::customize).execute());
+    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).customize(this::customize).withWaitTimeout(1000L).execute());
 
     handler.verifyPropagateAllChildVariables(true);
 
@@ -117,7 +117,7 @@ class CallActivityTest {
   void testVerifyPropagateAllParentVariables() {
     handler.verifyPropagateAllParentVariables(false);
 
-    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).customize(this::customize).execute());
+    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).customize(this::customize).withWaitTimeout(1000L).execute());
 
     handler.verifyPropagateAllParentVariables(true);
 

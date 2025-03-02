@@ -188,6 +188,7 @@ Assert Test Code Generation
   Should contain  ${result.stdout}  Writing API classes
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/org/camunda/community/bpmndt/api/AbstractJUnit5TestCase.java
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/org/camunda/community/bpmndt/api/AbstractTestCase.java
+  Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/org/camunda/community/bpmndt/api/CallActivityBindingType.java
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/org/camunda/community/bpmndt/api/CallActivityHandler.java
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/org/camunda/community/bpmndt/api/CustomMultiInstanceHandler.java
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/org/camunda/community/bpmndt/api/JobHandler.java
@@ -205,6 +206,7 @@ Assert Test Code Generation
 
   File should exist  ${testSources}/org/camunda/community/bpmndt/api/AbstractJUnit5TestCase.java
   File should exist  ${testSources}/org/camunda/community/bpmndt/api/AbstractTestCase.java
+  File should exist  ${testSources}/org/camunda/community/bpmndt/api/CallActivityBindingType.java
   File should exist  ${testSources}/org/camunda/community/bpmndt/api/CallActivityHandler.java
   File should exist  ${testSources}/org/camunda/community/bpmndt/api/CustomMultiInstanceHandler.java
   File should exist  ${testSources}/org/camunda/community/bpmndt/api/JobHandler.java
