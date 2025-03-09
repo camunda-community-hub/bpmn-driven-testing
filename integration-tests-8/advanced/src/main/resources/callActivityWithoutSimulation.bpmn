@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:bpmndt="http://camunda.org/schema/extension/bpmn-driven-testing" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_00vdidu" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.31.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.6.0">
+  <bpmn:process id="callActivityWithoutSimulation" isExecutable="true">
+    <bpmn:extensionElements>
+      <bpmndt:testCases>
+        <bpmndt:testCase>
+          <bpmndt:path>
+            <bpmndt:node>startEvent</bpmndt:node>
+            <bpmndt:node>callActivity</bpmndt:node>
+            <bpmndt:node>endEvent</bpmndt:node>
+          </bpmndt:path>
+        </bpmndt:testCase>
+        <bpmndt:testCase>
+          <bpmndt:path>
+            <bpmndt:node>startEvent</bpmndt:node>
+            <bpmndt:node>callActivity</bpmndt:node>
+            <bpmndt:node>errorBoundaryEvent</bpmndt:node>
+            <bpmndt:node>errorEnd</bpmndt:node>
+          </bpmndt:path>
+        </bpmndt:testCase>
+        <bpmndt:testCase>
+          <bpmndt:path>
+            <bpmndt:node>startEvent</bpmndt:node>
+            <bpmndt:node>callActivity</bpmndt:node>
+            <bpmndt:node>escalationBoundaryEvent</bpmndt:node>
+            <bpmndt:node>escalationEnd</bpmndt:node>
+          </bpmndt:path>
+        </bpmndt:testCase>
+        <bpmndt:testCase>
+          <bpmndt:path>
+            <bpmndt:node>startEvent</bpmndt:node>
+            <bpmndt:node>callActivity</bpmndt:node>
+            <bpmndt:node>timerBoundaryEvent</bpmndt:node>
+            <bpmndt:node>timerEnd</bpmndt:node>
+          </bpmndt:path>
+        </bpmndt:testCase>
+      </bpmndt:testCases>
+    </bpmn:extensionElements>
+    <bpmn:startEvent id="startEvent">
+      <bpmn:outgoing>Flow_02qsmu2</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_02qsmu2" sourceRef="startEvent" targetRef="callActivity" />
+    <bpmn:endEvent id="endEvent">
+      <bpmn:incoming>Flow_1a37hss</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_1a37hss" sourceRef="callActivity" targetRef="endEvent" />
+    <bpmn:callActivity id="callActivity">
+      <bpmn:extensionElements>
+        <zeebe:calledElement processId="callActivitySubProcess" propagateAllChildVariables="true" bindingType="versionTag" versionTag="v1" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_02qsmu2</bpmn:incoming>
+      <bpmn:outgoing>Flow_1a37hss</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:boundaryEvent id="errorBoundaryEvent" attachedToRef="callActivity">
+      <bpmn:outgoing>Flow_01xjf5v</bpmn:outgoing>
+      <bpmn:errorEventDefinition id="ErrorEventDefinition_0ws0vd0" errorRef="Error_1i93tkb" />
+    </bpmn:boundaryEvent>
+    <bpmn:boundaryEvent id="escalationBoundaryEvent" attachedToRef="callActivity">
+      <bpmn:outgoing>Flow_06h083o</bpmn:outgoing>
+      <bpmn:escalationEventDefinition id="EscalationEventDefinition_19m1myt" escalationRef="Escalation_2vh4amt" />
+    </bpmn:boundaryEvent>
+    <bpmn:boundaryEvent id="timerBoundaryEvent" attachedToRef="callActivity">
+      <bpmn:outgoing>Flow_0rpbxdh</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerEventDefinition_1ofpo37">
+        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT1H</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:boundaryEvent>
+    <bpmn:endEvent id="timerEnd">
+      <bpmn:incoming>Flow_0rpbxdh</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_0rpbxdh" sourceRef="timerBoundaryEvent" targetRef="timerEnd" />
+    <bpmn:endEvent id="errorEnd">
+      <bpmn:incoming>Flow_01xjf5v</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_01xjf5v" sourceRef="errorBoundaryEvent" targetRef="errorEnd" />
+    <bpmn:endEvent id="escalationEnd">
+      <bpmn:incoming>Flow_06h083o</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_06h083o" sourceRef="escalationBoundaryEvent" targetRef="escalationEnd" />
+  </bpmn:process>
+  <bpmn:error id="Error_1i93tkb" name="boundaryError" errorCode="ERROR_CODE" />
+  <bpmn:escalation id="Escalation_2vh4amt" name="boundaryEscalation" escalationCode="ESCALATION_CODE" />
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="callActivityWithoutSimulation">
+      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="startEvent">
+        <dc:Bounds x="182" y="202" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1xbfle4_di" bpmnElement="endEvent">
+        <dc:Bounds x="422" y="202" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_091hy0p_di" bpmnElement="callActivity">
+        <dc:Bounds x="270" y="180" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0hqmrym_di" bpmnElement="timerEnd">
+        <dc:Bounds x="302" y="82" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_169znm4_di" bpmnElement="errorEnd">
+        <dc:Bounds x="272" y="322" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_02ns63b_di" bpmnElement="escalationEnd">
+        <dc:Bounds x="332" y="322" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_01oc6ot_di" bpmnElement="timerBoundaryEvent">
+        <dc:Bounds x="302" y="162" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_00zzqnn_di" bpmnElement="escalationBoundaryEvent">
+        <dc:Bounds x="332" y="242" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1rhryct_di" bpmnElement="errorBoundaryEvent">
+        <dc:Bounds x="272" y="242" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_02qsmu2_di" bpmnElement="Flow_02qsmu2">
+        <di:waypoint x="218" y="220" />
+        <di:waypoint x="270" y="220" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1a37hss_di" bpmnElement="Flow_1a37hss">
+        <di:waypoint x="370" y="220" />
+        <di:waypoint x="422" y="220" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0rpbxdh_di" bpmnElement="Flow_0rpbxdh">
+        <di:waypoint x="320" y="162" />
+        <di:waypoint x="320" y="118" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_01xjf5v_di" bpmnElement="Flow_01xjf5v">
+        <di:waypoint x="290" y="278" />
+        <di:waypoint x="290" y="322" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_06h083o_di" bpmnElement="Flow_06h083o">
+        <di:waypoint x="350" y="278" />
+        <di:waypoint x="350" y="322" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
