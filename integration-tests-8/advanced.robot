@@ -22,6 +22,7 @@ mvn clean test
   Should contain  ${result.stdout}  Running org.example.it.CallActivityMessageTest
   Should contain  ${result.stdout}  Running org.example.it.CallActivitySignalTest
   Should contain  ${result.stdout}  Running org.example.it.CallActivityTimerTest
+  Should contain  ${result.stdout}  Running org.example.it.CallActivityWithoutSimulationTest
   Should contain  ${result.stdout}  Running org.example.it.CollaborationTest
   Should contain  ${result.stdout}  Running org.example.it.LinkEventTest
   Should contain  ${result.stdout}  Running org.example.it.OutboundConnectorErrorTest

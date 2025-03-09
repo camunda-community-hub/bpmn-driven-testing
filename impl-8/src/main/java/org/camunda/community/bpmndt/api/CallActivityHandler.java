@@ -12,10 +12,11 @@ import io.camunda.zeebe.process.test.assertions.BpmnAssert;
 import io.camunda.zeebe.process.test.assertions.ProcessInstanceAssert;
 
 /**
- * Fluent API to handle call activities. The called process must be simulated.
+ * Fluent API to handle call activities. The called process must be simulated or a generated test case for the called process must be executed.
  *
  * @see TestCaseExecutor#simulateProcess(String)
  * @see TestCaseExecutor#simulateVersionedProcess(String, String)
+ * @see #executeTestCase(AbstractTestCase, Consumer)
  */
 public class CallActivityHandler {
 
@@ -49,6 +50,8 @@ public class CallActivityHandler {
   private String expectedVersionTag;
 
   private Consumer<String> processIdConsumer;
+
+  private AbstractTestCase testCase;
 
   public CallActivityHandler(String elementId) {
     if (elementId == null) {
@@ -98,7 +101,6 @@ public class CallActivityHandler {
     }
 
     var calledProcessInstance = getCalledProcessInstance(instance, flowScopeKey);
-    var job = instance.getJob(calledProcessInstance.key, SIMULATE_ELEMENT_ID);
 
     if (expectedProcessId != null && !expectedProcessId.equals(calledProcessInstance.bpmnProcessId)) {
       var message = "expected call activity %s to call process '%s', but was '%s'";
@@ -122,17 +124,24 @@ public class CallActivityHandler {
       inputVerifier.accept(processInstanceAssert);
     }
 
+    // use test case to execute called process instance
+    if (testCase != null) {
+      testCase.execute(instance, calledProcessInstance.key);
+    }
+
     if (waitForBoundaryEvent) {
       return;
     }
 
-    if (errorCode != null || escalationCode != null) {
+    // simulate called process instance
+    if (testCase == null && (errorCode != null || escalationCode != null)) {
       if (variables != null) {
         instance.getClient().newSetVariablesCommand(calledProcessInstance.key).variables(variables).send().join();
       } else {
         instance.getClient().newSetVariablesCommand(calledProcessInstance.key).variables(variableMap).send().join();
       }
 
+      var job = instance.getJob(calledProcessInstance.key, SIMULATE_ELEMENT_ID);
       if (errorCode != null) {
         // end called process instance with error end event
         instance.getClient().newSetVariablesCommand(calledProcessInstance.key).variables(Map.of(ERROR_CODE, errorCode)).send().join();
@@ -144,8 +153,9 @@ public class CallActivityHandler {
       }
 
       instance.hasTerminated(flowScopeKey, element.id);
-    } else {
+    } else if (testCase == null) {
       // end called process instance
+      var job = instance.getJob(calledProcessInstance.key, SIMULATE_ELEMENT_ID);
       if (variables != null) {
         instance.getClient().newCompleteCommand(job.key).variables(variables).send().join();
       } else {
@@ -177,6 +187,39 @@ public class CallActivityHandler {
       customizer.accept(this);
     }
     return this;
+  }
+
+  /**
+   * Executes the given test case, instead of simulating the called process, when the call activity is handled.
+   * <br><br>
+   * <b>Please note</b>: This method initializes the handlers of the given test case. Custom behavior can be defined using a customizer.
+   * <br><br>
+   * When this method is used, the invocation of process simulation related methods like {@code simulateProcess} or {@code simulateVariable} is not allowed!
+   *
+   * @param testCase   A specific test case, that starts with a non start event.
+   * @param customizer Customizer function that accept the initialized test case.
+   */
+  public final <T extends AbstractTestCase> void executeTestCase(T testCase, Consumer<T> customizer) {
+    if (!variableMap.isEmpty() || variables != null) {
+      throw new IllegalStateException("variable simulation is not allowed when executing a test case");
+    }
+    if (testCase == null) {
+      throw new IllegalArgumentException("test case is null");
+    }
+    if (!testCase.isProcessStart()) {
+      throw new IllegalArgumentException("test case is invalid: start element must start the process");
+    }
+    if (testCase.isMessageStart() || testCase.isSignalStart() || testCase.isTimerStart()) {
+      throw new IllegalArgumentException("test case is invalid: start element must be a none start event - message, signal and timer starts are not allowed");
+    }
+
+    testCase.beforeEach();
+
+    if (customizer != null) {
+      customizer.accept(testCase);
+    }
+
+    this.testCase = testCase;
   }
 
   /**
