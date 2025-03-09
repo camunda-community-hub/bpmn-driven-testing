@@ -12,11 +12,15 @@ import org.camunda.community.bpmndt.api.SignalEventHandler;
 import org.camunda.community.bpmndt.api.TimerEventHandler;
 import org.camunda.community.bpmndt.api.UserTaskHandler;
 import org.camunda.community.bpmndt.model.BpmnElement;
+import org.camunda.community.bpmndt.model.BpmnEventSupport;
 
 import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec.Builder;
+
+import io.camunda.zeebe.model.bpmn.impl.BpmnModelConstants;
+import io.camunda.zeebe.model.bpmn.instance.EndEvent;
 
 public class DefaultStrategy implements GeneratorStrategy {
 
@@ -77,6 +81,16 @@ public class DefaultStrategy implements GeneratorStrategy {
 
   @Override
   public void hasPassed(MethodSpec.Builder methodBuilder) {
+    if (element.getTypeName().equals(BpmnModelConstants.BPMN_ELEMENT_END_EVENT)) {
+      var event = element.getFlowNode(EndEvent.class);
+      var eventSupport = new BpmnEventSupport(event);
+
+      if (eventSupport.isError() || eventSupport.isEscalation()) {
+        methodBuilder.addStatement("instance.isActivating(flowScopeKey, $S)", element.getId());
+        return;
+      }
+    }
+
     methodBuilder.addStatement("instance.hasPassed(flowScopeKey, $S)", element.getId());
   }
 

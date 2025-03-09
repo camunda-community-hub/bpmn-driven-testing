@@ -18,6 +18,7 @@ import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.io.TempDir;
 
 import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.TypeSpec;
 
 class GeneratorAdvancedTest {
 
@@ -81,5 +82,25 @@ class GeneratorAdvancedTest {
     assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.isWaitingAt(flowScopeKey, \"callActivity\");");
     assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.apply(flowScopeKey, callActivity);");
     assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(flowScopeKey, \"callActivity\");");
+  }
+
+  @Test
+  void testCallActivitySubProcess() {
+    generator.generateTestCases(ctx, bpmnFile);
+    assertThat(result.getFiles()).hasSize(10);
+
+    TypeSpec typeSpec;
+
+    typeSpec = result.getFiles().get(1).typeSpec; // errorEndEvent
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.isActivating(flowScopeKey, \"errorEndEvent\");");
+
+    typeSpec = result.getFiles().get(2).typeSpec; // escalationEndEvent
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.isActivating(flowScopeKey, \"escalationEndEvent\");");
+
+    typeSpec = result.getFiles().get(3).typeSpec; // signalEndEvent
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(flowScopeKey, \"signalEndEvent\");");
+
+    typeSpec = result.getFiles().get(4).typeSpec; // terminateEndEvent
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(flowScopeKey, \"terminateEndEvent\");");
   }
 }
