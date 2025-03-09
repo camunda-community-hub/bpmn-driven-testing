@@ -115,7 +115,11 @@ public class TestCaseExecutor {
         var resourceName = additionalResourceNames.get(i);
         var resource = additionalResources.get(i);
 
-        deployResourceCommandStep2 = deployResourceCommandStep2.addResourceStringUtf8(resource, resourceName);
+        if (resource == null) {
+          deployResourceCommandStep2 = deployResourceCommandStep2.addResourceFromClasspath(resourceName);
+        } else {
+          deployResourceCommandStep2 = deployResourceCommandStep2.addResourceStringUtf8(resource, resourceName);
+        }
       }
 
       if (tenantId != null) {
@@ -332,6 +336,24 @@ public class TestCaseExecutor {
   }
 
   /**
+   * Adds a classpath resource to the resource deployment ({@link ZeebeClient#newDeployResourceCommand()}).
+   *
+   * @param classpathResourceName Name of the classpath resource - e.g. "bpmn/my-process.bpmn", if the resource is under
+   *                              src/main/resources/bpmn/my-process.bpmn.
+   * @return The executor.
+   * @see #withAdditionalVersionedClasspathResource(String, String)
+   */
+  public TestCaseExecutor withAdditionalClasspathResource(String classpathResourceName) {
+    if (classpathResourceName == null || classpathResourceName.isBlank()) {
+      throw new IllegalArgumentException("classpath resource name is null or blank");
+    }
+    additionalResourceNames.add(classpathResourceName);
+    additionalResources.add(null);
+    additionalResourceVersionTags.add(null);
+    return this;
+  }
+
+  /**
    * Adds a resource to the resource deployment ({@link ZeebeClient#newDeployResourceCommand()}).
    *
    * @param resourceName Name of the resource.
@@ -349,6 +371,29 @@ public class TestCaseExecutor {
     additionalResourceNames.add(resourceName);
     additionalResources.add(resource);
     additionalResourceVersionTags.add(null);
+    return this;
+  }
+
+  /**
+   * Adds a classpath resource to a separate versioned resource deployment ({@link ZeebeClient#newDeployResourceCommand()}). Versioned resources are needed to
+   * test business rule tasks with a DMN decision or user tasks with a form that have the binding type "version tag".
+   *
+   * @param classpathResourceName Name of the classpath resource - e.g. "bpmn/my-process.bpmn", if the resource is under
+   *                              src/main/resources/bpmn/my-process.bpmn.
+   * @param versionTag            A specific version tag.
+   * @return The executor.
+   * @see #withAdditionalClasspathResource(String)
+   */
+  public TestCaseExecutor withAdditionalVersionedClasspathResource(String classpathResourceName, String versionTag) {
+    if (classpathResourceName == null || classpathResourceName.isBlank()) {
+      throw new IllegalArgumentException("classpath resource name is null or blank");
+    }
+    if (versionTag == null || versionTag.isBlank()) {
+      throw new IllegalArgumentException("version tag is null or blank");
+    }
+    additionalResourceNames.add(classpathResourceName);
+    additionalResources.add(null);
+    additionalResourceVersionTags.add(versionTag);
     return this;
   }
 
@@ -501,9 +546,17 @@ public class TestCaseExecutor {
         var resource = additionalResources.get(i);
 
         if (deployResourceCommandStep2 == null) {
-          deployResourceCommandStep2 = deployResourceCommandStep1.addResourceStringUtf8(resource, resourceName);
+          if (resource == null) {
+            deployResourceCommandStep2 = deployResourceCommandStep1.addResourceFromClasspath(resourceName);
+          } else {
+            deployResourceCommandStep2 = deployResourceCommandStep1.addResourceStringUtf8(resource, resourceName);
+          }
         } else {
-          deployResourceCommandStep2 = deployResourceCommandStep2.addResourceStringUtf8(resource, resourceName);
+          if (resource == null) {
+            deployResourceCommandStep2 = deployResourceCommandStep2.addResourceFromClasspath(resourceName);
+          } else {
+            deployResourceCommandStep2 = deployResourceCommandStep2.addResourceStringUtf8(resource, resourceName);
+          }
         }
       }
 
