@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:bpmndt="http://camunda.org/schema/extension/bpmn-driven-testing" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_1azh2qv" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.31.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.6.0">
+  <bpmn:process id="callActivitySubProcess" isExecutable="true">
+    <bpmn:extensionElements>
+      <zeebe:versionTag value="v1" />
+      <bpmndt:testCases>
+        <bpmndt:testCase>
+          <bpmndt:name>SubProcessEnd</bpmndt:name>
+          <bpmndt:path>
+            <bpmndt:node>startEvent</bpmndt:node>
+            <bpmndt:node>join</bpmndt:node>
+            <bpmndt:node>serviceTask</bpmndt:node>
+            <bpmndt:node>fork</bpmndt:node>
+            <bpmndt:node>endEvent</bpmndt:node>
+          </bpmndt:path>
+        </bpmndt:testCase>
+        <bpmndt:testCase>
+          <bpmndt:name>SubProcessErrorEnd</bpmndt:name>
+          <bpmndt:path>
+            <bpmndt:node>startEvent</bpmndt:node>
+            <bpmndt:node>join</bpmndt:node>
+            <bpmndt:node>serviceTask</bpmndt:node>
+            <bpmndt:node>fork</bpmndt:node>
+            <bpmndt:node>errorEndEvent</bpmndt:node>
+          </bpmndt:path>
+        </bpmndt:testCase>
+        <bpmndt:testCase>
+          <bpmndt:name>SubProcessEscalationEnd</bpmndt:name>
+          <bpmndt:path>
+            <bpmndt:node>startEvent</bpmndt:node>
+            <bpmndt:node>join</bpmndt:node>
+            <bpmndt:node>serviceTask</bpmndt:node>
+            <bpmndt:node>fork</bpmndt:node>
+            <bpmndt:node>escalationEndEvent</bpmndt:node>
+          </bpmndt:path>
+        </bpmndt:testCase>
+        <bpmndt:testCase>
+          <bpmndt:name>SubProcessSignalEnd</bpmndt:name>
+          <bpmndt:path>
+            <bpmndt:node>startEvent</bpmndt:node>
+            <bpmndt:node>join</bpmndt:node>
+            <bpmndt:node>serviceTask</bpmndt:node>
+            <bpmndt:node>fork</bpmndt:node>
+            <bpmndt:node>signalEndEvent</bpmndt:node>
+          </bpmndt:path>
+        </bpmndt:testCase>
+        <bpmndt:testCase>
+          <bpmndt:name>SubProcessTerminateEnd</bpmndt:name>
+          <bpmndt:path>
+            <bpmndt:node>startEvent</bpmndt:node>
+            <bpmndt:node>join</bpmndt:node>
+            <bpmndt:node>serviceTask</bpmndt:node>
+            <bpmndt:node>fork</bpmndt:node>
+            <bpmndt:node>terminateEndEvent</bpmndt:node>
+          </bpmndt:path>
+        </bpmndt:testCase>
+        <bpmndt:testCase>
+          <bpmndt:name>SubProcessMessageStart</bpmndt:name>
+          <bpmndt:path>
+            <bpmndt:node>messageStartEvent</bpmndt:node>
+            <bpmndt:node>join</bpmndt:node>
+            <bpmndt:node>serviceTask</bpmndt:node>
+            <bpmndt:node>fork</bpmndt:node>
+            <bpmndt:node>endEvent</bpmndt:node>
+          </bpmndt:path>
+        </bpmndt:testCase>
+        <bpmndt:testCase>
+          <bpmndt:name>SubProcessSignalStart</bpmndt:name>
+          <bpmndt:path>
+            <bpmndt:node>signalStartEvent</bpmndt:node>
+            <bpmndt:node>join</bpmndt:node>
+            <bpmndt:node>serviceTask</bpmndt:node>
+            <bpmndt:node>fork</bpmndt:node>
+            <bpmndt:node>endEvent</bpmndt:node>
+          </bpmndt:path>
+        </bpmndt:testCase>
+        <bpmndt:testCase>
+          <bpmndt:name>SubProcessTimerStart</bpmndt:name>
+          <bpmndt:path>
+            <bpmndt:node>timerStartEvent</bpmndt:node>
+            <bpmndt:node>join</bpmndt:node>
+            <bpmndt:node>serviceTask</bpmndt:node>
+            <bpmndt:node>fork</bpmndt:node>
+            <bpmndt:node>endEvent</bpmndt:node>
+          </bpmndt:path>
+        </bpmndt:testCase>
+        <bpmndt:testCase>
+          <bpmndt:name>SubProcessWait</bpmndt:name>
+          <bpmndt:path>
+            <bpmndt:node>startEvent</bpmndt:node>
+            <bpmndt:node>join</bpmndt:node>
+          </bpmndt:path>
+        </bpmndt:testCase>
+        <bpmndt:testCase>
+          <bpmndt:name>SubProcessServiceTask</bpmndt:name>
+          <bpmndt:path>
+            <bpmndt:node>serviceTask</bpmndt:node>
+            <bpmndt:node>fork</bpmndt:node>
+            <bpmndt:node>endEvent</bpmndt:node>
+          </bpmndt:path>
+        </bpmndt:testCase>
+      </bpmndt:testCases>
+    </bpmn:extensionElements>
+    <bpmn:startEvent id="startEvent">
+      <bpmn:outgoing>Flow_0hn0w2q</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:exclusiveGateway id="join">
+      <bpmn:incoming>Flow_0hn0w2q</bpmn:incoming>
+      <bpmn:incoming>Flow_111h4i6</bpmn:incoming>
+      <bpmn:incoming>Flow_041gqd3</bpmn:incoming>
+      <bpmn:incoming>Flow_11g7x3n</bpmn:incoming>
+      <bpmn:outgoing>Flow_1gq9tkj</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="Flow_0hn0w2q" sourceRef="startEvent" targetRef="join" />
+    <bpmn:sequenceFlow id="Flow_111h4i6" sourceRef="messageStartEvent" targetRef="join" />
+    <bpmn:sequenceFlow id="Flow_041gqd3" sourceRef="signalStartEvent" targetRef="join" />
+    <bpmn:sequenceFlow id="Flow_11g7x3n" sourceRef="timerStartEvent" targetRef="join" />
+    <bpmn:exclusiveGateway id="fork">
+      <bpmn:incoming>Flow_0p0xjsd</bpmn:incoming>
+      <bpmn:outgoing>Flow_058bre7</bpmn:outgoing>
+      <bpmn:outgoing>Flow_1jgsop6</bpmn:outgoing>
+      <bpmn:outgoing>Flow_0otpzs0</bpmn:outgoing>
+      <bpmn:outgoing>Flow_0qfbwyq</bpmn:outgoing>
+      <bpmn:outgoing>Flow_0pn2ox5</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:endEvent id="endEvent">
+      <bpmn:incoming>Flow_058bre7</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_058bre7" sourceRef="fork" targetRef="endEvent">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=end = "none"</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_1jgsop6" sourceRef="fork" targetRef="errorEndEvent">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=end = "error"</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_0otpzs0" sourceRef="fork" targetRef="escalationEndEvent">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=end = "escalation"</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:startEvent id="messageStartEvent">
+      <bpmn:outgoing>Flow_111h4i6</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_1m1j7oe" messageRef="Message_2jkvnbv" />
+    </bpmn:startEvent>
+    <bpmn:startEvent id="signalStartEvent">
+      <bpmn:outgoing>Flow_041gqd3</bpmn:outgoing>
+      <bpmn:signalEventDefinition id="SignalEventDefinition_18lpfla" signalRef="Signal_1nbojd1" />
+    </bpmn:startEvent>
+    <bpmn:startEvent id="timerStartEvent">
+      <bpmn:outgoing>Flow_11g7x3n</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerEventDefinition_0xtqunr">
+        <bpmn:timeDate xsi:type="bpmn:tFormalExpression">2025-03-08T00:00:00Z</bpmn:timeDate>
+      </bpmn:timerEventDefinition>
+    </bpmn:startEvent>
+    <bpmn:endEvent id="errorEndEvent">
+      <bpmn:incoming>Flow_1jgsop6</bpmn:incoming>
+      <bpmn:errorEventDefinition id="ErrorEventDefinition_0czrnxi" errorRef="Error_15mt9ws" />
+    </bpmn:endEvent>
+    <bpmn:endEvent id="escalationEndEvent">
+      <bpmn:incoming>Flow_0otpzs0</bpmn:incoming>
+      <bpmn:escalationEventDefinition id="EscalationEventDefinition_181frbc" escalationRef="Escalation_2782js8" />
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_1gq9tkj" sourceRef="join" targetRef="serviceTask" />
+    <bpmn:sequenceFlow id="Flow_0p0xjsd" sourceRef="serviceTask" targetRef="fork" />
+    <bpmn:serviceTask id="serviceTask">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="advanced" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1gq9tkj</bpmn:incoming>
+      <bpmn:outgoing>Flow_0p0xjsd</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_0qfbwyq" sourceRef="fork" targetRef="signalEndEvent">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=end = "signal"</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:endEvent id="signalEndEvent">
+      <bpmn:incoming>Flow_0qfbwyq</bpmn:incoming>
+      <bpmn:signalEventDefinition id="SignalEventDefinition_1at1xdn" signalRef="Signal_3nsbg27" />
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_0pn2ox5" sourceRef="fork" targetRef="terminateEndEvent">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=end = "terminate"</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:endEvent id="terminateEndEvent">
+      <bpmn:incoming>Flow_0pn2ox5</bpmn:incoming>
+      <bpmn:terminateEventDefinition id="TerminateEventDefinition_1x6ey45" />
+    </bpmn:endEvent>
+  </bpmn:process>
+  <bpmn:message id="Message_2jkvnbv" name="messageStart" />
+  <bpmn:signal id="Signal_1nbojd1" name="signalStart" />
+  <bpmn:error id="Error_15mt9ws" name="errorEnd" errorCode="ERROR_CODE" />
+  <bpmn:escalation id="Escalation_2782js8" name="escalationEnd" escalationCode="ESCALATION_CODE" />
+  <bpmn:signal id="Signal_3nsbg27" name="signalEnd" />
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="callActivitySubProcess">
+      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="startEvent">
+        <dc:Bounds x="182" y="92" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_01cu73w_di" bpmnElement="join" isMarkerVisible="true">
+        <dc:Bounds x="275" y="85" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0etnzrm_di" bpmnElement="messageStartEvent">
+        <dc:Bounds x="182" y="202" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0o8q2s2_di" bpmnElement="signalStartEvent">
+        <dc:Bounds x="182" y="312" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1nmyzq8_di" bpmnElement="timerStartEvent">
+        <dc:Bounds x="182" y="422" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_13x5qtu_di" bpmnElement="fork" isMarkerVisible="true">
+        <dc:Bounds x="565" y="85" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1hqbwdl_di" bpmnElement="endEvent">
+        <dc:Bounds x="682" y="92" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_07ougsm_di" bpmnElement="errorEndEvent">
+        <dc:Bounds x="682" y="202" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0b59nts_di" bpmnElement="escalationEndEvent">
+        <dc:Bounds x="682" y="312" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0n5727f_di" bpmnElement="serviceTask">
+        <dc:Bounds x="390" y="70" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1wjrkmu_di" bpmnElement="signalEndEvent">
+        <dc:Bounds x="682" y="422" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_14661mf_di" bpmnElement="terminateEndEvent">
+        <dc:Bounds x="682" y="532" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_0hn0w2q_di" bpmnElement="Flow_0hn0w2q">
+        <di:waypoint x="218" y="110" />
+        <di:waypoint x="275" y="110" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_111h4i6_di" bpmnElement="Flow_111h4i6">
+        <di:waypoint x="218" y="220" />
+        <di:waypoint x="300" y="220" />
+        <di:waypoint x="300" y="135" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_041gqd3_di" bpmnElement="Flow_041gqd3">
+        <di:waypoint x="218" y="330" />
+        <di:waypoint x="300" y="330" />
+        <di:waypoint x="300" y="135" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_11g7x3n_di" bpmnElement="Flow_11g7x3n">
+        <di:waypoint x="218" y="440" />
+        <di:waypoint x="300" y="440" />
+        <di:waypoint x="300" y="135" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_058bre7_di" bpmnElement="Flow_058bre7">
+        <di:waypoint x="615" y="110" />
+        <di:waypoint x="682" y="110" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1jgsop6_di" bpmnElement="Flow_1jgsop6">
+        <di:waypoint x="590" y="135" />
+        <di:waypoint x="590" y="220" />
+        <di:waypoint x="682" y="220" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0otpzs0_di" bpmnElement="Flow_0otpzs0">
+        <di:waypoint x="590" y="135" />
+        <di:waypoint x="590" y="330" />
+        <di:waypoint x="682" y="330" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1gq9tkj_di" bpmnElement="Flow_1gq9tkj">
+        <di:waypoint x="325" y="110" />
+        <di:waypoint x="390" y="110" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0p0xjsd_di" bpmnElement="Flow_0p0xjsd">
+        <di:waypoint x="490" y="110" />
+        <di:waypoint x="565" y="110" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0qfbwyq_di" bpmnElement="Flow_0qfbwyq">
+        <di:waypoint x="590" y="135" />
+        <di:waypoint x="590" y="440" />
+        <di:waypoint x="682" y="440" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0pn2ox5_di" bpmnElement="Flow_0pn2ox5">
+        <di:waypoint x="590" y="135" />
+        <di:waypoint x="590" y="550" />
+        <di:waypoint x="682" y="550" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

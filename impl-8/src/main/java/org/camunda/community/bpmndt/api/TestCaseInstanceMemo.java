@@ -167,14 +167,15 @@ public class TestCaseInstanceMemo {
 
     if (recordValue.getBpmnElementType() != BpmnElementType.PROCESS && state == ProcessInstanceIntent.ELEMENT_ACTIVATING) {
       keys.put(record.getKey(), recordValue.getFlowScopeKey());
-      return;
     }
 
-    boolean relevantState = state == ProcessInstanceIntent.ELEMENT_ACTIVATED
+    boolean relevant = state == ProcessInstanceIntent.ELEMENT_ACTIVATED
         || state == ProcessInstanceIntent.ELEMENT_COMPLETED
-        || state == ProcessInstanceIntent.ELEMENT_TERMINATED;
+        || state == ProcessInstanceIntent.ELEMENT_TERMINATED
+        // for error, escalation and terminate end events
+        || (recordValue.getBpmnElementType() == BpmnElementType.END_EVENT && state == ProcessInstanceIntent.ELEMENT_ACTIVATING);
 
-    if (!relevantState) {
+    if (!relevant) {
       return;
     }
 

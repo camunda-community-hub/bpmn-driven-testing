@@ -239,6 +239,31 @@ public class TestCaseInstance implements AutoCloseable {
   }
 
   /**
+   * Checks if a BPMN element is being activated within the given flow scope. This method is used to verify that a terminating end event (error or escalation)
+   * has been reached.
+   *
+   * @param flowScopeKey The key of an existing flow scope.
+   * @param elementId    The BPMN element ID to test.
+   * @throws RuntimeException If the BPMN element is not being activated.
+   */
+  public void isActivating(long flowScopeKey, String elementId) {
+    select(memo -> {
+      var hasTerminated = memo.elements.stream().anyMatch(e ->
+          e.flowScopeKey == flowScopeKey
+              && Objects.equals(e.id, elementId)
+              && e.state == ProcessInstanceIntent.ELEMENT_ACTIVATING
+      );
+
+      if (!hasTerminated) {
+        var message = String.format("expected flow scope %d to have activating element %s, but has not", flowScopeKey, elementId);
+        throw createException(message, flowScopeKey);
+      }
+
+      return true;
+    });
+  }
+
+  /**
    * Checks if the given process instance is completed.
    *
    * @param processInstanceKey The key of an existing process instance.
