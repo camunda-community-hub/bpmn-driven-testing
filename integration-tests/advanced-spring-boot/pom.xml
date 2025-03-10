@@ -1,5 +1,4 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.example.it</groupId>
@@ -14,7 +13,7 @@
     <camunda.bpm.version>7.22.0</camunda.bpm.version>
     <camunda.bpm.assert.version>15.0.0</camunda.bpm.assert.version>
     <h2.version>2.2.224</h2.version>
-    <spring.boot.version>3.3.4</spring.boot.version>
+    <spring.boot.version>3.4.3</spring.boot.version>
 
     <plugin.version>1.1.0-SNAPSHOT</plugin.version>
   </properties>
