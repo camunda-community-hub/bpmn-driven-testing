@@ -29,10 +29,10 @@
 
     <!-- Versions -->
     <camunda.bpm.version>7.22.0</camunda.bpm.version>
-    <camunda.zeebe.version>8.6.3</camunda.zeebe.version>
+    <camunda.zeebe.version>8.6.11</camunda.zeebe.version>
     <google.truth.version>1.4.4</google.truth.version>
     <javapoet.version>1.13.0</javapoet.version>
-    <junit.jupiter.version>5.10.1</junit.jupiter.version>
+    <junit.jupiter.version>5.11.4</junit.jupiter.version>
     <robotframework.version>4.1.2</robotframework.version>
     <slf4j.version>1.7.36</slf4j.version>
   </properties>
@@ -85,13 +85,6 @@
         <type>pom</type>
         <scope>import</scope>
       </dependency>
-      <dependency> <!-- https://github.com/camunda-community-hub/spring-zeebe/issues/920 -->
-        <groupId>io.grpc</groupId>
-        <artifactId>grpc-bom</artifactId>
-        <version>1.65.1</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
 
       <dependency>
         <groupId>com.squareup</groupId>
@@ -101,9 +94,11 @@
 
       <!-- Test -->
       <dependency>
-        <groupId>org.junit.jupiter</groupId>
-        <artifactId>junit-jupiter-api</artifactId>
+        <groupId>org.junit</groupId>
+        <artifactId>junit-bom</artifactId>
         <version>${junit.jupiter.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
       </dependency>
 
       <dependency>

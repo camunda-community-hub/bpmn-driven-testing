@@ -9,14 +9,14 @@ repositories {
 }
 
 dependencies {
-  testImplementation 'io.camunda:zeebe-process-test-extension:8.6.3'
-  testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.1'
+  testImplementation 'io.camunda:zeebe-process-test-extension:8.6.11'
+  testImplementation 'org.junit.jupiter:junit-jupiter-api:5.11.4'
   testImplementation 'com.google.truth:truth:1.4.4'
 
   testCompileOnly 'org.immutables:annotate:2.10.0'
   testCompileOnly 'org.immutables:value-annotations:2.10.0'
 
-  testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.1'
+  testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.11.4'
 }
 
 compileJava {

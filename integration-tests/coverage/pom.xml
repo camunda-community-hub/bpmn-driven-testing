@@ -1,5 +1,4 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.example.it</groupId>
@@ -15,7 +14,7 @@
     <camunda.bpm.assert.version>15.0.0</camunda.bpm.assert.version>
     <camunda.process.test.coverage.version>2.3.1</camunda.process.test.coverage.version>
     <h2.version>2.2.224</h2.version>
-    <junit.jupiter.version>5.10.1</junit.jupiter.version>
+    <junit.jupiter.version>5.11.4</junit.jupiter.version>
     <slf4j.version>1.7.36</slf4j.version>
 
     <plugin.version>1.1.0-SNAPSHOT</plugin.version>
@@ -35,6 +34,14 @@
         <groupId>org.camunda.bpm</groupId>
         <artifactId>camunda-bom</artifactId>
         <version>${camunda.bpm.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.junit</groupId>
+        <artifactId>junit-bom</artifactId>
+        <version>${junit.jupiter.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -58,7 +65,6 @@
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
-      <version>${junit.jupiter.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>

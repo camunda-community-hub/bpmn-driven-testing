@@ -12,13 +12,13 @@ dependencies {
   implementation 'org.camunda.bpm:camunda-engine:7.22.0'
 
   testImplementation 'org.slf4j:slf4j-reload4j:1.7.36'
-  testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.1'
+  testImplementation 'org.junit.jupiter:junit-jupiter-api:5.11.4'
   testImplementation 'org.hamcrest:hamcrest-core:2.2'
   testImplementation 'com.h2database:h2:2.2.224'
   testImplementation 'org.camunda.bpm.assert:camunda-bpm-assert:15.0.0'
   testImplementation 'org.assertj:assertj-core:3.26.3'
 
-  testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.1'
+  testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.11.4'
 }
 
 compileJava {
