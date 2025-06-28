@@ -93,50 +93,7 @@ public class TestCaseExecutor {
    */
   public long execute() {
     try (ZeebeClient client = createClient()) {
-      deployVersionedResources(client);
-
-      var deployResourceCommandStep1 = client.newDeployResourceCommand();
-
-      DeployResourceCommandStep2 deployResourceCommandStep2;
-      if (testCase.getBpmnResourceName() != null) {
-        deployResourceCommandStep2 = deployResourceCommandStep1.addResourceFromClasspath(testCase.getBpmnResourceName());
-      } else {
-        var resourceName = String.format("%s.%s.bpmn", testCase.testClass.getSimpleName(), testCase.testMethodName);
-        deployResourceCommandStep2 = deployResourceCommandStep1.addResourceStream(testCase.getBpmnResource(), resourceName);
-      }
-
-      for (int i = 0; i < additionalResources.size(); i++) {
-        var versionTag = additionalResourceVersionTags.get(i);
-        if (versionTag != null) {
-          // skip versioned resources
-          continue;
-        }
-
-        var resourceName = additionalResourceNames.get(i);
-        var resource = additionalResources.get(i);
-
-        if (resource == null) {
-          deployResourceCommandStep2 = deployResourceCommandStep2.addResourceFromClasspath(resourceName);
-        } else {
-          deployResourceCommandStep2 = deployResourceCommandStep2.addResourceStringUtf8(resource, resourceName);
-        }
-      }
-
-      if (tenantId != null) {
-        deployResourceCommandStep2 = deployResourceCommandStep2.tenantId(tenantId);
-      }
-
-      var deploymentEvent = deployResourceCommandStep2.send().join();
-
-      try {
-        engine.waitForIdleState(Duration.ofMillis(waitTimeout));
-      } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
-      } catch (TimeoutException e) {
-        throw new RuntimeException("failed to wait for engine idle state", e);
-      }
-
-      BpmnAssert.assertThat(deploymentEvent).containsProcessesByBpmnProcessId(testCase.getBpmnProcessId());
+      var deploymentEvent = deployResources(client);
 
       var processDefinitionKey = findProcessDefinitionKey(deploymentEvent);
 
@@ -233,6 +190,61 @@ public class TestCaseExecutor {
   }
 
   /**
+   * Executes the actual test case and verifies the state after, using a runnable that starts a new process instance.
+   * <br>
+   * This method is suitable for testing process starts with custom code, but not self-managing a process deployment.
+   *
+   * @param startProcessInstance A runnable that starts a process instance.
+   * @return The key of the started process instance.
+   */
+  public long execute(Runnable startProcessInstance) {
+    if (startProcessInstance == null) {
+      throw new IllegalArgumentException("start process instance runnable is null");
+    }
+    if (variables != null || !variableMap.isEmpty()) {
+      throw new IllegalStateException("variables and variable map are not supported when starting a process instance via runnable");
+    }
+
+    try (ZeebeClient client = createClient()) {
+      var deploymentEvent = deployResources(client);
+
+      var processDefinitionKey = findProcessDefinitionKey(deploymentEvent);
+
+      // start process instance
+      startProcessInstance.run();
+
+      try {
+        engine.waitForIdleState(Duration.ofMillis(waitTimeout));
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+      } catch (TimeoutException e) {
+        throw new RuntimeException("failed to wait for engine idle state", e);
+      }
+
+      // find process instance
+      var processInstanceRecords = StreamSupport.stream(BpmnAssert.getRecordStream().processInstanceRecords().spliterator(), false)
+          .filter(record ->
+              record.getRecordType() == RecordType.EVENT
+                  && record.getIntent() == ProcessInstanceIntent.ELEMENT_ACTIVATED
+                  && record.getValue().getBpmnElementType() == BpmnElementType.PROCESS
+                  && record.getValue().getProcessDefinitionKey() == processDefinitionKey
+          )
+          .collect(Collectors.toList());
+
+      if (processInstanceRecords.isEmpty()) {
+        throw new IllegalArgumentException("failed to find started process instance");
+      }
+
+      // get key of last record
+      var processInstanceKey = processInstanceRecords.get(processInstanceRecords.size() - 1).getValue().getProcessInstanceKey();
+
+      executeTestCase(client, processInstanceKey);
+
+      return processInstanceKey;
+    }
+  }
+
+  /**
    * Executes the actual test case and verifies the state after, using the given event.
    *
    * @param processInstanceEvent The event related to an existing process instance, used to execute the test case.
@@ -240,6 +252,9 @@ public class TestCaseExecutor {
   public void execute(ProcessInstanceEvent processInstanceEvent) {
     if (processInstanceEvent == null) {
       throw new IllegalArgumentException("process instance event is null");
+    }
+    if (variables != null || !variableMap.isEmpty()) {
+      throw new IllegalStateException("variables and variable map are not supported when process instance has already been created");
     }
 
     try {
@@ -261,6 +276,10 @@ public class TestCaseExecutor {
    * @param processInstanceKey The key of an existing process instance.
    */
   public void execute(long processInstanceKey) {
+    if (variables != null || !variableMap.isEmpty()) {
+      throw new IllegalStateException("variables and variable map are not supported when process instance has already been created");
+    }
+
     try {
       engine.waitForIdleState(Duration.ofMillis(waitTimeout));
     } catch (InterruptedException e) {
@@ -529,6 +548,55 @@ public class TestCaseExecutor {
         .usePlaintext()
         .withJsonMapper(jsonMapper)
         .build();
+  }
+
+  DeploymentEvent deployResources(ZeebeClient client) {
+    deployVersionedResources(client);
+
+    var deployResourceCommandStep1 = client.newDeployResourceCommand();
+
+    DeployResourceCommandStep2 deployResourceCommandStep2;
+    if (testCase.getBpmnResourceName() != null) {
+      deployResourceCommandStep2 = deployResourceCommandStep1.addResourceFromClasspath(testCase.getBpmnResourceName());
+    } else {
+      var resourceName = String.format("%s.%s.bpmn", testCase.testClass.getSimpleName(), testCase.testMethodName);
+      deployResourceCommandStep2 = deployResourceCommandStep1.addResourceStream(testCase.getBpmnResource(), resourceName);
+    }
+
+    for (int i = 0; i < additionalResources.size(); i++) {
+      var versionTag = additionalResourceVersionTags.get(i);
+      if (versionTag != null) {
+        // skip versioned resources
+        continue;
+      }
+
+      var resourceName = additionalResourceNames.get(i);
+      var resource = additionalResources.get(i);
+
+      if (resource == null) {
+        deployResourceCommandStep2 = deployResourceCommandStep2.addResourceFromClasspath(resourceName);
+      } else {
+        deployResourceCommandStep2 = deployResourceCommandStep2.addResourceStringUtf8(resource, resourceName);
+      }
+    }
+
+    if (tenantId != null) {
+      deployResourceCommandStep2 = deployResourceCommandStep2.tenantId(tenantId);
+    }
+
+    var deploymentEvent = deployResourceCommandStep2.send().join();
+
+    try {
+      engine.waitForIdleState(Duration.ofMillis(waitTimeout));
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+    } catch (TimeoutException e) {
+      throw new RuntimeException("failed to wait for engine idle state", e);
+    }
+
+    BpmnAssert.assertThat(deploymentEvent).containsProcessesByBpmnProcessId(testCase.getBpmnProcessId());
+
+    return deploymentEvent;
   }
 
   void deployVersionedResources(ZeebeClient client) {

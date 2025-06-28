@@ -24,6 +24,8 @@ class AbstractTestCaseTest {
   ZeebeTestEngine engine;
   ZeebeClient client;
 
+  private Long startedProcessInstanceKey;
+
   @Test
   void testExecute() {
     long processInstanceKey = tc.createExecutor(engine)
@@ -31,6 +33,20 @@ class AbstractTestCaseTest {
         .execute();
 
     assertThat(processInstanceKey).isNotEqualTo(-1);
+  }
+
+  @Test
+  void testExecuteStartProcessInstanceRunnable() {
+    long processInstanceKey = tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute(() ->
+        startedProcessInstanceKey = client.newCreateInstanceCommand()
+            .bpmnProcessId(tc.getBpmnProcessId())
+            .latestVersion()
+            .send()
+            .join()
+            .getProcessInstanceKey()
+    );
+
+    assertThat(processInstanceKey).isEqualTo(startedProcessInstanceKey);
   }
 
   @Test
