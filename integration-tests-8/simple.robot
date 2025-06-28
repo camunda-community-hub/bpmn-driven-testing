@@ -12,7 +12,7 @@ mvn clean test
   Log  ${result.stdout}
 
   # plugin executed
-  Should contain  ${result.stdout}  bpmn-driven-testing-8-maven-plugin:${VERSION}:generator
+  Should contain  ${result.stdout}  bpmn-driven-testing-8:${VERSION}:generator
 
   Assert Test Code Generation  ${result}  target
 

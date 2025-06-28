@@ -12,7 +12,7 @@ mvn clean test
   Log  ${result.stdout}
 
   # plugin executed
-  Should contain  ${result.stdout}  bpmn-driven-testing-maven-plugin:${VERSION}:generator
+  Should contain  ${result.stdout}  bpmn-driven-testing:${VERSION}:generator
 
   # tests executed
   Should contain  ${result.stdout}  Running org.example.it.CallActivityErrorTest
