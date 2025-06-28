@@ -9,18 +9,19 @@ repositories {
 }
 
 dependencies {
-  implementation 'org.camunda.bpm.springboot:camunda-bpm-spring-boot-starter:7.22.0'
-  implementation 'org.camunda.bpm:camunda-engine-plugin-spin:7.22.0'
+  implementation 'org.camunda.bpm.springboot:camunda-bpm-spring-boot-starter:7.23.0'
+  implementation 'org.camunda.bpm:camunda-engine-plugin-spin:7.23.0'
   implementation 'org.camunda.spin:camunda-spin-dataformat-json-jackson:1.23.0'
 
   testImplementation 'org.hamcrest:hamcrest-core:2.2'
   testImplementation 'com.h2database:h2:2.2.224'
   testImplementation 'org.camunda.bpm.assert:camunda-bpm-assert:15.0.0'
-  testImplementation 'org.assertj:assertj-core:3.26.3'
-  testImplementation 'org.springframework.boot:spring-boot-starter-test:3.4.3'
-  testImplementation 'org.junit.vintage:junit-vintage-engine:5.11.4'
+  testImplementation 'org.assertj:assertj-core:3.27.3'
+  testImplementation 'org.springframework.boot:spring-boot-starter-test:3.5.3'
+  testImplementation 'org.junit.jupiter:junit-jupiter-api:5.13.2'
+  testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.13.2'
 
-  testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.11.4'
+  testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 compileJava {

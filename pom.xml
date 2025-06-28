@@ -28,8 +28,8 @@
     <maven.compiler.release>11</maven.compiler.release> <!-- https://docs.camunda.org/manual/latest/introduction/supported-environments/#java -->
 
     <!-- Versions -->
-    <camunda.bpm.version>7.22.0</camunda.bpm.version>
-    <camunda.zeebe.version>8.6.11</camunda.zeebe.version>
+    <camunda.bpm.version>7.23.0</camunda.bpm.version>
+    <camunda.zeebe.version>8.7.6</camunda.zeebe.version>
     <google.truth.version>1.4.4</google.truth.version>
     <javapoet.version>1.13.0</javapoet.version>
     <junit.jupiter.version>5.11.4</junit.jupiter.version>

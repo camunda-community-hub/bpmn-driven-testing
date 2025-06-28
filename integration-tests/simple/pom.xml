@@ -9,8 +9,8 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <!-- Versions -->
-    <assertj.version>3.26.3</assertj.version>
-    <camunda.bpm.version>7.22.0</camunda.bpm.version>
+    <assertj.version>3.27.3</assertj.version>
+    <camunda.bpm.version>7.23.0</camunda.bpm.version>
     <camunda.bpm.assert.version>15.0.0</camunda.bpm.assert.version>
     <h2.version>2.2.224</h2.version>
     <junit.jupiter.version>5.11.4</junit.jupiter.version>

@@ -9,7 +9,7 @@ repositories {
 }
 
 dependencies {
-  testImplementation 'io.camunda:zeebe-process-test-extension:8.6.11'
+  testImplementation 'io.camunda:zeebe-process-test-extension:8.7.6'
   testImplementation 'org.junit.jupiter:junit-jupiter-api:5.11.4'
   testImplementation 'com.google.truth:truth:1.4.4'
 
