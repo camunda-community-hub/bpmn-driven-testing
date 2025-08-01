@@ -9,7 +9,6 @@ import java.nio.file.Files;
 
 import org.camunda.bpm.engine.ExternalTaskService;
 import org.camunda.bpm.engine.externaltask.ExternalTask;
-import org.camunda.bpm.engine.externaltask.LockedExternalTask;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.test.assertions.ProcessEngineTests;
 import org.camunda.bpm.engine.test.assertions.bpmn.ProcessInstanceAssert;
@@ -25,13 +24,13 @@ public class ExternalTaskTest {
   @RegisterExtension
   TestCase tc = new TestCase();
 
-  private ExternalTaskHandler handler;
+  private ExternalTaskHandler<?> handler;
 
   private ExternalTaskService externalTaskService;
 
   @BeforeEach
   public void setUp() {
-    handler = new ExternalTaskHandler(tc.getProcessEngine(), "externalTask", "test-topic");
+    handler = new ExternalTaskHandler<>(tc.getProcessEngine(), "externalTask", "test-topic");
 
     externalTaskService = tc.getProcessEngine().getExternalTaskService();
   }
@@ -44,12 +43,29 @@ public class ExternalTaskTest {
   @Test
   public void testExecuteExternalTask() {
     handler.executeExternalTask(externalTask -> {
+      ExternalTask expected = externalTaskService.createExternalTaskQuery()
+          .externalTaskId(externalTask.getId())
+          .singleResult();
+
+      assertThat(externalTask.getActivityId()).isEqualTo(expected.getActivityId());
       assertThat(externalTask.getActivityId()).isEqualTo("externalTask");
+      assertThat(externalTask.getActivityInstanceId()).isEqualTo(expected.getActivityInstanceId());
+      assertThat(externalTask.getBusinessKey()).isEqualTo(expected.getBusinessKey());
       assertThat(externalTask.getBusinessKey()).isEqualTo("executeExternalTask");
-      assertThat(externalTask.getLockExpirationTime()).isNotNull();
+      assertThat(externalTask.getCreateTime()).isEqualTo(expected.getCreateTime());
+      assertThat(externalTask.getExtensionProperties()).isEmpty();
+      assertThat(externalTask.getLockExpirationTime()).isEqualTo(expected.getLockExpirationTime());
+      assertThat(externalTask.getPriority()).isEqualTo(50);
+      assertThat(externalTask.getProcessDefinitionId()).isEqualTo(expected.getProcessDefinitionId());
       assertThat(externalTask.getProcessDefinitionKey()).isEqualTo("simpleExternalTask");
+      assertThat(externalTask.getProcessInstanceId()).isEqualTo(expected.getProcessInstanceId());
+      assertThat(externalTask.getProcessDefinitionVersionTag()).isEqualTo("v1");
+      assertThat(externalTask.getRetries()).isNull();
+      assertThat(externalTask.getTenantId()).isEqualTo(expected.getTenantId());
       assertThat(externalTask.getTopicName()).isEqualTo("test-topic");
       assertThat(externalTask.getWorkerId()).isEqualTo(ExternalTaskHandler.WORKER_ID);
+
+      assertThat(externalTask.getLockExpirationTime().getTime() - externalTask.getCreateTime().getTime() >= 20_000).isTrue();
 
       externalTaskService.complete(externalTask.getId(), externalTask.getWorkerId());
     });
@@ -61,43 +77,29 @@ public class ExternalTaskTest {
 
   @Test
   public void testExecuteLockedExternalTask() {
-    handler.executeLockedExternalTask(externalTask -> {
-      assertThat(externalTask.getActivityId()).isEqualTo("externalTask");
-      assertThat(externalTask.getBusinessKey()).isEqualTo("executeLockedExternalTask");
-      assertThat(externalTask.getLockExpirationTime()).isNotNull();
-      assertThat(externalTask.getProcessDefinitionKey()).isEqualTo("simpleExternalTask");
-      assertThat(externalTask.getTopicName()).isEqualTo("test-topic");
-      assertThat(externalTask.getVariables()).containsEntry("k1", "v1");
-      assertThat(externalTask.getVariables()).containsEntry("k2", "v2");
-      assertThat(externalTask.getWorkerId()).isEqualTo(ExternalTaskHandler.WORKER_ID);
+    handler.executeLockedExternalTask(lockedExternalTask -> {
+      assertThat(lockedExternalTask.getVariables()).containsEntry("k1", "v1");
+      assertThat(lockedExternalTask.getVariables()).containsEntry("k2", "v2");
+
+      assertThat(lockedExternalTask.getVariables()).containsEntry("kl1", "vl1");
 
       String errorMessage = "errorMessage";
       String errorDetails = "errorDetails";
       VariableMap variables = Variables.putValue("k3", "v3");
       VariableMap localVariables = Variables.putValue("k4", "v4");
 
-      externalTaskService.handleFailure(externalTask.getId(), externalTask.getWorkerId(), errorMessage, errorDetails, 2, 1L, variables, localVariables);
+      externalTaskService.handleFailure(
+          lockedExternalTask.getId(),
+          lockedExternalTask.getWorkerId(),
+          errorMessage,
+          errorDetails,
+          2,
+          1L,
+          variables,
+          localVariables
+      );
 
-      ExternalTask failedTask = externalTaskService.createExternalTaskQuery()
-          .externalTaskId(externalTask.getId())
-          .singleResult();
-
-      LockedExternalTask wrappedTask = handler.wrap(failedTask);
-      assertThat(wrappedTask.getActivityId()).isEqualTo("externalTask");
-      assertThat(wrappedTask.getBusinessKey()).isEqualTo("executeLockedExternalTask");
-      assertThat(wrappedTask.getErrorDetails()).isEqualTo(errorDetails);
-      assertThat(wrappedTask.getErrorMessage()).isEqualTo(errorMessage);
-      assertThat(wrappedTask.getLockExpirationTime()).isNotNull();
-      assertThat(wrappedTask.getProcessDefinitionKey()).isEqualTo("simpleExternalTask");
-      assertThat(wrappedTask.getRetries()).isEqualTo(2);
-      assertThat(wrappedTask.getTopicName()).isEqualTo("test-topic");
-      assertThat(wrappedTask.getVariables()).containsEntry("k1", "v1");
-      assertThat(wrappedTask.getVariables()).containsEntry("k2", "v2");
-      assertThat(wrappedTask.getVariables()).containsEntry("k3", "v3");
-      assertThat(wrappedTask.getVariables()).containsEntry("k4", "v4");
-      assertThat(wrappedTask.getWorkerId()).isEqualTo(ExternalTaskHandler.WORKER_ID);
-
-      externalTaskService.complete(wrappedTask.getId(), wrappedTask.getWorkerId());
+      externalTaskService.complete(lockedExternalTask.getId(), lockedExternalTask.getWorkerId());
     });
 
     VariableMap variables = Variables.createVariables();
@@ -105,12 +107,58 @@ public class ExternalTaskTest {
     variables.put("k2", "v2");
 
     tc.createExecutor()
-        .withBusinessKey("executeLockedExternalTask")
         .withVariables(variables)
         .verify(piAssert -> {
           piAssert.variables().containsEntry("k3", "v3");
           piAssert.variables().containsEntry("k4", "v4");
         })
+        .execute();
+  }
+
+  @Test
+  public void testWithFetchExtensionProperties() {
+    handler.withFetchExtensionProperties(true).executeExternalTask(externalTask -> {
+      assertThat(externalTask.getExtensionProperties()).isNotNull();
+      assertThat(externalTask.getExtensionProperties().get("x")).isEqualTo("y");
+
+      externalTaskService.complete(externalTask.getId(), externalTask.getWorkerId());
+    });
+
+    tc.createExecutor()
+        .withBusinessKey("executeExternalTask")
+        .execute();
+  }
+
+  @Test
+  public void testWithFetchLocalVariablesOnly() {
+    handler.withFetchLocalVariablesOnly(true).executeLockedExternalTask(lockedExternalTask -> {
+      assertThat(lockedExternalTask.getVariables()).doesNotContainKey("k1");
+      assertThat(lockedExternalTask.getVariables()).doesNotContainKey("k2");
+
+      assertThat(lockedExternalTask.getVariables()).containsEntry("kl1", "vl1");
+
+      externalTaskService.complete(lockedExternalTask.getId(), lockedExternalTask.getWorkerId());
+    });
+
+    VariableMap variables = Variables.createVariables();
+    variables.put("k1", "v1");
+    variables.put("k2", "v2");
+
+    tc.createExecutor()
+        .withVariables(variables)
+        .execute();
+  }
+
+  @Test
+  public void testWithLockDuration() {
+    handler.withLockDuration(60_000).executeExternalTask(externalTask -> {
+      assertThat(externalTask.getLockExpirationTime().getTime() - externalTask.getCreateTime().getTime() >= 60_000).isTrue();
+
+      externalTaskService.complete(externalTask.getId(), externalTask.getWorkerId());
+    });
+
+    tc.createExecutor()
+        .withBusinessKey("executeExternalTask")
         .execute();
   }
 
