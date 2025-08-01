@@ -27,7 +27,7 @@ public class ExternalTaskStrategy extends DefaultHandlerStrategy {
     if (!activity.hasNext()) {
       return;
     }
-    
+
     TestCaseActivity next = activity.getNext();
     if (!next.getType().isBoundaryEvent()) {
       return;
@@ -42,7 +42,6 @@ public class ExternalTaskStrategy extends DefaultHandlerStrategy {
 
   @Override
   public CodeBlock initHandlerStatement() {
-    Object[] args = {getHandlerType(), activity.getId(), activity.getTopicName()};
-    return CodeBlock.of("new $T(getProcessEngine(), $S, $S)", args);
+    return CodeBlock.of("new ExternalTaskHandler<>(getProcessEngine(), $S, $S)", activity.getId(), activity.getTopicName());
   }
 }

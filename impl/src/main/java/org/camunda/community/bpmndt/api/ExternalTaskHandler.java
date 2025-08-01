@@ -1,16 +1,17 @@
 package org.camunda.community.bpmndt.api;
 
-import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-import org.camunda.bpm.engine.BadUserRequestException;
 import org.camunda.bpm.engine.ExternalTaskService;
 import org.camunda.bpm.engine.ProcessEngine;
 import org.camunda.bpm.engine.externaltask.ExternalTask;
+import org.camunda.bpm.engine.externaltask.ExternalTaskQueryTopicBuilder;
 import org.camunda.bpm.engine.externaltask.LockedExternalTask;
+import org.camunda.bpm.engine.impl.persistence.entity.ExternalTaskEntity;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.test.assertions.ProcessEngineTests;
 import org.camunda.bpm.engine.test.assertions.bpmn.ExternalTaskAssert;
@@ -21,12 +22,14 @@ import org.camunda.bpm.engine.variable.value.TypedValue;
 
 /**
  * Fluent API to handle external tasks.
+ *
+ * @param <T> The handler implementation.
  */
-public class ExternalTaskHandler {
+public class ExternalTaskHandler<T extends ExternalTaskHandler<?>> {
 
   protected static final String WORKER_ID = "bpmndt-worker";
 
-  private final ProcessEngine processEngine;
+  protected final ProcessEngine processEngine;
   private final String activityId;
   private final String topicName;
 
@@ -40,7 +43,11 @@ public class ExternalTaskHandler {
   private BiConsumer<ExternalTaskAssert, Map<String, Object>> taskVerifier;
 
   private Consumer<String> action;
-  private Consumer<ExternalTask> taskAction;
+  private Consumer<LockedExternalTask> taskAction;
+
+  protected boolean fetchExtensionProperties;
+  protected boolean fetchLocalVariablesOnly;
+  private long lockDuration;
   private String workerId;
 
   public ExternalTaskHandler(ProcessEngine processEngine, String activityId, String topicName) {
@@ -52,6 +59,14 @@ public class ExternalTaskHandler {
     localVariables = Variables.createVariables();
 
     taskAction = this::complete;
+
+    // defaults as described here
+    // https://docs.camunda.org/manual/latest/user-guide/ext-client/spring-boot-starter/#client-bootstrapping
+    // https://docs.camunda.org/manual/latest/user-guide/ext-client/spring-boot-starter/#topic-subscription-1
+    fetchExtensionProperties = false;
+    fetchLocalVariablesOnly = false;
+    lockDuration = TimeUnit.SECONDS.toMillis(20L);
+
     workerId = WORKER_ID;
   }
 
@@ -70,14 +85,14 @@ public class ExternalTaskHandler {
     if (action != null) {
       action.accept(topicName);
     } else if (taskAction != null) {
-      ExternalTask task = queryAndLock(pi);
+      LockedExternalTask task = queryAndLock(pi);
       taskAction.accept(task);
     }
   }
 
   /**
-   * Completes the external task, which is locked for 60 seconds by calling {@code complete}, using the specified variables and local variables, when the
-   * process instance is waiting at the corresponding activity. Please note: this is the default behavior.
+   * Completes the locked external task by calling {@code complete}, using the specified variables and local variables, when the process instance is waiting at
+   * the corresponding activity. Please note: this is the default behavior.
    *
    * @see ExternalTaskService#complete(String, String, java.util.Map, java.util.Map)
    */
@@ -86,7 +101,7 @@ public class ExternalTaskHandler {
     action = null;
   }
 
-  protected void complete(ExternalTask task) {
+  protected void complete(LockedExternalTask task) {
     processEngine.getExternalTaskService().complete(task.getId(), task.getWorkerId(), variables, localVariables);
   }
 
@@ -101,11 +116,12 @@ public class ExternalTaskHandler {
    * @param customizer A function that accepts a {@link ExternalTaskHandler}.
    * @return The handler.
    */
-  public ExternalTaskHandler customize(Consumer<ExternalTaskHandler> customizer) {
+  @SuppressWarnings("unchecked")
+  public T customize(Consumer<T> customizer) {
     if (customizer != null) {
-      customizer.accept(this);
+      customizer.accept((T) this);
     }
-    return this;
+    return (T) this;
   }
 
   /**
@@ -122,11 +138,11 @@ public class ExternalTaskHandler {
    * Executes a custom action that handles the external task, which has been queried (by process instance ID, activity ID and topic name) and locked before,
    * when the process instance is waiting at the corresponding activity.
    *
-   * @param action A specific action that accepts an {@link ExternalTask}.
+   * @param taskAction A specific action that accepts an {@link ExternalTask}.
    * @see ExternalTaskService#lock(String, String, long)
    */
-  public void executeExternalTask(Consumer<ExternalTask> action) {
-    this.taskAction = action;
+  public void executeExternalTask(Consumer<ExternalTask> taskAction) {
+    this.taskAction = new TaskActionAdapter(taskAction);
     this.action = null;
   }
 
@@ -134,11 +150,11 @@ public class ExternalTaskHandler {
    * Executes a custom action that handles the external task, which has been queried (by process instance ID, activity ID and topic name) and locked before,
    * when the process instance is waiting at the corresponding activity.
    *
-   * @param action A specific action that accepts an {@link LockedExternalTask}.
+   * @param taskAction A specific action that accepts an {@link LockedExternalTask}.
    * @see ExternalTaskService#lock(String, String, long)
    */
-  public void executeLockedExternalTask(Consumer<LockedExternalTask> action) {
-    this.taskAction = new WrappedTaskAction(this, action);
+  public void executeLockedExternalTask(Consumer<LockedExternalTask> taskAction) {
+    this.taskAction = taskAction;
     this.action = null;
   }
 
@@ -157,7 +173,7 @@ public class ExternalTaskHandler {
     action = null;
   }
 
-  protected void handleBpmnError(ExternalTask task) {
+  protected void handleBpmnError(LockedExternalTask task) {
     processEngine.getExternalTaskService().handleBpmnError(task.getId(), task.getWorkerId(), errorCode, errorMessage, variables);
   }
 
@@ -187,22 +203,50 @@ public class ExternalTaskHandler {
     return externalTask;
   }
 
-  private ExternalTask queryAndLock(ProcessInstance pi) {
+  private LockedExternalTask queryAndLock(ProcessInstance pi) {
     ExternalTask externalTask = query(pi);
 
     ExternalTaskService externalTaskService = processEngine.getExternalTaskService();
 
-    try {
-      externalTaskService.lock(externalTask.getId(), workerId, TimeUnit.SECONDS.toMillis(60L));
-    } catch (BadUserRequestException e) {
-      String msg = String.format("External task for activity '%s' and topic '%s' could not be locked: %s", activityId, topicName, e.getMessage());
-      throw new AssertionError(msg, e);
+    ExternalTaskQueryTopicBuilder externalTaskQueryTopicBuilder = externalTaskService.fetchAndLock()
+        .maxTasks(Integer.MAX_VALUE)
+        .workerId(workerId)
+        .subscribe()
+        .topic(topicName, lockDuration)
+        .enableCustomObjectDeserialization();
+
+    if (fetchExtensionProperties) {
+      externalTaskQueryTopicBuilder.includeExtensionProperties();
     }
 
-    // query again to get worker ID and lock expiration time
-    return externalTaskService.createExternalTaskQuery()
-        .externalTaskId(externalTask.getId())
-        .singleResult();
+    if (fetchLocalVariablesOnly) {
+      externalTaskQueryTopicBuilder.localVariables();
+    }
+
+    List<LockedExternalTask> lockedExternalTasks = externalTaskQueryTopicBuilder.execute();
+    if (lockedExternalTasks.isEmpty()) {
+      String msg = String.format("Expected to fetch and lock at least one external task for activity '%s' and topic '%s'", activityId, topicName);
+      throw new AssertionError(msg);
+    }
+
+    LockedExternalTask expected = null;
+    for (LockedExternalTask lockedExternalTask : lockedExternalTasks) {
+      // find expected external task
+      if (lockedExternalTask.getId().equals(externalTask.getId())) {
+        expected = lockedExternalTask;
+        continue;
+      }
+
+      // unlock all other external tasks
+      externalTaskService.unlock(lockedExternalTask.getId());
+    }
+
+    if (expected == null) {
+      String msg = String.format("External task for activity '%s' and topic '%s' could not be fetched and locked", activityId, topicName);
+      throw new AssertionError(msg);
+    }
+
+    return expected;
   }
 
   /**
@@ -211,9 +255,10 @@ public class ExternalTaskHandler {
    * @param verifier Verifier that accepts an {@link ProcessInstanceAssert} instance and the related topic name (String).
    * @return The handler.
    */
-  public ExternalTaskHandler verify(BiConsumer<ProcessInstanceAssert, String> verifier) {
+  @SuppressWarnings("unchecked")
+  public T verify(BiConsumer<ProcessInstanceAssert, String> verifier) {
     this.verifier = verifier;
-    return this;
+    return (T) this;
   }
 
   /**
@@ -222,9 +267,10 @@ public class ExternalTaskHandler {
    * @param taskVerifier Verifier that accepts an {@link ExternalTaskAssert} instance and the task's local variables.
    * @return The handler.
    */
-  public ExternalTaskHandler verifyTask(BiConsumer<ExternalTaskAssert, Map<String, Object>> taskVerifier) {
+  @SuppressWarnings("unchecked")
+  public T verifyTask(BiConsumer<ExternalTaskAssert, Map<String, Object>> taskVerifier) {
     this.taskVerifier = taskVerifier;
-    return this;
+    return (T) this;
   }
 
   /**
@@ -243,9 +289,36 @@ public class ExternalTaskHandler {
    * @return The handler.
    * @see #handleBpmnError(String, String)
    */
-  public ExternalTaskHandler withErrorMessage(String errorMessage) {
+  @SuppressWarnings("unchecked")
+  public T withErrorMessage(String errorMessage) {
     this.errorMessage = errorMessage;
-    return this;
+    return (T) this;
+  }
+
+  /**
+   * Specifies if extension properties should be included when an external task is fetched - default: {@code false}
+   *
+   * @param fetchExtensionProperties Include extension properties, if available, or not.
+   * @return The handler.
+   * @see ExternalTaskQueryTopicBuilder#includeExtensionProperties()
+   */
+  @SuppressWarnings("unchecked")
+  public T withFetchExtensionProperties(boolean fetchExtensionProperties) {
+    this.fetchExtensionProperties = fetchExtensionProperties;
+    return (T) this;
+  }
+
+  /**
+   * Specifies if only local variables should be fetched when an external task is fetched - default: {@code false}
+   *
+   * @param fetchLocalVariablesOnly Include only variables of the external task itself, but no variables of parent scopes.
+   * @return The handler.
+   * @see ExternalTaskQueryTopicBuilder#localVariables()
+   */
+  @SuppressWarnings("unchecked")
+  public T withFetchLocalVariablesOnly(boolean fetchLocalVariablesOnly) {
+    this.fetchLocalVariablesOnly = fetchLocalVariablesOnly;
+    return (T) this;
   }
 
   /**
@@ -256,9 +329,10 @@ public class ExternalTaskHandler {
    * @return The handler.
    * @see #complete()
    */
-  public ExternalTaskHandler withLocalVariable(String name, Object value) {
+  @SuppressWarnings("unchecked")
+  public T withLocalVariable(String name, Object value) {
     localVariables.putValue(name, value);
-    return this;
+    return (T) this;
   }
 
   /**
@@ -268,9 +342,10 @@ public class ExternalTaskHandler {
    * @return The handler.
    * @see #complete()
    */
-  public ExternalTaskHandler withLocalVariables(Map<String, Object> localVariables) {
+  @SuppressWarnings("unchecked")
+  public T withLocalVariables(Map<String, Object> localVariables) {
     this.localVariables.putAll(localVariables);
-    return this;
+    return (T) this;
   }
 
   /**
@@ -281,9 +356,23 @@ public class ExternalTaskHandler {
    * @return The handler.
    * @see #complete()
    */
-  public ExternalTaskHandler withLocalVariableTyped(String name, TypedValue value) {
+  @SuppressWarnings("unchecked")
+  public T withLocalVariableTyped(String name, TypedValue value) {
     localVariables.putValueTyped(name, value);
-    return this;
+    return (T) this;
+  }
+
+  /**
+   * Sets the duration in milliseconds for which the external task should be locked - default: {@code 20_000}
+   *
+   * @param lockDuration The lock duration to use, when fetching and locking an external task.
+   * @return The handler.
+   * @see ExternalTaskQueryTopicBuilder#topic(String, long)
+   */
+  @SuppressWarnings("unchecked")
+  public T withLockDuration(long lockDuration) {
+    this.lockDuration = lockDuration;
+    return (T) this;
   }
 
   /**
@@ -295,9 +384,10 @@ public class ExternalTaskHandler {
    * @see #complete()
    * @see #handleBpmnError(String, String)
    */
-  public ExternalTaskHandler withVariable(String name, Object value) {
+  @SuppressWarnings("unchecked")
+  public T withVariable(String name, Object value) {
     variables.putValue(name, value);
-    return this;
+    return (T) this;
   }
 
   /**
@@ -308,9 +398,10 @@ public class ExternalTaskHandler {
    * @see #complete()
    * @see #handleBpmnError(String, String)
    */
-  public ExternalTaskHandler withVariables(Map<String, Object> variables) {
+  @SuppressWarnings("unchecked")
+  public T withVariables(Map<String, Object> variables) {
     this.variables.putAll(variables);
-    return this;
+    return (T) this;
   }
 
   /**
@@ -322,9 +413,10 @@ public class ExternalTaskHandler {
    * @see #complete()
    * @see #handleBpmnError(String, String)
    */
-  public ExternalTaskHandler withVariableTyped(String name, TypedValue value) {
+  @SuppressWarnings("unchecked")
+  public T withVariableTyped(String name, TypedValue value) {
     variables.putValueTyped(name, value);
-    return this;
+    return (T) this;
   }
 
   /**
@@ -334,163 +426,48 @@ public class ExternalTaskHandler {
    * @param workerId A specific worker ID to use.
    * @return The handler.
    */
-  public ExternalTaskHandler withWorkerId(String workerId) {
+  @SuppressWarnings("unchecked")
+  public T withWorkerId(String workerId) {
     if (workerId != null && !workerId.isBlank()) {
       this.workerId = workerId;
     }
-    return this;
+    return (T) this;
   }
 
   /**
-   * Wraps the given {@link ExternalTask} into a {@link LockedExternalTask}.
-   *
-   * @param task An external task that has been queried by the handler.
-   * @return The wrapped task.
+   * Adapter class for a task action that accepts {@link ExternalTask}s.
    */
-  protected LockedExternalTask wrap(ExternalTask task) {
-    String errorDetails = processEngine.getExternalTaskService().getExternalTaskErrorDetails(task.getId());
-    Map<String, Object> variables = processEngine.getRuntimeService().getVariables(task.getExecutionId());
-    Map<String, Object> localVariables = processEngine.getRuntimeService().getVariablesLocal(task.getExecutionId());
+  private static class TaskActionAdapter implements Consumer<LockedExternalTask> {
 
-    return new WrappedTask(task, errorDetails, variables, localVariables);
-  }
+    private final Consumer<ExternalTask> taskAction;
 
-  /**
-   * Internal class that represents an {@link ExternalTask} as {@link LockedExternalTask}, since those interfaces are not inherited and most of the worker
-   * implementations deal with instances of {@link LockedExternalTask}s.
-   */
-  private static class WrappedTask implements LockedExternalTask {
-
-    private final ExternalTask task;
-    private final String errorDetails;
-    private final VariableMap variables;
-
-    private WrappedTask(ExternalTask task, String errorDetails, Map<String, Object> variables, Map<String, Object> localVariables) {
-      this.task = task;
-      this.errorDetails = errorDetails;
-      this.variables = Variables.createVariables();
-      this.variables.putAll(variables);
-      this.variables.putAll(localVariables);
+    private TaskActionAdapter(Consumer<ExternalTask> taskAction) {
+      this.taskAction = taskAction;
     }
 
     @Override
-    public String getId() {
-      return task.getId();
-    }
+    public void accept(LockedExternalTask task) {
+      ExternalTaskEntity externalTask = new ExternalTaskEntity();
+      externalTask.setActivityId(task.getActivityId());
+      externalTask.setActivityInstanceId(task.getActivityInstanceId());
+      externalTask.setBusinessKey(task.getBusinessKey());
+      externalTask.setCreateTime(task.getCreateTime());
+      externalTask.setErrorMessage(task.getErrorMessage());
+      externalTask.setExecutionId(task.getExecutionId());
+      externalTask.setExtensionProperties(task.getExtensionProperties());
+      externalTask.setId(task.getId());
+      externalTask.setLockExpirationTime(task.getLockExpirationTime());
+      externalTask.setPriority(task.getPriority());
+      externalTask.setProcessDefinitionId(task.getProcessDefinitionId());
+      externalTask.setProcessDefinitionKey(task.getProcessDefinitionKey());
+      externalTask.setProcessDefinitionVersionTag(task.getProcessDefinitionVersionTag());
+      externalTask.setProcessInstanceId(task.getProcessInstanceId());
+      externalTask.setRetries(task.getRetries());
+      externalTask.setTenantId(task.getTenantId());
+      externalTask.setTopicName(task.getTopicName());
+      externalTask.setWorkerId(task.getWorkerId());
 
-    @Override
-    public String getTopicName() {
-      return task.getTopicName();
-    }
-
-    @Override
-    public String getWorkerId() {
-      return task.getWorkerId();
-    }
-
-    @Override
-    public Date getLockExpirationTime() {
-      return task.getLockExpirationTime();
-    }
-
-    @Override
-    public Date getCreateTime() {
-      return task.getCreateTime();
-    }
-
-    @Override
-    public String getProcessInstanceId() {
-      return task.getProcessInstanceId();
-    }
-
-    @Override
-    public String getExecutionId() {
-      return task.getExecutionId();
-    }
-
-    @Override
-    public String getActivityId() {
-      return task.getActivityId();
-    }
-
-    @Override
-    public String getActivityInstanceId() {
-      return task.getActivityInstanceId();
-    }
-
-    @Override
-    public String getProcessDefinitionId() {
-      return task.getProcessDefinitionId();
-    }
-
-    @Override
-    public String getProcessDefinitionKey() {
-      return task.getProcessDefinitionKey();
-    }
-
-    @Override
-    public String getProcessDefinitionVersionTag() {
-      return task.getProcessDefinitionVersionTag();
-    }
-
-    @Override
-    public Integer getRetries() {
-      return task.getRetries();
-    }
-
-    @Override
-    public String getErrorMessage() {
-      return task.getErrorMessage();
-    }
-
-    @Override
-    public String getErrorDetails() {
-      return errorDetails;
-    }
-
-    @Override
-    public VariableMap getVariables() {
-      return variables;
-    }
-
-    @Override
-    public String getTenantId() {
-      return task.getTenantId();
-    }
-
-    @Override
-    public long getPriority() {
-      return task.getPriority();
-    }
-
-    @Override
-    public String getBusinessKey() {
-      return task.getBusinessKey();
-    }
-
-    @Override
-    public Map<String, String> getExtensionProperties() {
-      return task.getExtensionProperties();
-    }
-  }
-
-  /**
-   * Internal class that wraps an action that accepts {@link LockedExternalTask}s, so that it can work with {@link ExternalTask}s, which has been queried and
-   * locked by the handler.
-   */
-  private static class WrappedTaskAction implements Consumer<ExternalTask> {
-
-    private final ExternalTaskHandler handler;
-    private final Consumer<LockedExternalTask> action;
-
-    private WrappedTaskAction(ExternalTaskHandler handler, Consumer<LockedExternalTask> action) {
-      this.handler = handler;
-      this.action = action;
-    }
-
-    @Override
-    public void accept(ExternalTask task) {
-      action.accept(handler.wrap(task));
+      taskAction.accept(externalTask);
     }
   }
 }

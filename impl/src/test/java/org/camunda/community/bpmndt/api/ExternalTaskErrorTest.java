@@ -19,11 +19,11 @@ public class ExternalTaskErrorTest {
   @RegisterExtension
   TestCase tc = new TestCase();
 
-  private ExternalTaskHandler handler;
+  private ExternalTaskHandler<?> handler;
 
   @BeforeEach
   public void setUp() {
-    handler = new ExternalTaskHandler(tc.getProcessEngine(), "externalTask", "test-topic");
+    handler = new ExternalTaskHandler<>(tc.getProcessEngine(), "externalTask", "test-topic");
     handler.handleBpmnError("externalTaskError", "externalTaskErrorMessage");
   }
 

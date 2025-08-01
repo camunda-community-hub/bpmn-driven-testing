@@ -1,17 +1,33 @@
 package org.camunda.community.bpmndt;
 
+import org.camunda.community.bpmndt.api.CallActivityHandler;
+import org.camunda.community.bpmndt.api.EventHandler;
+import org.camunda.community.bpmndt.api.ExternalTaskHandler;
 import org.camunda.community.bpmndt.api.JobHandler;
+import org.camunda.community.bpmndt.api.ReceiveTaskHandler;
+import org.camunda.community.bpmndt.api.UserTaskHandler;
 import org.camunda.community.bpmndt.model.TestCaseActivity;
 
+import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
+import com.squareup.javapoet.WildcardTypeName;
 
 /**
  * Strategy, used per activity when generating a test case.
  */
 public interface GeneratorStrategy {
+
+  TypeName CALL_ACTIVITY = TypeName.get(CallActivityHandler.class);
+  TypeName EVENT = TypeName.get(EventHandler.class);
+  TypeName EXTERNAL_TASK = ParameterizedTypeName.get(ClassName.get(ExternalTaskHandler.class), WildcardTypeName.subtypeOf(Object.class));
+  TypeName JOB = TypeName.get(JobHandler.class);
+  TypeName OTHER = TypeName.get(Void.class);
+  TypeName RECEIVE_TASK = TypeName.get(ReceiveTaskHandler.class);
+  TypeName USER_TASK = TypeName.get(UserTaskHandler.class);
 
   /**
    * Adds a handler field to the class, if the activity is handled by a handler - e.g.:
