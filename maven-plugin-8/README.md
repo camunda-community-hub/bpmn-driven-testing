@@ -12,7 +12,7 @@ Right click on `target/bpmndt` > `Mark Directory as` > `Test Sources Root`
 <plugin>
   <groupId>org.camunda.community</groupId>
   <artifactId>bpmn-driven-testing-8-maven-plugin</artifactId>
-  <version>1.1.0</version>
+  <version>1.2.1</version>
   <executions>
     <execution>
       <goals>

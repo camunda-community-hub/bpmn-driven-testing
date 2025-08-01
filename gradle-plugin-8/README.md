@@ -34,7 +34,7 @@ pluginManagement {
   resolutionStrategy {
     eachPlugin {
       if (requested.id.toString() == 'org.camunda.community.bpmndt') {
-        useModule("org.camunda.community:bpmn-driven-testing-8-gradle-plugin:1.1.0")
+        useModule("org.camunda.community:bpmn-driven-testing-8-gradle-plugin:1.2.1")
       }
     }
   }
