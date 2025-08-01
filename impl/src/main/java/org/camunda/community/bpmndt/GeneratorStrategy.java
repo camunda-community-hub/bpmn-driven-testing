@@ -2,6 +2,7 @@ package org.camunda.community.bpmndt;
 
 import org.camunda.community.bpmndt.api.CallActivityHandler;
 import org.camunda.community.bpmndt.api.EventHandler;
+import org.camunda.community.bpmndt.api.ExternalTaskClientHandler;
 import org.camunda.community.bpmndt.api.ExternalTaskHandler;
 import org.camunda.community.bpmndt.api.JobHandler;
 import org.camunda.community.bpmndt.api.ReceiveTaskHandler;
@@ -24,6 +25,7 @@ public interface GeneratorStrategy {
   TypeName CALL_ACTIVITY = TypeName.get(CallActivityHandler.class);
   TypeName EVENT = TypeName.get(EventHandler.class);
   TypeName EXTERNAL_TASK = ParameterizedTypeName.get(ClassName.get(ExternalTaskHandler.class), WildcardTypeName.subtypeOf(Object.class));
+  TypeName EXTERNAL_TASK_CLIENT = ParameterizedTypeName.get(ClassName.get(ExternalTaskClientHandler.class), WildcardTypeName.subtypeOf(Object.class));
   TypeName JOB = TypeName.get(JobHandler.class);
   TypeName OTHER = TypeName.get(Void.class);
   TypeName RECEIVE_TASK = TypeName.get(ReceiveTaskHandler.class);

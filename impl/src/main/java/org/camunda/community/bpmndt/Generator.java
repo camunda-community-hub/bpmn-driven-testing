@@ -15,6 +15,7 @@ import org.camunda.community.bpmndt.api.AbstractTestCase;
 import org.camunda.community.bpmndt.api.CallActivityDefinition;
 import org.camunda.community.bpmndt.api.CallActivityHandler;
 import org.camunda.community.bpmndt.api.EventHandler;
+import org.camunda.community.bpmndt.api.ExternalTaskClientHandler;
 import org.camunda.community.bpmndt.api.ExternalTaskHandler;
 import org.camunda.community.bpmndt.api.JobHandler;
 import org.camunda.community.bpmndt.api.MultiInstanceHandler;
@@ -166,6 +167,10 @@ public class Generator {
     apiClasses.add(TestCaseInstance.class);
     apiClasses.add(TestCaseExecutor.class);
     apiClasses.add(UserTaskHandler.class);
+
+    if (ctx.isExternalTaskClientUsed()) {
+      apiClasses.add(ExternalTaskClientHandler.class);
+    }
 
     apiClasses.add(BpmndtParseListener.class);
     apiClasses.add(BpmndtProcessEnginePlugin.class);

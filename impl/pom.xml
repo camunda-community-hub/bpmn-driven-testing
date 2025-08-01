@@ -40,6 +40,11 @@
       <artifactId>camunda-engine-spring</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>org.camunda.bpm</groupId>
+      <artifactId>camunda-external-task-client</artifactId>
+    </dependency>
+
     <!-- Camunda BPM Assert -->
     <dependency>
       <groupId>org.camunda.bpm.assert</groupId>

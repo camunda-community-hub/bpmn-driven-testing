@@ -69,6 +69,9 @@ Assert Test Code Generation
   # test source directory added
   Should contain  ${result.stdout}  Adding test source directory:
 
+  # should not detect external task client
+  Should not contain  ${result.stdout}  Found external task client
+
   # BPMN files found
   Should contain  ${result.stdout}  Found BPMN file: simple.bpmn
   Should contain  ${result.stdout}  Found BPMN file: simpleAsync.bpmn
@@ -182,6 +185,8 @@ Assert Test Code Generation
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/org/camunda/community/bpmndt/api/cfg/BpmndtParseListener.java
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/org/camunda/community/bpmndt/api/cfg/BpmndtProcessEnginePlugin.java
 
+  Should not contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/org/camunda/community/bpmndt/api/ExternalTaskClientHandler.java
+
   File should exist  ${testSources}/org/camunda/community/bpmndt/api/AbstractJUnit5TestCase.java
   File should exist  ${testSources}/org/camunda/community/bpmndt/api/AbstractTestCase.java
   File should exist  ${testSources}/org/camunda/community/bpmndt/api/CallActivityDefinition.java
@@ -197,3 +202,5 @@ Assert Test Code Generation
   File should exist  ${testSources}/org/camunda/community/bpmndt/api/UserTaskHandler.java
   File should exist  ${testSources}/org/camunda/community/bpmndt/api/cfg/BpmndtParseListener.java
   File should exist  ${testSources}/org/camunda/community/bpmndt/api/cfg/BpmndtProcessEnginePlugin.java
+
+  File should not exist  ${testSources}/org/camunda/community/bpmndt/api/ExternalTaskClientHandler.java

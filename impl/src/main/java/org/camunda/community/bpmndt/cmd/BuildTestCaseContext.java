@@ -18,6 +18,7 @@ import org.camunda.community.bpmndt.strategy.BoundaryJobStrategy;
 import org.camunda.community.bpmndt.strategy.CallActivityStrategy;
 import org.camunda.community.bpmndt.strategy.DefaultStrategy;
 import org.camunda.community.bpmndt.strategy.EventStrategy;
+import org.camunda.community.bpmndt.strategy.ExternalTaskClientStrategy;
 import org.camunda.community.bpmndt.strategy.ExternalTaskStrategy;
 import org.camunda.community.bpmndt.strategy.JobStrategy;
 import org.camunda.community.bpmndt.strategy.MultiInstanceScopeStrategy;
@@ -108,7 +109,11 @@ public class BuildTestCaseContext implements Function<TestCase, TestCaseContext>
       case CONDITIONAL_CATCH:
         return new EventStrategy(activity);
       case EXTERNAL_TASK:
-        return new ExternalTaskStrategy(activity);
+        if (gCtx.isExternalTaskClientUsed()) {
+          return new ExternalTaskClientStrategy(activity);
+        } else {
+          return new ExternalTaskStrategy(activity);
+        }
       case MESSAGE_BOUNDARY:
         return new BoundaryEventStrategy(activity);
       case MESSAGE_CATCH:
