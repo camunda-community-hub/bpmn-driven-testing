@@ -243,4 +243,16 @@ public class GeneratorTest {
     assertThat(typeSpec.superclass).isEqualTo(ClassName.get(SpringConfiguration.class));
     assertThat(typeSpec).hasMethods(0);
   }
+
+  @Test
+  public void testGenerateWithExternalTaskClient() {
+    ctx.setExternalTaskClientUsed(true);
+
+    generator.generate(ctx);
+
+    Predicate<String> isFile = (className) -> Files.isRegularFile(ctx.getTestSourcePath().resolve(className));
+
+    assertThat(isFile.test("org/camunda/community/bpmndt/api/ExternalTaskHandler.java")).isTrue();
+    assertThat(isFile.test("org/camunda/community/bpmndt/api/ExternalTaskClientHandler.java")).isTrue();
+  }
 }

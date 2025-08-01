@@ -7,6 +7,7 @@ import java.util.List;
 public class GeneratorContext {
 
   private Path basePath;
+  private boolean externalTaskClientUsed;
   private Path mainResourcePath;
   private String packageName;
   private List<String> processEnginePluginNames;
@@ -23,7 +24,7 @@ public class GeneratorContext {
 
   /**
    * Gets the configured base package name or the default value.
-   * 
+   *
    * @return The base package name.
    */
   public String getPackageName() {
@@ -31,9 +32,8 @@ public class GeneratorContext {
   }
 
   /**
-   * Returns the class names of process engine plugins, which should be registered at the process
-   * engine that executes the generated test cases.
-   * 
+   * Returns the class names of process engine plugins, which should be registered at the process engine that executes the generated test cases.
+   *
    * @return A list of process engine class names.
    */
   public List<String> getProcessEnginePluginNames() {
@@ -44,12 +44,20 @@ public class GeneratorContext {
     return testSourcePath;
   }
 
+  public boolean isExternalTaskClientUsed() {
+    return externalTaskClientUsed;
+  }
+
   public boolean isSpringEnabled() {
     return springEnabled;
   }
 
   public void setBasePath(Path basePath) {
     this.basePath = basePath;
+  }
+
+  public void setExternalTaskClientUsed(boolean externalTaskClientUsed) {
+    this.externalTaskClientUsed = externalTaskClientUsed;
   }
 
   public void setMainResourcePath(Path mainResourcePath) {

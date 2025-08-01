@@ -4,6 +4,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.camunda.community.bpmndt.GeneratorStrategy.CALL_ACTIVITY;
 import static org.camunda.community.bpmndt.GeneratorStrategy.EVENT;
 import static org.camunda.community.bpmndt.GeneratorStrategy.EXTERNAL_TASK;
+import static org.camunda.community.bpmndt.GeneratorStrategy.EXTERNAL_TASK_CLIENT;
 import static org.camunda.community.bpmndt.GeneratorStrategy.JOB;
 import static org.camunda.community.bpmndt.GeneratorStrategy.RECEIVE_TASK;
 import static org.camunda.community.bpmndt.GeneratorStrategy.USER_TASK;
@@ -280,6 +281,31 @@ public class GeneratorSimpleTest {
 
     String expected = "externalTask = new %s(getProcessEngine(), \"externalTask\", \"test-topic\");";
     assertThat(typeSpec.methodSpecs.get(0)).containsCode(String.format(expected, "ExternalTaskHandler<>"));
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.apply(externalTask);");
+  }
+
+  @Test
+  public void testSimpleExternalTaskClient() {
+    ctx.setExternalTaskClientUsed(true);
+
+    // override auto built BPMN file path
+    bpmnFile = ctx.getMainResourcePath().resolve("simpleExternalTask.bpmn");
+
+    generator.generateTestCases(ctx, bpmnFile);
+    assertThat(result.getFiles()).hasSize(1);
+
+    TypeSpec typeSpec = result.getFiles().get(0).typeSpec;
+    assertThat(typeSpec).hasFields(1);
+    assertThat(typeSpec).hasMethods(7);
+
+    assertThat(typeSpec.fieldSpecs.get(0)).hasName("externalTask");
+    assertThat(typeSpec.fieldSpecs.get(0)).hasType(EXTERNAL_TASK_CLIENT);
+
+    assertThat(typeSpec.methodSpecs.get(6)).hasName("handleExternalTask");
+    assertThat(typeSpec.methodSpecs.get(6)).hasReturnType(EXTERNAL_TASK_CLIENT);
+
+    String expected = "externalTask = new %s(getProcessEngine(), \"externalTask\", \"test-topic\");";
+    assertThat(typeSpec.methodSpecs.get(0)).containsCode(String.format(expected, "ExternalTaskClientHandler<>"));
     assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.apply(externalTask);");
   }
 

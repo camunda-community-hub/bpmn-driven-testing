@@ -9,12 +9,18 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 
 /**
  * Maven plugin goal, which runs a {@link Generator}.
  */
-@Mojo(name = "generator", defaultPhase = LifecyclePhase.GENERATE_TEST_SOURCES)
+@Mojo(
+    name = "generator",
+    defaultPhase = LifecyclePhase.GENERATE_TEST_SOURCES,
+    requiresDependencyCollection = ResolutionScope.COMPILE_PLUS_RUNTIME, // needed for checking if external task client is used
+    requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME
+)
 public class GeneratorMojo extends AbstractMojo {
 
   @Parameter(defaultValue = "${project}", required = true, readonly = true)
@@ -48,8 +54,16 @@ public class GeneratorMojo extends AbstractMojo {
 
     getLog().info("");
 
+    // check if external task client is used
+    boolean externalTaskClientUsed = hasExternalTaskClientDependency();
+    if (externalTaskClientUsed) {
+      getLog().info("Found external task client");
+      getLog().info("");
+    }
+
     GeneratorContext ctx = new GeneratorContext();
     ctx.setBasePath(project.getBasedir().toPath());
+    ctx.setExternalTaskClientUsed(externalTaskClientUsed);
     ctx.setMainResourcePath(Paths.get(project.getBuild().getResources().get(0).getDirectory()));
     ctx.setPackageName(packageName);
     ctx.setProcessEnginePluginNames(processEnginePlugins);
@@ -62,5 +76,16 @@ public class GeneratorMojo extends AbstractMojo {
     } catch (RuntimeException e) {
       throw new MojoFailureException("Unexpected error occurred", e);
     }
+  }
+
+  /**
+   * Determines if the project has the Camunda external task client as compile or runtime dependency.
+   *
+   * @return {@code true}, if the dependency exists. Otherwise {@code false}.
+   */
+  private boolean hasExternalTaskClientDependency() {
+    return project.getArtifacts().stream().anyMatch(artifact ->
+        "org.camunda.bpm".equals(artifact.getGroupId()) && "camunda-external-task-client".equals(artifact.getArtifactId())
+    );
   }
 }

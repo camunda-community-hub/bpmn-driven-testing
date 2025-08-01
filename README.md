@@ -64,6 +64,7 @@ For Camunda Platform 7:
 - [CallActivityHandler](impl/src/main/java/org/camunda/community/bpmndt/api/CallActivityHandler.java)
 - [EventHandler](impl/src/main/java/org/camunda/community/bpmndt/api/EventHandler.java) for conditional, message and signal intermediate catch or boundary events
 - [ExternalTaskHandler](impl/src/main/java/org/camunda/community/bpmndt/api/ExternalTaskHandler.java)
+- [ExternalTaskClientHandler](impl/src/main/java/org/camunda/community/bpmndt/api/ExternalTaskClientHandler.java) for external tasks implemented through an external task client
 - [JobHandler](impl/src/main/java/org/camunda/community/bpmndt/api/JobHandler.java) for asynchronous continuation and timer catch events
 - [MultiInstanceHandler](impl/src/main/java/org/camunda/community/bpmndt/api/MultiInstanceHandler.java) for multi instance activities
 - [MultiInstanceScopeHandler](impl/src/main/java/org/camunda/community/bpmndt/api/MultiInstanceScopeHandler.java) for multi instance scopes (e.g. embedded subprocess)
