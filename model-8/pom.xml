@@ -48,5 +48,7 @@
     </plugins>
   </build>
 
+  <name>BPMN Driven Testing: Camunda 8 Model</name>
+  <description>Model and BPMN extension for Camunda 8</description>
   <url>https://github.com/camunda-community-hub/bpmn-driven-testing/tree/master/model-8</url>
 </project>

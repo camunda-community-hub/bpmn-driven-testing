@@ -101,5 +101,7 @@
     </plugins>
   </build>
 
+  <name>BPMN Driven Testing: Camunda 8 Implementation</name>
+  <description>API and implementation for Camunda 8</description>
   <url>https://github.com/camunda-community-hub/bpmn-driven-testing/tree/master/impl-8</url>
 </project>

@@ -162,5 +162,7 @@
     </pluginManagement>
   </build>
 
+  <name>BPMN Driven Testing: Camunda 7 Maven Plugin</name>
+  <description>Maven plugin for the generation of Camunda 7 compatible test code</description>
   <url>https://github.com/camunda-community-hub/bpmn-driven-testing/tree/master/maven-plugin</url>
 </project>

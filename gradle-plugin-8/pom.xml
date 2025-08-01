@@ -138,5 +138,7 @@
     </plugins>
   </build>
 
+  <name>BPMN Driven Testing: Camunda 8 Gradle Plugin</name>
+  <description>Gradle plugin for the generation of Camunda 8 compatible test code</description>
   <url>https://github.com/camunda-community-hub/bpmn-driven-testing/tree/master/gradle-plugin-8</url>
 </project>

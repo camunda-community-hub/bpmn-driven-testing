@@ -154,5 +154,7 @@
     </plugins>
   </build>
 
+  <name>BPMN Driven Testing: Camunda 7 Implementation</name>
+  <description>API and implementation for Camunda 7</description>
   <url>https://github.com/camunda-community-hub/bpmn-driven-testing/tree/master/impl</url>
 </project>
