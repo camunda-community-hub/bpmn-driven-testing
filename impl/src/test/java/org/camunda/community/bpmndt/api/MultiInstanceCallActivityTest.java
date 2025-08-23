@@ -30,7 +30,7 @@ public class MultiInstanceCallActivityTest {
 
   @BeforeEach
   public void setUp() {
-    handler = new MultiInstanceCallActivityHandler(tc.instance, "multiInstanceCallActivity");
+    handler = new MultiInstanceCallActivityHandler(tc, "multiInstanceCallActivity");
   }
 
   @Test
@@ -137,13 +137,13 @@ public class MultiInstanceCallActivityTest {
 
   private static class MultiInstanceCallActivityHandler extends MultiInstanceHandler<MultiInstanceCallActivityHandler, CallActivityHandler> {
 
-    public MultiInstanceCallActivityHandler(TestCaseInstance instance, String activityId) {
-      super(instance, activityId);
+    public MultiInstanceCallActivityHandler(AbstractTestCase<?> testCase, String activityId) {
+      super(testCase, activityId);
     }
 
     @Override
     protected CallActivityHandler createHandler(int loopIndex) {
-      return new CallActivityHandler(instance, "multiInstanceCallActivity");
+      return new CallActivityHandler(testCase, "multiInstanceCallActivity");
     }
 
     @Override

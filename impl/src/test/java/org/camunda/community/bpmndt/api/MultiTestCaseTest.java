@@ -38,8 +38,8 @@ public class MultiTestCaseTest {
 
   @BeforeEach
   public void setUp() {
-    handler1 = new CallActivityHandler(tc1.instance, "callActivity");
-    handler2 = new CallActivityHandler(tc2.instance, "callActivity");
+    handler1 = new CallActivityHandler(tc1, "callActivity");
+    handler2 = new CallActivityHandler(tc2, "callActivity");
   }
 
   @Test

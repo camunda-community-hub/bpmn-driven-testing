@@ -74,7 +74,7 @@ public class MultiInstanceStrategy extends DefaultStrategy {
 
   /**
    * Gets the strategy of the activity that is enclosed by the multi instance scope.
-   * 
+   *
    * @return The enclosed (original) strategy.
    */
   public GeneratorStrategy getEnclosedStrategy() {
@@ -112,7 +112,7 @@ public class MultiInstanceStrategy extends DefaultStrategy {
 
   @Override
   public CodeBlock initHandlerStatement() {
-    return CodeBlock.of("new $T(instance, $S)", getHandlerType(), activity.getId());
+    return CodeBlock.of("new $T(this, $S)", getHandlerType(), activity.getId());
   }
 
   @Override

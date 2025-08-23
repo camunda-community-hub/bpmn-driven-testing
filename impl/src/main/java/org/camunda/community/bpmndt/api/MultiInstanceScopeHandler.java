@@ -26,6 +26,7 @@ public class MultiInstanceScopeHandler<T extends MultiInstanceScopeHandler<?>> {
   private static final String MSG_LOOP_COUNT = "Expected multi instance '%s' to loop %dx, but was %dx";
   private static final String MSG_SEQUENTIAL = "Expected multi instance '%s' to be %s, but was %s";
 
+  protected final AbstractTestCase<?> testCase;
   protected final TestCaseInstance instance;
 
   private final String activityId;
@@ -41,8 +42,9 @@ public class MultiInstanceScopeHandler<T extends MultiInstanceScopeHandler<?>> {
   private Integer loopCount;
   private Boolean sequential;
 
-  public MultiInstanceScopeHandler(TestCaseInstance instance, String activityId) {
-    this.instance = instance;
+  public MultiInstanceScopeHandler(AbstractTestCase<?> testCase, String activityId) {
+    this.testCase = testCase;
+    this.instance = testCase.instance;
     this.activityId = activityId;
 
     scopeId = String.format("%s#%s", activityId, ActivityTypes.MULTI_INSTANCE_BODY);

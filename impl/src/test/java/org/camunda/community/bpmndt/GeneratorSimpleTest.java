@@ -193,7 +193,7 @@ public class GeneratorSimpleTest {
     assertThat(typeSpec.methodSpecs.get(6)).hasName("handleCallActivity");
     assertThat(typeSpec.methodSpecs.get(6)).hasReturnType(CALL_ACTIVITY);
 
-    String expected = "callActivity = new %s(instance, \"callActivity\");";
+    String expected = "callActivity = new %s(this, \"callActivity\");";
     assertThat(typeSpec.methodSpecs.get(0)).containsCode(String.format(expected, CALL_ACTIVITY));
   }
 

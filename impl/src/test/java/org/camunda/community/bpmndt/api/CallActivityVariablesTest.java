@@ -23,7 +23,7 @@ public class CallActivityVariablesTest {
 
   @BeforeEach
   public void setUp() {
-    handler = new CallActivityHandler(tc.instance, "callActivity");
+    handler = new CallActivityHandler(tc, "callActivity");
   }
 
   @Test

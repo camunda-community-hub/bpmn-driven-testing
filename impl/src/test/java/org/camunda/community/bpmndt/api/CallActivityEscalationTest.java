@@ -23,7 +23,7 @@ public class CallActivityEscalationTest {
 
   @BeforeEach
   public void setUp() {
-    handler = new CallActivityHandler(tc.instance, "callActivity");
+    handler = new CallActivityHandler(tc, "callActivity");
     handler.simulateEscalation("callActivityEscalation");
   }
 

@@ -23,7 +23,7 @@ public class MultiInstanceParallelTest {
 
   @BeforeEach
   public void setUp() {
-    handler = new MultiInstanceParallelHandler(tc.instance, "multiInstanceManualTask");
+    handler = new MultiInstanceParallelHandler(tc, "multiInstanceManualTask");
   }
 
   @Test
@@ -89,8 +89,8 @@ public class MultiInstanceParallelTest {
 
   private static class MultiInstanceParallelHandler extends MultiInstanceHandler<MultiInstanceParallelHandler, Void> {
 
-    public MultiInstanceParallelHandler(TestCaseInstance instance, String activityId) {
-      super(instance, activityId);
+    public MultiInstanceParallelHandler(AbstractTestCase<?> testCase, String activityId) {
+      super(testCase, activityId);
     }
 
     @Override

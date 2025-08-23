@@ -23,7 +23,7 @@ public class MultiInstanceScopeStrategy extends DefaultHandlerStrategy {
 
   public MultiInstanceScopeStrategy(TestCaseActivityScope scope, TestCaseContext ctx) {
     super(new TestCaseActivityWrapper(scope));
-    
+
     String simpleName = String.format("%s__%sHandler", ctx.getClassName(), StringUtils.capitalize(literal));
     className = ClassName.get(ctx.getPackageName(), simpleName);
 
@@ -52,7 +52,7 @@ public class MultiInstanceScopeStrategy extends DefaultHandlerStrategy {
 
   @Override
   public CodeBlock initHandlerStatement() {
-    return CodeBlock.of("new $T(instance, $S)", getHandlerType(), activity.getId());
+    return CodeBlock.of("new $T(this, $S)", getHandlerType(), activity.getId());
   }
 
   @Override
