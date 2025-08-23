@@ -74,6 +74,7 @@ public class CallActivityHandler {
       throw new AssertionError(String.format("No process instance found for call activity %s", activityId));
     }
 
+    subTestCase.instance.setProcessInstance(pi);
     subTestCase.execute(subPi);
   }
 
