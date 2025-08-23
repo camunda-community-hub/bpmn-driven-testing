@@ -47,6 +47,6 @@ public class CallActivityStrategy extends DefaultHandlerStrategy {
 
   @Override
   public CodeBlock initHandlerStatement() {
-    return CodeBlock.of("new $T(instance, $S)", getHandlerType(), activity.getId());
+    return CodeBlock.of("new $T(this, $S)", getHandlerType(), activity.getId());
   }
 }

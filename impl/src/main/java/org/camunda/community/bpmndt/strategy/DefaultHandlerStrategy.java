@@ -50,6 +50,8 @@ public class DefaultHandlerStrategy extends DefaultStrategy {
     } else if (activity.getType().isWaitState()) {
       methodBuilder.addStatement("assertThat(pi).isWaitingAt($S)", activity.getId());
       methodBuilder.addStatement("instance.apply($L)", getHandler());
+    } else if (activity.getType() == TestCaseActivityType.CALL_ACTIVITY) {
+      methodBuilder.addStatement("instance.apply($L)", getHandler());
     }
 
     if (!activity.hasNext()) {

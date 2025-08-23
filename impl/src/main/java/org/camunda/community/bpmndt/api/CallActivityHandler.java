@@ -10,6 +10,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import org.camunda.bpm.engine.RuntimeService;
 import org.camunda.bpm.engine.delegate.DelegateVariableMapping;
 import org.camunda.bpm.engine.delegate.VariableScope;
 import org.camunda.bpm.engine.impl.bpmn.behavior.CallActivityBehavior;
@@ -29,6 +30,9 @@ import org.camunda.bpm.engine.variable.value.TypedValue;
  */
 public class CallActivityHandler {
 
+  private final AbstractTestCase<?> testCase;
+  private final String activityId;
+
   private BiConsumer<ProcessInstanceAssert, CallActivityDefinition> verifier;
   private Consumer<VariableScope> inputVerifier;
   private Consumer<VariableScope> outputVerifier;
@@ -39,8 +43,36 @@ public class CallActivityHandler {
 
   private boolean waitForBoundaryEvent;
 
-  public CallActivityHandler(TestCaseInstance instance, String activityId) {
-    instance.registerCallActivityHandler(activityId, this);
+  /**
+   * Test case, used to execute the called sub process.
+   */
+  protected AbstractTestCase<?> subTestCase;
+
+  public CallActivityHandler(AbstractTestCase<?> testCase, String activityId) {
+    this.testCase = testCase;
+    this.activityId = activityId;
+
+    testCase.instance.registerCallActivityHandler(activityId, this);
+  }
+
+  protected void apply(ProcessInstance pi) {
+    if (testCase == null) {
+      return;
+    }
+
+    RuntimeService runtimeService = testCase.instance.getProcessEngine().getRuntimeService();
+
+    // find sub process instance
+    ProcessInstance subPi = runtimeService.createProcessInstanceQuery()
+        .superProcessInstanceId(pi.getId())
+        .deploymentId(subTestCase.getDeploymentId())
+        .singleResult();
+
+    if (subPi == null) {
+      throw new AssertionError(String.format("No process instance found for call activity %s", activityId));
+    }
+
+    subTestCase.execute(subPi);
   }
 
   /**
@@ -62,11 +94,68 @@ public class CallActivityHandler {
   }
 
   /**
+   * Executes the given test case, instead of simulating the call activity.
+   *
+   * @param subTestCase A specific test case, used to execute the called sub process, that starts with a non start event.
+   * @param customizer  Customizer function that accept the initialized test case.
+   */
+  public <T extends AbstractTestCase<?>> void executeTestCase(T subTestCase, Consumer<T> customizer) {
+    if (subTestCase == null) {
+      throw new IllegalArgumentException("Test case is null");
+    }
+
+    subTestCase.beforeEach();
+
+    if (customizer != null) {
+      customizer.accept(subTestCase);
+    }
+
+    testCase.addSubTestCase(subTestCase);
+
+    this.subTestCase = subTestCase;
+  }
+
+  private String getDefinitionTenantId(ProcessInstance pi, ActivityExecution execution, CallableElement callableElement) {
+    final String methodName = "getDefinitionTenantId";
+
+    Optional<Method> foundMethod = Stream.of(CallableElement.class.getMethods())
+        .filter(method -> method.getName().equals(methodName))
+        .findFirst();
+
+    if (foundMethod.isEmpty()) {
+      throw new RuntimeException(String.format("Class '%s' misses required method '%s'", CallableElement.class.getName(), methodName));
+    }
+
+    Method method = foundMethod.get();
+
+    try {
+      if (method.getParameterCount() == 1) {
+        // Camunda BPM version <= 7.16.0
+        return (String) method.invoke(callableElement, execution);
+      } else {
+        // Camunda BPM version >= 7.17.0
+        return (String) method.invoke(callableElement, execution, pi.getTenantId());
+      }
+    } catch (Exception e) {
+      throw new RuntimeException(String.format("Method '%s' could not be invoked", methodName), e);
+    }
+  }
+
+  /**
+   * Determines if the call activity is waiting for a boundary message, signal or timer event.
+   *
+   * @return {@code true}, if it is waiting for a boundary event. {@code false}, if not.
+   */
+  public boolean isWaitingForBoundaryEvent() {
+    return waitForBoundaryEvent;
+  }
+
+  /**
    * Simulates the execution of a call activity.
    * <br>
    * 1. Gets the call activity definition and verifies it.
    * <br>
-   * 2. Performs and verifies the variable mapping between super execution and stubbed sub instance.
+   * 2. Performs and verifies the variable mapping between super execution and the simulated sub instance.
    * <br>
    * 3. Create sub execution and propagate possible error or escalation events.
    *
@@ -76,20 +165,10 @@ public class CallActivityHandler {
    * @return {@code true}, if the execution should leave (continue). {@code false}, if the execution should wait.
    * @throws Exception Exception If the occurrence of an error end event is simulated and the error propagation fails.
    */
-  protected boolean execute(ProcessInstance pi, ActivityExecution execution, CallActivityBehavior behavior) throws Exception {
+  protected boolean simulate(ProcessInstance pi, ActivityExecution execution, CallActivityBehavior behavior) throws Exception {
+    verify(pi, execution, behavior);
+
     CallableElement callableElement = behavior.getCallableElement();
-
-    CallActivityDefinition callActivityDefinition = new CallActivityDefinition();
-    callActivityDefinition.binding = callableElement.getBinding();
-    callActivityDefinition.businessKey = callableElement.getBusinessKey(execution);
-    callActivityDefinition.definitionKey = callableElement.getDefinitionKey(execution);
-    callActivityDefinition.definitionTenantId = getDefinitionTenantId(pi, execution, callableElement);
-    callActivityDefinition.inputs = !callableElement.getInputs().isEmpty();
-    callActivityDefinition.outputs = !callableElement.getOutputs().isEmpty() || !callableElement.getOutputsLocal().isEmpty();
-    callActivityDefinition.version = callableElement.getVersion(execution);
-    callActivityDefinition.versionTag = callableElement.getVersionTag(execution);
-
-    verify(pi, callActivityDefinition);
 
     // input
     VariableMap subVariables = callableElement.getInputVariables(execution);
@@ -131,41 +210,6 @@ public class CallActivityHandler {
     subExecution.remove();
 
     return !waitForBoundaryEvent;
-  }
-
-  private String getDefinitionTenantId(ProcessInstance pi, ActivityExecution execution, CallableElement callableElement) {
-    final String methodName = "getDefinitionTenantId";
-
-    Optional<Method> foundMethod = Stream.of(CallableElement.class.getMethods())
-        .filter(method -> method.getName().equals(methodName))
-        .findFirst();
-
-    if (foundMethod.isEmpty()) {
-      throw new RuntimeException(String.format("Class '%s' misses required method '%s'", CallableElement.class.getName(), methodName));
-    }
-
-    Method method = foundMethod.get();
-
-    try {
-      if (method.getParameterCount() == 1) {
-        // Camunda BPM version <= 7.16.0
-        return (String) method.invoke(callableElement, execution);
-      } else {
-        // Camunda BPM version >= 7.17.0
-        return (String) method.invoke(callableElement, execution, pi.getTenantId());
-      }
-    } catch (Exception e) {
-      throw new RuntimeException(String.format("Method '%s' could not be invoked", methodName), e);
-    }
-  }
-
-  /**
-   * Determines if the call activity is waiting for a boundary message, signal or timer event.
-   *
-   * @return {@code true}, if it is waiting for a boundary event. {@code false}, if not.
-   */
-  public boolean isWaitingForBoundaryEvent() {
-    return waitForBoundaryEvent;
   }
 
   /**
@@ -216,6 +260,29 @@ public class CallActivityHandler {
   }
 
   /**
+   * Verifies a call activity definition.
+   *
+   * @param pi        The current process instance.
+   * @param execution The current execution.
+   * @param behavior  The call activity's original behavior.
+   */
+  protected void verify(ProcessInstance pi, ActivityExecution execution, CallActivityBehavior behavior) {
+    CallableElement callableElement = behavior.getCallableElement();
+
+    CallActivityDefinition callActivityDefinition = new CallActivityDefinition();
+    callActivityDefinition.binding = callableElement.getBinding();
+    callActivityDefinition.businessKey = callableElement.getBusinessKey(execution);
+    callActivityDefinition.definitionKey = callableElement.getDefinitionKey(execution);
+    callActivityDefinition.definitionTenantId = getDefinitionTenantId(pi, execution, callableElement);
+    callActivityDefinition.inputs = !callableElement.getInputs().isEmpty();
+    callActivityDefinition.outputs = !callableElement.getOutputs().isEmpty() || !callableElement.getOutputsLocal().isEmpty();
+    callActivityDefinition.version = callableElement.getVersion(execution);
+    callActivityDefinition.versionTag = callableElement.getVersionTag(execution);
+
+    verify(pi, callActivityDefinition);
+  }
+
+  /**
    * Verifies the state after the {@code mapInputVariables} method of a possible {@link DelegateVariableMapping} was invoked.<br> Please note: This method can
    * also be used to simulate the behavior of a called process. The variables set, will be available when the {@code mapOutputVariables} method of a possible
    * {@link DelegateVariableMapping} is invoked.
@@ -232,6 +299,11 @@ public class CallActivityHandler {
     if (inputVerifier != null) {
       inputVerifier.accept(variables);
     }
+  }
+
+  protected void verifyInput(VariableMap subVariables) {
+    VariableScope subInstance = new CallActivityVariableScope(subVariables);
+    verifyInput(subInstance);
   }
 
   /**
