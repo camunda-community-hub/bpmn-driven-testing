@@ -10,6 +10,7 @@ import java.util.TreeSet;
 
 import javax.lang.model.SourceVersion;
 
+import org.camunda.bpm.engine.impl.bpmn.behavior.CallActivityTestBehavior;
 import org.camunda.community.bpmndt.api.AbstractJUnit5TestCase;
 import org.camunda.community.bpmndt.api.AbstractTestCase;
 import org.camunda.community.bpmndt.api.CallActivityDefinition;
@@ -174,6 +175,7 @@ public class Generator {
 
     apiClasses.add(BpmndtParseListener.class);
     apiClasses.add(BpmndtProcessEnginePlugin.class);
+    apiClasses.add(CallActivityTestBehavior.class);
 
     apiClasses.add(AbstractJUnit5TestCase.class);
 

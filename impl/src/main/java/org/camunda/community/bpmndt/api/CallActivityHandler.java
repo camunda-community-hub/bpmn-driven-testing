@@ -31,6 +31,7 @@ import org.camunda.bpm.engine.variable.value.TypedValue;
 public class CallActivityHandler {
 
   private final AbstractTestCase<?> testCase;
+  private final TestCaseInstance instance;
   private final String activityId;
 
   private BiConsumer<ProcessInstanceAssert, CallActivityDefinition> verifier;
@@ -50,17 +51,18 @@ public class CallActivityHandler {
 
   public CallActivityHandler(AbstractTestCase<?> testCase, String activityId) {
     this.testCase = testCase;
+    this.instance = testCase.instance;
     this.activityId = activityId;
 
-    testCase.instance.registerCallActivityHandler(activityId, this);
+    instance.registerCallActivityHandler(activityId, this);
   }
 
   protected void apply(ProcessInstance pi) {
-    if (testCase == null) {
+    if (subTestCase == null) {
       return;
     }
 
-    RuntimeService runtimeService = testCase.instance.getProcessEngine().getRuntimeService();
+    RuntimeService runtimeService = instance.getProcessEngine().getRuntimeService();
 
     // find sub process instance
     ProcessInstance subPi = runtimeService.createProcessInstanceQuery()

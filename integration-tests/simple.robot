@@ -184,6 +184,7 @@ Assert Test Code Generation
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/org/camunda/community/bpmndt/api/UserTaskHandler.java
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/org/camunda/community/bpmndt/api/cfg/BpmndtParseListener.java
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/org/camunda/community/bpmndt/api/cfg/BpmndtProcessEnginePlugin.java
+  Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/org/camunda/bpm/engine/impl/bpmn/behavior/CallActivityTestBehavior.java
 
   Should not contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/org/camunda/community/bpmndt/api/ExternalTaskClientHandler.java
 
@@ -202,5 +203,6 @@ Assert Test Code Generation
   File should exist  ${testSources}/org/camunda/community/bpmndt/api/UserTaskHandler.java
   File should exist  ${testSources}/org/camunda/community/bpmndt/api/cfg/BpmndtParseListener.java
   File should exist  ${testSources}/org/camunda/community/bpmndt/api/cfg/BpmndtProcessEnginePlugin.java
+  File should exist  ${testSources}/org/camunda/bpm/engine/impl/bpmn/behavior/CallActivityTestBehavior.java
 
   File should not exist  ${testSources}/org/camunda/community/bpmndt/api/ExternalTaskClientHandler.java

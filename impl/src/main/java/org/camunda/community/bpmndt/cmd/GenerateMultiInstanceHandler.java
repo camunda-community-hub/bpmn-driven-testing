@@ -8,8 +8,8 @@ import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.community.bpmndt.GeneratorResult;
 import org.camunda.community.bpmndt.GeneratorStrategy;
 import org.camunda.community.bpmndt.TestCaseContext;
+import org.camunda.community.bpmndt.api.AbstractTestCase;
 import org.camunda.community.bpmndt.api.MultiInstanceHandler;
-import org.camunda.community.bpmndt.api.TestCaseInstance;
 import org.camunda.community.bpmndt.model.TestCaseActivity;
 import org.camunda.community.bpmndt.model.TestCaseActivityType;
 import org.camunda.community.bpmndt.strategy.MultiInstanceStrategy;
@@ -20,10 +20,11 @@ import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
+import com.squareup.javapoet.WildcardTypeName;
 
 /**
  * Generates the handler for a given multi instance activity.
- * 
+ *
  * @see MultiInstanceHandler
  */
 public class GenerateMultiInstanceHandler implements Consumer<TestCaseActivity> {
@@ -118,15 +119,15 @@ public class GenerateMultiInstanceHandler implements Consumer<TestCaseActivity> 
   protected MethodSpec buildConstructor(TestCaseActivity activity) {
     MethodSpec.Builder builder = MethodSpec.constructorBuilder()
         .addModifiers(Modifier.PUBLIC)
-        .addParameter(TestCaseInstance.class, "instance")
+        .addParameter(ParameterizedTypeName.get(ClassName.get(AbstractTestCase.class), WildcardTypeName.subtypeOf(Object.class)), "testCase")
         .addParameter(String.class, "activityId")
-        .addStatement("super(instance, activityId)");
+        .addStatement("super(testCase, activityId)");
 
     if (hasSupportedBoundaryEventAttached(activity)) {
       TestCaseActivity next = activity.getNext();
 
       builder.addCode("\n// $L: $L\n", next.getTypeName(), next.getId());
-      builder.addStatement("boundaryEventHandler = $L", ctx.getStrategy(next.getId()).initHandlerStatement());
+      builder.addStatement("boundaryEventHandler = $L", ctx.getStrategy(next.getId()).initHandlerStatement(false));
     }
 
     return builder.build();
@@ -140,7 +141,7 @@ public class GenerateMultiInstanceHandler implements Consumer<TestCaseActivity> 
         .addModifiers(Modifier.PROTECTED)
         .returns(strategy.getHandlerType())
         .addParameter(TypeName.INT, "loopIndex")
-        .addStatement("return $L", strategy.initHandlerStatement())
+        .addStatement("return $L", strategy.initHandlerStatement(false))
         .build();
   }
 

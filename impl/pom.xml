@@ -144,6 +144,10 @@
         <directory>${project.basedir}/src/main/java/org/camunda/community/bpmndt/api</directory>
         <targetPath>${project.build.outputDirectory}/org/camunda/community/bpmndt/api</targetPath>
       </resource>
+      <resource>
+        <directory>${project.basedir}/src/main/java/org/camunda/bpm/engine/impl/bpmn/behavior</directory>
+        <targetPath>${project.build.outputDirectory}/org/camunda/bpm/engine/impl/bpmn/behavior</targetPath>
+      </resource>
     </resources>
 
     <plugins>

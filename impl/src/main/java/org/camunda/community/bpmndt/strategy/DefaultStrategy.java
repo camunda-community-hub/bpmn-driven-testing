@@ -200,7 +200,7 @@ public class DefaultStrategy implements GeneratorStrategy {
   }
 
   @Override
-  public CodeBlock initHandlerStatement() {
+  public CodeBlock initHandlerStatement(boolean isTestCase) {
     return null;
   }
 

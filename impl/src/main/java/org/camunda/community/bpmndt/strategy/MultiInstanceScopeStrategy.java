@@ -51,8 +51,12 @@ public class MultiInstanceScopeStrategy extends DefaultHandlerStrategy {
   }
 
   @Override
-  public CodeBlock initHandlerStatement() {
-    return CodeBlock.of("new $T(this, $S)", getHandlerType(), activity.getId());
+  public CodeBlock initHandlerStatement(boolean isTestCase) {
+    if (isTestCase) {
+      return CodeBlock.of("new $T(this, $S)", getHandlerType(), activity.getId());
+    } else {
+      return CodeBlock.of("new $T(testCase, $S)", getHandlerType(), activity.getId());
+    }
   }
 
   @Override

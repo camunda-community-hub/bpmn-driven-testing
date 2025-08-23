@@ -160,6 +160,7 @@ public class GeneratorTest {
     assertThat(isFile.test("org/camunda/community/bpmndt/api/UserTaskHandler.java")).isTrue();
     assertThat(isFile.test("org/camunda/community/bpmndt/api/cfg/BpmndtParseListener.java")).isTrue();
     assertThat(isFile.test("org/camunda/community/bpmndt/api/cfg/BpmndtProcessEnginePlugin.java")).isTrue();
+    assertThat(isFile.test("org/camunda/bpm/engine/impl/bpmn/behavior/CallActivityTestBehavior.java")).isTrue();
   }
 
   /**
@@ -203,6 +204,7 @@ public class GeneratorTest {
     assertThat(isFile.test("org/camunda/community/bpmndt/api/cfg/BpmndtParseListener.java")).isTrue();
     assertThat(isFile.test("org/camunda/community/bpmndt/api/cfg/BpmndtProcessEnginePlugin.java")).isTrue();
     assertThat(isFile.test("org/camunda/community/bpmndt/api/cfg/SpringConfiguration.java")).isTrue();
+    assertThat(isFile.test("org/camunda/bpm/engine/impl/bpmn/behavior/CallActivityTestBehavior.java")).isTrue();
   }
 
   @Test
