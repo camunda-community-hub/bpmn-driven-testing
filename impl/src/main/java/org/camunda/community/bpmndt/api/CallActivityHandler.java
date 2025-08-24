@@ -10,13 +10,15 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-import org.camunda.bpm.engine.RuntimeService;
+import org.camunda.bpm.engine.HistoryService;
 import org.camunda.bpm.engine.delegate.DelegateVariableMapping;
 import org.camunda.bpm.engine.delegate.VariableScope;
+import org.camunda.bpm.engine.history.HistoricProcessInstance;
 import org.camunda.bpm.engine.impl.bpmn.behavior.CallActivityBehavior;
 import org.camunda.bpm.engine.impl.bpmn.helper.BpmnExceptionHandler;
 import org.camunda.bpm.engine.impl.bpmn.helper.EscalationHandler;
 import org.camunda.bpm.engine.impl.core.model.CallableElement;
+import org.camunda.bpm.engine.impl.persistence.entity.ExecutionEntity;
 import org.camunda.bpm.engine.impl.pvm.delegate.ActivityExecution;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.test.assertions.ProcessEngineTests;
@@ -62,20 +64,31 @@ public class CallActivityHandler {
       return;
     }
 
-    RuntimeService runtimeService = instance.getProcessEngine().getRuntimeService();
+    HistoryService historyService = testCase.getProcessEngine().getHistoryService();
 
-    // find sub process instance
-    ProcessInstance subPi = runtimeService.createProcessInstanceQuery()
+    // find sub process instance via history service
+    // since the process instance may already be finished
+    HistoricProcessInstance subHpi = historyService.createHistoricProcessInstanceQuery()
         .superProcessInstanceId(pi.getId())
-        .deploymentId(subTestCase.getDeploymentId())
+        .processDefinitionId(subTestCase.instance.getProcessDefinitionId())
         .singleResult();
 
-    if (subPi == null) {
-      throw new AssertionError(String.format("No process instance found for call activity %s", activityId));
+    if (subHpi == null) {
+      throw new AssertionError(String.format("No historic process instance found for call activity %s", activityId));
     }
 
-    subTestCase.instance.setProcessInstance(pi);
-    subTestCase.execute(subPi);
+    // wrap historic process instance
+    ExecutionEntity executionEntity = new ExecutionEntity();
+    executionEntity.setBusinessKey(subHpi.getBusinessKey());
+    executionEntity.setId(subHpi.getId());
+    executionEntity.setProcessDefinitionId(subHpi.getProcessDefinitionId());
+    executionEntity.setProcessDefinitionKey(subHpi.getProcessDefinitionKey());
+    executionEntity.setProcessInstanceId(subHpi.getId());
+    executionEntity.setRootProcessInstanceId(subHpi.getRootProcessInstanceId());
+    executionEntity.setTenantId(subHpi.getTenantId());
+
+    subTestCase.instance.setProcessInstance(executionEntity);
+    subTestCase.execute(executionEntity);
   }
 
   /**

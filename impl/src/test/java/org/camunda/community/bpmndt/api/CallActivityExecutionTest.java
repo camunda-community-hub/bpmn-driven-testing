@@ -25,6 +25,9 @@ public class CallActivityExecutionTest {
 
   @Test
   public void testExecute() {
+    TestCase2 testCase2 = new TestCase2();
+    TestCase3 testCase3 = new TestCase3();
+
     tc1.handler.verify((pi, callActivity) -> {
       assertThat(pi).isNotNull();
       pi.isNotEnded();
@@ -45,8 +48,8 @@ public class CallActivityExecutionTest {
     }).verifyOutput(variables -> {
       assertThat(variables.getVariable("a")).isEqualTo("y");
       assertThat(variables.getVariable("x")).isEqualTo("b");
-    }).executeTestCase(new TestCase2(), tc2 -> {
-      tc2.handlerA.executeTestCase(new TestCase3(), null);
+    }).executeTestCase(testCase2, tc2 -> {
+      tc2.handlerA.executeTestCase(testCase3, null);
     });
 
     tc1.createExecutor()
@@ -55,6 +58,9 @@ public class CallActivityExecutionTest {
         .withVariable("end", "none")
         .withBean("callActivityMapping", new CallActivityMapping())
         .execute();
+
+    assertThat(testCase2.executed).isTrue();
+    assertThat(testCase3.executed).isTrue();
   }
 
   private static class TestCase1 extends AbstractJUnit5TestCase<TestCase1> {
@@ -135,6 +141,8 @@ public class CallActivityExecutionTest {
     private CallActivityHandler handlerA;
     private CallActivityHandler handlerB;
 
+    private boolean executed;
+
     @Override
     protected void beforeEach() {
       super.beforeEach();
@@ -145,6 +153,8 @@ public class CallActivityExecutionTest {
 
     @Override
     protected void execute(ProcessInstance pi) {
+      executed = true;
+
       assertThat(pi).isNotNull();
 
       ProcessInstanceAssert piAssert = ProcessEngineTests.assertThat(pi);
@@ -152,12 +162,12 @@ public class CallActivityExecutionTest {
       piAssert.hasPassed("startEvent");
 
       piAssert.isWaitingAt("callActivityA");
-      ProcessEngineTests.execute(ProcessEngineTests.job());
+      ProcessEngineTests.execute(ProcessEngineTests.job(pi));
       instance.apply(handlerA);
       piAssert.hasPassed("callActivityA");
 
       piAssert.isWaitingAt("callActivityB");
-      ProcessEngineTests.execute(ProcessEngineTests.job());
+      ProcessEngineTests.execute(ProcessEngineTests.job(pi));
       instance.apply(handlerB);
       piAssert.hasPassed("callActivityB");
 
@@ -191,8 +201,12 @@ public class CallActivityExecutionTest {
 
   private static class TestCase3 extends AbstractJUnit5TestCase<TestCase1> {
 
+    private boolean executed;
+
     @Override
     protected void execute(ProcessInstance pi) {
+      executed = true;
+
       assertThat(pi).isNotNull();
 
       ProcessInstanceAssert piAssert = ProcessEngineTests.assertThat(pi);
