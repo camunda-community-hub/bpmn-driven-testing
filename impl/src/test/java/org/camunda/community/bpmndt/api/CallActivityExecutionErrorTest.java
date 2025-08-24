@@ -9,7 +9,6 @@ import java.nio.file.Files;
 import org.camunda.bpm.engine.delegate.DelegateExecution;
 import org.camunda.bpm.engine.delegate.DelegateVariableMapping;
 import org.camunda.bpm.engine.delegate.VariableScope;
-import org.camunda.bpm.engine.impl.core.model.BaseCallableElement.CallableElementBinding;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.test.assertions.ProcessEngineTests;
 import org.camunda.bpm.engine.test.assertions.bpmn.ProcessInstanceAssert;
@@ -18,50 +17,25 @@ import org.camunda.community.bpmndt.test.TestPaths;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class CallActivityExecutionTest {
+public class CallActivityExecutionErrorTest {
 
   @RegisterExtension
   TestCase1 tc1 = new TestCase1();
 
   @Test
   public void testExecute() {
-    TestCase2 testCase2 = new TestCase2();
-    TestCase3 testCase3 = new TestCase3();
-
-    tc1.handler.verify((pi, callActivity) -> {
-      assertThat(pi).isNotNull();
-      pi.isNotEnded();
-      pi.variables().containsEntry("super", true);
-
-      assertThat(callActivity.getBinding()).isEqualTo(CallableElementBinding.VERSION_TAG);
-      assertThat(callActivity.getBusinessKey()).isEqualTo("advancedKey");
-      assertThat(callActivity.getDefinitionKey()).isEqualTo("advanced");
-      assertThat(callActivity.getDefinitionTenantId()).isNull();
-      assertThat(callActivity.getVersion()).isNull();
-      assertThat(callActivity.getVersion()).isNull();
-      assertThat(callActivity.getVersionTag()).isEqualTo("v1");
-      assertThat(callActivity.hasInputs()).isFalse();
-      assertThat(callActivity.hasOutputs()).isFalse();
-    }).verifyInput(variables -> {
-      assertThat(variables.getVariable("a")).isEqualTo("b");
-      assertThat(variables.getVariable("x")).isEqualTo("y");
-    }).verifyOutput(variables -> {
+    tc1.handler.verifyOutput(variables -> {
       assertThat(variables.getVariable("a")).isEqualTo("y");
       assertThat(variables.getVariable("x")).isEqualTo("b");
-    }).executeTestCase(testCase2, tc2 -> {
-      tc2.handlerA.executeTestCase(testCase3, null);
-    });
+    }).executeTestCase(new TestCase2(), null);
 
     tc1.createExecutor()
         .withBusinessKey("advancedKey")
         .withVariable("super", true)
-        .withVariable("end", "none")
+        .withVariable("end", "error")
         .withBean("callActivityMapping", new CallActivityMapping())
         .verify(ProcessInstanceAssert::isEnded)
         .execute();
-
-    assertThat(testCase2.executed).isTrue();
-    assertThat(testCase3.executed).isTrue();
   }
 
   private static class TestCase1 extends AbstractJUnit5TestCase<TestCase1> {
@@ -86,7 +60,7 @@ public class CallActivityExecutionTest {
       ProcessEngineTests.execute(ProcessEngineTests.job());
       instance.apply(handler);
 
-      piAssert.hasPassed("callActivity", "endEvent").isEnded();
+      piAssert.hasPassed("callActivity", "errorBoundaryEvent", "errorEndEvent").isEnded();
     }
 
     @Override
@@ -142,8 +116,6 @@ public class CallActivityExecutionTest {
     private CallActivityHandler handlerA;
     private CallActivityHandler handlerB;
 
-    private boolean executed;
-
     @Override
     protected void beforeEach() {
       super.beforeEach();
@@ -154,8 +126,6 @@ public class CallActivityExecutionTest {
 
     @Override
     protected void execute(ProcessInstance pi) {
-      executed = true;
-
       assertThat(pi).isNotNull();
 
       ProcessInstanceAssert piAssert = ProcessEngineTests.assertThat(pi);
@@ -172,7 +142,7 @@ public class CallActivityExecutionTest {
       instance.apply(handlerB);
       piAssert.hasPassed("callActivityB");
 
-      piAssert.hasPassed("fork", "endEvent").isEnded();
+      piAssert.hasPassed("fork", "errorEndEvent").isEnded();
     }
 
     @Override
@@ -196,47 +166,7 @@ public class CallActivityExecutionTest {
 
     @Override
     public String getEnd() {
-      return "endEvent";
-    }
-  }
-
-  private static class TestCase3 extends AbstractJUnit5TestCase<TestCase1> {
-
-    private boolean executed;
-
-    @Override
-    protected void execute(ProcessInstance pi) {
-      executed = true;
-
-      assertThat(pi).isNotNull();
-
-      ProcessInstanceAssert piAssert = ProcessEngineTests.assertThat(pi);
-
-      piAssert.hasPassed("startEvent", "endEvent").isEnded();
-    }
-
-    @Override
-    protected InputStream getBpmnResource() {
-      try {
-        return Files.newInputStream(TestPaths.advanced("callActivityExecution3.bpmn"));
-      } catch (IOException e) {
-        return null;
-      }
-    }
-
-    @Override
-    public String getProcessDefinitionKey() {
-      return "callActivityExecution3";
-    }
-
-    @Override
-    public String getStart() {
-      return "startEvent";
-    }
-
-    @Override
-    public String getEnd() {
-      return "endEvent";
+      return "escalationEndEvent";
     }
   }
 }

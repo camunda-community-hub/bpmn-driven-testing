@@ -1,6 +1,44 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0y74elt" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.31.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.22.0">
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:bpmndt="http://camunda.org/schema/extension/bpmn-driven-testing" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0y74elt" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.31.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.22.0">
   <bpmn:process id="callActivityExecution2" isExecutable="true" camunda:historyTimeToLive="0">
+    <bpmn:extensionElements>
+      <bpmndt:testCases>
+        <bpmndt:testCase>
+          <bpmndt:path>
+            <bpmndt:node>startEvent</bpmndt:node>
+            <bpmndt:node>callActivityA</bpmndt:node>
+            <bpmndt:node>callActivityB</bpmndt:node>
+            <bpmndt:node>fork</bpmndt:node>
+            <bpmndt:node>endEvent</bpmndt:node>
+          </bpmndt:path>
+        </bpmndt:testCase>
+        <bpmndt:testCase>
+          <bpmndt:path>
+            <bpmndt:node>startEvent</bpmndt:node>
+            <bpmndt:node>callActivityA</bpmndt:node>
+            <bpmndt:node>callActivityB</bpmndt:node>
+            <bpmndt:node>fork</bpmndt:node>
+            <bpmndt:node>escalationEndEvent</bpmndt:node>
+          </bpmndt:path>
+        </bpmndt:testCase>
+        <bpmndt:testCase>
+          <bpmndt:path>
+            <bpmndt:node>startEvent</bpmndt:node>
+            <bpmndt:node>callActivityA</bpmndt:node>
+            <bpmndt:node>callActivityB</bpmndt:node>
+            <bpmndt:node>fork</bpmndt:node>
+            <bpmndt:node>errorEndEvent</bpmndt:node>
+          </bpmndt:path>
+        </bpmndt:testCase>
+        <bpmndt:testCase>
+          <bpmndt:path>
+            <bpmndt:node>startEvent</bpmndt:node>
+            <bpmndt:node>callActivityA</bpmndt:node>
+            <bpmndt:node>callActivityB</bpmndt:node>
+          </bpmndt:path>
+        </bpmndt:testCase>
+      </bpmndt:testCases>
+    </bpmn:extensionElements>
     <bpmn:startEvent id="startEvent">
       <bpmn:outgoing>Flow_0kpcy59</bpmn:outgoing>
     </bpmn:startEvent>
@@ -48,8 +86,8 @@
       <bpmn:errorEventDefinition id="ErrorEventDefinition_1ol25ox" errorRef="Error_093si6a" />
     </bpmn:endEvent>
   </bpmn:process>
-  <bpmn:escalation id="Escalation_0te14gh" name="ESCALATION_NAME" escalationCode="ESCALATION_CODE" />
-  <bpmn:error id="Error_093si6a" name="ERROR_NAME" errorCode="ERROR_CODE" />
+  <bpmn:escalation id="Escalation_0te14gh" name="ESCALATION" escalationCode="ESCALATION_CODE" />
+  <bpmn:error id="Error_093si6a" name="ERROR" errorCode="ERROR_CODE" />
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="callActivityExecution2">
       <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="startEvent">
