@@ -17,6 +17,7 @@ mvn clean test
   # tests executed
   Should contain  ${result.stdout}  Running org.example.it.CallActivityErrorTest
   Should contain  ${result.stdout}  Running org.example.it.CallActivityEscalationTest
+  Should contain  ${result.stdout}  Running org.example.it.CallActivityExecutionTest
   Should contain  ${result.stdout}  Running org.example.it.CallActivityMessageTest
   Should contain  ${result.stdout}  Running org.example.it.CallActivitySignalTest
   Should contain  ${result.stdout}  Running org.example.it.CallActivityTimerTest

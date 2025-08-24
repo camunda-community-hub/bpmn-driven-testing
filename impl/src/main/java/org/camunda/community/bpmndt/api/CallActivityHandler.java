@@ -33,7 +33,6 @@ import org.camunda.bpm.engine.variable.value.TypedValue;
 public class CallActivityHandler {
 
   private final AbstractTestCase<?> testCase;
-  private final TestCaseInstance instance;
   private final String activityId;
 
   private BiConsumer<ProcessInstanceAssert, CallActivityDefinition> verifier;
@@ -53,10 +52,9 @@ public class CallActivityHandler {
 
   public CallActivityHandler(AbstractTestCase<?> testCase, String activityId) {
     this.testCase = testCase;
-    this.instance = testCase.instance;
     this.activityId = activityId;
 
-    instance.registerCallActivityHandler(activityId, this);
+    testCase.instance.registerCallActivityHandler(activityId, this);
   }
 
   protected void apply(ProcessInstance pi) {
@@ -67,7 +65,7 @@ public class CallActivityHandler {
     HistoryService historyService = testCase.getProcessEngine().getHistoryService();
 
     // find sub process instance via history service
-    // since the process instance may already be finished
+    // because the process instance may already be finished
     HistoricProcessInstance subHpi = historyService.createHistoricProcessInstanceQuery()
         .superProcessInstanceId(pi.getId())
         .processDefinitionId(subTestCase.instance.getProcessDefinitionId())
@@ -110,9 +108,15 @@ public class CallActivityHandler {
   }
 
   /**
-   * Executes the given test case, instead of simulating the call activity.
+   * Executes the given test case, using the sub process instance, started by the call activity. If this method is called, the call activity is not simulated.
    *
-   * @param subTestCase A specific test case, used to execute the called sub process, that starts with a non start event.
+   * <pre>
+   * tc.handleCallActivity().executeTestCase(new TC_subProcess(), it -> {
+   *   // customize behavior and verify sub process instance
+   * });
+   * </pre>
+   *
+   * @param subTestCase A specific test case, generated for the called process, that starts with a non start event.
    * @param customizer  Customizer function that accept the initialized test case.
    */
   public <T extends AbstractTestCase<?>> void executeTestCase(T subTestCase, Consumer<T> customizer) {
