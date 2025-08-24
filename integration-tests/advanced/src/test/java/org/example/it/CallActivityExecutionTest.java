@@ -41,7 +41,7 @@ public class CallActivityExecutionTest {
   public void testExecuteEscalation() {
     tcEscalation.handleCallActivity().executeTestCase(new generated.callactivityexecution2.TC_startEvent__escalationEndEvent(), null);
 
-    tc.createExecutor()
+    tcEscalation.createExecutor()
         .withVariable("end", "escalation")
         .withBean("callActivityMapping", new CallActivityMapping())
         .verify(ProcessInstanceAssert::isEnded)
@@ -52,7 +52,7 @@ public class CallActivityExecutionTest {
   public void testExecuteError() {
     tcError.handleCallActivity().executeTestCase(new generated.callactivityexecution2.TC_startEvent__errorEndEvent(), null);
 
-    tc.createExecutor()
+    tcError.createExecutor()
         .withVariable("end", "error")
         .withBean("callActivityMapping", new CallActivityMapping())
         .verify(ProcessInstanceAssert::isEnded)
@@ -63,7 +63,7 @@ public class CallActivityExecutionTest {
   public void testExecuteMessage() {
     tcMessage.handleCallActivity().executeTestCase(new generated.callactivityexecution2.TC_startEvent__callActivityB(), null);
 
-    tc.createExecutor()
+    tcMessage.createExecutor()
         .withBean("callActivityMapping", new CallActivityMapping())
         .verify(ProcessInstanceAssert::isEnded)
         .execute();
