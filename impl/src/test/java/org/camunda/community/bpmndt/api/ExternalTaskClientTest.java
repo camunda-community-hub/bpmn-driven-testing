@@ -5,13 +5,20 @@ import static com.google.common.truth.Truth.assertThat;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.util.List;
+import java.util.Map;
 
+import org.camunda.bpm.client.variable.ClientValues;
+import org.camunda.bpm.engine.impl.cfg.ProcessEnginePlugin;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.test.assertions.ProcessEngineTests;
 import org.camunda.bpm.engine.test.assertions.bpmn.ProcessInstanceAssert;
 import org.camunda.bpm.engine.variable.VariableMap;
 import org.camunda.bpm.engine.variable.Variables;
+import org.camunda.bpm.engine.variable.value.TypedValue;
 import org.camunda.community.bpmndt.test.TestPaths;
+import org.camunda.spin.Spin;
+import org.camunda.spin.plugin.impl.SpinProcessEnginePlugin;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -74,6 +81,78 @@ public class ExternalTaskClientTest {
     tc.createExecutor()
         .withBusinessKey("executeExternalTask")
         .withVariables(variables)
+        .execute();
+  }
+
+  @Test
+  public void testExecuteExternalTaskWithComplexVariable() {
+    handler.executeExternalTask((externalTask, externalTaskService) -> {
+      ComplexVariable input = externalTask.getVariable("input");
+      assertThat(input.getVboolean()).isEqualTo(true);
+      assertThat(input.getVinteger()).isEqualTo(123);
+      assertThat(input.getVstring()).isEqualTo("abc");
+
+      ComplexVariable output = new ComplexVariable();
+      output.setVboolean(true);
+      output.setVinteger(456);
+      output.setVstring("def");
+
+      VariableMap variables = Variables.createVariables()
+          .putValue("output", ClientValues.objectValue(output).serializationDataFormat("application/json").create())
+          .putValue("outputUntyped", output);
+
+      externalTaskService.complete(externalTask, variables);
+    });
+
+    ComplexVariable input = new ComplexVariable();
+    input.setVboolean(true);
+    input.setVinteger(123);
+    input.setVstring("abc");
+
+    tc.createExecutor()
+        .withVariable("input", Variables.objectValue(input).serializationDataFormat("application/json").create())
+        .verify(piAssert -> {
+          Map<String, Object> variables = piAssert.variables().actual();
+
+          ComplexVariable output = (ComplexVariable) variables.get("output");
+          assertThat(output.getVboolean()).isEqualTo(true);
+          assertThat(output.getVinteger()).isEqualTo(456);
+          assertThat(output.getVstring()).isEqualTo("def");
+
+          ComplexVariable outputUntyped = (ComplexVariable) variables.get("outputUntyped");
+          assertThat(outputUntyped.getVboolean()).isEqualTo(true);
+          assertThat(outputUntyped.getVinteger()).isEqualTo(456);
+          assertThat(outputUntyped.getVstring()).isEqualTo("def");
+        })
+        .execute();
+  }
+
+  @Test
+  public void testExecuteExternalTaskWithJson() {
+    handler.executeExternalTask((externalTask, externalTaskService) -> {
+      TypedValue inputJsonTyped = externalTask.getVariableTyped("inputJson");
+      assertThat(inputJsonTyped).isNotNull();
+      assertThat(inputJsonTyped.getValue().toString()).isEqualTo("{}");
+
+      Object inputJson = externalTask.getVariable("inputJson");
+      assertThat(inputJson).isNotNull();
+      assertThat(inputJson).isInstanceOf(Map.class);
+
+      VariableMap variables = Variables.createVariables()
+          .putValue("outputJson", ClientValues.jsonValue("{}"));
+
+      externalTaskService.complete(externalTask, variables);
+    });
+
+    tc.createExecutor()
+        .withVariable("inputJson", Spin.JSON("{}"))
+        .verify(piAssert -> {
+          Map<String, Object> variables = piAssert.variables().actual();
+
+          Object outputJson = variables.get("outputJson");
+          assertThat(outputJson).isNotNull();
+          assertThat(outputJson.toString()).isEqualTo("{}");
+        })
         .execute();
   }
 
@@ -154,6 +233,11 @@ public class ExternalTaskClientTest {
     }
 
     @Override
+    protected List<ProcessEnginePlugin> getProcessEnginePlugins() {
+      return List.of(new SpinProcessEnginePlugin());
+    }
+
+    @Override
     public String getStart() {
       return "startEvent";
     }
@@ -161,6 +245,37 @@ public class ExternalTaskClientTest {
     @Override
     public String getEnd() {
       return "endEvent";
+    }
+  }
+
+  public static class ComplexVariable {
+
+    private Boolean vboolean;
+    private String vstring;
+    private Integer vinteger;
+
+    public Boolean getVboolean() {
+      return vboolean;
+    }
+
+    public void setVboolean(Boolean vboolean) {
+      this.vboolean = vboolean;
+    }
+
+    public String getVstring() {
+      return vstring;
+    }
+
+    public void setVstring(String vstring) {
+      this.vstring = vstring;
+    }
+
+    public Integer getVinteger() {
+      return vinteger;
+    }
+
+    public void setVinteger(Integer vinteger) {
+      this.vinteger = vinteger;
     }
   }
 }

@@ -42,5 +42,5 @@ test {
 }
 
 bpmndt {
-  springEnabled = false // not required for Spring Boot, since only the BpmndtProcessEnginePlugin must be exposed as a bean
+  processEnginePlugins = ['org.camunda.spin.plugin.impl.SpinProcessEnginePlugin', 'org.example.it.cfg.SetDefaultSerializationFormat']
 }

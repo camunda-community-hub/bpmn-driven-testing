@@ -1,8 +1,3 @@
 spring:
   main:
     banner-mode: off
-
-camunda:
-  bpm:
-    job-execution:
-      enabled: false
