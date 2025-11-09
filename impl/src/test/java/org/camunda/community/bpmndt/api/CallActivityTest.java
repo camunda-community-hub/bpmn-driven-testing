@@ -1,6 +1,7 @@
 package org.camunda.community.bpmndt.api;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.camunda.bpm.engine.test.assertions.bpmn.BpmnAwareTests.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
@@ -31,7 +32,7 @@ public class CallActivityTest {
 
   @BeforeEach
   public void setUp() {
-    handler = new CallActivityHandler(tc.instance, "callActivity");
+    handler = new CallActivityHandler(tc, "callActivity");
 
     executor = tc.createExecutor()
         .withBusinessKey("simpleKey")

@@ -23,7 +23,7 @@ public class CallActivityErrorTest {
 
   @BeforeEach
   public void setUp() {
-    handler = new CallActivityHandler(tc.instance, "callActivity");
+    handler = new CallActivityHandler(tc, "callActivity");
     handler.simulateBpmnError("callActivityError", "callActivityErrorMessage");
   }
 

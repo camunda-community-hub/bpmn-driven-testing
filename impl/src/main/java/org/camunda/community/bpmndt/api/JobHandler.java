@@ -21,6 +21,7 @@ public class JobHandler {
   private final String activityId;
 
   private final Cardinality cardinality;
+  private final boolean executeLastJob;
 
   private BiConsumer<ProcessInstanceAssert, JobAssert> verifier;
 
@@ -38,9 +39,22 @@ public class JobHandler {
    * @param cardinality   Expected job cardinality.
    */
   public JobHandler(ProcessEngine processEngine, String activityId, Cardinality cardinality) {
+    this(processEngine, activityId, cardinality, false);
+  }
+
+  /**
+   * Creates a new job handler. This constructor is used in the context of multi instance activities.
+   *
+   * @param processEngine  The used process engine.
+   * @param activityId     The ID of the related activity.
+   * @param cardinality    Expected job cardinality.
+   * @param executeLastJob Determines if the last queried job should be executed.
+   */
+  public JobHandler(ProcessEngine processEngine, String activityId, Cardinality cardinality, boolean executeLastJob) {
     this.processEngine = processEngine;
     this.activityId = activityId;
     this.cardinality = cardinality;
+    this.executeLastJob = executeLastJob;
 
     action = this::execute;
   }
@@ -58,7 +72,15 @@ public class JobHandler {
       return;
     }
 
-    Job job = jobs.get(0);
+    Job job;
+    if (executeLastJob) {
+      // when the asynchronous continuation after job of a parallel multi instance is handled
+      // an "activity-end" instead of an "activity-start" job must be executed
+      // this is important for parallel multi instance call activities
+      job = jobs.get(jobs.size() - 1);
+    } else {
+      job = jobs.get(0);
+    }
 
     if (verifier != null) {
       verifier.accept(ProcessEngineTests.assertThat(pi), ProcessEngineTests.assertThat(job));

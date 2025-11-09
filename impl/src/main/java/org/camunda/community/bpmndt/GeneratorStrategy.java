@@ -244,7 +244,7 @@ public interface GeneratorStrategy {
    * </pre>
    *
    * @param methodBuilder The method builder to use.
-   * @see #initHandlerStatement()
+   * @see #initHandlerStatement(boolean)
    */
   void initHandler(MethodSpec.Builder methodBuilder);
 
@@ -301,9 +301,10 @@ public interface GeneratorStrategy {
    * new UserTaskHandler(getProcessEngine(), "approveUserTask");
    * </pre>
    *
+   * @param isTestCase Determines if the handler is initialized at test case level or not.
    * @return The code.
    */
-  CodeBlock initHandlerStatement();
+  CodeBlock initHandlerStatement(boolean isTestCase);
 
   /**
    * Adds code, which asserts that the process instance is waiting at an activity.

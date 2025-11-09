@@ -23,7 +23,7 @@ public class MultiInstanceSequentialTest {
 
   @BeforeEach
   public void setUp() {
-    handler = new MultiInstanceHandler<>(tc.instance, "multiInstanceManualTask");
+    handler = new MultiInstanceHandler<>(tc, "multiInstanceManualTask");
   }
 
   @Test

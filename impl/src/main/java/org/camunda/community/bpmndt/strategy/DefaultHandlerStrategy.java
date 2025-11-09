@@ -50,6 +50,8 @@ public class DefaultHandlerStrategy extends DefaultStrategy {
     } else if (activity.getType().isWaitState()) {
       methodBuilder.addStatement("assertThat(pi).isWaitingAt($S)", activity.getId());
       methodBuilder.addStatement("instance.apply($L)", getHandler());
+    } else if (activity.getType() == TestCaseActivityType.CALL_ACTIVITY) {
+      methodBuilder.addStatement("instance.apply($L)", getHandler());
     }
 
     if (!activity.hasNext()) {
@@ -86,11 +88,11 @@ public class DefaultHandlerStrategy extends DefaultStrategy {
   public void initHandler(MethodSpec.Builder methodBuilder) {
     methodBuilder.addCode("\n// $L: $L\n", activity.getTypeName(), activity.getId());
     methodBuilder.addCode("$L = ", literal);
-    methodBuilder.addStatement(initHandlerStatement());
+    methodBuilder.addStatement(initHandlerStatement(true));
   }
 
   @Override
-  public CodeBlock initHandlerStatement() {
+  public CodeBlock initHandlerStatement(boolean isTestCase) {
     return CodeBlock.of("new $T(getProcessEngine(), $S)", getHandlerType(), activity.getId());
   }
 }

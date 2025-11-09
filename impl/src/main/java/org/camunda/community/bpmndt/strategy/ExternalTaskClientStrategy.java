@@ -22,7 +22,7 @@ public class ExternalTaskClientStrategy extends DefaultHandlerStrategy {
   public void initHandler(MethodSpec.Builder methodBuilder) {
     methodBuilder.addCode("\n// $L: $L\n", activity.getTypeName(), activity.getId());
     methodBuilder.addCode("$L = ", literal);
-    methodBuilder.addStatement(initHandlerStatement());
+    methodBuilder.addStatement(initHandlerStatement(true));
 
     if (!activity.hasNext()) {
       return;
@@ -41,7 +41,7 @@ public class ExternalTaskClientStrategy extends DefaultHandlerStrategy {
   }
 
   @Override
-  public CodeBlock initHandlerStatement() {
+  public CodeBlock initHandlerStatement(boolean isTestCase) {
     return CodeBlock.of("new ExternalTaskClientHandler<>(getProcessEngine(), $S, $S)", activity.getId(), activity.getTopicName());
   }
 }

@@ -11,6 +11,7 @@ import org.camunda.bpm.engine.repository.DeploymentBuilder;
 import org.camunda.bpm.engine.repository.DeploymentWithDefinitions;
 import org.camunda.bpm.engine.repository.ProcessDefinition;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
+import org.camunda.bpm.engine.variable.VariableMap;
 import org.camunda.community.bpmndt.api.cfg.BpmndtParseListener;
 
 /**
@@ -50,6 +51,10 @@ public class TestCaseInstance {
 
   public TestCaseInstance() {
     callActivityHandlerMap = new HashMap<>(4);
+  }
+
+  public void apply(CallActivityHandler handler) {
+    handler.apply(pi);
   }
 
   public void apply(EventHandler handler) {
@@ -104,26 +109,6 @@ public class TestCaseInstance {
         .orElseThrow();
   }
 
-  /**
-   * Executes a stubbed call activity using a {@link CallActivityHandler} that was registered for the given activity.
-   *
-   * @param execution The current execution.
-   * @param behavior  The call activity's original behavior.
-   * @return {@code true}, if the execution should leave the call activity. {@code false}, if the execution should wait at the call activity.
-   * @throws Exception If the occurrence of an error end event is simulated and the error propagation fails.
-   * @see CallActivityHandler#simulateBpmnError(String, String)
-   */
-  public boolean execute(ActivityExecution execution, CallActivityBehavior behavior) throws Exception {
-    String activityId = execution.getCurrentActivityId();
-
-    CallActivityHandler handler = callActivityHandlerMap.get(activityId);
-    if (handler == null) {
-      return true;
-    } else {
-      return handler.execute(pi, execution, behavior);
-    }
-  }
-
   private BpmndtParseListener findParseListener() {
     ProcessEngineConfigurationImpl processEngineConfiguration =
         (ProcessEngineConfigurationImpl) processEngine.getProcessEngineConfiguration();
@@ -159,6 +144,23 @@ public class TestCaseInstance {
     return start;
   }
 
+  /**
+   * Gets the test case that should be used to execute a called sub process.
+   *
+   * @param execution The current execution.
+   * @return The related test case or {@code null}, if no such handler is registered or the handler simulates the call activity.
+   */
+  public AbstractTestCase<?> getSubTestCase(ActivityExecution execution) {
+    String activityId = execution.getCurrentActivityId();
+
+    CallActivityHandler handler = callActivityHandlerMap.get(activityId);
+    if (handler == null) {
+      return null;
+    } else {
+      return handler.subTestCase;
+    }
+  }
+
   public boolean isProcessEnd() {
     return processEnd;
   }
@@ -171,6 +173,26 @@ public class TestCaseInstance {
     this.pi = pi;
   }
 
+  /**
+   * Simulates a call activity using a {@link CallActivityHandler} that was registered for the given activity.
+   *
+   * @param execution The current execution.
+   * @param behavior  The call activity's original behavior.
+   * @return {@code true}, if the execution should leave the call activity. {@code false}, if the execution should wait at the call activity.
+   * @throws Exception If the occurrence of an error end event is simulated and the error propagation fails.
+   * @see CallActivityHandler#simulateBpmnError(String, String)
+   */
+  public boolean simulateCallActivity(ActivityExecution execution, CallActivityBehavior behavior) throws Exception {
+    String activityId = execution.getCurrentActivityId();
+
+    CallActivityHandler handler = callActivityHandlerMap.get(activityId);
+    if (handler == null) {
+      return true;
+    } else {
+      return handler.simulate(pi, execution, behavior);
+    }
+  }
+
   protected void undeploy() {
     callActivityHandlerMap.clear();
 
@@ -179,5 +201,55 @@ public class TestCaseInstance {
     }
 
     processEngine.getRepositoryService().deleteDeployment(deploymentId, true, true, true);
+  }
+
+  /**
+   * Verifies a call activity definition.
+   *
+   * @param execution The current execution.
+   * @param behavior  The call activity's original behavior.
+   */
+  public void verifyCallActivity(ActivityExecution execution, CallActivityBehavior behavior) {
+    String activityId = execution.getCurrentActivityId();
+
+    CallActivityHandler handler = callActivityHandlerMap.get(activityId);
+    if (handler == null) {
+      return;
+    }
+
+    handler.verify(pi, execution, behavior);
+  }
+
+  /**
+   * Verifies a call activity's input mapping.
+   *
+   * @param execution    The current execution.
+   * @param subVariables Variables of the called sub process.
+   */
+  public void verifyCallActivityInput(ActivityExecution execution, VariableMap subVariables) {
+    String activityId = execution.getCurrentActivityId();
+
+    CallActivityHandler handler = callActivityHandlerMap.get(activityId);
+    if (handler == null) {
+      return;
+    }
+
+    handler.verifyInput(subVariables);
+  }
+
+  /**
+   * Verifies a call activity's output mapping.
+   *
+   * @param execution The current execution, including the mapped output variables.
+   */
+  public void verifyCallActivityOutput(ActivityExecution execution) {
+    String activityId = execution.getCurrentActivityId();
+
+    CallActivityHandler handler = callActivityHandlerMap.get(activityId);
+    if (handler == null) {
+      return;
+    }
+
+    handler.verifyOutput(execution);
   }
 }

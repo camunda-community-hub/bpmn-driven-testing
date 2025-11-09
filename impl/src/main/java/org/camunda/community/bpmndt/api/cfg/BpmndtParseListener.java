@@ -4,9 +4,9 @@ import java.util.List;
 
 import org.camunda.bpm.engine.ActivityTypes;
 import org.camunda.bpm.engine.impl.bpmn.behavior.CallActivityBehavior;
+import org.camunda.bpm.engine.impl.bpmn.behavior.CallActivityTestBehavior;
 import org.camunda.bpm.engine.impl.bpmn.parser.AbstractBpmnParseListener;
 import org.camunda.bpm.engine.impl.persistence.entity.ProcessDefinitionEntity;
-import org.camunda.bpm.engine.impl.pvm.delegate.ActivityExecution;
 import org.camunda.bpm.engine.impl.pvm.process.ActivityImpl;
 import org.camunda.bpm.engine.impl.pvm.process.ScopeImpl;
 import org.camunda.bpm.engine.impl.util.xml.Element;
@@ -15,7 +15,7 @@ import org.camunda.community.bpmndt.api.TestCaseInstance;
 /**
  * Custom BPMN parse listener that:
  * <br>
- * 1. Overrides {@link CallActivityBehavior}s to make test cases independent of sub processes.
+ * 1. Overrides {@link CallActivityBehavior}s to make it testable.
  * <br>
  * 2. Enables asynchronous continuation for multi instance activities.
  */
@@ -67,8 +67,7 @@ public class BpmndtParseListener extends AbstractBpmnParseListener {
     }
 
     CallActivityBehavior behavior = (CallActivityBehavior) activity.getActivityBehavior();
-
-    activity.setActivityBehavior(new CustomCallActivityBehavior(instance, behavior));
+    activity.setActivityBehavior(new CallActivityTestBehavior(instance, behavior));
 
     // needed to verify the state before the call activity is executed
     // otherwise the process instance may not be available yet
@@ -189,36 +188,6 @@ public class BpmndtParseListener extends AbstractBpmnParseListener {
       return activityId.substring(0, activityId.length() - MULTI_INSTANCE_SCOPE_SUFFIX.length());
     } else {
       return activityId;
-    }
-  }
-
-  /**
-   * Custom behavior to stub call activities for isolated testing.
-   */
-  private static class CustomCallActivityBehavior extends CallActivityBehavior {
-
-    /**
-     * Related test case instance.
-     */
-    private final TestCaseInstance instance;
-
-    /**
-     * The activity's original behavior.
-     */
-    private final CallActivityBehavior behavior;
-
-    private CustomCallActivityBehavior(TestCaseInstance instance, CallActivityBehavior behavior) {
-      this.instance = instance;
-      this.behavior = behavior;
-    }
-
-    @Override
-    public void execute(ActivityExecution execution) throws Exception {
-      boolean shouldLeave = instance.execute(execution, behavior);
-
-      if (shouldLeave) {
-        leave(execution);
-      }
     }
   }
 }

@@ -15,9 +15,9 @@ import org.camunda.bpm.model.bpmn.instance.ThrowEvent;
 import org.camunda.community.bpmndt.GeneratorResult;
 import org.camunda.community.bpmndt.GeneratorStrategy;
 import org.camunda.community.bpmndt.TestCaseContext;
+import org.camunda.community.bpmndt.api.AbstractTestCase;
 import org.camunda.community.bpmndt.api.JobHandler;
 import org.camunda.community.bpmndt.api.MultiInstanceScopeHandler;
-import org.camunda.community.bpmndt.api.TestCaseInstance;
 import org.camunda.community.bpmndt.model.BpmnEventSupport;
 import org.camunda.community.bpmndt.model.TestCaseActivity;
 import org.camunda.community.bpmndt.model.TestCaseActivityScope;
@@ -30,6 +30,7 @@ import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
+import com.squareup.javapoet.WildcardTypeName;
 
 public class GenerateMultiInstanceScopeHandler implements Consumer<TestCaseActivityScope> {
 
@@ -187,7 +188,7 @@ public class GenerateMultiInstanceScopeHandler implements Consumer<TestCaseActiv
 
     CodeBlock initHandlerStatement;
     if (suffix.isEmpty()) {
-      initHandlerStatement = strategy.initHandlerStatement();
+      initHandlerStatement = strategy.initHandlerStatement(false);
     } else if (SUFFIX_AFTER.equals(suffix)) {
       initHandlerStatement = strategy.initHandlerAfterStatement();
     } else {
@@ -205,9 +206,9 @@ public class GenerateMultiInstanceScopeHandler implements Consumer<TestCaseActiv
   protected MethodSpec buildConstructor(List<GeneratorStrategy> strategies) {
     MethodSpec.Builder builder = MethodSpec.constructorBuilder()
         .addModifiers(Modifier.PUBLIC)
-        .addParameter(TestCaseInstance.class, "instance")
+        .addParameter(ParameterizedTypeName.get(ClassName.get(AbstractTestCase.class), WildcardTypeName.subtypeOf(Object.class)), "testCase")
         .addParameter(String.class, "activityId")
-        .addStatement("super(instance, activityId)");
+        .addStatement("super(testCase, activityId)");
 
     for (GeneratorStrategy strategy : strategies) {
       TestCaseActivity activity = strategy.getActivity();
