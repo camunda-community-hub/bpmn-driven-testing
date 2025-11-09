@@ -42,7 +42,8 @@ public class CallActivityTest {
 
   @Test
   public void testExecute() {
-    executor.execute();
+    ProcessInstance pi = executor.execute();
+    assertThat(pi).variables().containsEntry("processBusinessKey", "simpleKey");
   }
 
   @Test
@@ -60,7 +61,7 @@ public class CallActivityTest {
       assertThat(callActivity.getVersion()).isNull();
       assertThat(callActivity.getVersionTag()).isNull();
       assertThat(callActivity.hasInputs()).isFalse();
-      assertThat(callActivity.hasOutputs()).isFalse();
+      assertThat(callActivity.hasOutputs()).isTrue();
     }).verifyInput(variables -> {
       assertThat(variables.getVariable("a")).isEqualTo("b");
       assertThat(variables.getVariable("x")).isEqualTo("y");

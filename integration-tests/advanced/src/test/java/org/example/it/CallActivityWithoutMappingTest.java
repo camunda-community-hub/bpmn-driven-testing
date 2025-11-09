@@ -6,6 +6,8 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import org.camunda.bpm.engine.impl.core.model.BaseCallableElement.CallableElementBinding;
+import org.camunda.bpm.engine.runtime.ProcessInstance;
+import org.camunda.bpm.engine.test.assertions.bpmn.BpmnAwareTests;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -27,6 +29,7 @@ public class CallActivityWithoutMappingTest {
       assertThat(callActivity.getVersionTag(), nullValue());
     });
 
-    tc.createExecutor().execute();
+    ProcessInstance pi = tc.createExecutor().withBusinessKey("superBusinessKey").execute();
+    BpmnAwareTests.assertThat(pi).variables().containsEntry("processBusinessKey", "superBusinessKey");
   }
 }
