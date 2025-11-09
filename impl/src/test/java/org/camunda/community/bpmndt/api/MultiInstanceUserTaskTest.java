@@ -23,7 +23,7 @@ public class MultiInstanceUserTaskTest {
 
   @BeforeEach
   public void setUp() {
-    handler = new MultiInstanceUserTaskHandler(tc.instance, "multiInstanceUserTask");
+    handler = new MultiInstanceUserTaskHandler(tc, "multiInstanceUserTask");
   }
 
   @Test
@@ -86,8 +86,8 @@ public class MultiInstanceUserTaskTest {
 
   private static class MultiInstanceUserTaskHandler extends MultiInstanceHandler<MultiInstanceUserTaskHandler, UserTaskHandler> {
 
-    public MultiInstanceUserTaskHandler(TestCaseInstance instance, String activityId) {
-      super(instance, activityId);
+    public MultiInstanceUserTaskHandler(AbstractTestCase<?> testCase, String activityId) {
+      super(testCase, activityId);
     }
 
     @Override

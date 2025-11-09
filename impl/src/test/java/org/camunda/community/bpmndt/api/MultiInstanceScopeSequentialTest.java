@@ -30,7 +30,7 @@ public class MultiInstanceScopeSequentialTest {
 
   @BeforeEach
   public void setUp() {
-    handler = new Handler(tc.instance, "multiInstanceScope");
+    handler = new Handler(tc, "multiInstanceScope");
   }
 
   @Test
@@ -98,8 +98,8 @@ public class MultiInstanceScopeSequentialTest {
     private final Map<Integer, JobHandler> callActivityHandlersBefore;
     private final Map<Integer, CallActivityHandler> callActivityHandlers;
 
-    public Handler(TestCaseInstance instance, String activityId) {
-      super(instance, activityId);
+    public Handler(AbstractTestCase<?> testCase, String activityId) {
+      super(testCase, activityId);
 
       userTaskHandlers = new HashMap<>();
       messageCatchEventHandlers = new HashMap<>();
@@ -166,7 +166,7 @@ public class MultiInstanceScopeSequentialTest {
     }
 
     protected CallActivityHandler createCallActivityHandler(int loopIndex) {
-      return new CallActivityHandler(instance, "callActivity");
+      return new CallActivityHandler(testCase, "callActivity");
     }
 
     protected UserTaskHandler getUserTaskHandler(int loopIndex) {

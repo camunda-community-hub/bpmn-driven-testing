@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:bpmndt="http://camunda.org/schema/extension/bpmn-driven-testing" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0y74elt" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.31.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.22.0">
+  <bpmn:process id="callActivityExecution2" isExecutable="true" camunda:historyTimeToLive="0">
+    <bpmn:extensionElements>
+      <bpmndt:testCases>
+        <bpmndt:testCase>
+          <bpmndt:path>
+            <bpmndt:node>startEvent</bpmndt:node>
+            <bpmndt:node>callActivityA</bpmndt:node>
+            <bpmndt:node>callActivityB</bpmndt:node>
+            <bpmndt:node>fork</bpmndt:node>
+            <bpmndt:node>endEvent</bpmndt:node>
+          </bpmndt:path>
+        </bpmndt:testCase>
+        <bpmndt:testCase>
+          <bpmndt:path>
+            <bpmndt:node>startEvent</bpmndt:node>
+            <bpmndt:node>callActivityA</bpmndt:node>
+            <bpmndt:node>callActivityB</bpmndt:node>
+            <bpmndt:node>fork</bpmndt:node>
+            <bpmndt:node>escalationEndEvent</bpmndt:node>
+          </bpmndt:path>
+        </bpmndt:testCase>
+        <bpmndt:testCase>
+          <bpmndt:path>
+            <bpmndt:node>startEvent</bpmndt:node>
+            <bpmndt:node>callActivityA</bpmndt:node>
+            <bpmndt:node>callActivityB</bpmndt:node>
+            <bpmndt:node>fork</bpmndt:node>
+            <bpmndt:node>errorEndEvent</bpmndt:node>
+          </bpmndt:path>
+        </bpmndt:testCase>
+        <bpmndt:testCase>
+          <bpmndt:path>
+            <bpmndt:node>startEvent</bpmndt:node>
+            <bpmndt:node>callActivityA</bpmndt:node>
+            <bpmndt:node>callActivityB</bpmndt:node>
+          </bpmndt:path>
+        </bpmndt:testCase>
+      </bpmndt:testCases>
+    </bpmn:extensionElements>
+    <bpmn:startEvent id="startEvent">
+      <bpmn:outgoing>Flow_0kpcy59</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_0kpcy59" sourceRef="startEvent" targetRef="callActivityA" />
+    <bpmn:callActivity id="callActivityA" calledElement="advanced">
+      <bpmn:extensionElements>
+        <camunda:in businessKey="#{execution.processBusinessKey}" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0kpcy59</bpmn:incoming>
+      <bpmn:outgoing>Flow_084ywpa</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:sequenceFlow id="Flow_084ywpa" sourceRef="callActivityA" targetRef="callActivityB" />
+    <bpmn:callActivity id="callActivityB" calledElement="advanced">
+      <bpmn:extensionElements>
+        <camunda:in businessKey="#{execution.processBusinessKey}" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_084ywpa</bpmn:incoming>
+      <bpmn:outgoing>Flow_18ofx4p</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:exclusiveGateway id="fork">
+      <bpmn:incoming>Flow_18ofx4p</bpmn:incoming>
+      <bpmn:outgoing>Flow_1djty53</bpmn:outgoing>
+      <bpmn:outgoing>Flow_1pxxe21</bpmn:outgoing>
+      <bpmn:outgoing>Flow_1vy7xt3</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="Flow_18ofx4p" sourceRef="callActivityB" targetRef="fork" />
+    <bpmn:endEvent id="endEvent">
+      <bpmn:incoming>Flow_1djty53</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_1djty53" sourceRef="fork" targetRef="endEvent">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${end == 'none'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_1pxxe21" sourceRef="fork" targetRef="escalationEndEvent">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${end == 'escalation'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_1vy7xt3" sourceRef="fork" targetRef="errorEndEvent">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${end == 'error'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:endEvent id="escalationEndEvent">
+      <bpmn:incoming>Flow_1pxxe21</bpmn:incoming>
+      <bpmn:escalationEventDefinition id="EscalationEventDefinition_0x7w8sb" escalationRef="Escalation_0te14gh" />
+    </bpmn:endEvent>
+    <bpmn:endEvent id="errorEndEvent">
+      <bpmn:incoming>Flow_1vy7xt3</bpmn:incoming>
+      <bpmn:errorEventDefinition id="ErrorEventDefinition_1ol25ox" errorRef="Error_093si6a" />
+    </bpmn:endEvent>
+  </bpmn:process>
+  <bpmn:escalation id="Escalation_0te14gh" name="ESCALATION" escalationCode="ESCALATION_CODE" />
+  <bpmn:error id="Error_093si6a" name="ERROR" errorCode="ERROR_CODE" />
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="callActivityExecution2">
+      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="startEvent">
+        <dc:Bounds x="182" y="102" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1jy4irb_di" bpmnElement="callActivityA">
+        <dc:Bounds x="270" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_08awctp_di" bpmnElement="callActivityB">
+        <dc:Bounds x="430" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0t358bz_di" bpmnElement="fork" isMarkerVisible="true">
+        <dc:Bounds x="595" y="95" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1dotwns_di" bpmnElement="endEvent">
+        <dc:Bounds x="712" y="102" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0k1bcal_di" bpmnElement="escalationEndEvent">
+        <dc:Bounds x="712" y="212" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_08upm3s_di" bpmnElement="errorEndEvent">
+        <dc:Bounds x="712" y="322" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_0kpcy59_di" bpmnElement="Flow_0kpcy59">
+        <di:waypoint x="218" y="120" />
+        <di:waypoint x="270" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_084ywpa_di" bpmnElement="Flow_084ywpa">
+        <di:waypoint x="370" y="120" />
+        <di:waypoint x="430" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_18ofx4p_di" bpmnElement="Flow_18ofx4p">
+        <di:waypoint x="530" y="120" />
+        <di:waypoint x="595" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1djty53_di" bpmnElement="Flow_1djty53">
+        <di:waypoint x="645" y="120" />
+        <di:waypoint x="712" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1pxxe21_di" bpmnElement="Flow_1pxxe21">
+        <di:waypoint x="620" y="145" />
+        <di:waypoint x="620" y="230" />
+        <di:waypoint x="712" y="230" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1vy7xt3_di" bpmnElement="Flow_1vy7xt3">
+        <di:waypoint x="620" y="145" />
+        <di:waypoint x="620" y="340" />
+        <di:waypoint x="712" y="340" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

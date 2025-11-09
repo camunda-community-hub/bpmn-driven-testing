@@ -21,7 +21,7 @@ public class CallActivityStrategy extends DefaultHandlerStrategy {
   public void initHandler(MethodSpec.Builder methodBuilder) {
     methodBuilder.addCode("\n// $L: $L\n", activity.getTypeName(), activity.getId());
     methodBuilder.addCode("$L = ", literal);
-    methodBuilder.addStatement(initHandlerStatement());
+    methodBuilder.addStatement(initHandlerStatement(true));
 
     if (!activity.hasNext()) {
       return;
@@ -46,7 +46,11 @@ public class CallActivityStrategy extends DefaultHandlerStrategy {
   }
 
   @Override
-  public CodeBlock initHandlerStatement() {
-    return CodeBlock.of("new $T(instance, $S)", getHandlerType(), activity.getId());
+  public CodeBlock initHandlerStatement(boolean isTestCase) {
+    if (isTestCase) {
+      return CodeBlock.of("new $T(this, $S)", getHandlerType(), activity.getId());
+    } else {
+      return CodeBlock.of("new $T(testCase, $S)", getHandlerType(), activity.getId());
+    }
   }
 }

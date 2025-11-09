@@ -17,7 +17,7 @@ public class EventStrategy extends DefaultHandlerStrategy {
   }
 
   @Override
-  public CodeBlock initHandlerStatement() {
+  public CodeBlock initHandlerStatement(boolean isTestCase) {
     Object[] args = {getHandlerType(), activity.getId(), activity.getEventName()};
     return CodeBlock.of("new $T(getProcessEngine(), $S, $S)", args);
   }

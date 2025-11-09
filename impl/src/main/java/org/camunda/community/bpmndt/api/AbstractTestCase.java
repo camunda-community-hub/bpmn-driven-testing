@@ -4,9 +4,11 @@ import static org.camunda.community.bpmndt.api.TestCaseInstance.PROCESS_ENGINE_N
 
 import java.io.InputStream;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.UUID;
 
 import org.camunda.bpm.engine.ProcessEngine;
 import org.camunda.bpm.engine.ProcessEngines;
@@ -39,22 +41,22 @@ public abstract class AbstractTestCase<T extends AbstractTestCase<?>> {
   protected TestCaseInstance instance;
 
   /**
+   * Determines if the test case is executed within a call activity.
+   */
+  protected boolean executedWithinCallActivity;
+
+  /**
    * ID of optional tenant that is used for the process definition deployment.
    */
   private String tenantId;
+
+  private List<AbstractTestCase<?>> subTestCases;
 
   /**
    * Performs the setup for a test case execution by creating a {@link TestCaseInstance} and deploying the related BPMN resources. This method must be invoked
    * before each test!
    */
   protected void beforeEach() {
-    if (testClass == null) {
-      throw new IllegalStateException("Test class must not be null");
-    }
-    if (testMethod == null) {
-      throw new IllegalStateException("Test method must not be null");
-    }
-
     ProcessEngine processEngine = ProcessEngines.getProcessEngine(PROCESS_ENGINE_NAME);
 
     if (processEngine == null && isSpringEnabled()) {
@@ -84,31 +86,40 @@ public abstract class AbstractTestCase<T extends AbstractTestCase<?>> {
       deploymentBuilder.addInputStream(String.format("%s.bpmn", getProcessDefinitionKey()), getBpmnResource());
     }
 
-    // try to find Deployment annotation on test method
-    Deployment deploymentAnnotation = testMethod.getAnnotation(Deployment.class);
-    if (deploymentAnnotation != null) {
-      // add additional classpath resources
-      for (String resource : deploymentAnnotation.resources()) {
-        deploymentBuilder.addClasspathResource(resource);
-      }
-    }
-
-    // try to find Deployment annotation on test class
-    Class<?> deploymentAnnotationClass = testClass;
-    while (deploymentAnnotationClass != Object.class) {
-      deploymentAnnotation = deploymentAnnotationClass.getAnnotation(Deployment.class);
+    if (testMethod != null) {
+      // try to find Deployment annotation on test method
+      Deployment deploymentAnnotation = testMethod.getAnnotation(Deployment.class);
       if (deploymentAnnotation != null) {
         // add additional classpath resources
         for (String resource : deploymentAnnotation.resources()) {
           deploymentBuilder.addClasspathResource(resource);
         }
-
-        break;
       }
-      deploymentAnnotationClass = deploymentAnnotationClass.getSuperclass();
     }
 
-    String deploymentName = String.format("%s.%s", this.getClass().getName(), testMethod.getName());
+    if (testClass != null) {
+      // try to find Deployment annotation on test class
+      Class<?> deploymentAnnotationClass = testClass;
+      while (deploymentAnnotationClass != Object.class) {
+        Deployment deploymentAnnotation = deploymentAnnotationClass.getAnnotation(Deployment.class);
+        if (deploymentAnnotation != null) {
+          // add additional classpath resources
+          for (String resource : deploymentAnnotation.resources()) {
+            deploymentBuilder.addClasspathResource(resource);
+          }
+
+          break;
+        }
+        deploymentAnnotationClass = deploymentAnnotationClass.getSuperclass();
+      }
+    }
+
+    String deploymentName;
+    if (testMethod != null) {
+      deploymentName = String.format("%s.%s", this.getClass().getName(), testMethod.getName());
+    } else {
+      deploymentName = String.format("%s.%s", this.getClass().getName(), UUID.randomUUID()); // test case, executed by a call activity
+    }
 
     // deploy resources
     instance.deploy(deploymentBuilder, deploymentName);
@@ -128,6 +139,22 @@ public abstract class AbstractTestCase<T extends AbstractTestCase<?>> {
 
     // undeploy resources
     instance.undeploy();
+
+    if (subTestCases != null) {
+      subTestCases.forEach(AbstractTestCase::afterEach);
+    }
+  }
+
+  /**
+   * Adds a call activity related test case for a teardown after test case execution.
+   *
+   * @param subTestCase A test cased, used to execute a called sub process.
+   */
+  protected void addSubTestCase(AbstractTestCase<?> subTestCase) {
+    if (subTestCases == null) {
+      subTestCases = new ArrayList<>();
+    }
+    subTestCases.add(subTestCase);
   }
 
   /**
@@ -155,6 +182,10 @@ public abstract class AbstractTestCase<T extends AbstractTestCase<?>> {
    * @return The newly created executor.
    */
   public TestCaseExecutor createExecutor() {
+    if (executedWithinCallActivity) {
+      throw new UnsupportedOperationException("Sub test cases cannot be executed directly");
+    }
+
     return new TestCaseExecutor(instance, this::execute);
   }
 

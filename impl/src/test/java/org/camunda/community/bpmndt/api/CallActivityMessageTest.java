@@ -25,7 +25,7 @@ public class CallActivityMessageTest {
 
   @BeforeEach
   public void setUp() {
-    handler = new CallActivityHandler(tc.instance, "callActivity");
+    handler = new CallActivityHandler(tc, "callActivity");
     handler.waitForBoundaryEvent();
   }
 

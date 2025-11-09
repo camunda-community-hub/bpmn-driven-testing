@@ -23,6 +23,7 @@ public class MultiInstanceHandler<T extends MultiInstanceHandler<?, ?>, U> {
   private static final String MSG_LOOP_COUNT = "Expected multi instance '%s' to loop %dx, but was %dx";
   private static final String MSG_SEQUENTIAL = "Expected multi instance '%s' to be %s, but was %s";
 
+  protected final AbstractTestCase<?> testCase;
   protected final TestCaseInstance instance;
 
   private final String activityId;
@@ -39,8 +40,9 @@ public class MultiInstanceHandler<T extends MultiInstanceHandler<?, ?>, U> {
   private Integer loopCount;
   private Boolean sequential;
 
-  public MultiInstanceHandler(TestCaseInstance instance, String activityId) {
-    this.instance = instance;
+  public MultiInstanceHandler(AbstractTestCase<?> testCase, String activityId) {
+    this.testCase = testCase;
+    this.instance = testCase.instance;
     this.activityId = activityId;
 
     scopeId = String.format("%s#%s", activityId, ActivityTypes.MULTI_INSTANCE_BODY);
@@ -103,7 +105,12 @@ public class MultiInstanceHandler<T extends MultiInstanceHandler<?, ?>, U> {
    * @return The newly created job handler.
    */
   protected JobHandler createHandlerAfter(int loopIndex) {
-    return new JobHandler(getProcessEngine(), activityId, isSequential() ? Cardinality.ZERO_TO_ONE : Cardinality.ZERO_TO_N);
+    return new JobHandler(
+        getProcessEngine(),
+        activityId,
+        isSequential() ? Cardinality.ZERO_TO_ONE : Cardinality.ZERO_TO_N,
+        isSequential() ? false : true // execute last job
+    );
   }
 
   /**
@@ -148,7 +155,7 @@ public class MultiInstanceHandler<T extends MultiInstanceHandler<?, ?>, U> {
   }
 
   protected ProcessEngine getProcessEngine() {
-    return instance.getProcessEngine();
+    return testCase.getProcessEngine();
   }
 
   private String getText(boolean sequential) {
