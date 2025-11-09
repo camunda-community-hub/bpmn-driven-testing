@@ -210,6 +210,9 @@ public class CallActivityHandler {
     ActivityExecution subExecution = execution.createExecution();
     subExecution.setVariables(subVariables);
 
+    // put execution to support output expressions
+    subVariables.put("execution", execution);
+
     // output
     VariableMap outputVariables = callableElement.getOutputVariables(subInstance);
     VariableMap outputVariablesLocal = callableElement.getOutputVariablesLocal(subInstance);
