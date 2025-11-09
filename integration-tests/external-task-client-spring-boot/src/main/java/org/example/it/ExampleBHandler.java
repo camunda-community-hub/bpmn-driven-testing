@@ -26,6 +26,10 @@ public class ExampleBHandler implements ExternalTaskHandler {
 
     assertThat(externalTask.getAllVariables()).containsEntry("kB", "vB");
 
+    var spinExpression = externalTask.getAllVariables().get("spinExpression");
+    assertThat(spinExpression).isNotNull();
+    assertThat(spinExpression.toString()).isEqualTo("{}");
+
     assertThat(externalTask.getExtensionProperties()).isNotEmpty();
     assertThat(externalTask.getExtensionProperty("x")).isEqualTo("y");
 

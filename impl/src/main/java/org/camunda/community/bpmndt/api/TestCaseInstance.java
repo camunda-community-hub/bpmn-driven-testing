@@ -61,7 +61,7 @@ public class TestCaseInstance {
     handler.apply(pi);
   }
 
-  public void apply(ExternalTaskHandler handler) {
+  public void apply(ExternalTaskHandler<?> handler) {
     handler.apply(pi);
   }
 

@@ -137,8 +137,10 @@
           </execution>
         </executions>
         <configuration>
-          <!-- not required for Spring Boot, since only the BpmndtProcessEnginePlugin must be exposed as a bean -->
-          <springEnabled>false</springEnabled>
+          <processEnginePlugins>
+            <processEnginePlugin>org.camunda.spin.plugin.impl.SpinProcessEnginePlugin</processEnginePlugin>
+            <processEnginePlugin>org.example.it.cfg.SetDefaultSerializationFormat</processEnginePlugin>
+          </processEnginePlugins>
         </configuration>
       </plugin>
 

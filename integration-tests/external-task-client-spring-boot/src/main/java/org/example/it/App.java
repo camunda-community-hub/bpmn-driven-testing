@@ -2,13 +2,18 @@ package org.example.it;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import java.time.LocalDate;
+import java.time.Month;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
 import org.camunda.bpm.engine.HistoryService;
 import org.camunda.bpm.engine.RuntimeService;
+import org.camunda.bpm.engine.history.HistoricVariableInstance;
+import org.camunda.spin.Spin;
 import org.h2.Driver;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -34,7 +39,13 @@ public class App {
   public static void runProcessInstance(ApplicationContext ctx) {
     var runtimeService = ctx.getBean(RuntimeService.class);
 
-    var pi = runtimeService.startProcessInstanceByKey("example", Map.of("a", "text", "b", 1, "c", true));
+    var input = new ComplexVariable();
+    input.setVboolean(true);
+    input.setVdate(LocalDate.of(2025, Month.OCTOBER, 25));
+    input.setVinteger(123);
+    input.setVstring("abc");
+
+    var pi = runtimeService.startProcessInstanceByKey("example", Map.of("a", "text", "b", 1, "c", true, "input", input, "inputJson", Spin.JSON("{}")));
 
     try {
       TimeUnit.SECONDS.sleep(10L);
@@ -50,6 +61,29 @@ public class App {
         .getState();
 
     assertThat(piState).isEqualTo("COMPLETED");
+
+    var variables = historyService.createHistoricVariableInstanceQuery()
+        .processInstanceId(pi.getId())
+        .list()
+        .stream()
+        .collect(Collectors.toMap(HistoricVariableInstance::getName, HistoricVariableInstance::getValue));
+
+    var outputTyped = (ComplexVariable) variables.get("outputTyped");
+    assertThat(outputTyped.getVboolean()).isEqualTo(true);
+    assertThat(outputTyped.getVdate()).isEqualTo(LocalDate.of(2025, Month.OCTOBER, 26));
+    assertThat(outputTyped.getVinteger()).isEqualTo(456);
+    assertThat(outputTyped.getVstring()).isEqualTo("def");
+
+    var output = (ComplexVariable) variables.get("output");
+    assertThat(output.getVboolean()).isEqualTo(true);
+    assertThat(output.getVdate()).isEqualTo(LocalDate.of(2025, Month.OCTOBER, 26));
+    assertThat(output.getVinteger()).isEqualTo(456);
+    assertThat(output.getVstring()).isEqualTo("def");
+
+    assertThat(variables.get("outputStringTyped")).isEqualTo("vstring");
+    assertThat(variables.get("outputString")).isEqualTo("vstring");
+    assertThat(variables.get("outputIntegerTyped")).isEqualTo(123);
+    assertThat(variables.get("outputInteger")).isEqualTo(123);
   }
 
   @Bean

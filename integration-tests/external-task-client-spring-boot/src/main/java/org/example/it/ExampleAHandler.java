@@ -2,10 +2,15 @@ package org.example.it;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import java.time.LocalDate;
+import java.time.Month;
+
 import org.camunda.bpm.client.spring.annotation.ExternalTaskSubscription;
 import org.camunda.bpm.client.task.ExternalTask;
 import org.camunda.bpm.client.task.ExternalTaskHandler;
 import org.camunda.bpm.client.task.ExternalTaskService;
+import org.camunda.bpm.client.variable.ClientValues;
+import org.camunda.bpm.engine.variable.Variables;
 import org.camunda.bpm.engine.variable.value.BooleanValue;
 import org.camunda.bpm.engine.variable.value.IntegerValue;
 import org.camunda.bpm.engine.variable.value.StringValue;
@@ -33,6 +38,15 @@ public class ExampleAHandler implements ExternalTaskHandler {
     assertThat(externalTask.getAllVariablesTyped()).containsKey("c");
     assertThat(externalTask.getAllVariablesTyped(false)).containsKey("c");
 
+    ComplexVariable input = externalTask.getVariable("input");
+    assertThat(input.getVboolean()).isEqualTo(true);
+    assertThat(input.getVdate()).isEqualTo(LocalDate.of(2025, Month.OCTOBER, 25));
+    assertThat(input.getVinteger()).isEqualTo(123);
+    assertThat(input.getVstring()).isEqualTo("abc");
+
+    var inputJson = externalTask.getVariableTyped("inputJson");
+    assertThat(inputJson.getValue().toString()).isEqualTo("{}");
+
     assertThat((String) externalTask.getVariable("a")).isEqualTo("text");
     assertThat(((StringValue) externalTask.getVariableTyped("a")).getValue()).isEqualTo("text");
     assertThat(((StringValue) externalTask.getVariableTyped("a", false)).getValue()).isEqualTo("text");
@@ -47,7 +61,22 @@ public class ExampleAHandler implements ExternalTaskHandler {
 
     assertThat(externalTask.getExtensionProperties()).isEmpty();
 
-    externalTaskService.complete(externalTask);
+    var output = new ComplexVariable();
+    output.setVboolean(true);
+    output.setVdate(LocalDate.of(2025, Month.OCTOBER, 26));
+    output.setVinteger(456);
+    output.setVstring("def");
+
+    var variables = Variables.createVariables()
+        .putValue("outputTyped", ClientValues.objectValue(output).create())
+        .putValue("output", output)
+        .putValue("outputStringTyped", ClientValues.stringValue("vstring"))
+        .putValue("outputString", "vstring")
+        .putValue("outputIntegerTyped", ClientValues.integerValue(123))
+        .putValue("outputInteger", 123)
+        .putValue("outputJson", ClientValues.jsonValue("{\"test\":123}"));
+
+    externalTaskService.complete(externalTask, variables);
 
     LOGGER.info("A: Completed external task {}", externalTask.getId());
   }

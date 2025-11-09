@@ -38,6 +38,7 @@
       <bpmn:extensionElements>
         <camunda:inputOutput>
           <camunda:inputParameter name="kB">vB</camunda:inputParameter>
+          <camunda:inputParameter name="spinExpression">${S("{}")}</camunda:inputParameter>
         </camunda:inputOutput>
         <camunda:properties>
           <camunda:property name="x" value="y" />
