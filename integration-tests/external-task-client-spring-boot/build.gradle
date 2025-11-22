@@ -9,16 +9,16 @@ repositories {
 }
 
 dependencies {
-  implementation 'org.camunda.bpm.springboot:camunda-bpm-spring-boot-starter-external-task-client:7.23.0'
-  implementation 'org.camunda.bpm.springboot:camunda-bpm-spring-boot-starter-rest:7.23.0'
-  implementation 'org.camunda.bpm:camunda-engine-plugin-spin:7.23.0'
+  implementation 'org.camunda.bpm.springboot:camunda-bpm-spring-boot-starter-external-task-client:7.24.0'
+  implementation 'org.camunda.bpm.springboot:camunda-bpm-spring-boot-starter-rest:7.24.0'
+  implementation 'org.camunda.bpm:camunda-engine-plugin-spin:7.24.0'
   implementation 'org.camunda.spin:camunda-spin-dataformat-json-jackson:1.23.0'
   implementation 'com.h2database:h2:2.2.224'
-  implementation 'com.google.truth:truth:1.4.4'
+  implementation 'com.google.truth:truth:1.4.5'
 
   testImplementation 'org.camunda.bpm.assert:camunda-bpm-assert:15.0.0'
   testImplementation 'org.assertj:assertj-core:3.27.3'
-  testImplementation 'org.springframework.boot:spring-boot-starter-test:3.5.3'
+  testImplementation 'org.springframework.boot:spring-boot-starter-test:3.5.7'
   testImplementation 'org.junit.jupiter:junit-jupiter-api:5.13.2'
   testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.13.2'
 

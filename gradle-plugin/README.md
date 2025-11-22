@@ -80,7 +80,7 @@ Add dependencies, which are required to execute the generated test code:
 
 ```groovy
 dependencies {
-  implementation 'org.camunda.bpm:camunda-engine:7.23.0'
+  implementation 'org.camunda.bpm:camunda-engine:7.24.0'
 
   testImplementation 'com.h2database:h2:2.2.224'
   testImplementation 'org.assertj:assertj-core:3.27.3'
@@ -99,12 +99,12 @@ For **Spring** based testing, additional dependencies are required:
 
 ```groovy
 dependencies {
-  implementation 'org.camunda.bpm:camunda-engine-spring:7.23.0'
-  implementation 'org.springframework:spring-beans:6.2.8'
-  implementation 'org.springframework:spring-context:6.2.8'
-  implementation 'org.springframework:spring-jdbc:6.2.8'
+  implementation 'org.camunda.bpm:camunda-engine-spring:7.24.0'
+  implementation 'org.springframework:spring-beans:6.2.12'
+  implementation 'org.springframework:spring-context:6.2.12'
+  implementation 'org.springframework:spring-jdbc:6.2.12'
 
-  testImplementation 'org.springframework:spring-test:6.2.8'
+  testImplementation 'org.springframework:spring-test:6.2.12'
 }
 ```
 
@@ -112,9 +112,9 @@ For **Spring Boot** based testing, additional dependencies are required:
 
 ```groovy
 dependencies {
-  implementation 'org.camunda.bpm.springboot:camunda-bpm-spring-boot-starter:7.23.0'
+  implementation 'org.camunda.bpm.springboot:camunda-bpm-spring-boot-starter:7.24.0'
 
-  testImplementation 'org.springframework.boot:spring-boot-starter-test:3.5.3'
+  testImplementation 'org.springframework.boot:spring-boot-starter-test:3.5.7'
 }
 ```
 
@@ -122,12 +122,12 @@ Recommended versions:
 
 | Dependency         | Version |
 |:-------------------|:--------|
-| Camunda BPM        | 7.23.0  |
+| Camunda BPM        | 7.24.0  |
 | Camunda BPM Assert | 15.0.0  |
 | JUnit 5 (Jupiter)  | 5.11.4  |
 | Assertj            | 3.27.3  |
-| Spring Framework   | 6.2.8   |
-| Spring Boot        | 3.5.3   |
+| Spring Framework   | 6.2.12  |
+| Spring Boot        | 3.5.7   |
 
 ## Development
 :warning: This and the subsequent sections are only important for Gradle plugin development!
