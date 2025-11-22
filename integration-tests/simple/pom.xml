@@ -16,7 +16,7 @@
     <junit.jupiter.version>5.11.4</junit.jupiter.version>
     <slf4j.version>1.7.36</slf4j.version>
 
-    <plugin.version>1.3.0-SNAPSHOT</plugin.version>
+    <plugin.version>1.4.0-SNAPSHOT</plugin.version>
   </properties>
 
   <repositories>

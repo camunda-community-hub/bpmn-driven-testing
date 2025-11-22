@@ -6,7 +6,7 @@ pluginManagement {
   resolutionStrategy {
     eachPlugin {
       if (requested.id.toString() == 'org.camunda.community.bpmndt') {
-        def pluginVersion = startParameter.projectProperties['plugin.version'] ?: '1.3.0-SNAPSHOT'
+        def pluginVersion = startParameter.projectProperties['plugin.version'] ?: '1.4.0-SNAPSHOT'
         useModule("org.camunda.community:bpmn-driven-testing-8-gradle-plugin:${pluginVersion}")
       }
     }
