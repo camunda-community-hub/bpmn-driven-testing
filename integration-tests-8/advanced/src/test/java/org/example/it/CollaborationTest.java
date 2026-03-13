@@ -4,16 +4,16 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import generated.callactivitytimer.TC_startEvent__endEvent;
 import generated.processa.TC_startEventA__endEventA;
 import generated.processc.TC_startEventC__endEventC;
 import generated.processc.TC_startEventC__subProcessEndC;
 import generated.processc.TC_subProcessStartC__endEventC;
-import io.camunda.zeebe.process.test.api.ZeebeTestEngine;
-import io.camunda.zeebe.process.test.assertions.ProcessInstanceAssert;
-import io.camunda.zeebe.process.test.extension.ZeebeProcessTest;
+import io.camunda.client.CamundaClient;
+import io.camunda.process.test.api.CamundaProcessTest;
+import io.camunda.process.test.api.CamundaProcessTestContext;
+import io.camunda.process.test.api.assertions.ProcessInstanceAssert;
 
-@ZeebeProcessTest
+@CamundaProcessTest
 public class CollaborationTest {
 
   @RegisterExtension
@@ -26,21 +26,22 @@ public class CollaborationTest {
   @RegisterExtension
   TC_subProcessStartC__endEventC tcC3 = new TC_subProcessStartC__endEventC();
 
-  ZeebeTestEngine engine;
+  CamundaClient client;
+  CamundaProcessTestContext processTestContext;
 
   @Test
   void testExecuteA() {
-    tcA.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+    tcA.createExecutor(client, processTestContext).verify(ProcessInstanceAssert::isCompleted).execute();
   }
 
   @Test
   void testExecuteC1() {
-    tcC1.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+    tcC1.createExecutor(client, processTestContext).verify(ProcessInstanceAssert::isCompleted).execute();
   }
 
   @Test
   void testExecuteC2() {
-    tcC2.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+    tcC2.createExecutor(client, processTestContext).verify(ProcessInstanceAssert::isCompleted).execute();
   }
 
   // currently not supported
@@ -48,6 +49,6 @@ public class CollaborationTest {
   @Test
   @Disabled
   void testExecuteC3() {
-    tcC3.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+    tcC3.createExecutor(client, processTestContext).verify(ProcessInstanceAssert::isCompleted).execute();
   }
 }

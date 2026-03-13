@@ -22,6 +22,7 @@ mvn clean test
   Should contain  ${result.stdout}  Running org.example.it.ScopeSequentialTest
   Should contain  ${result.stdout}  Running org.example.it.ScopeZeroTest
   Should contain  ${result.stdout}  Running org.example.it.SequentialTest
+  Should contain  ${result.stdout}  Running org.example.it.ServiceTaskErrorTest
   Should contain  ${result.stdout}  Running org.example.it.UserTaskErrorTest
   Should contain  ${result.stdout}  Running org.example.it.UserTaskMessageTest
   Should contain  ${result.stdout}  Running org.example.it.UserTaskSignalTest

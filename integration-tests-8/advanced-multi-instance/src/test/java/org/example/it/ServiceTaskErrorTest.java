@@ -2,18 +2,18 @@ package org.example.it;
 
 import java.util.List;
 
-import org.camunda.community.bpmndt.api.UserTaskHandler;
+import org.camunda.community.bpmndt.api.JobHandler;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import generated.usertasksignal.TC_startEvent__endEvent;
+import generated.servicetaskerror.TC_startEvent__endEvent;
 import io.camunda.client.CamundaClient;
 import io.camunda.process.test.api.CamundaProcessTest;
 import io.camunda.process.test.api.CamundaProcessTestContext;
 import io.camunda.process.test.api.assertions.ProcessInstanceAssert;
 
 @CamundaProcessTest
-class UserTaskSignalTest {
+class ServiceTaskErrorTest {
 
   @RegisterExtension
   TC_startEvent__endEvent tc = new TC_startEvent__endEvent();
@@ -27,18 +27,19 @@ class UserTaskSignalTest {
   void testExecute() {
     var elements = List.of(1, 2, 3);
 
-    var userTaskHandler = new UserTaskHandler("userTask");
+    var serviceTaskHandler = new JobHandler("serviceTask");
 
-    tc.handleUserTask().verifyLoopCount(3).executeLoop((instance, elementInstanceKey) -> {
+    tc.handleServiceTask().verifyLoopCount(3).executeLoop((instance, elementInstanceKey) -> {
       var flowScopeKey = instance.getFlowScopeKey(elementInstanceKey);
 
       if (loopCount == 2) {
-        userTaskHandler.waitForBoundaryEvent();
+        serviceTaskHandler.throwBpmnError("ERROR_CODE", "test error message");
 
-        instance.apply(flowScopeKey, tc.handleSignalBoundaryEvent());
-        instance.hasTerminated(flowScopeKey, "userTask");
+        instance.apply(flowScopeKey, serviceTaskHandler);
+        instance.hasTerminated(flowScopeKey, "serviceTask");
       } else {
-        instance.apply(flowScopeKey, userTaskHandler);
+        serviceTaskHandler.complete();
+        instance.apply(flowScopeKey, serviceTaskHandler);
       }
 
       loopCount++;

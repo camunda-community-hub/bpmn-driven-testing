@@ -5,11 +5,12 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import generated.simplesubprocessnested.TC_startEvent__endEvent;
 import generated.simplesubprocessnested.TC_userTask__endEvent;
-import io.camunda.zeebe.process.test.api.ZeebeTestEngine;
-import io.camunda.zeebe.process.test.assertions.ProcessInstanceAssert;
-import io.camunda.zeebe.process.test.extension.ZeebeProcessTest;
+import io.camunda.client.CamundaClient;
+import io.camunda.process.test.api.CamundaProcessTest;
+import io.camunda.process.test.api.CamundaProcessTestContext;
+import io.camunda.process.test.api.assertions.ProcessInstanceAssert;
 
-@ZeebeProcessTest
+@CamundaProcessTest
 class SimpleSubProcessNestedTest {
 
   @RegisterExtension
@@ -17,15 +18,16 @@ class SimpleSubProcessNestedTest {
   @RegisterExtension
   TC_userTask__endEvent tcUserTask = new TC_userTask__endEvent();
 
-  ZeebeTestEngine engine;
+  CamundaClient client;
+  CamundaProcessTestContext processTestContext;
 
   @Test
   void testExecute() {
-    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+    tc.createExecutor(client, processTestContext).verify(ProcessInstanceAssert::isCompleted).execute();
   }
 
   @Test
   void testExecuteUserTask() {
-    tcUserTask.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+    tcUserTask.createExecutor(client, processTestContext).verify(ProcessInstanceAssert::isCompleted).execute();
   }
 }

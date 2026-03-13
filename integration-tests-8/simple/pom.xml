@@ -9,10 +9,10 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <!-- Versions -->
-    <camunda.zeebe.version>8.7.6</camunda.zeebe.version>
+    <camunda.version>8.8.16</camunda.version>
     <google.truth.version>1.4.5</google.truth.version>
     <junit.jupiter.version>5.11.4</junit.jupiter.version>
-    <slf4j.version>1.7.36</slf4j.version>
+    <slf4j.version>2.0.17</slf4j.version>
 
     <plugin.version>1.4.0-SNAPSHOT</plugin.version>
   </properties>
@@ -38,24 +38,11 @@
   </dependencyManagement>
 
   <dependencies>
-    <dependency>
-      <groupId>org.immutables</groupId>
-      <artifactId>annotate</artifactId>
-      <version>2.10.0</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.immutables</groupId>
-      <artifactId>value-annotations</artifactId>
-      <version>2.10.0</version>
-      <scope>provided</scope>
-    </dependency>
-
     <!-- Test -->
     <dependency>
       <groupId>io.camunda</groupId>
-      <artifactId>zeebe-process-test-extension</artifactId>
-      <version>${camunda.zeebe.version}</version>
+      <artifactId>camunda-process-test-java</artifactId>
+      <version>${camunda.version}</version>
       <scope>test</scope>
     </dependency>
 

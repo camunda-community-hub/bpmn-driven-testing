@@ -6,11 +6,12 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import generated.simpleeventbasedgateway.TC_Message;
 import generated.simpleeventbasedgateway.TC_Timer;
 import generated.simpleeventbasedgateway.TC_startEvent__eventBasedGateway;
-import io.camunda.zeebe.process.test.api.ZeebeTestEngine;
-import io.camunda.zeebe.process.test.assertions.ProcessInstanceAssert;
-import io.camunda.zeebe.process.test.extension.ZeebeProcessTest;
+import io.camunda.client.CamundaClient;
+import io.camunda.process.test.api.CamundaProcessTest;
+import io.camunda.process.test.api.CamundaProcessTestContext;
+import io.camunda.process.test.api.assertions.ProcessInstanceAssert;
 
-@ZeebeProcessTest
+@CamundaProcessTest
 class SimpleEventBasedGatewayTest {
 
   @RegisterExtension
@@ -20,20 +21,30 @@ class SimpleEventBasedGatewayTest {
   @RegisterExtension
   TC_Timer tcTimer = new TC_Timer();
 
-  ZeebeTestEngine engine;
+  CamundaClient client;
+  CamundaProcessTestContext processTestContext;
 
   @Test
   void testExecute() {
-    tc.createExecutor(engine).verify(ProcessInstanceAssert::isNotCompleted).execute();
+    tc.createExecutor(client, processTestContext)
+        .withVariable("correlationKey", String.valueOf(System.currentTimeMillis()))
+        .verify(ProcessInstanceAssert::isActive)
+        .execute();
   }
 
   @Test
   void testExecuteMessage() {
-    tcMessage.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+    tcMessage.createExecutor(client, processTestContext)
+        .withVariable("correlationKey", String.valueOf(System.currentTimeMillis()))
+        .verify(ProcessInstanceAssert::isCompleted)
+        .execute();
   }
 
   @Test
   void testExecuteTimer() {
-    tcTimer.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+    tcTimer.createExecutor(client, processTestContext)
+        .withVariable("correlationKey", String.valueOf(System.currentTimeMillis()))
+        .verify(ProcessInstanceAssert::isCompleted)
+        .execute();
   }
 }

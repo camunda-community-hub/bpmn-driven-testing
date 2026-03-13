@@ -200,7 +200,6 @@ Assert Test Code Generation
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/org/camunda/community/bpmndt/api/TestCaseInstance.java
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/org/camunda/community/bpmndt/api/TestCaseExecutor.java
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/org/camunda/community/bpmndt/api/TestCaseInstanceElement.java
-  Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/org/camunda/community/bpmndt/api/TestCaseInstanceMemo.java
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/org/camunda/community/bpmndt/api/TimerEventHandler.java
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/org/camunda/community/bpmndt/api/UserTaskHandler.java
 
@@ -218,6 +217,5 @@ Assert Test Code Generation
   File should exist  ${testSources}/org/camunda/community/bpmndt/api/TestCaseInstance.java
   File should exist  ${testSources}/org/camunda/community/bpmndt/api/TestCaseExecutor.java
   File should exist  ${testSources}/org/camunda/community/bpmndt/api/TestCaseInstanceElement.java
-  File should exist  ${testSources}/org/camunda/community/bpmndt/api/TestCaseInstanceMemo.java
   File should exist  ${testSources}/org/camunda/community/bpmndt/api/TimerEventHandler.java
   File should exist  ${testSources}/org/camunda/community/bpmndt/api/UserTaskHandler.java

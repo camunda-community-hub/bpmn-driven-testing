@@ -8,17 +8,19 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import generated.scopenested.TC_startEvent__endEvent;
-import io.camunda.zeebe.process.test.api.ZeebeTestEngine;
-import io.camunda.zeebe.process.test.assertions.ProcessInstanceAssert;
-import io.camunda.zeebe.process.test.extension.ZeebeProcessTest;
+import io.camunda.client.CamundaClient;
+import io.camunda.process.test.api.CamundaProcessTest;
+import io.camunda.process.test.api.CamundaProcessTestContext;
+import io.camunda.process.test.api.assertions.ProcessInstanceAssert;
 
-@ZeebeProcessTest
+@CamundaProcessTest
 class ScopeNestedTest {
 
   @RegisterExtension
   TC_startEvent__endEvent tc = new TC_startEvent__endEvent();
 
-  ZeebeTestEngine engine;
+  CamundaClient client;
+  CamundaProcessTestContext processTestContext;
 
   @Test
   void testExecute() {
@@ -37,7 +39,7 @@ class ScopeNestedTest {
       testCaseInstance.apply(subProcessKey, nestedSubProcessHandler);
     });
 
-    tc.createExecutor(engine)
+    tc.createExecutor(client, processTestContext)
         .simulateProcess("advanced")
         .withVariable("elements", elements)
         .withVariable("nestedElements", nestedElements)

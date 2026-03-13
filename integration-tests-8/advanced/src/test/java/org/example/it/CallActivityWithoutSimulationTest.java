@@ -19,11 +19,12 @@ import generated.callactivitywithoutsimulation.TC_startEvent__endEvent;
 import generated.callactivitywithoutsimulation.TC_startEvent__errorEnd;
 import generated.callactivitywithoutsimulation.TC_startEvent__escalationEnd;
 import generated.callactivitywithoutsimulation.TC_startEvent__timerEnd;
-import io.camunda.zeebe.process.test.api.ZeebeTestEngine;
-import io.camunda.zeebe.process.test.assertions.ProcessInstanceAssert;
-import io.camunda.zeebe.process.test.extension.ZeebeProcessTest;
+import io.camunda.client.CamundaClient;
+import io.camunda.process.test.api.CamundaProcessTest;
+import io.camunda.process.test.api.CamundaProcessTestContext;
+import io.camunda.process.test.api.assertions.ProcessInstanceAssert;
 
-@ZeebeProcessTest
+@CamundaProcessTest
 class CallActivityWithoutSimulationTest {
 
   @RegisterExtension
@@ -35,17 +36,18 @@ class CallActivityWithoutSimulationTest {
   @RegisterExtension
   TC_startEvent__timerEnd tcTimer = new TC_startEvent__timerEnd();
 
-  ZeebeTestEngine engine;
+  CamundaClient client;
+  CamundaProcessTestContext processTestContext;
 
   @Test
   void testExecute() {
     tc.handleCallActivity().verifyOutput(piAssert -> {
-      piAssert.hasVariableWithValue("subProcessResult", "value");
+      piAssert.hasVariable("subProcessResult", "value");
     }).executeTestCase(new TC_SubProcessEnd(), it -> {
       it.handleServiceTask().withVariable("subProcessResult", "value").complete();
     });
 
-    tc.createExecutor(engine)
+    tc.createExecutor(client, processTestContext)
         .withAdditionalVersionedClasspathResource("callActivitySubProcess.bpmn", "v1")
         .withVariable("end", "none")
         .verify(ProcessInstanceAssert::isCompleted)
@@ -58,7 +60,7 @@ class CallActivityWithoutSimulationTest {
       it.handleServiceTask().complete();
     });
 
-    tcError.createExecutor(engine)
+    tcError.createExecutor(client, processTestContext)
         .withAdditionalVersionedClasspathResource("callActivitySubProcess.bpmn", "v1")
         .withVariable("end", "error")
         .verify(ProcessInstanceAssert::isCompleted)
@@ -71,7 +73,7 @@ class CallActivityWithoutSimulationTest {
       it.handleServiceTask().complete();
     });
 
-    tc.createExecutor(engine)
+    tc.createExecutor(client, processTestContext)
         .withAdditionalVersionedClasspathResource("callActivitySubProcess.bpmn", "v1")
         .withVariable("end", "signal")
         .verify(ProcessInstanceAssert::isCompleted)
@@ -84,7 +86,7 @@ class CallActivityWithoutSimulationTest {
       it.handleServiceTask().complete();
     });
 
-    tc.createExecutor(engine)
+    tc.createExecutor(client, processTestContext)
         .withAdditionalVersionedClasspathResource("callActivitySubProcess.bpmn", "v1")
         .withVariable("end", "terminate")
         .verify(ProcessInstanceAssert::isCompleted)
@@ -97,7 +99,7 @@ class CallActivityWithoutSimulationTest {
       it.handleServiceTask().complete();
     });
 
-    tcEscalation.createExecutor(engine)
+    tcEscalation.createExecutor(client, processTestContext)
         .withAdditionalVersionedClasspathResource("callActivitySubProcess.bpmn", "v1")
         .withVariable("end", "escalation")
         .verify(ProcessInstanceAssert::isCompleted)
@@ -108,7 +110,7 @@ class CallActivityWithoutSimulationTest {
   void testExecuteTimer() {
     tcTimer.handleCallActivity().executeTestCase(new TC_SubProcessWait(), null);
 
-    tcTimer.createExecutor(engine)
+    tcTimer.createExecutor(client, processTestContext)
         .withAdditionalVersionedClasspathResource("callActivitySubProcess.bpmn", "v1")
         .verify(ProcessInstanceAssert::isCompleted)
         .execute();

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:bpmndt="http://camunda.org/schema/extension/bpmn-driven-testing" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_11ef32u" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.20.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.4.0">
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:bpmndt="http://camunda.org/schema/extension/bpmn-driven-testing" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_11ef32u" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.43.1" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.8.0">
   <bpmn:process id="serviceTaskError" isExecutable="true">
     <bpmn:extensionElements>
       <bpmndt:testCases>
@@ -28,7 +28,13 @@
       <bpmn:outgoing>Flow_0wam1to</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:boundaryEvent id="errorBoundaryEvent" attachedToRef="serviceTask">
-      <bpmn:extensionElements />
+      <bpmn:extensionElements>
+        <zeebe:ioMapping>
+          <zeebe:output source="=x" target="x" />
+          <zeebe:output source="=y" target="y" />
+          <zeebe:output source="=z" target="z" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
       <bpmn:outgoing>Flow_00l3m84</bpmn:outgoing>
       <bpmn:errorEventDefinition id="ErrorEventDefinition_081o6k7" errorRef="Error_1ff5bzs" />
     </bpmn:boundaryEvent>
