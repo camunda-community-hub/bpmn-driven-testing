@@ -83,17 +83,17 @@
         <artifactId>camunda-process-test-java</artifactId>
         <version>${camunda.version}</version>
       </dependency>
-    <dependency>
-      <groupId>io.camunda</groupId>
-      <artifactId>zeebe-bpmn-model</artifactId>
-      <version>${camunda.version}</version><optional>true</optional>
-      <exclusions>
-        <exclusion>
-          <groupId>org.slf4j</groupId>
-          <artifactId>slf4j-api</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
+      <dependency>
+        <groupId>io.camunda</groupId>
+        <artifactId>zeebe-bpmn-model</artifactId>
+        <version>${camunda.version}</version><optional>true</optional>
+        <exclusions>
+          <exclusion>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
 
       <dependency>
         <groupId>com.squareup</groupId>

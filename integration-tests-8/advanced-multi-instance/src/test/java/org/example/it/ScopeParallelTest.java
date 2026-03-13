@@ -10,19 +10,19 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import generated.scopeparallel.TC_startEvent__endEvent;
-import io.camunda.zeebe.client.ZeebeClient;
-import io.camunda.zeebe.process.test.api.ZeebeTestEngine;
-import io.camunda.zeebe.process.test.assertions.ProcessInstanceAssert;
-import io.camunda.zeebe.process.test.extension.ZeebeProcessTest;
+import io.camunda.client.CamundaClient;
+import io.camunda.process.test.api.CamundaProcessTest;
+import io.camunda.process.test.api.CamundaProcessTestContext;
+import io.camunda.process.test.api.assertions.ProcessInstanceAssert;
 
-@ZeebeProcessTest
+@CamundaProcessTest
 class ScopeParallelTest {
 
   @RegisterExtension
   TC_startEvent__endEvent tc = new TC_startEvent__endEvent();
 
-  ZeebeTestEngine engine;
-  ZeebeClient client;
+  CamundaClient client;
+  CamundaProcessTestContext processTestContext;
 
   @Test
   void testExecute() {
@@ -54,7 +54,7 @@ class ScopeParallelTest {
         .handler((client, job) -> client.newCompleteCommand(job).send());
 
     try (var ignored = workerBuilder.open()) {
-      tc.createExecutor(engine)
+      tc.createExecutor(client, processTestContext)
           .simulateProcess("advanced")
           .withVariable("elements", elements)
           .verify(ProcessInstanceAssert::isCompleted)

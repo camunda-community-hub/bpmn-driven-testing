@@ -7,11 +7,12 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import generated.scopeerrorendevent.TC_Error;
 import generated.scopeerrorendevent.TC_None;
-import io.camunda.zeebe.process.test.api.ZeebeTestEngine;
-import io.camunda.zeebe.process.test.assertions.ProcessInstanceAssert;
-import io.camunda.zeebe.process.test.extension.ZeebeProcessTest;
+import io.camunda.client.CamundaClient;
+import io.camunda.process.test.api.CamundaProcessTest;
+import io.camunda.process.test.api.CamundaProcessTestContext;
+import io.camunda.process.test.api.assertions.ProcessInstanceAssert;
 
-@ZeebeProcessTest
+@CamundaProcessTest
 class ScopeErrorEndEventTest {
 
   @RegisterExtension
@@ -19,11 +20,12 @@ class ScopeErrorEndEventTest {
   @RegisterExtension
   TC_Error tcError = new TC_Error();
 
-  ZeebeTestEngine engine;
+  CamundaClient client;
+  CamundaProcessTestContext processTestContext;
 
   @Test
   void testExecute() {
-    tc.createExecutor(engine)
+    tc.createExecutor(client, processTestContext)
         .withVariable("elements", List.of(1, 2, 3))
         .withVariable("error", false)
         .verify(ProcessInstanceAssert::isCompleted)
@@ -32,7 +34,7 @@ class ScopeErrorEndEventTest {
 
   @Test
   void testExecuteError() {
-    tcError.createExecutor(engine)
+    tcError.createExecutor(client, processTestContext)
         .withVariable("elements", List.of(1, 2, 3))
         .withVariable("error", true)
         .verify(ProcessInstanceAssert::isCompleted)

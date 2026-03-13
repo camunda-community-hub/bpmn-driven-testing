@@ -36,24 +36,11 @@ Available parameters for the plugin's `generator` goal:
 Add dependencies, which are required to execute the generated test code:
 
 ```xml
-<dependency>
-  <groupId>org.immutables</groupId>
-  <artifactId>annotate</artifactId>
-  <version>2.10.0</version>
-  <scope>provided</scope>
-</dependency>
-<dependency>
-  <groupId>org.immutables</groupId>
-  <artifactId>value-annotations</artifactId>
-  <version>2.10.0</version>
-  <scope>provided</scope>
-</dependency>
-
 <!-- Test -->
 <dependency>
   <groupId>io.camunda</groupId>
-  <artifactId>zeebe-process-test-extension</artifactId>
-  <version>${camunda.zeebe.version}</version>
+  <artifactId>camunda-process-test-java</artifactId>
+  <version>${camunda.version}</version>
   <scope>test</scope>
 </dependency>
 
@@ -67,10 +54,10 @@ Add dependencies, which are required to execute the generated test code:
 
 Recommended versions:
 
-| Dependency                   | Version |
-|:-----------------------------|:--------|
-| Zeebe Process Test Extension | 8.7.6  |
-| JUnit 5 (Jupiter)            | 5.11.4  |
+| Dependency           | Version |
+|:---------------------|:--------|
+| Camunda Process Test | 8.8.16  |
+| JUnit 5 (Jupiter)    | 5.11.4  |
 
 ## Testing
 :warning: This section is only important for Maven plugin development!

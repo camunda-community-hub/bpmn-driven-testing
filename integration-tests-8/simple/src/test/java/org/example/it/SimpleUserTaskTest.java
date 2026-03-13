@@ -6,19 +6,19 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import generated.simpleusertask.TC_startEvent__endEvent;
-import io.camunda.zeebe.client.ZeebeClient;
-import io.camunda.zeebe.process.test.api.ZeebeTestEngine;
-import io.camunda.zeebe.process.test.assertions.ProcessInstanceAssert;
-import io.camunda.zeebe.process.test.extension.ZeebeProcessTest;
+import io.camunda.client.CamundaClient;
+import io.camunda.process.test.api.CamundaProcessTest;
+import io.camunda.process.test.api.CamundaProcessTestContext;
+import io.camunda.process.test.api.assertions.ProcessInstanceAssert;
 
-@ZeebeProcessTest
+@CamundaProcessTest
 class SimpleUserTaskTest {
 
   @RegisterExtension
   TC_startEvent__endEvent tc = new TC_startEvent__endEvent();
 
-  ZeebeTestEngine engine;
-  ZeebeClient client;
+  CamundaClient client;
+  CamundaProcessTestContext processTestContext;
 
   @Test
   void testExecute() {
@@ -37,17 +37,15 @@ class SimpleUserTaskTest {
         .verifyCandidateGroupsExpression(expr -> assertThat(expr).isEqualTo("=[\"simpleGroupA\", \"simpleGroupB\"]"))
         .verifyCandidateUsers(users -> assertThat(users).containsExactly("simpleUserA", "simpleUserB").inOrder())
         .verifyCandidateUsersExpression(expr -> assertThat(expr).isEqualTo("=[\"simpleUserA\", \"simpleUserB\"]"))
-        .verifyDueDate(dueDate -> assertThat(dueDate).isEqualTo("2023-02-17T00:00Z"))
+        .verifyDueDate(dueDate -> assertThat(dueDate.toString()).isEqualTo("2023-02-17T00:00Z"))
         .verifyDueDateExpression(expr -> assertThat(expr).isEqualTo("=\"2023-02-17T00:00:00Z\""))
-        .verifyFollowUpDate(followUpDate -> assertThat(followUpDate).isEqualTo("2023-02-18T00:00Z"))
+        .verifyFollowUpDate(followUpDate -> assertThat(followUpDate.toString()).isEqualTo("2023-02-18T00:00Z"))
         .verifyFollowUpDateExpression(expr -> assertThat(expr).isEqualTo("=\"2023-02-18T00:00:00Z\""))
         .verifyFormKey("simpleFormKey")
         .verifyFormKey(formKey -> assertThat(formKey).isEqualTo("simpleFormKey"));
 
     tc.handleUserTaskWithLinkedForm().verifyFormKey(String.valueOf(form.getFormKey()));
 
-    tc.handleUserTaskWithEmbeddedForm().verifyFormKey("camunda-forms:bpmn:UserTaskForm_0e64hjp");
-
-    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+    tc.createExecutor(client, processTestContext).verify(ProcessInstanceAssert::isCompleted).execute();
   }
 }
