@@ -92,10 +92,10 @@ class GeneratorAdvancedTest {
     TypeSpec typeSpec;
 
     typeSpec = result.getFiles().get(1).typeSpec; // errorEndEvent
-    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.isActivating(flowScopeKey, \"errorEndEvent\");");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasTerminated(flowScopeKey, \"errorEndEvent\");");
 
     typeSpec = result.getFiles().get(2).typeSpec; // escalationEndEvent
-    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.isActivating(flowScopeKey, \"escalationEndEvent\");");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasTerminated(flowScopeKey, \"escalationEndEvent\");");
 
     typeSpec = result.getFiles().get(3).typeSpec; // signalEndEvent
     assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(flowScopeKey, \"signalEndEvent\");");

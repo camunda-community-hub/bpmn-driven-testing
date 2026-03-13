@@ -35,11 +35,17 @@ public class TimerEventStrategy extends DefaultHandlerStrategy {
       var eventSupport = new BpmnEventSupport(event);
 
       timerEventDefinition = eventSupport.getTimerDefinition();
+
+      methodBuilder.addStatement("$LElement.attachedTo = $S", literal, event.getAttachedTo().getId());
     } else if (element.getType() == BpmnElementType.TIMER_CATCH) {
       var event = element.getFlowNode(IntermediateCatchEvent.class);
       var eventSupport = new BpmnEventSupport(event);
 
       timerEventDefinition = eventSupport.getTimerDefinition();
+
+      if (element.hasPrevious(BpmnElementType.EVENT_BASED_GATEWAY)) {
+        methodBuilder.addStatement("$LElement.attachedTo = $S", literal, element.getPrevious().getId());
+      }
     }
 
     if (timerEventDefinition != null) {

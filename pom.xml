@@ -29,7 +29,7 @@
 
     <!-- Versions -->
     <camunda.bpm.version>7.24.0</camunda.bpm.version>
-    <camunda.zeebe.version>8.7.6</camunda.zeebe.version>
+    <camunda.version>8.8.16</camunda.version>
     <google.truth.version>1.4.5</google.truth.version>
     <javapoet.version>1.13.0</javapoet.version>
     <junit.jupiter.version>5.11.4</junit.jupiter.version>
@@ -80,11 +80,20 @@
       <!-- Camunda 8 -->
       <dependency>
         <groupId>io.camunda</groupId>
-        <artifactId>zeebe-bom</artifactId>
-        <version>${camunda.zeebe.version}</version>
-        <type>pom</type>
-        <scope>import</scope>
+        <artifactId>camunda-process-test-java</artifactId>
+        <version>${camunda.version}</version>
       </dependency>
+    <dependency>
+      <groupId>io.camunda</groupId>
+      <artifactId>zeebe-bpmn-model</artifactId>
+      <version>${camunda.version}</version><optional>true</optional>
+      <exclusions>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-api</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
 
       <dependency>
         <groupId>com.squareup</groupId>

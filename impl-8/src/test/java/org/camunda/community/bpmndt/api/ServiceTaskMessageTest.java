@@ -9,17 +9,19 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import io.camunda.zeebe.process.test.api.ZeebeTestEngine;
-import io.camunda.zeebe.process.test.assertions.ProcessInstanceAssert;
-import io.camunda.zeebe.process.test.extension.ZeebeProcessTest;
+import io.camunda.client.CamundaClient;
+import io.camunda.process.test.api.CamundaProcessTest;
+import io.camunda.process.test.api.CamundaProcessTestContext;
+import io.camunda.process.test.api.assertions.ProcessInstanceAssert;
 
-@ZeebeProcessTest
+@CamundaProcessTest
 class ServiceTaskMessageTest {
 
   @RegisterExtension
   TestCase tc = new TestCase();
 
-  ZeebeTestEngine engine;
+  CamundaClient client;
+  CamundaProcessTestContext processTestContext;
 
   private JobHandler handler;
   private MessageEventHandler boundaryEventHandler;
@@ -27,14 +29,17 @@ class ServiceTaskMessageTest {
   @BeforeEach
   void setUp() {
     handler = new JobHandler("serviceTask");
-    boundaryEventHandler = new MessageEventHandler("messageBoundaryEvent");
+    boundaryEventHandler = new MessageEventHandler("messageBoundaryEvent", "serviceTask");
   }
 
   @Test
   void testExecute() {
     handler.waitForBoundaryEvent();
 
-    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+    tc.createExecutor(client, processTestContext)
+        .withVariable("correlationKey", String.valueOf(System.currentTimeMillis()))
+        .verify(ProcessInstanceAssert::isCompleted)
+        .execute();
   }
 
   private class TestCase extends AbstractJUnit5TestCase {

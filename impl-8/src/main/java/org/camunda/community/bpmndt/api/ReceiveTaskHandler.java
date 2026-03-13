@@ -7,9 +7,10 @@ import java.util.function.Consumer;
 import org.camunda.community.bpmndt.api.MessageEventHandler.Correlation;
 import org.camunda.community.bpmndt.api.TestCaseInstanceElement.MessageEventElement;
 
-import io.camunda.zeebe.client.ZeebeClient;
-import io.camunda.zeebe.process.test.assertions.BpmnAssert;
-import io.camunda.zeebe.process.test.assertions.ProcessInstanceAssert;
+import io.camunda.client.CamundaClient;
+import io.camunda.process.test.api.CamundaAssert;
+import io.camunda.process.test.api.assertions.ProcessInstanceAssert;
+import io.camunda.process.test.api.assertions.ProcessInstanceSelectors;
 
 /**
  * Fluent API to handle receive tasks. Please note: a message is correlated by default.
@@ -59,8 +60,8 @@ public class ReceiveTaskHandler {
 
   void apply(TestCaseInstance instance, long flowScopeKey) {
     if (verifier != null) {
-      var processInstanceKey = instance.getProcessInstanceKey(flowScopeKey);
-      verifier.accept(new ProcessInstanceAssert(processInstanceKey, BpmnAssert.getRecordStream()));
+      var processInstanceSelector = ProcessInstanceSelectors.byKey(instance.getProcessInstanceKey(flowScopeKey));
+      verifier.accept(CamundaAssert.assertThat(processInstanceSelector));
     }
 
     if (correlationKeyExpressionConsumer != null) {
@@ -70,26 +71,26 @@ public class ReceiveTaskHandler {
       messageNameExpressionConsumer.accept(element.messageName);
     }
 
-    var messageSubscription = instance.getMessageSubscription(flowScopeKey, element.id);
+    var messageSubscription = instance.getMessageSubscription(flowScopeKey, element.id, null);
 
-    if (expectedCorrelationKey != null && !expectedCorrelationKey.equals(messageSubscription.correlationKey)) {
+    if (expectedCorrelationKey != null && !expectedCorrelationKey.equals(messageSubscription.getCorrelationKey())) {
       var message = "expected message event %s to have correlation key '%s', but was '%s'";
-      throw new AssertionError(String.format(message, element.id, expectedCorrelationKey, messageSubscription.correlationKey));
+      throw new AssertionError(String.format(message, element.id, expectedCorrelationKey, messageSubscription.getCorrelationKey()));
     }
     if (correlationKeyConsumer != null) {
-      correlationKeyConsumer.accept(messageSubscription.correlationKey);
+      correlationKeyConsumer.accept(messageSubscription.getCorrelationKey());
     }
 
-    if (expectedMessageName != null && !expectedMessageName.equals(messageSubscription.messageName)) {
+    if (expectedMessageName != null && !expectedMessageName.equals(messageSubscription.getMessageName())) {
       var message = "expected message event %s to have message name '%s', but was '%s'";
-      throw new AssertionError(String.format(message, element.id, expectedMessageName, messageSubscription.messageName));
+      throw new AssertionError(String.format(message, element.id, expectedMessageName, messageSubscription.getMessageName()));
     }
     if (messageNameConsumer != null) {
-      messageNameConsumer.accept(messageSubscription.messageName);
+      messageNameConsumer.accept(messageSubscription.getMessageName());
     }
 
     if (action != null) {
-      action.correlate(instance.getClient(), messageSubscription.messageName, messageSubscription.correlationKey);
+      action.correlate(instance.getClient(), messageSubscription.getMessageName(), messageSubscription.getCorrelationKey());
     }
   }
 
@@ -125,8 +126,8 @@ public class ReceiveTaskHandler {
   /**
    * Correlates the message using a custom action, when the process instance is waiting at the corresponding element.
    *
-   * @param action A specific action that implements the {@link Correlation} or accepts a {@link ZeebeClient}, the message name and the correlation key.
-   * @see ZeebeClient#newPublishMessageCommand()
+   * @param action A specific action that implements the {@link Correlation} or accepts a {@link CamundaClient}, the message name and the correlation key.
+   * @see CamundaClient#newPublishMessageCommand()
    */
   public void execute(Correlation action) {
     if (action == null) {
@@ -266,7 +267,7 @@ public class ReceiveTaskHandler {
     return this;
   }
 
-  void correlate(ZeebeClient client, String messageName, String correlationKey) {
+  void correlate(CamundaClient client, String messageName, String correlationKey) {
     var publishMessageCommandStep3 = client.newPublishMessageCommand()
         .messageName(messageName)
         .correlationKey(correlationKey);

@@ -1,15 +1,14 @@
 package org.camunda.community.bpmndt.api;
 
-import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import org.camunda.community.bpmndt.api.TestCaseInstanceElement.SignalEventElement;
-import org.camunda.community.bpmndt.api.TestCaseInstanceMemo.SignalSubscriptionMemo;
 
-import io.camunda.zeebe.client.ZeebeClient;
-import io.camunda.zeebe.process.test.assertions.BpmnAssert;
-import io.camunda.zeebe.process.test.assertions.ProcessInstanceAssert;
+import io.camunda.client.CamundaClient;
+import io.camunda.process.test.api.CamundaAssert;
+import io.camunda.process.test.api.assertions.ProcessInstanceAssert;
+import io.camunda.process.test.api.assertions.ProcessInstanceSelectors;
 
 /**
  * Fluent API to handle signal catch events. Please note: a signal is broadcasted by default.
@@ -19,7 +18,7 @@ public class SignalEventHandler {
   private final SignalEventElement element;
 
   private Consumer<ProcessInstanceAssert> verifier;
-  private BiConsumer<ZeebeClient, String> action;
+  private BiConsumer<CamundaClient, String> action;
 
   private Consumer<String> signalNameExpressionConsumer;
 
@@ -27,13 +26,29 @@ public class SignalEventHandler {
 
   private Consumer<String> signalNameConsumer;
 
+  /**
+   * Creates a new handler that by default broadcasts a signal.
+   *
+   * @param elementId ID of the BPMN signal event.
+   */
   public SignalEventHandler(String elementId) {
+    this(elementId, null);
+  }
+
+  /**
+   * Creates a new handler that by default broadcasts a signal.
+   *
+   * @param elementId  ID of the BPMN signal event.
+   * @param attachedTo ID of the BPMN element, the signal event is attached to.
+   */
+  public SignalEventHandler(String elementId, String attachedTo) {
     if (elementId == null) {
       throw new IllegalArgumentException("element ID is null");
     }
 
     element = new SignalEventElement();
     element.id = elementId;
+    element.attachedTo = attachedTo;
 
     broadcast();
   }
@@ -53,25 +68,25 @@ public class SignalEventHandler {
 
   void apply(TestCaseInstance instance, long flowScopeKey) {
     if (verifier != null) {
-      var processInstanceKey = instance.getProcessInstanceKey(flowScopeKey);
-      verifier.accept(new ProcessInstanceAssert(processInstanceKey, BpmnAssert.getRecordStream()));
+      var processInstanceSelector = ProcessInstanceSelectors.byKey(instance.getProcessInstanceKey(flowScopeKey));
+      verifier.accept(CamundaAssert.assertThat(processInstanceSelector));
     }
 
     if (signalNameExpressionConsumer != null) {
       signalNameExpressionConsumer.accept(element.signalName);
     }
 
-    var signalSubscription = getSignalSubscription(instance, flowScopeKey);
+    var signalName = getSignalName(instance, flowScopeKey);
 
-    if (expectedSignalName != null && !expectedSignalName.equals(signalSubscription.signalName)) {
+    if (expectedSignalName != null && !expectedSignalName.equals(signalName)) {
       String message = "expected signal event %s to have signal name '%s', but was '%s'";
-      throw new AssertionError(String.format(message, element.id, expectedSignalName, signalSubscription.signalName));
+      throw new AssertionError(String.format(message, element.id, expectedSignalName, signalName));
     }
     if (signalNameConsumer != null) {
-      signalNameConsumer.accept(signalSubscription.signalName);
+      signalNameConsumer.accept(signalName);
     }
 
-    action.accept(instance.getClient(), signalSubscription.signalName);
+    action.accept(instance.getClient(), signalName);
   }
 
   /**
@@ -102,10 +117,10 @@ public class SignalEventHandler {
   /**
    * Broadcasts a signal using a custom action, when the process instance is waiting at the corresponding element.
    *
-   * @param action A specific action that accepts a {@link ZeebeClient} and the signal name.
-   * @see ZeebeClient#newBroadcastSignalCommand()
+   * @param action A specific action that accepts a {@link CamundaClient} and the signal name.
+   * @see CamundaClient#newBroadcastSignalCommand()
    */
-  public void execute(BiConsumer<ZeebeClient, String> action) {
+  public void execute(BiConsumer<CamundaClient, String> action) {
     if (action == null) {
       throw new IllegalArgumentException("action is null");
     }
@@ -156,24 +171,11 @@ public class SignalEventHandler {
     return this;
   }
 
-  void broadcast(ZeebeClient client, String signalName) {
+  void broadcast(CamundaClient client, String signalName) {
     client.newBroadcastSignalCommand().signalName(signalName).send().join();
   }
 
-  private SignalSubscriptionMemo getSignalSubscription(TestCaseInstance instance, long flowScopeKey) {
-    var flowScopeKeys = instance.getKeys(flowScopeKey);
-
-    return instance.select(memo -> {
-      var signalSubscription = memo.signalSubscriptions.stream().filter(s ->
-          flowScopeKeys.contains(s.flowScopeKey) && Objects.equals(s.elementId, element.id)
-      ).findFirst();
-
-      if (signalSubscription.isEmpty()) {
-        var message = String.format("element %s of flow scope %d has no signal subscription", element.id, flowScopeKey);
-        throw instance.createException(message, flowScopeKey);
-      }
-
-      return signalSubscription.get();
-    });
+  private String getSignalName(TestCaseInstance instance, long flowScopeKey) {
+    throw new UnsupportedOperationException();
   }
 }

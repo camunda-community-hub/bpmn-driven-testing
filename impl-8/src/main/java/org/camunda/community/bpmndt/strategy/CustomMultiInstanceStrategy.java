@@ -24,9 +24,9 @@ public class CustomMultiInstanceStrategy extends DefaultHandlerStrategy {
   @Override
   public void hasPassed(MethodSpec.Builder methodBuilder) {
     if (element.hasNext() && element.getNext().getType().isBoundaryEvent()) {
-      methodBuilder.addStatement("instance.hasTerminatedMultiInstance(flowScopeKey, $S)", element.getId());
+      methodBuilder.addStatement("instance.hasTerminated(flowScopeKey, $S)", element.getId());
     } else {
-      methodBuilder.addStatement("instance.hasPassedMultiInstance(flowScopeKey, $S)", element.getId());
+      methodBuilder.addStatement("instance.hasPassed(flowScopeKey, $S)", element.getId());
     }
   }
 

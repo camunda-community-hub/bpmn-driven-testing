@@ -83,7 +83,7 @@ class GeneratorAdvancedMultiInstanceTest {
 
     assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(flowScopeKey, \"startEvent\");");
     assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.apply(flowScopeKey, subProcess);");
-    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassedMultiInstance(flowScopeKey, \"subProcess\");");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(flowScopeKey, \"subProcess\");");
     assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(flowScopeKey, \"join\");");
     assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(flowScopeKey, \"endEvent\");");
 
@@ -118,7 +118,7 @@ class GeneratorAdvancedMultiInstanceTest {
 
     assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(flowScopeKey, \"startEvent\");");
     assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.apply(flowScopeKey, subProcess);");
-    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasTerminatedMultiInstance(flowScopeKey, \"subProcess\");");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasTerminated(flowScopeKey, \"subProcess\");");
     assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(flowScopeKey, \"subProcessErrorBoundaryEvent\");");
     assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(flowScopeKey, \"join\");");
     assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(flowScopeKey, \"endEvent\");");

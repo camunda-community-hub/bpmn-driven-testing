@@ -12,11 +12,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import io.camunda.zeebe.process.test.api.ZeebeTestEngine;
-import io.camunda.zeebe.process.test.assertions.ProcessInstanceAssert;
-import io.camunda.zeebe.process.test.extension.ZeebeProcessTest;
+import io.camunda.client.CamundaClient;
+import io.camunda.process.test.api.CamundaProcessTest;
+import io.camunda.process.test.api.CamundaProcessTestContext;
+import io.camunda.process.test.api.assertions.ProcessInstanceAssert;
 
-@ZeebeProcessTest
+@CamundaProcessTest
 class CallActivityWithoutSimulationTest {
 
   @RegisterExtension
@@ -28,7 +29,8 @@ class CallActivityWithoutSimulationTest {
   @RegisterExtension
   TestCaseTimer tcTimer = new TestCaseTimer();
 
-  ZeebeTestEngine engine;
+  CamundaClient client;
+  CamundaProcessTestContext processTestContext;
 
   private CallActivityHandler handler;
 
@@ -43,12 +45,12 @@ class CallActivityWithoutSimulationTest {
   @Test
   void testExecute() {
     handler.verifyOutput(piAssert -> {
-      piAssert.hasVariableWithValue("subProcessResult", "value");
+      piAssert.hasVariable("subProcessResult", "value");
     }).executeTestCase(new SubProcess_startEvent__endEvent(), it -> {
       it.handleServiceTask().withVariable("subProcessResult", "value").complete();
     });
 
-    tc.createExecutor(engine).customize(this::customize).execute();
+    tc.createExecutor(client, processTestContext).customize(this::customize).execute();
   }
 
   @Test
@@ -57,7 +59,7 @@ class CallActivityWithoutSimulationTest {
       it.handleServiceTask().complete();
     });
 
-    tcError.createExecutor(engine).customize(this::customize).withVariable("end", "error").execute();
+    tcError.createExecutor(client, processTestContext).customize(this::customize).withVariable("end", "error").execute();
   }
 
   @Test
@@ -66,7 +68,7 @@ class CallActivityWithoutSimulationTest {
       it.handleServiceTask().complete();
     });
 
-    tcEscalation.createExecutor(engine).customize(this::customize).withVariable("end", "escalation").execute();
+    tcEscalation.createExecutor(client, processTestContext).customize(this::customize).withVariable("end", "escalation").execute();
   }
 
   @Test
@@ -75,7 +77,7 @@ class CallActivityWithoutSimulationTest {
       it.handleServiceTask().complete();
     });
 
-    tc.createExecutor(engine).customize(this::customize).withVariable("end", "signal").execute();
+    tc.createExecutor(client, processTestContext).customize(this::customize).withVariable("end", "signal").execute();
   }
 
   @Test
@@ -84,7 +86,7 @@ class CallActivityWithoutSimulationTest {
       it.handleServiceTask().complete();
     });
 
-    tc.createExecutor(engine).customize(this::customize).withVariable("end", "terminate").execute();
+    tc.createExecutor(client, processTestContext).customize(this::customize).withVariable("end", "terminate").execute();
   }
 
   @Test
@@ -93,7 +95,7 @@ class CallActivityWithoutSimulationTest {
 
     handler.executeTestCase(new SubProcessWait(), null);
 
-    tcTimer.createExecutor(engine).customize(this::customize).execute();
+    tcTimer.createExecutor(client, processTestContext).customize(this::customize).execute();
   }
 
   @Test
@@ -204,7 +206,7 @@ class CallActivityWithoutSimulationTest {
       instance.apply(processInstanceKey, handler);
       instance.hasTerminated(processInstanceKey, "callActivity");
       instance.hasPassed(processInstanceKey, "errorBoundaryEvent");
-      instance.isActivating(processInstanceKey, getEnd());
+      instance.isWaitingAt(processInstanceKey, getEnd());
     }
 
     @Override
@@ -359,7 +361,7 @@ class CallActivityWithoutSimulationTest {
       instance.apply(processInstanceKey, handleServiceTask());
       instance.hasPassed(processInstanceKey, "serviceTask");
       instance.hasPassed(processInstanceKey, "fork");
-      instance.isActivating(processInstanceKey, getEnd());
+      instance.isWaitingAt(processInstanceKey, getEnd());
     }
 
     @Override
@@ -378,7 +380,7 @@ class CallActivityWithoutSimulationTest {
       instance.apply(processInstanceKey, handleServiceTask());
       instance.hasPassed(processInstanceKey, "serviceTask");
       instance.hasPassed(processInstanceKey, "fork");
-      instance.isActivating(processInstanceKey, getEnd());
+      instance.isWaitingAt(processInstanceKey, getEnd());
     }
 
     @Override

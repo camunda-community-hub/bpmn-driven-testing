@@ -13,17 +13,19 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import io.camunda.zeebe.process.test.api.ZeebeTestEngine;
-import io.camunda.zeebe.process.test.assertions.ProcessInstanceAssert;
-import io.camunda.zeebe.process.test.extension.ZeebeProcessTest;
+import io.camunda.client.CamundaClient;
+import io.camunda.process.test.api.CamundaProcessTest;
+import io.camunda.process.test.api.CamundaProcessTestContext;
+import io.camunda.process.test.api.assertions.ProcessInstanceAssert;
 
-@ZeebeProcessTest
+@CamundaProcessTest
 class SignalCatchEventTest {
 
   @RegisterExtension
   TestCase tc = new TestCase();
 
-  ZeebeTestEngine engine;
+  CamundaClient client;
+  CamundaProcessTestContext processTestContext;
 
   private SignalEventHandler handler;
 
@@ -38,21 +40,21 @@ class SignalCatchEventTest {
 
   @Test
   void testExecute() {
-    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+    tc.createExecutor(client, processTestContext).verify(ProcessInstanceAssert::isCompleted).execute();
   }
 
   @Test
   void testExecuteWithCustomAction() {
     handler.execute((client, signalName) -> client.newBroadcastSignalCommand().signalName(signalName).send());
 
-    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+    tc.createExecutor(client, processTestContext).verify(ProcessInstanceAssert::isCompleted).execute();
   }
 
   @Test
   void testVerify() {
-    handler.verify(processInstanceAssert -> processInstanceAssert.hasVariableWithValue("x", "test"));
+    handler.verify(processInstanceAssert -> processInstanceAssert.hasVariable("x", "test"));
 
-    tc.createExecutor(engine)
+    tc.createExecutor(client, processTestContext)
         .withVariable("x", "test")
         .verify(ProcessInstanceAssert::isCompleted)
         .execute();
@@ -62,32 +64,32 @@ class SignalCatchEventTest {
   void testVerifySignalName() {
     handler.verifySignalName("wrong signal name");
 
-    var e = assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
+    var e = assertThrows(AssertionError.class, () -> tc.createExecutor(client, processTestContext).execute());
     assertThat(e).hasMessageThat().contains("'wrong signal name'");
     assertThat(e).hasMessageThat().contains("'simpleSignal'");
 
     handler.verifySignalName("simpleSignal");
 
-    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+    tc.createExecutor(client, processTestContext).verify(ProcessInstanceAssert::isCompleted).execute();
 
     handler.verifySignalName(signalName -> assertThat(signalName).isEqualTo("wrong signal name"));
 
-    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
+    assertThrows(AssertionError.class, () -> tc.createExecutor(client, processTestContext).execute());
 
     handler.verifySignalName(signalName -> assertThat(signalName).isEqualTo("simpleSignal"));
 
-    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+    tc.createExecutor(client, processTestContext).verify(ProcessInstanceAssert::isCompleted).execute();
   }
 
   @Test
   void testVerifySignalNameExpression() {
     handler.verifySignalNameExpression(expr -> assertThat(expr).isEqualTo("wrong signal name expression"));
 
-    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
+    assertThrows(AssertionError.class, () -> tc.createExecutor(client, processTestContext).execute());
 
     handler.verifySignalNameExpression(expr -> assertThat(expr).isEqualTo("=\"simpleSignal\""));
 
-    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+    tc.createExecutor(client, processTestContext).verify(ProcessInstanceAssert::isCompleted).execute();
   }
 
   private class TestCase extends AbstractJUnit5TestCase {

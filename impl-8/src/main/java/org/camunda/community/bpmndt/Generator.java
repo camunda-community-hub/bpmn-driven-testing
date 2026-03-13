@@ -18,7 +18,6 @@ import org.camunda.community.bpmndt.api.SignalEventHandler;
 import org.camunda.community.bpmndt.api.TestCaseExecutor;
 import org.camunda.community.bpmndt.api.TestCaseInstance;
 import org.camunda.community.bpmndt.api.TestCaseInstanceElement;
-import org.camunda.community.bpmndt.api.TestCaseInstanceMemo;
 import org.camunda.community.bpmndt.api.TimerEventHandler;
 import org.camunda.community.bpmndt.api.UserTaskHandler;
 import org.camunda.community.bpmndt.cmd.BuildTestCaseContext;
@@ -102,7 +101,6 @@ public class Generator {
     apiClasses.add(TestCaseExecutor.class);
     apiClasses.add(TestCaseInstance.class);
     apiClasses.add(TestCaseInstanceElement.class);
-    apiClasses.add(TestCaseInstanceMemo.class);
     apiClasses.add(TimerEventHandler.class);
     apiClasses.add(UserTaskHandler.class);
 

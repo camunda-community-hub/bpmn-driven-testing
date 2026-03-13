@@ -30,6 +30,15 @@ For information on how to install, configure and use the plugins visit:
 - [bpmn-driven-testing-gradle-plugin](gradle-plugin)
 - [bpmn-driven-testing-8-gradle-plugin](gradle-plugin-8) (Camunda Platform 8)
 
+:warning: Camunda Platform 8: Version [1.4.0](https://github.com/camunda-community-hub/bpmn-driven-testing/tree/1.4.0) switched from Zeebe process test to [Camunda process test](https://docs.camunda.io/docs/apis-tools/testing/getting-started/) (CPT), which is no longer providing Zeebe's record stream.
+
+CPT is based on the orchestration cluster API, which currently does not provide the necessary information to automatically handle following BPMN elements:
+- message start event
+- signal start, catch and boundary events
+- timer start, catch and boundary events
+
+These elements must be handled, using custom code!
+
 ## Features
 - Visual test case selection
 - Automatic path finding with
@@ -126,7 +135,7 @@ The generated test case class - in this example, `TC_Happy_Path` - must be impor
 
 ```java
 @RegisterExtension
-public TC_Happy_Path tc = new TC_Happy_Path();
+TC_Happy_Path tc = new TC_Happy_Path();
 ```
 
 Calling `createExecutor()` on the test extension, provides a fluent API,
@@ -183,10 +192,10 @@ The generated test case class - in this example, `TC_Happy_Path` - must be impor
 
 ```java
 @RegisterExtension
-public TC_Happy_Path tc = new TC_Happy_Path();
+TC_Happy_Path tc = new TC_Happy_Path();
 ```
 
-When calling `createExecutor()` on the test extension, a `ZeebeTestEngine` must be provided. The fluent `TestCaseExecutor` API allows to specificy variables, add additional resources, prepare the simulation of called processes and finally start a test case execution via `execute()`.
+When calling `createExecutor()` on the test extension, a `CamundaClient` and a `CamundaProcessTestContext` must be provided. The fluent `TestCaseExecutor` API allows to specificy variables, add additional resources, prepare the simulation of called processes and finally start a test case execution via `execute()`.
 
 Moreover the default behavior of wait states and call activities can be adjusted using fluent APIs.
 For each applicable flow node a `handle*` method is generated - for example: `handleCheckAvailabilityUserTask()` or `handleApproveOrderSendTask()`.
@@ -199,10 +208,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import generated.order_fulfillment.TC_Happy_Path;
-import io.camunda.zeebe.client.ZeebeClient;
-import io.camunda.zeebe.process.test.api.ZeebeTestEngine;
-import io.camunda.zeebe.process.test.assertions.ProcessInstanceAssert;
-import io.camunda.zeebe.process.test.extension.ZeebeProcessTest;
+import io.camunda.client.CamundaClient;
+import io.camunda.process.test.api.CamundaProcessTest;
+import io.camunda.process.test.api.CamundaProcessTestContext;
+import io.camunda.process.test.api.assertions.ProcessInstanceAssert;
 
 @ZeebeProcessTest
 class OrderFulfillmentTest {
@@ -210,7 +219,8 @@ class OrderFulfillmentTest {
   @RegisterExtension
   TC_Happy_Path tc = new TC_Happy_Path();
 
-  ZeebeTestEngine engine;
+  CamundaClient client;
+  CamundaProcessTestContext processTestContext;
 
   @Test
   void testItemsAvailable() {
@@ -221,7 +231,7 @@ class OrderFulfillmentTest {
           piAssert.hasVariableWithValue("customerId", 123);
         })
         .verifyCandidateGroups(groups -> assertThat(groups).containsExactly("group-xyz"))
-        .verifyDueDate(dueDate -> assertThat(dueDate).isEqualTo("2023-02-17T00:00Z"))
+        .verifyDueDate(dueDate -> assertThat(dueDate.toString()).isEqualTo("2023-02-17T00:00Z"))
         .verifyFormKey("checkAvailability")
         .withVariable("available", true)
         .complete();
@@ -236,7 +246,7 @@ class OrderFulfillmentTest {
     // run worker, while test case is being executed
     try (var worker = workerBuilder.open()) {
       // enrich and execute test case
-      tc.createExecutor(engine)
+      tc.createExecutor(client, processTestContext)
         .withVariable("orderId", "order-20210623-0001")
         .withVariable("customerId", 123)
         .withVariable("customerType", "NEW")
@@ -250,7 +260,7 @@ class OrderFulfillmentTest {
 }
 ```
 
-When a test case is executed, a `ZeebeClient` is used to deploy test case related resources (*.bpmn, *.dmn and/or *.form), create a process instance and interact with the `ZeebeTestEngine` by applying the specified behavior and verifying that the process instance has passed the correct BPMN elements.
+When a test case is executed, the `CamundaClient` is used to deploy test case related resources (*.bpmn, *.dmn and/or *.form), create a process instance and interact with the Zeebe engine by applying the specified behavior and verifying that the process instance has passed the correct BPMN elements.
 
 ## More screenshots
 

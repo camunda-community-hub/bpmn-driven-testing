@@ -16,24 +16,23 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import io.camunda.zeebe.client.ZeebeClient;
-import io.camunda.zeebe.client.api.response.Form;
-import io.camunda.zeebe.process.test.api.ZeebeTestEngine;
-import io.camunda.zeebe.process.test.assertions.ProcessInstanceAssert;
-import io.camunda.zeebe.process.test.extension.ZeebeProcessTest;
+import io.camunda.client.CamundaClient;
+import io.camunda.client.api.response.Form;
+import io.camunda.process.test.api.CamundaProcessTest;
+import io.camunda.process.test.api.CamundaProcessTestContext;
+import io.camunda.process.test.api.assertions.ProcessInstanceAssert;
 
-@ZeebeProcessTest
+@CamundaProcessTest
 class UserTaskTest {
 
   @RegisterExtension
   TestCase tc = new TestCase();
 
-  ZeebeTestEngine engine;
-  ZeebeClient client;
+  CamundaClient client;
+  CamundaProcessTestContext processTestContext;
 
   private UserTaskHandler handler;
   private UserTaskHandler handlerWithLinkedForm;
-  private UserTaskHandler handlerWithEmbeddedForm;
 
   private Form form;
 
@@ -65,20 +64,18 @@ class UserTaskTest {
 
     var elementWithEmbeddedForm = new UserTaskElement();
     elementWithEmbeddedForm.id = "userTaskWithEmbeddedForm";
-
-    handlerWithEmbeddedForm = new UserTaskHandler(elementWithEmbeddedForm);
   }
 
   @Test
   void testExecute() {
-    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+    tc.createExecutor(client, processTestContext).verify(ProcessInstanceAssert::isCompleted).execute();
   }
 
   @Test
   void testExecuteWithCustomAction() {
-    handler.execute((client, job) -> client.newCompleteCommand(job).send());
+    handler.execute((client, userTaskKey) -> client.newCompleteUserTaskCommand(userTaskKey).send());
 
-    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+    tc.createExecutor(client, processTestContext).verify(ProcessInstanceAssert::isCompleted).execute();
   }
 
   @Test
@@ -90,12 +87,12 @@ class UserTaskTest {
 
     handler.withVariables(variables).complete();
 
-    tc.createExecutor(engine).verify(piAssert -> {
+    tc.createExecutor(client, processTestContext).verify(piAssert -> {
       piAssert.isCompleted();
 
-      piAssert.hasVariableWithValue("x", "test");
-      piAssert.hasVariableWithValue("y", 1);
-      piAssert.hasVariableWithValue("z", true);
+      piAssert.hasVariable("x", "test");
+      piAssert.hasVariable("y", 1);
+      piAssert.hasVariable("z", true);
     }).execute();
   }
 
@@ -110,20 +107,20 @@ class UserTaskTest {
         .withVariableMap(variableMap)
         .complete();
 
-    tc.createExecutor(engine).verify(piAssert -> {
+    tc.createExecutor(client, processTestContext).verify(piAssert -> {
       piAssert.isCompleted();
 
-      piAssert.hasVariableWithValue("x", "test");
-      piAssert.hasVariableWithValue("y", 1);
-      piAssert.hasVariableWithValue("z", true);
+      piAssert.hasVariable("x", "test");
+      piAssert.hasVariable("y", 1);
+      piAssert.hasVariable("z", true);
     }).execute();
   }
 
   @Test
   void testVerify() {
-    handler.verify(processInstanceAssert -> processInstanceAssert.hasVariableWithValue("x", "test"));
+    handler.verify(processInstanceAssert -> processInstanceAssert.hasVariable("x", "test"));
 
-    tc.createExecutor(engine)
+    tc.createExecutor(client, processTestContext)
         .withVariable("x", "test")
         .verify(ProcessInstanceAssert::isCompleted)
         .execute();
@@ -133,160 +130,159 @@ class UserTaskTest {
   void testVerifyAssignee() {
     handler.verifyAssignee("wrong assignee");
 
-    var e = assertThrows(AssertionError.class, () -> tc.createExecutor(engine).withWaitTimeout(1000L).execute());
+    var e = assertThrows(AssertionError.class, () -> tc.createExecutor(client, processTestContext).execute());
     assertThat(e).hasMessageThat().contains("'wrong assignee'");
     assertThat(e).hasMessageThat().contains("'simpleAssignee'");
 
     handler.verifyAssignee("simpleAssignee");
 
-    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+    tc.createExecutor(client, processTestContext).verify(ProcessInstanceAssert::isCompleted).execute();
 
     handler.verifyAssignee(assignee -> assertThat(assignee).isEqualTo("wrong assignee"));
 
-    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).withWaitTimeout(1000L).execute());
+    assertThrows(AssertionError.class, () -> tc.createExecutor(client, processTestContext).execute());
 
     handler.verifyAssignee(assignee -> assertThat(assignee).isEqualTo("simpleAssignee"));
 
-    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+    tc.createExecutor(client, processTestContext).verify(ProcessInstanceAssert::isCompleted).execute();
   }
 
   @Test
   void testVerifyAssigneeExpression() {
     handler.verifyAssigneeExpression(expr -> assertThat(expr).isEqualTo("wrong assignee expression"));
 
-    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).withWaitTimeout(1000L).execute());
+    assertThrows(AssertionError.class, () -> tc.createExecutor(client, processTestContext).execute());
 
     handler.verifyAssigneeExpression(expr -> assertThat(expr).isEqualTo("=\"simpleAssignee\""));
 
-    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+    tc.createExecutor(client, processTestContext).verify(ProcessInstanceAssert::isCompleted).execute();
   }
 
   @Test
   void testVerifyCandidateGroups() {
     handler.verifyCandidateGroups(Arrays.asList("wrong group 1", "wrong group 2"));
 
-    var e = assertThrows(AssertionError.class, () -> tc.createExecutor(engine).withWaitTimeout(1000L).execute());
+    var e = assertThrows(AssertionError.class, () -> tc.createExecutor(client, processTestContext).execute());
     assertThat(e).hasMessageThat().contains("candidate group #0 'wrong group 1'");
     assertThat(e).hasMessageThat().contains("'simpleGroupA'");
 
     handler.verifyCandidateGroups(Arrays.asList("simpleGroupA", "simpleGroupB"));
 
-    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+    tc.createExecutor(client, processTestContext).verify(ProcessInstanceAssert::isCompleted).execute();
 
     handler.verifyCandidateGroups(groups -> assertThat(groups).containsExactly("wrong group 1", "wrong group 2").inOrder());
 
-    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).withWaitTimeout(1000L).execute());
+    assertThrows(AssertionError.class, () -> tc.createExecutor(client, processTestContext).execute());
 
     handler.verifyCandidateGroups(groups -> assertThat(groups).containsExactly("simpleGroupA", "simpleGroupB").inOrder());
 
-    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+    tc.createExecutor(client, processTestContext).verify(ProcessInstanceAssert::isCompleted).execute();
   }
 
   @Test
   void testVerifyCandidateGroupsExpression() {
     handler.verifyCandidateGroupsExpression(expr -> assertThat(expr).isEqualTo("wrong candidate groups expression"));
 
-    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).withWaitTimeout(1000L).execute());
+    assertThrows(AssertionError.class, () -> tc.createExecutor(client, processTestContext).execute());
 
     handler.verifyCandidateGroupsExpression(expr -> assertThat(expr).isEqualTo("=[\"simpleGroupA\", \"simpleGroupB\"]"));
 
-    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+    tc.createExecutor(client, processTestContext).verify(ProcessInstanceAssert::isCompleted).execute();
   }
 
   @Test
   void testVerifyCandidateUsers() {
     handler.verifyCandidateUsers(Arrays.asList("wrong user 1", "wrong user 2"));
 
-    var e = assertThrows(AssertionError.class, () -> tc.createExecutor(engine).withWaitTimeout(1000L).execute());
+    var e = assertThrows(AssertionError.class, () -> tc.createExecutor(client, processTestContext).execute());
     assertThat(e).hasMessageThat().contains("candidate user #0 'wrong user 1'");
     assertThat(e).hasMessageThat().contains("'simpleUserA'");
 
     handler.verifyCandidateUsers(Arrays.asList("simpleUserA", "simpleUserB"));
 
-    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+    tc.createExecutor(client, processTestContext).verify(ProcessInstanceAssert::isCompleted).execute();
 
     handler.verifyCandidateUsers(users -> assertThat(users).containsExactly("wrong user 1", "wrong user 2").inOrder());
 
-    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).withWaitTimeout(1000L).execute());
+    assertThrows(AssertionError.class, () -> tc.createExecutor(client, processTestContext).execute());
 
     handler.verifyCandidateUsers(users -> assertThat(users).containsExactly("simpleUserA", "simpleUserB").inOrder());
 
-    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+    tc.createExecutor(client, processTestContext).verify(ProcessInstanceAssert::isCompleted).execute();
   }
 
   @Test
   void testVerifyCandidateUsersExpression() {
     handler.verifyCandidateUsersExpression(expr -> assertThat(expr).isEqualTo("wrong candidate users expression"));
 
-    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).withWaitTimeout(1000L).execute());
+    assertThrows(AssertionError.class, () -> tc.createExecutor(client, processTestContext).execute());
 
     handler.verifyCandidateUsersExpression(expr -> assertThat(expr).isEqualTo("=[\"simpleUserA\", \"simpleUserB\"]"));
 
-    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+    tc.createExecutor(client, processTestContext).verify(ProcessInstanceAssert::isCompleted).execute();
   }
 
   @Test
   void testVerifyDueDate() {
     handler.verifyDueDate(dueDate -> assertThat(dueDate).isEqualTo("wrong due date"));
 
-    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).withWaitTimeout(1000L).execute());
+    assertThrows(AssertionError.class, () -> tc.createExecutor(client, processTestContext).execute());
 
-    handler.verifyDueDate(dueDate -> assertThat(dueDate).isEqualTo("2023-02-17T00:00Z"));
+    handler.verifyDueDate(dueDate -> assertThat(dueDate.toString()).isEqualTo("2023-02-17T00:00Z"));
 
-    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+    tc.createExecutor(client, processTestContext).verify(ProcessInstanceAssert::isCompleted).execute();
   }
 
   @Test
   void testVerifyDueDateExpression() {
     handler.verifyDueDateExpression(expr -> assertThat(expr).isEqualTo("wrong due date expression"));
 
-    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).withWaitTimeout(1000L).execute());
+    assertThrows(AssertionError.class, () -> tc.createExecutor(client, processTestContext).execute());
 
     handler.verifyDueDateExpression(expr -> assertThat(expr).isEqualTo("=\"2023-02-17T00:00:00Z\""));
 
-    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+    tc.createExecutor(client, processTestContext).verify(ProcessInstanceAssert::isCompleted).execute();
   }
 
   @Test
   void testVerifyFollowUpDate() {
     handler.verifyFollowUpDate(followUpDate -> assertThat(followUpDate).isEqualTo("wrong follow-up date"));
 
-    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).withWaitTimeout(1000L).execute());
+    assertThrows(AssertionError.class, () -> tc.createExecutor(client, processTestContext).execute());
 
-    handler.verifyFollowUpDate(followUpDate -> assertThat(followUpDate).isEqualTo("2023-02-18T00:00Z"));
+    handler.verifyFollowUpDate(followUpDate -> assertThat(followUpDate.toString()).isEqualTo("2023-02-18T00:00Z"));
 
-    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+    tc.createExecutor(client, processTestContext).verify(ProcessInstanceAssert::isCompleted).execute();
   }
 
   @Test
   void testVerifyFollowUpDateExpression() {
     handler.verifyFollowUpDateExpression(expr -> assertThat(expr).isEqualTo("wrong follow-up date expression"));
 
-    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).withWaitTimeout(1000L).execute());
+    assertThrows(AssertionError.class, () -> tc.createExecutor(client, processTestContext).execute());
 
     handler.verifyFollowUpDateExpression(expr -> assertThat(expr).isEqualTo("=\"2023-02-18T00:00:00Z\""));
 
-    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+    tc.createExecutor(client, processTestContext).verify(ProcessInstanceAssert::isCompleted).execute();
   }
 
   @Test
   void testVerifyFormKey() {
     handler.verifyFormKey("wrong form key");
 
-    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).withWaitTimeout(1000L).execute());
+    assertThrows(AssertionError.class, () -> tc.createExecutor(client, processTestContext).execute());
 
     handler.verifyFormKey((String) null);
     handler.verifyFormKey(formKey -> assertThat(formKey).isEqualTo("wrong form key"));
 
-    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).withWaitTimeout(1000L).execute());
+    assertThrows(AssertionError.class, () -> tc.createExecutor(client, processTestContext).execute());
 
     handler.verifyFormKey("simpleFormKey");
     handler.verifyFormKey(formKey -> assertThat(formKey).isEqualTo("simpleFormKey"));
 
     handlerWithLinkedForm.verifyFormKey(String.valueOf(form.getFormKey()));
-    handlerWithEmbeddedForm.verifyFormKey("camunda-forms:bpmn:UserTaskForm_0e64hjp");
 
-    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+    tc.createExecutor(client, processTestContext).verify(ProcessInstanceAssert::isCompleted).execute();
   }
 
   private class TestCase extends AbstractJUnit5TestCase {
@@ -300,9 +296,6 @@ class UserTaskTest {
       instance.isWaitingAt(processInstanceKey, "userTaskWithLinkedForm");
       instance.apply(processInstanceKey, handlerWithLinkedForm);
       instance.hasPassed(processInstanceKey, "userTaskWithLinkedForm");
-      instance.isWaitingAt(processInstanceKey, "userTaskWithEmbeddedForm");
-      instance.apply(processInstanceKey, handlerWithEmbeddedForm);
-      instance.hasPassed(processInstanceKey, "userTaskWithEmbeddedForm");
       instance.hasPassed(processInstanceKey, "endEvent");
     }
 

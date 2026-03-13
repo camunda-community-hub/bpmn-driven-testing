@@ -35,11 +35,17 @@ public class SignalEventStrategy extends DefaultHandlerStrategy {
       var eventSupport = new BpmnEventSupport(event);
 
       signalEventDefinition = eventSupport.getSignalDefinition();
+
+      methodBuilder.addStatement("$LElement.attachedTo = $S", literal, event.getAttachedTo().getId());
     } else if (element.getType() == BpmnElementType.SIGNAL_CATCH) {
       var event = element.getFlowNode(IntermediateCatchEvent.class);
       var eventSupport = new BpmnEventSupport(event);
 
       signalEventDefinition = eventSupport.getSignalDefinition();
+
+      if (element.hasPrevious(BpmnElementType.EVENT_BASED_GATEWAY)) {
+        methodBuilder.addStatement("$LElement.attachedTo = $S", literal, element.getPrevious().getId());
+      }
     }
 
     if (signalEventDefinition != null) {

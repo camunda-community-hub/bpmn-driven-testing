@@ -39,6 +39,8 @@ public class MessageEventStrategy extends DefaultHandlerStrategy {
       if (messageEventDefinition != null) {
         message = messageEventDefinition.getMessage();
       }
+
+      methodBuilder.addStatement("$LElement.attachedTo = $S", literal, event.getAttachedTo().getId());
     } else if (element.getType() == BpmnElementType.MESSAGE_CATCH) {
       var event = element.getFlowNode(IntermediateCatchEvent.class);
       var eventSupport = new BpmnEventSupport(event);
@@ -46,6 +48,10 @@ public class MessageEventStrategy extends DefaultHandlerStrategy {
       var messageEventDefinition = eventSupport.getMessageDefinition();
       if (messageEventDefinition != null) {
         message = messageEventDefinition.getMessage();
+      }
+
+      if (element.hasPrevious(BpmnElementType.EVENT_BASED_GATEWAY)) {
+        methodBuilder.addStatement("$LElement.attachedTo = $S", literal, element.getPrevious().getId());
       }
     }
 

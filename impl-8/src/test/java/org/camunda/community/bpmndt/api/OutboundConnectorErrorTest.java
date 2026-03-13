@@ -9,17 +9,19 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import io.camunda.zeebe.process.test.api.ZeebeTestEngine;
-import io.camunda.zeebe.process.test.assertions.ProcessInstanceAssert;
-import io.camunda.zeebe.process.test.extension.ZeebeProcessTest;
+import io.camunda.client.CamundaClient;
+import io.camunda.process.test.api.CamundaProcessTest;
+import io.camunda.process.test.api.CamundaProcessTestContext;
+import io.camunda.process.test.api.assertions.ProcessInstanceAssert;
 
-@ZeebeProcessTest
+@CamundaProcessTest
 class OutboundConnectorErrorTest {
 
   @RegisterExtension
   TestCase tc = new TestCase();
 
-  ZeebeTestEngine engine;
+  CamundaClient client;
+  CamundaProcessTestContext processTestContext;
 
   private OutboundConnectorHandler handler;
 
@@ -32,7 +34,7 @@ class OutboundConnectorErrorTest {
   void testThrowBpmnError() {
     handler.throwBpmnError("ADVANCED_ERROR", "test error message");
 
-    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+    tc.createExecutor(client, processTestContext).verify(ProcessInstanceAssert::isCompleted).execute();
   }
 
   @Test
@@ -43,10 +45,10 @@ class OutboundConnectorErrorTest {
         .withVariable("z", true)
         .throwBpmnError("ADVANCED_ERROR", "test error message");
 
-    tc.createExecutor(engine).verify(piAssert -> {
-      piAssert.hasVariableWithValue("x", "test");
-      piAssert.hasVariableWithValue("y", 1);
-      piAssert.hasVariableWithValue("z", true);
+    tc.createExecutor(client, processTestContext).verify(piAssert -> {
+      piAssert.hasVariable("x", "test");
+      piAssert.hasVariable("y", 1);
+      piAssert.hasVariable("z", true);
 
       // TODO map error message via FEEL to verify throw error command included the specified error message
       // but it seems that it is currently not possible!?
@@ -60,7 +62,7 @@ class OutboundConnectorErrorTest {
   void testExecuteAction() {
     handler.execute((client, jobKey) -> client.newThrowErrorCommand(jobKey).errorCode("ADVANCED_ERROR").send());
 
-    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+    tc.createExecutor(client, processTestContext).verify(ProcessInstanceAssert::isCompleted).execute();
   }
 
   private class TestCase extends AbstractJUnit5TestCase {
