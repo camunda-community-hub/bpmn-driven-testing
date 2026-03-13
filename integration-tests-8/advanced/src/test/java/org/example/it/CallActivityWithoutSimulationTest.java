@@ -2,6 +2,8 @@ package org.example.it;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.time.Duration;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -109,6 +111,8 @@ class CallActivityWithoutSimulationTest {
   @Test
   void testExecuteTimer() {
     tcTimer.handleCallActivity().executeTestCase(new TC_SubProcessWait(), null);
+
+    tcTimer.handleTimerBoundaryEvent().execute(() -> processTestContext.increaseTime(Duration.ofHours(1)));
 
     tcTimer.createExecutor(client, processTestContext)
         .withAdditionalVersionedClasspathResource("callActivitySubProcess.bpmn", "v1")

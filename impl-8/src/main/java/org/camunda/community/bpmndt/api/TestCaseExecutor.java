@@ -562,16 +562,16 @@ public class TestCaseExecutor {
 
   String findStartMessageName() {
     // currently there is no message subscription created for a message start event
-    throw new UnsupportedOperationException();
+    throw new UnsupportedOperationException("currently not supported - please use #execute(long) or #execute(Runnable) to start a process instance");
   }
 
   String findStartSignalName(long processDefinitionKey) {
-    // currently the API does not provide signal subscriptions
-    throw new UnsupportedOperationException();
+    // currently the orchestration cluster API does not expose signal subscriptions
+    throw new UnsupportedOperationException("currently not supported - please use #execute(long) or #execute(Runnable) to start a process instance");
   }
 
   long findStartTimerDueDate(long processDefinitionKey) {
-    // currently the API does not provide timers
-    throw new UnsupportedOperationException();
+    // currently the orchestration cluster API does not expose timers
+    throw new UnsupportedOperationException("currently not supported - please use #execute(long) or #execute(Runnable) to start a process instance");
   }
 }

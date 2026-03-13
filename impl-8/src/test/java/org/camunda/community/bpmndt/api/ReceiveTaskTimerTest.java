@@ -3,6 +3,7 @@ package org.camunda.community.bpmndt.api;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.time.Duration;
 
 import org.camunda.community.bpmndt.test.TestPaths;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,6 +37,8 @@ class ReceiveTaskTimerTest {
   @Test
   void testExecute() {
     handler.waitForBoundaryEvent();
+
+    boundaryEventHandler.execute(() -> processTestContext.increaseTime(Duration.ofHours(1)));
 
     tc.createExecutor(client, processTestContext).verify(ProcessInstanceAssert::isCompleted).execute();
   }

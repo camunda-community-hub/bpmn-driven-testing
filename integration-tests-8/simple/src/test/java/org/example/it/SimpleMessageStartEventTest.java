@@ -20,6 +20,8 @@ class SimpleMessageStartEventTest {
 
   @Test
   void testExecute() {
-    tc.createExecutor(client, processTestContext).verify(ProcessInstanceAssert::isCompleted).execute();
+    tc.createExecutor(client, processTestContext)
+        .verify(ProcessInstanceAssert::isCompleted)
+        .execute(() -> client.newPublishMessageCommand().messageName("simpleMessage").withoutCorrelationKey().execute());
   }
 }

@@ -3,6 +3,7 @@ package org.camunda.community.bpmndt.api;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.time.Duration;
 
 import org.camunda.community.bpmndt.test.TestPaths;
 import org.junit.jupiter.api.Test;
@@ -24,7 +25,9 @@ class TimerStartEventTest {
 
   @Test
   void testExecute() {
-    tc.createExecutor(client, processTestContext).verify(ProcessInstanceAssert::isCompleted).execute();
+    tc.createExecutor(client, processTestContext)
+        .verify(ProcessInstanceAssert::isCompleted)
+        .execute(() -> processTestContext.increaseTime(Duration.ofDays(1)));
   }
 
   private class TestCase extends AbstractJUnit5TestCase {

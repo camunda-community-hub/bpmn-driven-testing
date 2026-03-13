@@ -1,5 +1,7 @@
 package org.example.it;
 
+import java.time.Duration;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -20,6 +22,8 @@ class SimpleTimerStartEventTest {
 
   @Test
   void testExecute() {
-    tc.createExecutor(client, processTestContext).verify(ProcessInstanceAssert::isCompleted).execute();
+    tc.createExecutor(client, processTestContext)
+        .verify(ProcessInstanceAssert::isCompleted)
+        .execute(() -> processTestContext.increaseTime(Duration.ofDays(1)));
   }
 }

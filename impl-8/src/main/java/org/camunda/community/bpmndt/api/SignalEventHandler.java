@@ -49,8 +49,6 @@ public class SignalEventHandler {
     element = new SignalEventElement();
     element.id = elementId;
     element.attachedTo = attachedTo;
-
-    broadcast();
   }
 
   public SignalEventHandler(SignalEventElement element) {
@@ -62,8 +60,6 @@ public class SignalEventHandler {
     }
 
     this.element = element;
-
-    broadcast();
   }
 
   void apply(TestCaseInstance instance, long flowScopeKey) {
@@ -77,6 +73,14 @@ public class SignalEventHandler {
     }
 
     var signalName = getSignalName(instance, flowScopeKey);
+
+    // since the orchestration cluster API does not expose signal subscriptions, an action is required
+    if (signalName == null && action == null) {
+      throw new IllegalStateException("an action is required to broadcast a signal");
+    } else if (signalName == null) {
+      action.accept(instance.getClient(), null);
+      return;
+    }
 
     if (expectedSignalName != null && !expectedSignalName.equals(signalName)) {
       String message = "expected signal event %s to have signal name '%s', but was '%s'";
@@ -176,6 +180,6 @@ public class SignalEventHandler {
   }
 
   private String getSignalName(TestCaseInstance instance, long flowScopeKey) {
-    throw new UnsupportedOperationException();
+    return null; // currently not supported
   }
 }

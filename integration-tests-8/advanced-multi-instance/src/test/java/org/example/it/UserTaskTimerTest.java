@@ -1,5 +1,6 @@
 package org.example.it;
 
+import java.time.Duration;
 import java.util.List;
 
 import org.camunda.community.bpmndt.api.UserTaskHandler;
@@ -25,6 +26,8 @@ class UserTaskTimerTest {
 
   @Test
   void testExecute() {
+    tc.handleTimerBoundaryEvent().execute(() -> processTestContext.increaseTime(Duration.ofHours(1)));
+
     var elements = List.of(1, 2, 3);
 
     var userTaskHandler = new UserTaskHandler("userTask");

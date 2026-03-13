@@ -20,6 +20,8 @@ public class ServiceTaskSignalTest {
 
   @Test
   void testExecute() {
+    tc.handleSignalBoundaryEvent().execute((client, ignored) -> client.newBroadcastSignalCommand().signalName("advancedSignal").execute());
+
     tc.createExecutor(client, processTestContext).verify(ProcessInstanceAssert::isCompleted).execute();
   }
 }

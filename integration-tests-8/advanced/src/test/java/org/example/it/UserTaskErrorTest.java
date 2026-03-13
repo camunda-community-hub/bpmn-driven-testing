@@ -1,5 +1,6 @@
 package org.example.it;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -18,6 +19,7 @@ public class UserTaskErrorTest {
   CamundaClient client;
   CamundaProcessTestContext processTestContext;
 
+  @Disabled // currently not supported
   @Test
   void testExecute() {
     tc.createExecutor(client, processTestContext).verify(ProcessInstanceAssert::isCompleted).execute();

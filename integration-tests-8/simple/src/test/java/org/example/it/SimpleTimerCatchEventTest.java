@@ -2,6 +2,8 @@ package org.example.it;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import java.time.Duration;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -24,7 +26,8 @@ class SimpleTimerCatchEventTest {
   void testExecute() {
     tc.handleTimerCatchEvent()
         .verifyTimeDuration(duration -> assertThat(duration.toMillis()).isEqualTo(3600000))
-        .verifyTimeDurationExpression(expr -> assertThat(expr).isEqualTo("PT1H"));
+        .verifyTimeDurationExpression(expr -> assertThat(expr).isEqualTo("PT1H"))
+        .execute(() -> processTestContext.increaseTime(Duration.ofHours(1)));
 
     tc.createExecutor(client, processTestContext).verify(ProcessInstanceAssert::isCompleted).execute();
   }

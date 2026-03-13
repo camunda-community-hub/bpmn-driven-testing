@@ -22,9 +22,12 @@ class SimpleSignalCatchEventTest {
 
   @Test
   void testExecute() {
+    var correlationKey = String.valueOf(System.currentTimeMillis());
+
     tc.handleSignalCatchEvent()
         .verifySignalName(signalName -> assertThat(signalName).isEqualTo("simpleSignal"))
-        .verifySignalNameExpression(expr -> assertThat(expr).isEqualTo("=\"simpleSignal\""));
+        .verifySignalNameExpression(expr -> assertThat(expr).isEqualTo("=\"simpleSignal\""))
+        .execute((client, ignored) -> client.newBroadcastSignalCommand().signalName("simpleSignal").execute());
 
     tc.createExecutor(client, processTestContext).verify(ProcessInstanceAssert::isCompleted).execute();
   }

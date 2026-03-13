@@ -1,5 +1,7 @@
 package org.example.it;
 
+import java.time.Duration;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -20,6 +22,8 @@ public class CallActivityTimerTest {
 
   @Test
   void testExecute() {
+    tc.handleTimerBoundaryEvent().execute(() -> processTestContext.increaseTime(Duration.ofDays(1)));
+
     tc.createExecutor(client, processTestContext)
         .simulateProcess("advanced")
         .verify(ProcessInstanceAssert::isCompleted)

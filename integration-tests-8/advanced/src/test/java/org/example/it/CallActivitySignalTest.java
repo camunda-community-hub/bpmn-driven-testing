@@ -20,6 +20,8 @@ public class CallActivitySignalTest {
 
   @Test
   void testExecute() {
+    tc.handleSignalBoundaryEvent().execute((client, ignored) -> client.newBroadcastSignalCommand().signalName("advancedSignal").execute());
+
     tc.createExecutor(client, processTestContext)
         .simulateProcess("advanced")
         .verify(ProcessInstanceAssert::isCompleted)

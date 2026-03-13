@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.time.Duration;
 
 import org.camunda.community.bpmndt.api.TestCaseInstanceElement.CallActivityElement;
 import org.camunda.community.bpmndt.test.TestPaths;
@@ -94,6 +95,8 @@ class CallActivityWithoutSimulationTest {
     handler.waitForBoundaryEvent();
 
     handler.executeTestCase(new SubProcessWait(), null);
+
+    tcTimer.timerBoundaryEvent.execute(() -> processTestContext.increaseTime(Duration.ofHours(1)));
 
     tcTimer.createExecutor(client, processTestContext).customize(this::customize).execute();
   }

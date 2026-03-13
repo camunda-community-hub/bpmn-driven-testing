@@ -20,6 +20,7 @@ public class TimerEventHandler {
   private final TimerEventElement element;
 
   private Consumer<ProcessInstanceAssert> verifier;
+  private Runnable action;
 
   private Consumer<String> timeDateExpressionConsumer;
   private Consumer<String> timeDurationExpressionConsumer;
@@ -79,6 +80,14 @@ public class TimerEventHandler {
 
     var timer = getTimer(instance, flowScopeKey);
 
+    // since the orchestration cluster API does not expose timers, an action is required
+    if (timer == null && action == null) {
+      throw new IllegalStateException("an action is required to increase the engine's time");
+    } else if (timer == null) {
+      action.run();
+      return;
+    }
+
     if (timeDateConsumer != null) {
       var dueDateInstant = Instant.ofEpochMilli(timer.dueDate);
       var dueDate = LocalDateTime.ofInstant(dueDateInstant, ZoneId.systemDefault());
@@ -107,6 +116,18 @@ public class TimerEventHandler {
       customizer.accept(this);
     }
     return this;
+  }
+
+  /**
+   * Increases the engine's timer using a custom action, when the process instance is waiting at the corresponding element.
+   *
+   * @param action A specific.
+   */
+  public void execute(Runnable action) {
+    if (action == null) {
+      throw new IllegalArgumentException("action is null");
+    }
+    this.action = action;
   }
 
   /**
@@ -177,7 +198,7 @@ public class TimerEventHandler {
   }
 
   private Timer getTimer(TestCaseInstance instance, long flowScopeKey) {
-    throw new UnsupportedOperationException();
+    return null; // currently not supported
   }
 
   private static class Timer {
