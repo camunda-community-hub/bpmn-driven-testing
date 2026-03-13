@@ -38,10 +38,10 @@ class SignalStartEventTest {
   }
 
   @Test
-  void testExecuteSignalStart() {
+  void testExecuteMessageStart() {
     tcSignalStart.createExecutor(client, processTestContext)
         .verify(ProcessInstanceAssert::isCompleted)
-        .execute();
+        .execute(() -> client.newBroadcastSignalCommand().signalName("simpleSignal").execute());
   }
 
   private static class TestCase extends AbstractJUnit5TestCase {

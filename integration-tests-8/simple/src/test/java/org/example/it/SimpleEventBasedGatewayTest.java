@@ -1,5 +1,7 @@
 package org.example.it;
 
+import java.time.Duration;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -42,6 +44,8 @@ class SimpleEventBasedGatewayTest {
 
   @Test
   void testExecuteTimer() {
+    tcTimer.handleTimerCatchEvent().execute(() -> processTestContext.increaseTime(Duration.ofHours(1)));
+
     tcTimer.createExecutor(client, processTestContext)
         .withVariable("correlationKey", String.valueOf(System.currentTimeMillis()))
         .verify(ProcessInstanceAssert::isCompleted)

@@ -20,6 +20,8 @@ class SimpleSignalStartEventTest {
 
   @Test
   void testExecute() {
-    tc.createExecutor(client, processTestContext).verify(ProcessInstanceAssert::isCompleted).execute();
+    tc.createExecutor(client, processTestContext)
+        .verify(ProcessInstanceAssert::isCompleted)
+        .execute(() -> client.newBroadcastSignalCommand().signalName("simpleSignal").execute());
   }
 }

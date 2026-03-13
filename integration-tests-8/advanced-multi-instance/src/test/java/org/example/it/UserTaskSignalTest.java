@@ -25,6 +25,8 @@ class UserTaskSignalTest {
 
   @Test
   void testExecute() {
+    tc.handleSignalBoundaryEvent().execute((client, ignored) -> client.newBroadcastSignalCommand().signalName("userTaskSignal").execute());
+
     var elements = List.of(1, 2, 3);
 
     var userTaskHandler = new UserTaskHandler("userTask");

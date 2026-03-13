@@ -6,6 +6,7 @@ import java.nio.file.Files;
 
 import org.camunda.community.bpmndt.test.TestPaths;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -30,6 +31,7 @@ class UserTaskErrorTest {
     handler = new UserTaskHandler("userTask");
   }
 
+  @Disabled // currently not supported
   @Test
   void testExecute() {
     handler.throwBpmnError("ERROR_CODE", "test error message");

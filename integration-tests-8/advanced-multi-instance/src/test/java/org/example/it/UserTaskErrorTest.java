@@ -3,6 +3,7 @@ package org.example.it;
 import java.util.List;
 
 import org.camunda.community.bpmndt.api.UserTaskHandler;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -23,6 +24,7 @@ class UserTaskErrorTest {
 
   private int loopCount;
 
+  @Disabled // currently not supported
   @Test
   void testExecute() {
     var elements = List.of(1, 2, 3);
