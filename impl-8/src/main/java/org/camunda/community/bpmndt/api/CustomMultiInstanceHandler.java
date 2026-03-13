@@ -1,17 +1,16 @@
 package org.camunda.community.bpmndt.api;
 
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import org.camunda.community.bpmndt.api.TestCaseInstanceElement.MultiInstanceElement;
-import org.camunda.community.bpmndt.api.TestCaseInstanceMemo.ElementMemo;
 
-import io.camunda.zeebe.process.test.assertions.BpmnAssert;
-import io.camunda.zeebe.process.test.assertions.ProcessInstanceAssert;
-import io.camunda.zeebe.protocol.record.intent.ProcessInstanceIntent;
+import io.camunda.client.api.search.enums.ElementInstanceState;
+import io.camunda.client.api.search.response.ElementInstance;
+import io.camunda.process.test.api.CamundaAssert;
+import io.camunda.process.test.api.assertions.ProcessInstanceAssert;
+import io.camunda.process.test.api.assertions.ProcessInstanceSelectors;
 
 /**
  * Fluent API to handle multi instances and multi instance scopes, using custom code - see {@link #execute(BiConsumer)}.
@@ -49,8 +48,8 @@ public class CustomMultiInstanceHandler {
 
   void apply(TestCaseInstance instance, long flowScopeKey) {
     if (verifier != null) {
-      var processInstanceKey = instance.getProcessInstanceKey(flowScopeKey);
-      verifier.accept(new ProcessInstanceAssert(processInstanceKey, BpmnAssert.getRecordStream()));
+      var processInstanceSelector = ProcessInstanceSelectors.byKey(instance.getProcessInstanceKey(flowScopeKey));
+      verifier.accept(CamundaAssert.assertThat(processInstanceSelector));
     }
 
     if (expectedSequential != null && expectedSequential != element.sequential) {
@@ -65,12 +64,12 @@ public class CustomMultiInstanceHandler {
 
     int loopIndex = 0;
 
-    Optional<ElementMemo> next;
+    Optional<ElementInstance> next;
     while ((next = next(instance, flowScopeKey, loopIndex)).isPresent()) {
       loopIndex++;
 
       if (loopAction != null) {
-        loopAction.accept(instance, next.get().key);
+        loopAction.accept(instance, next.get().getElementInstanceKey());
       }
     }
 
@@ -186,37 +185,31 @@ public class CustomMultiInstanceHandler {
     return sequential ? "sequential" : "parallel";
   }
 
-  private Optional<ElementMemo> next(TestCaseInstance instance, long flowScopeKey, int loopIndex) {
-    return instance.select(memo -> {
-      var multiInstanceElements = memo.multiInstanceElements.stream().filter(e ->
-          e.flowScopeKey == flowScopeKey && Objects.equals(e.id, element.id)
-      ).collect(Collectors.toList());
+  private Optional<ElementInstance> next(TestCaseInstance instance, long flowScopeKey, int loopIndex) {
+    var multiInstance = instance.getElementInstance(flowScopeKey, element.id);
 
-      if (multiInstanceElements.isEmpty()) {
-        var message = String.format("expected flow scope %d to have multi instance element %s, but has not", flowScopeKey, element.id);
-        throw instance.createException(message, flowScopeKey);
-      }
+    return instance.await(() -> {
+      var elementInstances = instance.getClient().newElementInstanceSearchRequest()
+          .filter(filter -> filter.elementInstanceScopeKey(multiInstance.getElementInstanceKey()))
+          .sort(sort -> sort.startDate().asc())
+          .execute()
+          .items();
 
-      var multiInstanceKey = multiInstanceElements.get(0).key;
-
-      var elements = memo.elements.stream().filter(e ->
-          e.flowScopeKey == multiInstanceKey
-              && Objects.equals(e.id, element.id)
-              && e.state == ProcessInstanceIntent.ELEMENT_ACTIVATED
-      ).collect(Collectors.toList());
-
-      if (elements.size() > loopIndex) {
+      if (elementInstances.size() > loopIndex) {
         // multi instance has next element
-        return Optional.of(elements.get(loopIndex));
+        return Optional.of(elementInstances.get(loopIndex));
       }
 
-      if (multiInstanceElements.size() == 2) {
+      // fetch multi instance again to get latest state
+      var latestMultiInstance = instance.getClient().newElementInstanceGetRequest(multiInstance.getElementInstanceKey()).execute();
+
+      if (latestMultiInstance.getState() == ElementInstanceState.COMPLETED || latestMultiInstance.getState() == ElementInstanceState.TERMINATED) {
         // multi instance is completed or terminated
         return Optional.empty();
       }
 
       var message = String.format("expected multi instance %s of flow scope %d to be completed or terminated, but was not", element.id, flowScopeKey);
-      throw instance.createException(message, flowScopeKey);
+      throw new AssertionError(message);
     });
   }
 }

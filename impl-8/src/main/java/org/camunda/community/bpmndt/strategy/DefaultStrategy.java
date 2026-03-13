@@ -86,7 +86,7 @@ public class DefaultStrategy implements GeneratorStrategy {
       var eventSupport = new BpmnEventSupport(event);
 
       if (eventSupport.isError() || eventSupport.isEscalation()) {
-        methodBuilder.addStatement("instance.isActivating(flowScopeKey, $S)", element.getId());
+        methodBuilder.addStatement("instance.hasTerminated(flowScopeKey, $S)", element.getId());
         return;
       }
     }

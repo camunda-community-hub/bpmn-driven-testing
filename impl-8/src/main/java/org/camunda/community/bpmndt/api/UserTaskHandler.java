@@ -1,6 +1,6 @@
 package org.camunda.community.bpmndt.api;
 
-import java.util.Collections;
+import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,10 +9,12 @@ import java.util.function.Consumer;
 
 import org.camunda.community.bpmndt.api.TestCaseInstanceElement.UserTaskElement;
 
-import io.camunda.zeebe.client.ZeebeClient;
-import io.camunda.zeebe.process.test.assertions.BpmnAssert;
-import io.camunda.zeebe.process.test.assertions.ProcessInstanceAssert;
-import io.camunda.zeebe.protocol.Protocol;
+import io.camunda.client.CamundaClient;
+import io.camunda.client.api.search.enums.ElementInstanceState;
+import io.camunda.client.api.search.response.UserTask;
+import io.camunda.process.test.api.CamundaAssert;
+import io.camunda.process.test.api.assertions.ProcessInstanceAssert;
+import io.camunda.process.test.api.assertions.ProcessInstanceSelectors;
 
 /**
  * Fluent API to handle user tasks. Please note: a user task is completed by default.
@@ -24,7 +26,7 @@ public class UserTaskHandler {
   private final Map<String, Object> variableMap = new HashMap<>();
 
   private Consumer<ProcessInstanceAssert> verifier;
-  private BiConsumer<ZeebeClient, Long> action;
+  private BiConsumer<CamundaClient, Long> action;
   private String errorCode;
   private String errorMessage;
   private Object variables;
@@ -43,8 +45,8 @@ public class UserTaskHandler {
   private Consumer<String> assigneeConsumer;
   private Consumer<List<String>> candidateGroupsConsumer;
   private Consumer<List<String>> candidateUsersConsumer;
-  private Consumer<String> dueDateConsumer;
-  private Consumer<String> followUpDateConsumer;
+  private Consumer<OffsetDateTime> dueDateConsumer;
+  private Consumer<OffsetDateTime> followUpDateConsumer;
   private Consumer<String> formKeyConsumer;
 
   public UserTaskHandler(String elementId) {
@@ -73,9 +75,11 @@ public class UserTaskHandler {
 
   @SuppressWarnings("unchecked")
   void apply(TestCaseInstance instance, long flowScopeKey) {
+    var processInstanceKey = instance.getProcessInstanceKey(flowScopeKey);
+
     if (verifier != null) {
-      var processInstanceKey = instance.getProcessInstanceKey(flowScopeKey);
-      verifier.accept(new ProcessInstanceAssert(processInstanceKey, BpmnAssert.getRecordStream()));
+      var processInstanceSelector = ProcessInstanceSelectors.byKey(processInstanceKey);
+      verifier.accept(CamundaAssert.assertThat(processInstanceSelector));
     }
 
     if (assigneeExpressionConsumer != null) {
@@ -94,13 +98,9 @@ public class UserTaskHandler {
       followUpDateExpressionConsumer.accept(element.followUpDate);
     }
 
-    var job = instance.getJob(flowScopeKey, element.id);
-    if (!Protocol.USER_TASK_JOB_TYPE.equals(job.type)) {
-      String message = "expected job %s to be of type '%s', but was '%s'";
-      throw new AssertionError(String.format(message, element.id, Protocol.USER_TASK_JOB_TYPE, job.type));
-    }
+    var userTask = getUserTask(instance, flowScopeKey);
 
-    var assignee = job.getCustomHeader(Protocol.USER_TASK_ASSIGNEE_HEADER_NAME);
+    var assignee = userTask.getAssignee();
     if (expectedAssignee != null && !expectedAssignee.equals(assignee)) {
       var message = "expected user task %s to have assignee '%s', but was '%s'";
       throw new AssertionError(String.format(message, element.id, expectedAssignee, assignee));
@@ -109,17 +109,7 @@ public class UserTaskHandler {
       assigneeConsumer.accept(assignee);
     }
 
-    var jsonMapper = instance.getClient().getConfiguration().getJsonMapper();
-
-    var candidateGroupsHeader = job.getCustomHeader(Protocol.USER_TASK_CANDIDATE_GROUPS_HEADER_NAME);
-
-    List<String> candidateGroups;
-    if (candidateGroupsHeader == null) {
-      candidateGroups = Collections.emptyList();
-    } else {
-      candidateGroups = jsonMapper.fromJson(candidateGroupsHeader, List.class);
-    }
-
+    var candidateGroups = userTask.getCandidateGroups();
     if (expectedCandidateGroups != null) {
       if (expectedCandidateGroups.size() != candidateGroups.size()) {
         var message = "expected user task %s to have %d candidate group(s), but it has %d";
@@ -137,15 +127,7 @@ public class UserTaskHandler {
       candidateGroupsConsumer.accept(candidateGroups);
     }
 
-    var candidateUsersHeader = job.getCustomHeader(Protocol.USER_TASK_CANDIDATE_USERS_HEADER_NAME);
-
-    List<String> candidateUsers;
-    if (candidateUsersHeader == null) {
-      candidateUsers = Collections.emptyList();
-    } else {
-      candidateUsers = jsonMapper.fromJson(candidateUsersHeader, List.class);
-    }
-
+    var candidateUsers = userTask.getCandidateUsers();
     if (expectedCandidateUsers != null) {
       if (expectedCandidateUsers.size() != candidateUsers.size()) {
         var message = "expected user task %s to have %d candidate user(s), but it has %d";
@@ -163,17 +145,23 @@ public class UserTaskHandler {
       candidateUsersConsumer.accept(candidateUsers);
     }
 
-    var dueDate = job.getCustomHeader(Protocol.USER_TASK_DUE_DATE_HEADER_NAME);
+    var dueDate = userTask.getDueDate();
     if (dueDateConsumer != null) {
       dueDateConsumer.accept(dueDate);
     }
 
-    var followUpDate = job.getCustomHeader(Protocol.USER_TASK_FOLLOW_UP_DATE_HEADER_NAME);
+    var followUpDate = userTask.getFollowUpDate();
     if (followUpDateConsumer != null) {
       followUpDateConsumer.accept(followUpDate);
     }
 
-    var formKey = job.getCustomHeader(Protocol.USER_TASK_FORM_KEY_HEADER_NAME);
+    String formKey = null;
+    if (userTask.getExternalFormReference() != null) {
+      formKey = userTask.getExternalFormReference();
+    } else if (userTask.getFormKey() != null) {
+      formKey = String.valueOf(userTask.getFormKey());
+    }
+
     if (expectedFormKey != null && !expectedFormKey.equals(formKey)) {
       var message = "expected user task %s to have form key '%s', but was '%s'";
       throw new AssertionError(String.format(message, element.id, expectedFormKey, formKey));
@@ -183,7 +171,7 @@ public class UserTaskHandler {
     }
 
     if (action != null) {
-      action.accept(instance.getClient(), job.key);
+      action.accept(instance.getClient(), userTask.getUserTaskKey());
     }
   }
 
@@ -219,10 +207,10 @@ public class UserTaskHandler {
   /**
    * Completes the user task using a custom action, when the process instance is waiting at the corresponding element.
    *
-   * @param action A specific action that accepts a {@link ZeebeClient} and the related job key.
-   * @see ZeebeClient#newCompleteCommand(long)
+   * @param action A specific action that accepts a {@link CamundaClient} and the related user task key.
+   * @see CamundaClient#newCompleteUserTaskCommand(long)
    */
-  public void execute(BiConsumer<ZeebeClient, Long> action) {
+  public void execute(BiConsumer<CamundaClient, Long> action) {
     if (action == null) {
       throw new IllegalArgumentException("action is null");
     }
@@ -358,7 +346,7 @@ public class UserTaskHandler {
    * @param dueDateConsumer A consumer asserting the due date.
    * @return The handler.
    */
-  public UserTaskHandler verifyDueDate(Consumer<String> dueDateConsumer) {
+  public UserTaskHandler verifyDueDate(Consumer<OffsetDateTime> dueDateConsumer) {
     this.dueDateConsumer = dueDateConsumer;
     return this;
   }
@@ -380,7 +368,7 @@ public class UserTaskHandler {
    * @param followUpDateConsumer A consumer asserting the follow-up date.
    * @return The handler.
    */
-  public UserTaskHandler verifyFollowUpDate(Consumer<String> followUpDateConsumer) {
+  public UserTaskHandler verifyFollowUpDate(Consumer<OffsetDateTime> followUpDateConsumer) {
     this.followUpDateConsumer = followUpDateConsumer;
     return this;
   }
@@ -472,21 +460,47 @@ public class UserTaskHandler {
     return this;
   }
 
-  void complete(ZeebeClient client, long jobKey) {
+  void complete(CamundaClient client, long userTaskKey) {
     if (variables != null) {
-      client.newCompleteCommand(jobKey).variables(variables).send().join();
+      client.newCompleteUserTaskCommand(userTaskKey).variables(variables).send().join();
     } else {
-      client.newCompleteCommand(jobKey).variables(variableMap).send().join();
+      client.newCompleteUserTaskCommand(userTaskKey).variables(variableMap).send().join();
     }
   }
 
-  void throwBpmnError(ZeebeClient client, long jobKey) {
-    var throwErrorCommandStep2 = client.newThrowErrorCommand(jobKey).errorCode(errorCode).errorMessage(errorMessage);
+  void throwBpmnError(CamundaClient client, long userTaskKey) {
+    throw new UnsupportedOperationException("currently not possible via CamundaClient");
+  }
 
-    if (variables != null) {
-      throwErrorCommandStep2.variables(variables).send().join();
-    } else {
-      throwErrorCommandStep2.variables(variableMap).send().join();
-    }
+  private UserTask getUserTask(TestCaseInstance instance, long flowScopeKey) {
+    return instance.await(() -> {
+      var elementInstances = instance.getClient().newElementInstanceSearchRequest()
+          .filter(filter -> filter
+              .elementInstanceScopeKey(flowScopeKey)
+              .elementId(element.id)
+              .state(ElementInstanceState.ACTIVE)
+          )
+          .execute()
+          .items();
+
+      if (elementInstances.isEmpty()) {
+        var message = String.format("expected flow scope %d to have element %s, but has not", flowScopeKey, element.id);
+        throw new AssertionError(message);
+      }
+
+      var elementInstanceKey = elementInstances.get(0).getElementInstanceKey();
+
+      var userTask = instance.getClient().newUserTaskSearchRequest()
+          .filter(filter -> filter.elementInstanceKey(elementInstanceKey))
+          .execute()
+          .singleItem();
+
+      if (userTask == null) {
+        var message = String.format("expected element instance %d to have user task %s, but has not", elementInstanceKey, element.id);
+        throw new AssertionError(message);
+      }
+
+      return userTask;
+    });
   }
 }

@@ -1,22 +1,20 @@
 package org.camunda.community.bpmndt.api;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
+import java.util.concurrent.Callable;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import org.camunda.community.bpmndt.api.TestCaseInstanceMemo.IncidentMemo;
-import org.camunda.community.bpmndt.api.TestCaseInstanceMemo.JobMemo;
-import org.camunda.community.bpmndt.api.TestCaseInstanceMemo.MessageSubscriptionMemo;
-
-import io.camunda.zeebe.client.ZeebeClient;
-import io.camunda.zeebe.process.test.api.ZeebeTestEngine;
-import io.camunda.zeebe.process.test.filters.RecordStream;
-import io.camunda.zeebe.protocol.record.Record;
-import io.camunda.zeebe.protocol.record.intent.ProcessInstanceIntent;
+import io.camunda.client.CamundaClient;
+import io.camunda.client.api.command.ProblemException;
+import io.camunda.client.api.search.enums.ElementInstanceState;
+import io.camunda.client.api.search.enums.ElementInstanceType;
+import io.camunda.client.api.search.response.ElementInstance;
+import io.camunda.client.api.search.response.Job;
+import io.camunda.client.api.search.response.MessageSubscription;
+import io.camunda.process.test.api.CamundaAssert;
+import io.camunda.process.test.api.CamundaProcessTestContext;
+import io.camunda.process.test.api.assertions.ProcessInstanceSelectors;
+import io.camunda.process.test.impl.assertions.util.AwaitilityBehavior;
 
 /**
  * Link between a test case and its execution.
@@ -24,30 +22,17 @@ import io.camunda.zeebe.protocol.record.intent.ProcessInstanceIntent;
  * This class is utilizing a process instance that was instantiated by a {@link TestCaseExecutor} and handlers (e.g. {@code UserTaskHandler}) that are part of a
  * test case.
  */
-public class TestCaseInstance implements AutoCloseable {
+public class TestCaseInstance {
 
-  private final ZeebeTestEngine engine;
-  private final ZeebeClient client;
+  private final CamundaClient client;
+  private final CamundaProcessTestContext processTestContext;
 
-  private final long waitTimeout;
+  private final AwaitilityBehavior awaitilityBehavior;
 
-  private final RecordStream recordStream;
-  private final TestCaseInstanceMemo memo;
-
-  private int recordCount;
-
-  TestCaseInstance(ZeebeTestEngine engine, ZeebeClient client, long waitTimeout, boolean printRecordStreamEnabled) {
-    this.engine = engine;
+  TestCaseInstance(CamundaClient client, CamundaProcessTestContext processTestContext, AwaitilityBehavior awaitilityBehavior) {
     this.client = client;
-
-    this.waitTimeout = waitTimeout;
-
-    recordStream = RecordStream.of(engine.getRecordStreamSource());
-    memo = new TestCaseInstanceMemo(printRecordStreamEnabled);
-  }
-
-  public void close() {
-    memo.clear();
+    this.processTestContext = processTestContext;
+    this.awaitilityBehavior = awaitilityBehavior;
   }
 
   public void apply(long flowScopeKey, CallActivityHandler handler) {
@@ -86,16 +71,8 @@ public class TestCaseInstance implements AutoCloseable {
     handler.apply(this, flowScopeKey);
   }
 
-  public RuntimeException createException(String message, long flowScopeKey) {
-    return new Exception(memo, message, flowScopeKey);
-  }
-
-  public ZeebeClient getClient() {
+  public CamundaClient getClient() {
     return client;
-  }
-
-  public ZeebeTestEngine getEngine() {
-    return engine;
   }
 
   /**
@@ -104,42 +81,71 @@ public class TestCaseInstance implements AutoCloseable {
    * @param flowScopeKey The key of an existing flow scope.
    * @param elementId    The BPMN element ID.
    * @return The element instance key.
-   * @throws RuntimeException If no such element instance exists.
+   * @throws AssertionError If no such element instance exists.
    */
   public long getElementInstanceKey(long flowScopeKey, String elementId) {
-    return select(memo -> {
-      var element = memo.elements.stream().filter(e ->
-          e.flowScopeKey == flowScopeKey && Objects.equals(e.id, elementId)
-      ).findFirst();
-
-      if (element.isEmpty()) {
-        var message = String.format("element %s of flow scope %d could not be found", elementId, flowScopeKey);
-        throw createException(message, flowScopeKey);
-      }
-
-      return element.get().key;
-    });
+    return getElementInstance(flowScopeKey, elementId).getElementInstanceKey();
   }
 
   /**
    * Returns the flow scope key of an element instance.
    *
    * @param elementInstanceKey The key of an existing element instance.
-   * @return The flow scope key or {@code -1} if there is no mapping for the given element instance.
+   * @return The flow scope key.
+   * @throws AssertionError If the flow scope key could not be determined.
    */
   public long getFlowScopeKey(long elementInstanceKey) {
-    var flowScopeKey = memo.keys.get(elementInstanceKey);
-    return flowScopeKey != null ? flowScopeKey : -1;
+    return await(() -> {
+      var multiInstanceBodies = client.newElementInstanceSearchRequest()
+          .execute()
+          .items()
+          .stream()
+          .filter(elementInstance -> elementInstance.getType() == ElementInstanceType.MULTI_INSTANCE_BODY)
+          .collect(Collectors.toList());
+
+      for (ElementInstance multiInstanceBody : multiInstanceBodies) {
+        var isElementInstance = client.newElementInstanceSearchRequest()
+            .filter(filter -> filter.elementInstanceScopeKey(multiInstanceBody.getElementInstanceKey()))
+            .execute()
+            .items()
+            .stream()
+            .anyMatch(elementInstance -> elementInstance.getElementInstanceKey() == elementInstanceKey);
+
+        if (isElementInstance) {
+          return multiInstanceBody.getElementInstanceKey();
+        }
+      }
+
+      var message = String.format("failed to get flow scope key of element instance %d", elementInstanceKey);
+      throw new AssertionError(message);
+    });
   }
 
   /**
-   * Returns the process instance key of an element instance.
+   * Returns the process instance key of the given flow scope. If the flow scope is the root scope, the key is the process instance key.
    *
-   * @param elementInstanceKey The key of an existing element instance.
+   * @param flowScopeKey The key of an existing flow scope.
    * @return The process instance key.
+   * @throws AssertionError If the process instance key could not be determined.
    */
-  public long getProcessInstanceKey(long elementInstanceKey) {
-    return memo.getProcessInstanceKey(elementInstanceKey);
+  public long getProcessInstanceKey(long flowScopeKey) {
+    return await(() -> {
+      try {
+        return client.newProcessInstanceGetRequest(flowScopeKey).execute().getProcessInstanceKey();
+      } catch (ProblemException e) {
+        // ignore
+      }
+
+      try {
+        return client.newElementInstanceGetRequest(flowScopeKey).execute().getProcessInstanceKey();
+      } catch (ProblemException e) {
+        throw new AssertionError(e.getMessage());
+      }
+    });
+  }
+
+  public CamundaProcessTestContext getProcessTestContext() {
+    return processTestContext;
   }
 
   /**
@@ -147,119 +153,67 @@ public class TestCaseInstance implements AutoCloseable {
    *
    * @param flowScopeKey The key of an existing flow scope.
    * @param elementId    The BPMN element ID to test.
-   * @throws RuntimeException If the BPMN element has not been passed (is not completed).
+   * @throws AssertionError If the BPMN element has not been passed (element instance does not exist or is not completed).
    */
   public void hasPassed(long flowScopeKey, String elementId) {
-    select(memo -> {
-      var hasPassed = memo.elements.stream().anyMatch(e ->
-          e.flowScopeKey == flowScopeKey
-              && Objects.equals(e.id, elementId)
-              && e.state == ProcessInstanceIntent.ELEMENT_COMPLETED
-      );
+    awaitilityBehavior.untilAsserted(() -> {
+      var elementInstances = client.newElementInstanceSearchRequest()
+          .filter(filter -> filter.elementInstanceScopeKey(flowScopeKey).elementId(elementId))
+          .execute()
+          .items();
 
-      if (!hasPassed) {
+      if (elementInstances.isEmpty()) {
+        var message = String.format("expected flow scope %d to have element %s, but has not", flowScopeKey, elementId);
+        throw new AssertionError(message);
+      }
+
+      if (elementInstances.get(0).getState() != ElementInstanceState.COMPLETED) {
         var message = String.format("expected flow scope %d to have passed element %s, but has not", flowScopeKey, elementId);
-        throw createException(message, flowScopeKey);
+        throw new AssertionError(message);
       }
-
-      return true;
-    });
-  }
-
-  /**
-   * Checks if a BPMN multi instance element has been passed within the given flow scope.
-   *
-   * @param flowScopeKey The key of an existing flow scope.
-   * @param elementId    The BPMN element ID to test.
-   * @throws RuntimeException If the BPMN multi instance element has not been passed (is not completed).
-   */
-  public void hasPassedMultiInstance(long flowScopeKey, String elementId) {
-    select(memo -> {
-      var hasPassed = memo.multiInstanceElements.stream().anyMatch(e ->
-          e.flowScopeKey == flowScopeKey
-              && Objects.equals(e.id, elementId)
-              && e.state == ProcessInstanceIntent.ELEMENT_COMPLETED
-      );
-
-      if (!hasPassed) {
-        var message = String.format("expected flow scope %d to have passed multi instance element %s, but has not", flowScopeKey, elementId);
-        throw createException(message, flowScopeKey);
-      }
-
-      return true;
     });
   }
 
   /**
    * Checks if a BPMN element has been terminated within the given flow scope.
+   * <br>
+   * If the flow scope is a multi instance body, the flow scope's state is asserted.
    *
    * @param flowScopeKey The key of an existing flow scope.
    * @param elementId    The BPMN element ID to test.
-   * @throws RuntimeException If the BPMN element has not been terminated.
+   * @throws AssertionError If the BPMN element has not been terminated (element instance does not exist or is not terminated).
    */
   public void hasTerminated(long flowScopeKey, String elementId) {
-    select(memo -> {
-      var hasTerminated = memo.elements.stream().anyMatch(e ->
-          e.flowScopeKey == flowScopeKey
-              && Objects.equals(e.id, elementId)
-              && e.state == ProcessInstanceIntent.ELEMENT_TERMINATED
-      );
+    awaitilityBehavior.untilAsserted(() -> {
+      ElementInstance flowScope;
+      try {
+        flowScope = client.newElementInstanceGetRequest(flowScopeKey).execute();
+      } catch (ProblemException e) {
+        flowScope = null; // if flow scope is process instance
+      }
 
-      if (!hasTerminated) {
+      if (flowScope != null && flowScope.getType() == ElementInstanceType.MULTI_INSTANCE_BODY) {
+        if (flowScope.getState() != ElementInstanceState.TERMINATED) {
+          var message = String.format("expected multi instance element %s with ID %d to be terminated, but is not", flowScope.getElementId(), flowScopeKey);
+          throw new AssertionError(message);
+        }
+        return;
+      }
+
+      var elementInstances = client.newElementInstanceSearchRequest()
+          .filter(filter -> filter.elementInstanceScopeKey(flowScopeKey).elementId(elementId))
+          .execute()
+          .items();
+
+      if (elementInstances.isEmpty()) {
+        var message = String.format("expected flow scope %d to have element %s, but has not", flowScopeKey, elementId);
+        throw new AssertionError(message);
+      }
+
+      if (elementInstances.get(0).getState() != ElementInstanceState.TERMINATED) {
         var message = String.format("expected flow scope %d to have terminated element %s, but has not", flowScopeKey, elementId);
-        throw createException(message, flowScopeKey);
+        throw new AssertionError(message);
       }
-
-      return true;
-    });
-  }
-
-  /**
-   * Checks if a BPMN multi instance element has been terminated within the given flow scope.
-   *
-   * @param flowScopeKey The key of an existing flow scope.
-   * @param elementId    The BPMN element ID to test.
-   * @throws RuntimeException If the BPMN multi instance element has not been terminated.
-   */
-  public void hasTerminatedMultiInstance(long flowScopeKey, String elementId) {
-    select(memo -> {
-      var hasTerminated = memo.multiInstanceElements.stream().anyMatch(e ->
-          e.flowScopeKey == flowScopeKey
-              && Objects.equals(e.id, elementId)
-              && e.state == ProcessInstanceIntent.ELEMENT_TERMINATED
-      );
-
-      if (!hasTerminated) {
-        var message = String.format("expected flow scope %d to have terminated multi instance element %s, but has not", flowScopeKey, elementId);
-        throw createException(message, flowScopeKey);
-      }
-
-      return true;
-    });
-  }
-
-  /**
-   * Checks if a BPMN element is being activated within the given flow scope. This method is used to verify that a terminating end event (error or escalation)
-   * has been reached.
-   *
-   * @param flowScopeKey The key of an existing flow scope.
-   * @param elementId    The BPMN element ID to test.
-   * @throws RuntimeException If the BPMN element is not being activated.
-   */
-  public void isActivating(long flowScopeKey, String elementId) {
-    select(memo -> {
-      var hasTerminated = memo.elements.stream().anyMatch(e ->
-          e.flowScopeKey == flowScopeKey
-              && Objects.equals(e.id, elementId)
-              && e.state == ProcessInstanceIntent.ELEMENT_ACTIVATING
-      );
-
-      if (!hasTerminated) {
-        var message = String.format("expected flow scope %d to have activating element %s, but has not", flowScopeKey, elementId);
-        throw createException(message, flowScopeKey);
-      }
-
-      return true;
     });
   }
 
@@ -267,21 +221,11 @@ public class TestCaseInstance implements AutoCloseable {
    * Checks if the given process instance is completed.
    *
    * @param processInstanceKey The key of an existing process instance.
-   * @throws RuntimeException If the process instance is not completed.
+   * @throws AssertionError If the process instance is not completed.
    */
   public void isCompleted(long processInstanceKey) {
-    select(memo -> {
-      var isCompleted = memo.processInstances.stream().anyMatch(processInstance ->
-          processInstance.key == processInstanceKey && processInstance.state == ProcessInstanceIntent.ELEMENT_COMPLETED
-      );
-
-      if (!isCompleted) {
-        var message = String.format("expected process instance %d to be completed, but was not", processInstanceKey);
-        throw createException(message, processInstanceKey);
-      }
-
-      return true;
-    });
+    var processInstanceSelector = ProcessInstanceSelectors.byKey(processInstanceKey);
+    CamundaAssert.assertThatProcessInstance(processInstanceSelector).isCompleted();
   }
 
   /**
@@ -289,197 +233,157 @@ public class TestCaseInstance implements AutoCloseable {
    *
    * @param flowScopeKey The key of an existing flow scope.
    * @param elementId    The BPMN element to test.
-   * @throws RuntimeException If the flow is not waiting at the BPMN element.
+   * @throws AssertionError If the flow is not waiting at the BPMN element.
    */
   public void isWaitingAt(long flowScopeKey, String elementId) {
-    select(memo -> {
-      var isWaitingAt = memo.elements.stream().anyMatch(e ->
-          e.flowScopeKey == flowScopeKey
-              && Objects.equals(e.id, elementId)
-              && e.state == ProcessInstanceIntent.ELEMENT_ACTIVATED
-      );
+    awaitilityBehavior.untilAsserted(() -> {
+      var elementInstances = client.newElementInstanceSearchRequest()
+          .filter(filter -> filter.elementInstanceScopeKey(flowScopeKey).elementId(elementId))
+          .execute()
+          .items();
 
-      if (!isWaitingAt) {
-        var message = String.format("expected flow scope %d to be waiting at element %s, but was not", flowScopeKey, elementId);
-        throw createException(message, flowScopeKey);
+      if (elementInstances.isEmpty()) {
+        var message = String.format("expected flow scope %d to have element %s, but has not", flowScopeKey, elementId);
+        throw new AssertionError(message);
       }
 
-      return true;
-    });
-  }
-
-  List<Long> getKeys(long key) {
-    var keys = new ArrayList<Long>(1);
-
-    var current = key;
-    while (true) {
-      keys.add(current);
-
-      var parent = memo.keys.get(current);
-      if (parent == null) {
-        break;
-      }
-      current = parent;
-    }
-
-    return keys;
-  }
-
-  JobMemo getJob(long flowScopeKey, String elementId) {
-    return select(memo -> {
-      var job = memo.jobs.stream().filter(j ->
-          j.flowScopeKey == flowScopeKey && Objects.equals(j.elementId, elementId)
-      ).findFirst();
-
-      if (job.isEmpty()) {
-        var message = String.format("job for element %s of flow scope %d could not be found", elementId, flowScopeKey);
-        throw createException(message, flowScopeKey);
-      }
-
-      memo.jobs.remove(job.get());
-
-      return job.get();
-    });
-  }
-
-  MessageSubscriptionMemo getMessageSubscription(long flowScopeKey, String elementId) {
-    var flowScopeKeys = getKeys(flowScopeKey);
-
-    return select(memo -> {
-      var messageSubscription = memo.messageSubscriptions.stream().filter(s ->
-          flowScopeKeys.contains(s.flowScopeKey) && Objects.equals(s.elementId, elementId)
-      ).findFirst();
-
-      if (messageSubscription.isEmpty()) {
-        var message = String.format("element %s of flow scope %d has no message subscription", elementId, flowScopeKey);
-        throw createException(message, flowScopeKey);
-      }
-
-      memo.messageSubscriptions.remove(messageSubscription.get());
-
-      return messageSubscription.get();
+      // do not compare the element instance state
+      // since a job handler might already have completed a job
+      // which results in a COMPLETED state
     });
   }
 
   /**
-   * Selects information from the memorization, using the given function.
-   * <p>
-   * The function is applied every 100ms until the result is not {@code null} or the wait timeout expired.
-   * <p>
+   * Awaits that the given callable returns a specific value after one or multiple tries until a timeout is reached.
    *
-   * @param selector Selector function.
-   * @param <T>      The result type.
-   * @return The result.
+   * @param callable The callable, calling Camunda using the {@link CamundaClient}.
+   * @param <R>      The return type.
+   * @return A desired value.
+   * @see AwaitilityBehavior
    */
-  <T> T select(Function<TestCaseInstanceMemo, T> selector) {
-    T result = null;
-    RuntimeException ex = null;
-
-    var a = System.currentTimeMillis();
-    var b = a;
-
-    while ((b - a) < waitTimeout) {
-      int i = 0;
-      for (Record<?> record : recordStream.records()) {
-        i++;
-
-        if (i <= recordCount) {
-          // skip record, since it has been processed already
-          continue;
-        }
-
-        recordCount++;
-
-        memo.apply(record);
-      }
-
-      try {
-        result = selector.apply(memo);
-      } catch (RuntimeException e) {
-        ex = e;
-      }
-
-      if (result != null) {
-        return result;
-      }
-
-      try {
-        TimeUnit.MILLISECONDS.sleep(100);
-      } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
-      }
-
-      b = System.currentTimeMillis();
-    }
-
-    if (ex != null) {
-      throw new RuntimeException(ex);
-    }
-
-    return null;
+  <R> R await(Callable<R> callable) {
+    var holder = new Holder<R>();
+    awaitilityBehavior.untilAsserted(callable, holder);
+    return holder.get();
   }
 
-  private static class Exception extends RuntimeException {
+  /**
+   * Get the element instance within the given flow scope and ID.
+   *
+   * @param flowScopeKey The key of an existing flow scope.
+   * @param elementId    The BPMN element ID.
+   * @throws AssertionError If the BPMN element could not be found.
+   */
+  ElementInstance getElementInstance(long flowScopeKey, String elementId) {
+    return await(() -> {
+      var elementInstances = client.newElementInstanceSearchRequest()
+          .filter(filter -> filter.elementInstanceScopeKey(flowScopeKey).elementId(elementId))
+          .execute()
+          .items();
 
-    private final TestCaseInstanceMemo memo;
-    private final String message;
-    private final long flowScopeKey;
+      if (elementInstances.isEmpty()) {
+        var message = String.format("expected flow scope %d to have element %s, but has not", flowScopeKey, elementId);
+        throw new AssertionError(message);
+      }
 
-    private Exception(TestCaseInstanceMemo memo, String message, long flowScopeKey) {
-      this.memo = memo;
-      this.message = message;
-      this.flowScopeKey = flowScopeKey;
+      return elementInstances.get(elementInstances.size() - 1);
+    });
+  }
+
+  Job getJob(long flowScopeKey, String elementId) {
+    return await(() -> {
+      var elementInstances = client.newElementInstanceSearchRequest()
+          .filter(filter -> filter.elementInstanceScopeKey(flowScopeKey).elementId(elementId))
+          .execute()
+          .items();
+
+      if (elementInstances.isEmpty()) {
+        var message = String.format("expected flow scope %d to have element %s, but has not", flowScopeKey, elementId);
+        throw new AssertionError(message);
+      }
+
+      var elementInstance = elementInstances.get(elementInstances.size() - 1);
+
+      var job = client.newJobSearchRequest()
+          .filter(filter -> filter.elementInstanceKey(elementInstance.getElementInstanceKey()))
+          .execute()
+          .singleItem();
+
+      if (job == null) {
+        var message = String.format("element %s of flow scope %d has no job", elementId, flowScopeKey);
+        throw new AssertionError(message);
+      }
+
+      return job;
+    });
+  }
+
+  MessageSubscription getMessageSubscription(long flowScopeKey, String elementId, String attachedTo) {
+    ElementInstance flowScope = null;
+    if (attachedTo != null) {
+      flowScope = await(() -> {
+        try {
+          return client.newElementInstanceGetRequest(flowScopeKey).execute();
+        } catch (ProblemException e) {
+          return null; // if flow scope is process instance
+        }
+      });
     }
 
+    if (flowScope != null && flowScope.getType() == ElementInstanceType.MULTI_INSTANCE_BODY) {
+      return await(() -> {
+        var messageSubscription = client.newMessageSubscriptionSearchRequest()
+            .filter(filter -> filter.elementInstanceKey(flowScopeKey))
+            .execute()
+            .singleItem();
+
+        if (messageSubscription == null) {
+          var message = String.format("multi instance element %s with ID %d has no message subscription", attachedTo, flowScopeKey);
+          throw new AssertionError(message);
+        }
+
+        return messageSubscription;
+      });
+    }
+
+    ElementInstance elementInstance;
+    if (attachedTo == null) {
+      elementInstance = getElementInstance(flowScopeKey, elementId);
+    } else {
+      elementInstance = getElementInstance(flowScopeKey, attachedTo);
+    }
+
+    return await(() -> {
+      var messageSubscription = client.newMessageSubscriptionSearchRequest()
+          .filter(filter -> filter.elementInstanceKey(elementInstance.getElementInstanceKey()))
+          .execute()
+          .singleItem();
+
+      if (messageSubscription == null) {
+        var message = String.format("element %s of flow scope %d has no message subscription", elementInstance.getElementId(), flowScopeKey);
+        throw new AssertionError(message);
+      }
+
+      return messageSubscription;
+    });
+  }
+
+  /**
+   * Generic value holder, needed for {@link AwaitilityBehavior#untilAsserted(Callable, Consumer)}.
+   *
+   * @param <T> Any type.
+   */
+  static class Holder<T> implements Consumer<T> {
+
+    private T value;
+
     @Override
-    public String getMessage() {
-      var processInstanceKey = memo.getProcessInstanceKey(flowScopeKey);
+    public void accept(T value) {
+      this.value = value;
+    }
 
-      var b = new StringBuilder(message);
-
-      var incidents = memo.incidents.stream().filter(i -> i.processInstanceKey == processInstanceKey).collect(Collectors.toList());
-      if (!incidents.isEmpty()) {
-        b.append("\nfound incidents:");
-
-        for (IncidentMemo incident : incidents) {
-          b.append("\n  - element ");
-          b.append(incident.elementId);
-          b.append(": ");
-          b.append(incident.errorType.name());
-          b.append(": ");
-          b.append(incident.errorMessage);
-        }
-      }
-
-      var elements = new LinkedHashMap<String, ProcessInstanceIntent>();
-
-      memo.elements.stream().filter(e -> e.processInstanceKey == processInstanceKey).forEach(e -> elements.put(e.id, e.state));
-
-      var states = elements.keySet().stream()
-          .map(k -> {
-            switch (elements.get(k)) {
-              case ELEMENT_ACTIVATED:
-                return k + " (activated)";
-              case ELEMENT_COMPLETED:
-                return k + " (completed)";
-              case ELEMENT_TERMINATED:
-                return k + " (terminated)";
-              default:
-                return null;
-            }
-          })
-          .collect(Collectors.toList());
-
-      if (!states.isEmpty()) {
-        b.append("\nfound element instances:");
-
-        for (String state : states) {
-          b.append("\n  - ");
-          b.append(state);
-        }
-      }
-
-      return b.toString();
+    public T get() {
+      return value;
     }
   }
 }

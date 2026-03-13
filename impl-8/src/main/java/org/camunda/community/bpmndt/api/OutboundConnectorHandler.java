@@ -7,9 +7,10 @@ import java.util.function.Consumer;
 
 import org.camunda.community.bpmndt.api.TestCaseInstanceElement.OutboundConnectorElement;
 
-import io.camunda.zeebe.client.ZeebeClient;
-import io.camunda.zeebe.process.test.assertions.BpmnAssert;
-import io.camunda.zeebe.process.test.assertions.ProcessInstanceAssert;
+import io.camunda.client.CamundaClient;
+import io.camunda.process.test.api.CamundaAssert;
+import io.camunda.process.test.api.assertions.ProcessInstanceAssert;
+import io.camunda.process.test.api.assertions.ProcessInstanceSelectors;
 
 /**
  * Fluent API to handle outbound connectors. Please note: an outbound connector is completed by default.
@@ -21,13 +22,14 @@ public class OutboundConnectorHandler {
   private final Map<String, Object> variableMap = new HashMap<>();
 
   private Consumer<ProcessInstanceAssert> verifier;
-  private BiConsumer<ZeebeClient, Long> action;
+  private BiConsumer<CamundaClient, Long> action;
   private String errorCode;
   private String errorMessage;
   private Object variables;
 
   private Consumer<Map<String, String>> inputMappingConsumer;
   private Consumer<Map<String, String>> outputMappingConsumer;
+  private Consumer<String> retriesExpressionConsumer;
   private Consumer<String> taskDefinitionTypeConsumer;
   private Consumer<Map<String, String>> taskHeadersConsumer;
 
@@ -62,8 +64,8 @@ public class OutboundConnectorHandler {
 
   void apply(TestCaseInstance instance, long flowScopeKey) {
     if (verifier != null) {
-      var processInstanceKey = instance.getProcessInstanceKey(flowScopeKey);
-      verifier.accept(new ProcessInstanceAssert(processInstanceKey, BpmnAssert.getRecordStream()));
+      var processInstanceSelector = ProcessInstanceSelectors.byKey(instance.getProcessInstanceKey(flowScopeKey));
+      verifier.accept(CamundaAssert.assertThat(processInstanceSelector));
     }
 
     if (expectedTaskDefinitionType != null && !expectedTaskDefinitionType.equals(element.taskDefinitionType)) {
@@ -72,6 +74,10 @@ public class OutboundConnectorHandler {
     }
     if (taskDefinitionTypeConsumer != null) {
       taskDefinitionTypeConsumer.accept(element.taskDefinitionType);
+    }
+
+    if (retriesExpressionConsumer != null) {
+      retriesExpressionConsumer.accept(element.retries);
     }
 
     if (taskHeadersConsumer != null) {
@@ -87,16 +93,16 @@ public class OutboundConnectorHandler {
 
     var job = instance.getJob(flowScopeKey, element.id);
 
-    if (expectedRetries != null && !expectedRetries.equals(job.retries)) {
+    if (expectedRetries != null && !expectedRetries.equals(job.getRetries())) {
       var message = "expected job %s to have a retry count of %d, but was %d";
-      throw new AssertionError(String.format(message, element.id, expectedRetries, job.retries));
+      throw new AssertionError(String.format(message, element.id, expectedRetries, job.getRetries()));
     }
     if (retriesConsumer != null) {
-      retriesConsumer.accept(job.retries);
+      retriesConsumer.accept(job.getRetries());
     }
 
     if (action != null) {
-      action.accept(instance.getClient(), job.key);
+      action.accept(instance.getClient(), job.getJobKey());
     }
   }
 
@@ -132,10 +138,10 @@ public class OutboundConnectorHandler {
   /**
    * Executes a custom action that handles the underlying job, when the process instance is waiting at the corresponding element.
    *
-   * @param action A specific action that accepts a {@link ZeebeClient} and the related job key.
-   * @see ZeebeClient#newCompleteCommand(long)
+   * @param action A specific action that accepts a {@link CamundaClient} and the related job key.
+   * @see CamundaClient#newCompleteCommand(long)
    */
-  public void execute(BiConsumer<ZeebeClient, Long> action) {
+  public void execute(BiConsumer<CamundaClient, Long> action) {
     if (action == null) {
       throw new IllegalArgumentException("action is null");
     }
@@ -207,6 +213,17 @@ public class OutboundConnectorHandler {
    */
   public OutboundConnectorHandler verifyRetries(Consumer<Integer> retriesConsumer) {
     this.retriesConsumer = retriesConsumer;
+    return this;
+  }
+
+  /**
+   * Verifies that the underlying job has a specific "retries" FEEL expression (see "Retries" section), using a consumer function.
+   *
+   * @param retriesExpressionConsumer A consumer asserting the "retries" expression.
+   * @return The handler.
+   */
+  public OutboundConnectorHandler verifyRetriesExpression(Consumer<String> retriesExpressionConsumer) {
+    this.retriesExpressionConsumer = retriesExpressionConsumer;
     return this;
   }
 
@@ -289,7 +306,7 @@ public class OutboundConnectorHandler {
     return this;
   }
 
-  void complete(ZeebeClient client, long jobKey) {
+  void complete(CamundaClient client, long jobKey) {
     if (variables != null) {
       client.newCompleteCommand(jobKey).variables(variables).send().join();
     } else {
@@ -297,7 +314,7 @@ public class OutboundConnectorHandler {
     }
   }
 
-  void throwBpmnError(ZeebeClient client, long jobKey) {
+  void throwBpmnError(CamundaClient client, long jobKey) {
     var throwErrorCommandStep2 = client.newThrowErrorCommand(jobKey).errorCode(errorCode).errorMessage(errorMessage);
 
     if (variables != null) {

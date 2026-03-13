@@ -9,19 +9,19 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import io.camunda.zeebe.client.ZeebeClient;
-import io.camunda.zeebe.process.test.api.ZeebeTestEngine;
-import io.camunda.zeebe.process.test.assertions.ProcessInstanceAssert;
-import io.camunda.zeebe.process.test.extension.ZeebeProcessTest;
+import io.camunda.client.CamundaClient;
+import io.camunda.process.test.api.CamundaProcessTest;
+import io.camunda.process.test.api.CamundaProcessTestContext;
+import io.camunda.process.test.api.assertions.ProcessInstanceAssert;
 
-@ZeebeProcessTest
+@CamundaProcessTest
 class ServiceTaskErrorTest {
 
   @RegisterExtension
   TestCase tc = new TestCase();
 
-  ZeebeTestEngine engine;
-  ZeebeClient client;
+  CamundaClient client;
+  CamundaProcessTestContext processTestContext;
 
   private JobHandler handler;
 
@@ -37,7 +37,7 @@ class ServiceTaskErrorTest {
         .handler((client, job) -> client.newThrowErrorCommand(job).errorCode("ADVANCED_ERROR").send());
 
     try (var ignored = workerBuilder.open()) {
-      tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+      tc.createExecutor(client, processTestContext).verify(ProcessInstanceAssert::isCompleted).execute();
     }
   }
 
@@ -49,17 +49,17 @@ class ServiceTaskErrorTest {
         .withVariable("z", true)
         .throwBpmnError("ADVANCED_ERROR", "test error message");
 
-    tc.createExecutor(engine)
+    tc.createExecutor(client, processTestContext)
         .verify(piAssert -> {
-          piAssert.hasVariableWithValue("x", "test");
-          piAssert.hasVariableWithValue("y", 1);
-          piAssert.hasVariableWithValue("z", true);
+          piAssert.isCompleted();
+
+          piAssert.hasVariable("x", "test");
+          piAssert.hasVariable("y", 1);
+          piAssert.hasVariable("z", true);
 
           // TODO map error message via FEEL to verify throw error command included the specified error message
           // but it seems that it is currently not possible!?
           // piAssert.hasVariableWithValue("errorMessage", "test message");
-
-          piAssert.isCompleted();
         })
         .execute();
   }

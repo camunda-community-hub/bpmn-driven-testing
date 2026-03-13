@@ -7,7 +7,8 @@ import java.io.InputStreamReader;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import io.camunda.zeebe.process.test.api.ZeebeTestEngine;
+import io.camunda.client.CamundaClient;
+import io.camunda.process.test.api.CamundaProcessTestContext;
 
 /**
  * Abstract superclass for test cases.
@@ -36,15 +37,15 @@ public abstract class AbstractTestCase {
    * Creates a new executor, used to specify variables that are considered during test case execution. After the specification,
    * {@link TestCaseExecutor#execute()} is called to create a new process instance and execute the test case.
    *
-   * @param engine The Zeebe test engine to use.
+   * @param client The client, used to communicate with the Camunda API.
    * @return The newly created executor.
    */
-  public TestCaseExecutor createExecutor(ZeebeTestEngine engine) {
+  public TestCaseExecutor createExecutor(CamundaClient client, CamundaProcessTestContext processTestContext) {
     if (simulateSubProcessResource == null) {
       simulateSubProcessResource = getSimulateSubProcessResource();
     }
 
-    return new TestCaseExecutor(this, engine, simulateSubProcessResource);
+    return new TestCaseExecutor(this, client, processTestContext, simulateSubProcessResource);
   }
 
   /**

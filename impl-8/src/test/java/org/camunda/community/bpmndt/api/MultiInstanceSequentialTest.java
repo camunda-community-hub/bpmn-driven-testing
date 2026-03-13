@@ -15,17 +15,19 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import io.camunda.zeebe.process.test.api.ZeebeTestEngine;
-import io.camunda.zeebe.process.test.assertions.ProcessInstanceAssert;
-import io.camunda.zeebe.process.test.extension.ZeebeProcessTest;
+import io.camunda.client.CamundaClient;
+import io.camunda.process.test.api.CamundaProcessTest;
+import io.camunda.process.test.api.CamundaProcessTestContext;
+import io.camunda.process.test.api.assertions.ProcessInstanceAssert;
 
-@ZeebeProcessTest
+@CamundaProcessTest
 class MultiInstanceSequentialTest {
 
   @RegisterExtension
   TestCase tc = new TestCase();
 
-  ZeebeTestEngine engine;
+  CamundaClient client;
+  CamundaProcessTestContext processTestContext;
 
   private CustomMultiInstanceHandler handler;
 
@@ -45,7 +47,7 @@ class MultiInstanceSequentialTest {
 
   @Test
   void testExecute() {
-    tc.createExecutor(engine)
+    tc.createExecutor(client, processTestContext)
         .withVariable("elements", List.of(1, 2, 3))
         .verify(ProcessInstanceAssert::isCompleted)
         .execute();
@@ -56,7 +58,7 @@ class MultiInstanceSequentialTest {
     handler.verifyLoopCount(2);
 
     assertThrows(AssertionError.class, () ->
-        tc.createExecutor(engine)
+        tc.createExecutor(client, processTestContext)
             .withVariable("elements", List.of(1, 2, 3))
             .verify(ProcessInstanceAssert::isCompleted)
             .execute()
@@ -64,7 +66,7 @@ class MultiInstanceSequentialTest {
 
     handler.verifyLoopCount(3);
 
-    tc.createExecutor(engine)
+    tc.createExecutor(client, processTestContext)
         .withVariable("elements", List.of(1, 2, 3))
         .verify(ProcessInstanceAssert::isCompleted)
         .execute();
@@ -75,7 +77,7 @@ class MultiInstanceSequentialTest {
     handler.verifyParallel();
 
     assertThrows(AssertionError.class, () ->
-        tc.createExecutor(engine)
+        tc.createExecutor(client, processTestContext)
             .withVariable("elements", List.of(1, 2, 3))
             .verify(ProcessInstanceAssert::isCompleted)
             .execute()
@@ -83,7 +85,7 @@ class MultiInstanceSequentialTest {
 
     handler.verifySequential();
 
-    tc.createExecutor(engine)
+    tc.createExecutor(client, processTestContext)
         .withVariable("elements", List.of(1, 2, 3))
         .verify(ProcessInstanceAssert::isCompleted)
         .execute();
@@ -98,7 +100,7 @@ class MultiInstanceSequentialTest {
       this.processInstanceKey = processInstanceKey;
     });
 
-    var processInstanceKey = tc.createExecutor(engine)
+    var processInstanceKey = tc.createExecutor(client, processTestContext)
         .withVariable("elements", List.of(1, 2, 3))
         .verify(ProcessInstanceAssert::isCompleted)
         .execute();
@@ -119,7 +121,7 @@ class MultiInstanceSequentialTest {
       elementInstanceKeys.add(elementInstanceKey);
     });
 
-    var processInstanceKey = tc.createExecutor(engine)
+    var processInstanceKey = tc.createExecutor(client, processTestContext)
         .withVariable("elements", List.of(1, 2, 3))
         .verify(ProcessInstanceAssert::isCompleted)
         .execute();
@@ -145,7 +147,7 @@ class MultiInstanceSequentialTest {
     protected void execute(TestCaseInstance instance, long processInstanceKey) {
       instance.hasPassed(processInstanceKey, "startEvent");
       instance.apply(processInstanceKey, handler);
-      instance.hasPassedMultiInstance(processInstanceKey, "multiInstanceManualTask");
+      instance.hasPassed(processInstanceKey, "multiInstanceManualTask");
       instance.hasPassed(processInstanceKey, "endEvent");
     }
 

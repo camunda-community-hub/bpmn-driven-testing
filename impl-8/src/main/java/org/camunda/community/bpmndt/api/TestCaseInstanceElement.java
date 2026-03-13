@@ -29,6 +29,7 @@ public abstract class TestCaseInstanceElement {
 
   public static class MessageEventElement extends TestCaseInstanceElement {
 
+    public String attachedTo; // Optional ID of the BPMN element, the event is attached to
     public String correlationKey;
     public String messageName;
   }
@@ -42,17 +43,20 @@ public abstract class TestCaseInstanceElement {
 
     public Map<String, String> inputs;
     public Map<String, String> outputs;
+    public String retries;
     public String taskDefinitionType;
     public Map<String, String> taskHeaders;
   }
 
   public static class SignalEventElement extends TestCaseInstanceElement {
 
+    public String attachedTo; // Optional ID of the BPMN element, the event is attached to
     public String signalName;
   }
 
   public static class TimerEventElement extends TestCaseInstanceElement {
 
+    public String attachedTo; // Optional ID of the BPMN element, the event is attached to
     public String timeDate;
     public String timeDuration;
   }

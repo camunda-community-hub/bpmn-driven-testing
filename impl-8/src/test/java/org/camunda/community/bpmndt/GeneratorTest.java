@@ -140,7 +140,6 @@ class GeneratorTest {
     assertThat(isFile.test("org/camunda/community/bpmndt/api/TestCaseExecutor.java")).isTrue();
     assertThat(isFile.test("org/camunda/community/bpmndt/api/TestCaseInstance.java")).isTrue();
     assertThat(isFile.test("org/camunda/community/bpmndt/api/TestCaseInstanceElement.java")).isTrue();
-    assertThat(isFile.test("org/camunda/community/bpmndt/api/TestCaseInstanceMemo.java")).isTrue();
     assertThat(isFile.test("org/camunda/community/bpmndt/api/TimerEventHandler.java")).isTrue();
     assertThat(isFile.test("org/camunda/community/bpmndt/api/UserTaskHandler.java")).isTrue();
   }

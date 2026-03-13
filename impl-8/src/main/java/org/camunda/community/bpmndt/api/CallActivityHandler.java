@@ -2,14 +2,14 @@ package org.camunda.community.bpmndt.api;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Consumer;
 
 import org.camunda.community.bpmndt.api.TestCaseInstanceElement.CallActivityElement;
-import org.camunda.community.bpmndt.api.TestCaseInstanceMemo.ProcessInstanceMemo;
 
-import io.camunda.zeebe.process.test.assertions.BpmnAssert;
-import io.camunda.zeebe.process.test.assertions.ProcessInstanceAssert;
+import io.camunda.client.api.search.response.ProcessInstance;
+import io.camunda.process.test.api.CamundaAssert;
+import io.camunda.process.test.api.assertions.ProcessInstanceAssert;
+import io.camunda.process.test.api.assertions.ProcessInstanceSelectors;
 
 /**
  * Fluent API to handle call activities. The called process must be simulated or a generated test case for the called process must be executed.
@@ -74,10 +74,10 @@ public class CallActivityHandler {
   }
 
   void apply(TestCaseInstance instance, long flowScopeKey) {
-    var processInstanceKey = instance.getProcessInstanceKey(flowScopeKey);
+    var processInstanceSelector = ProcessInstanceSelectors.byKey(instance.getProcessInstanceKey(flowScopeKey));
 
     if (verifier != null) {
-      verifier.accept(new ProcessInstanceAssert(processInstanceKey, BpmnAssert.getRecordStream()));
+      verifier.accept(CamundaAssert.assertThat(processInstanceSelector));
     }
 
     if (bindingTypeConsumer != null) {
@@ -102,12 +102,12 @@ public class CallActivityHandler {
 
     var calledProcessInstance = getCalledProcessInstance(instance, flowScopeKey);
 
-    if (expectedProcessId != null && !expectedProcessId.equals(calledProcessInstance.bpmnProcessId)) {
+    if (expectedProcessId != null && !expectedProcessId.equals(calledProcessInstance.getProcessDefinitionId())) {
       var message = "expected call activity %s to call process '%s', but was '%s'";
-      throw new AssertionError(String.format(message, element.id, expectedProcessId, calledProcessInstance.bpmnProcessId));
+      throw new AssertionError(String.format(message, element.id, expectedProcessId, calledProcessInstance.getProcessDefinitionId()));
     }
     if (processIdConsumer != null) {
-      processIdConsumer.accept(calledProcessInstance.bpmnProcessId);
+      processIdConsumer.accept(calledProcessInstance.getProcessDefinitionId());
     }
 
     if (expectedPropagateAllChildVariables != null && expectedPropagateAllChildVariables != element.propagateAllChildVariables) {
@@ -120,13 +120,14 @@ public class CallActivityHandler {
     }
 
     if (inputVerifier != null) {
-      var processInstanceAssert = new ProcessInstanceAssert(calledProcessInstance.key, BpmnAssert.getRecordStream());
-      inputVerifier.accept(processInstanceAssert);
+      inputVerifier.accept(CamundaAssert.assertThat(processInstanceSelector));
     }
+
+    var calledProcessInstanceKey = calledProcessInstance.getProcessInstanceKey();
 
     // use test case to execute called process instance
     if (testCase != null) {
-      testCase.execute(instance, calledProcessInstance.key);
+      testCase.execute(instance, calledProcessInstanceKey);
     }
 
     if (waitForBoundaryEvent) {
@@ -136,38 +137,37 @@ public class CallActivityHandler {
     // simulate called process instance
     if (testCase == null && (errorCode != null || escalationCode != null)) {
       if (variables != null) {
-        instance.getClient().newSetVariablesCommand(calledProcessInstance.key).variables(variables).send().join();
+        instance.getClient().newSetVariablesCommand(calledProcessInstanceKey).variables(variables).send().join();
       } else {
-        instance.getClient().newSetVariablesCommand(calledProcessInstance.key).variables(variableMap).send().join();
+        instance.getClient().newSetVariablesCommand(calledProcessInstanceKey).variables(variableMap).send().join();
       }
 
-      var job = instance.getJob(calledProcessInstance.key, SIMULATE_ELEMENT_ID);
+      var job = instance.getJob(calledProcessInstanceKey, SIMULATE_ELEMENT_ID);
       if (errorCode != null) {
         // end called process instance with error end event
-        instance.getClient().newSetVariablesCommand(calledProcessInstance.key).variables(Map.of(ERROR_CODE, errorCode)).send().join();
-        instance.getClient().newThrowErrorCommand(job.key).errorCode(DO_ERROR_CODE).send().join();
+        instance.getClient().newSetVariablesCommand(calledProcessInstanceKey).variables(Map.of(ERROR_CODE, errorCode)).send().join();
+        instance.getClient().newThrowErrorCommand(job.getJobKey()).errorCode(DO_ERROR_CODE).send().join();
       } else {
         // end called process instance with escalation end event
-        instance.getClient().newSetVariablesCommand(calledProcessInstance.key).variables(Map.of(ESCALATION_CODE, escalationCode)).send().join();
-        instance.getClient().newThrowErrorCommand(job.key).errorCode(DO_ESCALATION_CODE).send().join();
+        instance.getClient().newSetVariablesCommand(calledProcessInstanceKey).variables(Map.of(ESCALATION_CODE, escalationCode)).send().join();
+        instance.getClient().newThrowErrorCommand(job.getJobKey()).errorCode(DO_ESCALATION_CODE).send().join();
       }
 
       instance.hasTerminated(flowScopeKey, element.id);
     } else if (testCase == null) {
       // end called process instance
-      var job = instance.getJob(calledProcessInstance.key, SIMULATE_ELEMENT_ID);
+      var job = instance.getJob(calledProcessInstanceKey, SIMULATE_ELEMENT_ID);
       if (variables != null) {
-        instance.getClient().newCompleteCommand(job.key).variables(variables).send().join();
+        instance.getClient().newCompleteCommand(job.getJobKey()).variables(variables).send().join();
       } else {
-        instance.getClient().newCompleteCommand(job.key).variables(variableMap).send().join();
+        instance.getClient().newCompleteCommand(job.getJobKey()).variables(variableMap).send().join();
       }
 
       instance.hasPassed(flowScopeKey, element.id);
     }
 
     if (outputVerifier != null) {
-      var processInstanceAssert = new ProcessInstanceAssert(processInstanceKey, BpmnAssert.getRecordStream());
-      outputVerifier.accept(processInstanceAssert);
+      outputVerifier.accept(CamundaAssert.assertThat(processInstanceSelector));
     }
   }
 
@@ -429,29 +429,21 @@ public class CallActivityHandler {
     return this;
   }
 
-  private ProcessInstanceMemo getCalledProcessInstance(TestCaseInstance instance, long flowScopeKey) {
-    return instance.select(memo -> {
-      var callActivity = memo.elements.stream().filter(e ->
-          e.flowScopeKey == flowScopeKey && Objects.equals(e.id, element.id)
-      ).findFirst();
+  private ProcessInstance getCalledProcessInstance(TestCaseInstance instance, long flowScopeKey) {
+    var elementInstanceKey = instance.getElementInstanceKey(flowScopeKey, element.id);
 
-      if (callActivity.isEmpty()) {
-        var message = String.format("call activity %s of flow scope %d could not be found", element.id, flowScopeKey);
-        throw instance.createException(message, flowScopeKey);
-      }
+    return instance.await(() -> {
+      var processInstance = instance.getClient().newProcessInstanceSearchRequest()
+          .filter(filter -> filter.parentElementInstanceKey(elementInstanceKey))
+          .execute()
+          .singleItem();
 
-      var callActivityKey = callActivity.get().key;
-
-      var calledProcessInstance = memo.processInstances.stream().filter(
-          processInstance -> processInstance.parentElementInstanceKey == callActivityKey
-      ).findFirst();
-
-      if (calledProcessInstance.isEmpty()) {
+      if (processInstance == null) {
         var message = String.format("call activity %s of flow scope %d has not called a process", element.id, flowScopeKey);
-        throw instance.createException(message, flowScopeKey);
+        throw new AssertionError(message);
       }
 
-      return calledProcessInstance.get();
+      return processInstance;
     });
   }
 }

@@ -78,9 +78,9 @@ public class CustomMultiInstanceScopeStrategy implements GeneratorStrategy {
 
     var element = scope.getElements().get(scope.getElements().size() - 1);
     if (element.hasNext() && element.getNext().getType().isBoundaryEvent()) {
-      methodBuilder.addStatement("instance.hasTerminatedMultiInstance(flowScopeKey, $S)", scope.getId());
+      methodBuilder.addStatement("instance.hasTerminated(flowScopeKey, $S)", scope.getId());
     } else {
-      methodBuilder.addStatement("instance.hasPassedMultiInstance(flowScopeKey, $S)", scope.getId());
+      methodBuilder.addStatement("instance.hasPassed(flowScopeKey, $S)", scope.getId());
     }
   }
 

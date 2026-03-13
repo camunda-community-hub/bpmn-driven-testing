@@ -10,25 +10,25 @@ import org.camunda.community.bpmndt.test.TestPaths;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import io.camunda.zeebe.client.ZeebeClient;
-import io.camunda.zeebe.process.test.api.ZeebeTestEngine;
-import io.camunda.zeebe.process.test.assertions.ProcessInstanceAssert;
-import io.camunda.zeebe.process.test.extension.ZeebeProcessTest;
+import io.camunda.client.CamundaClient;
+import io.camunda.process.test.api.CamundaProcessTest;
+import io.camunda.process.test.api.CamundaProcessTestContext;
+import io.camunda.process.test.api.assertions.ProcessInstanceAssert;
 
-@ZeebeProcessTest
+@CamundaProcessTest
 class AbstractTestCaseTest {
 
   @RegisterExtension
   TestCase tc = new TestCase();
 
-  ZeebeTestEngine engine;
-  ZeebeClient client;
+  CamundaClient client;
+  CamundaProcessTestContext processTestContext;
 
   private Long startedProcessInstanceKey;
 
   @Test
   void testExecute() {
-    long processInstanceKey = tc.createExecutor(engine)
+    long processInstanceKey = tc.createExecutor(client, processTestContext)
         .verify(ProcessInstanceAssert::isCompleted)
         .execute();
 
@@ -37,7 +37,7 @@ class AbstractTestCaseTest {
 
   @Test
   void testExecuteStartProcessInstanceRunnable() {
-    long processInstanceKey = tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute(() ->
+    long processInstanceKey = tc.createExecutor(client, processTestContext).verify(ProcessInstanceAssert::isCompleted).execute(() ->
         startedProcessInstanceKey = client.newCreateInstanceCommand()
             .bpmnProcessId(tc.getBpmnProcessId())
             .latestVersion()
@@ -62,7 +62,7 @@ class AbstractTestCaseTest {
         .send()
         .join();
 
-    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute(processInstanceEvent);
+    tc.createExecutor(client, processTestContext).verify(ProcessInstanceAssert::isCompleted).execute(processInstanceEvent);
   }
 
   @Test
@@ -78,7 +78,7 @@ class AbstractTestCaseTest {
         .send()
         .join();
 
-    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute(processInstanceEvent.getProcessInstanceKey());
+    tc.createExecutor(client, processTestContext).verify(ProcessInstanceAssert::isCompleted).execute(processInstanceEvent.getProcessInstanceKey());
   }
 
   private static class TestCase extends AbstractJUnit5TestCase {

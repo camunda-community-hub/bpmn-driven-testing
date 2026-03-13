@@ -9,19 +9,19 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import io.camunda.zeebe.client.ZeebeClient;
-import io.camunda.zeebe.process.test.api.ZeebeTestEngine;
-import io.camunda.zeebe.process.test.assertions.ProcessInstanceAssert;
-import io.camunda.zeebe.process.test.extension.ZeebeProcessTest;
+import io.camunda.client.CamundaClient;
+import io.camunda.process.test.api.CamundaProcessTest;
+import io.camunda.process.test.api.CamundaProcessTestContext;
+import io.camunda.process.test.api.assertions.ProcessInstanceAssert;
 
-@ZeebeProcessTest
+@CamundaProcessTest
 class SubProcessNestedTest {
 
   @RegisterExtension
   TestCase tc = new TestCase();
 
-  ZeebeTestEngine engine;
-  ZeebeClient client;
+  CamundaClient client;
+  CamundaProcessTestContext processTestContext;
 
   private UserTaskHandler userTaskHandler;
 
@@ -32,7 +32,7 @@ class SubProcessNestedTest {
 
   @Test
   void testExecute() {
-    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+    tc.createExecutor(client, processTestContext).verify(ProcessInstanceAssert::isCompleted).execute();
   }
 
   private class TestCase extends AbstractJUnit5TestCase {

@@ -13,19 +13,23 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import io.camunda.zeebe.process.test.api.ZeebeTestEngine;
-import io.camunda.zeebe.process.test.assertions.ProcessInstanceAssert;
-import io.camunda.zeebe.process.test.extension.ZeebeProcessTest;
+import io.camunda.client.CamundaClient;
+import io.camunda.process.test.api.CamundaProcessTest;
+import io.camunda.process.test.api.CamundaProcessTestContext;
+import io.camunda.process.test.api.assertions.ProcessInstanceAssert;
 
-@ZeebeProcessTest
+@CamundaProcessTest
 class ReceiveTaskTest {
 
   @RegisterExtension
   TestCase tc = new TestCase();
 
-  ZeebeTestEngine engine;
+  CamundaClient client;
+  CamundaProcessTestContext processTestContext;
 
   private ReceiveTaskHandler handler;
+
+  private String correlationKey;
 
   @BeforeEach
   void setUp() {
@@ -35,11 +39,16 @@ class ReceiveTaskTest {
     element.messageName = "=\"simpleMessage\"";
 
     handler = new ReceiveTaskHandler(element);
+
+    correlationKey = String.valueOf(System.currentTimeMillis());
   }
 
   @Test
   void testExecute() {
-    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+    tc.createExecutor(client, processTestContext)
+        .withVariable("correlationKey", correlationKey)
+        .verify(ProcessInstanceAssert::isCompleted)
+        .execute();
   }
 
   @Test
@@ -48,14 +57,18 @@ class ReceiveTaskTest {
         client.newPublishMessageCommand().messageName(messageName).correlationKey(correlationKey).send()
     );
 
-    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+    tc.createExecutor(client, processTestContext)
+        .withVariable("correlationKey", correlationKey)
+        .verify(ProcessInstanceAssert::isCompleted)
+        .execute();
   }
 
   @Test
   void testVerify() {
-    handler.verify(processInstanceAssert -> processInstanceAssert.hasVariableWithValue("x", "test"));
+    handler.verify(processInstanceAssert -> processInstanceAssert.hasVariable("x", "test"));
 
-    tc.createExecutor(engine)
+    tc.createExecutor(client, processTestContext)
+        .withVariable("correlationKey", correlationKey)
         .withVariable("x", "test")
         .verify(ProcessInstanceAssert::isCompleted)
         .execute();
@@ -65,64 +78,115 @@ class ReceiveTaskTest {
   void testVerifyCorrelationKey() {
     handler.verifyCorrelationKey("wrong correlation key");
 
-    var e = assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
+    var e = assertThrows(AssertionError.class, () -> tc.createExecutor(client, processTestContext)
+        .withVariable("correlationKey", correlationKey)
+        .execute()
+    );
     assertThat(e).hasMessageThat().contains("'wrong correlation key'");
-    assertThat(e).hasMessageThat().contains("'simple'");
+    assertThat(e).hasMessageThat().contains("'" + correlationKey + "'");
 
-    handler.verifyCorrelationKey("simple");
+    correlationKey = String.valueOf(System.currentTimeMillis());
+    handler.verifyCorrelationKey(correlationKey);
 
-    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+    tc.createExecutor(client, processTestContext)
+        .withVariable("correlationKey", correlationKey)
+        .verify(ProcessInstanceAssert::isCompleted)
+        .execute();
 
-    handler.verifyCorrelationKey(correlationKey -> assertThat(correlationKey).isEqualTo("wrong correlation key"));
+    handler.verifyCorrelationKey((String) null);
 
-    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
+    correlationKey = String.valueOf(System.currentTimeMillis());
+    handler.verifyCorrelationKey(value -> assertThat(value).isEqualTo("wrong correlation key"));
 
-    handler.verifyCorrelationKey(correlationKey -> assertThat(correlationKey).isEqualTo("simple"));
+    assertThrows(AssertionError.class, () -> tc.createExecutor(client, processTestContext)
+        .withVariable("correlationKey", correlationKey)
+        .execute()
+    );
 
-    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+    correlationKey = String.valueOf(System.currentTimeMillis());
+    handler.verifyCorrelationKey(value -> assertThat(value).isEqualTo(correlationKey));
+
+    tc.createExecutor(client, processTestContext)
+        .withVariable("correlationKey", correlationKey)
+        .verify(ProcessInstanceAssert::isCompleted)
+        .execute();
   }
 
   @Test
   void testVerifyCorrelationKeyExpression() {
     handler.verifyCorrelationKeyExpression(expr -> assertThat(expr).isEqualTo("wrong correlation key expression"));
 
-    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
+    assertThrows(AssertionError.class, () -> tc.createExecutor(client, processTestContext)
+        .withVariable("correlationKey", correlationKey)
+        .execute()
+    );
 
     handler.verifyCorrelationKeyExpression(expr -> assertThat(expr).isEqualTo("=\"simple\""));
 
-    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+    correlationKey = String.valueOf(System.currentTimeMillis());
+
+    tc.createExecutor(client, processTestContext)
+        .withVariable("correlationKey", correlationKey)
+        .verify(ProcessInstanceAssert::isCompleted)
+        .execute();
   }
 
   @Test
   void testVerifyMessageName() {
     handler.verifyMessageName("wrong message name");
 
-    var e = assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
+    var e = assertThrows(AssertionError.class, () -> tc.createExecutor(client, processTestContext)
+        .withVariable("correlationKey", correlationKey)
+        .execute()
+    );
     assertThat(e).hasMessageThat().contains("'wrong message name'");
     assertThat(e).hasMessageThat().contains("'simpleMessage'");
 
     handler.verifyMessageName("simpleMessage");
 
-    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+    correlationKey = String.valueOf(System.currentTimeMillis());
+
+    tc.createExecutor(client, processTestContext)
+        .withVariable("correlationKey", correlationKey)
+        .verify(ProcessInstanceAssert::isCompleted)
+        .execute();
 
     handler.verifyMessageName(messageName -> assertThat(messageName).isEqualTo("wrong message name"));
 
-    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
+    correlationKey = String.valueOf(System.currentTimeMillis());
+
+    assertThrows(AssertionError.class, () -> tc.createExecutor(client, processTestContext)
+        .withVariable("correlationKey", correlationKey)
+        .execute()
+    );
 
     handler.verifyMessageName(messageName -> assertThat(messageName).isEqualTo("simpleMessage"));
 
-    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+    correlationKey = String.valueOf(System.currentTimeMillis());
+
+    tc.createExecutor(client, processTestContext)
+        .withVariable("correlationKey", correlationKey)
+        .verify(ProcessInstanceAssert::isCompleted)
+        .execute();
   }
 
   @Test
   void testVerifyMessageNameExpression() {
     handler.verifyMessageNameExpression(expr -> assertThat(expr).isEqualTo("wrong message name expression"));
 
-    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
+    assertThrows(AssertionError.class, () -> tc.createExecutor(client, processTestContext)
+        .withVariable("correlationKey", correlationKey)
+        .execute()
+    );
 
     handler.verifyMessageNameExpression(expr -> assertThat(expr).isEqualTo("=\"simpleMessage\""));
 
-    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+    correlationKey = String.valueOf(System.currentTimeMillis());
+
+    tc.createExecutor(client, processTestContext)
+        .withVariable("correlationKey", correlationKey)
+        .verify(ProcessInstanceAssert::isCompleted)
+        .execute();
   }
 
   private class TestCase extends AbstractJUnit5TestCase {

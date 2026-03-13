@@ -150,6 +150,8 @@ class GeneratorSimpleTest {
     assertThat(typeSpec.methodSpecs.get(7)).hasName("handleMessageCatchEvent");
     assertThat(typeSpec.methodSpecs.get(7)).hasReturnType(DefaultStrategy.MESSAGE_EVENT);
 
+    assertThat(typeSpec.methodSpecs.get(0)).containsCode("messageCatchEventElement.attachedTo = \"eventBasedGateway\";");
+
     assertThat(typeSpec.methodSpecs.get(1)).containsCode("// eventBasedGateway: eventBasedGateway");
     assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.isWaitingAt(flowScopeKey, \"eventBasedGateway\");");
     assertThat(typeSpec.methodSpecs.get(1)).containsCode("// intermediateCatchEvent: messageCatchEvent");
@@ -166,6 +168,8 @@ class GeneratorSimpleTest {
 
     assertThat(typeSpec.methodSpecs.get(7)).hasName("handleTimerCatchEvent");
     assertThat(typeSpec.methodSpecs.get(7)).hasReturnType(DefaultStrategy.TIMER_EVENT);
+
+    assertThat(typeSpec.methodSpecs.get(0)).containsCode("timerCatchEventElement.attachedTo = \"eventBasedGateway\";");
 
     assertThat(typeSpec.methodSpecs.get(1)).containsCode("// eventBasedGateway: eventBasedGateway");
     assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.isWaitingAt(flowScopeKey, \"eventBasedGateway\");");
@@ -238,6 +242,71 @@ class GeneratorSimpleTest {
     assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.isWaitingAt(flowScopeKey, \"messageThrowEvent\");");
     assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.apply(flowScopeKey, messageThrowEvent);");
     assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(flowScopeKey, \"messageThrowEvent\");");
+  }
+
+  @Test
+  void testSimpleOutboundConnector() {
+    generator.generateTestCases(ctx, bpmnFile);
+    assertThat(result.getFiles()).hasSize(1);
+
+    var typeSpec = result.getFiles().get(0).typeSpec;
+    assertThat(typeSpec).hasFields(1);
+    assertThat(typeSpec).hasMethods(8);
+
+    assertThat(typeSpec.fieldSpecs.get(0)).hasName("outboundConnector");
+    assertThat(typeSpec.fieldSpecs.get(0)).hasType(DefaultStrategy.OUTBOUND_CONNECTOR);
+
+    assertThat(typeSpec.methodSpecs.get(7)).hasName("handleOutboundConnector");
+    assertThat(typeSpec.methodSpecs.get(7)).hasReturnType(DefaultStrategy.OUTBOUND_CONNECTOR);
+
+    var expected = "outboundConnector = new %s(outboundConnectorElement);";
+    assertThat(typeSpec.methodSpecs.get(0)).containsCode(String.format(expected, DefaultStrategy.OUTBOUND_CONNECTOR));
+
+    expected = "outboundConnectorElement.id = \"outboundConnector\";";
+    assertThat(typeSpec.methodSpecs.get(0)).containsCode(expected);
+    expected = "outboundConnectorElement.taskDefinitionType = \"io.camunda:http-json:1\";";
+    assertThat(typeSpec.methodSpecs.get(0)).containsCode(expected);
+    expected = "outboundConnectorElement.retries = \"3\";";
+    assertThat(typeSpec.methodSpecs.get(0)).containsCode(expected);
+
+    expected = "outboundConnectorElement.inputs = new java.util.HashMap<java.lang.String, java.lang.String>();";
+    assertThat(typeSpec.methodSpecs.get(0)).containsCode(expected);
+    expected = "outboundConnectorElement.inputs.put(\"authentication.type\", \"noAuth\");";
+    assertThat(typeSpec.methodSpecs.get(0)).containsCode(expected);
+    expected = "outboundConnectorElement.inputs.put(\"method\", \"GET\");";
+    assertThat(typeSpec.methodSpecs.get(0)).containsCode(expected);
+    expected = "outboundConnectorElement.inputs.put(\"url\", \"=\\\"https://example.org\\\"\");";
+    assertThat(typeSpec.methodSpecs.get(0)).containsCode(expected);
+    expected = "outboundConnectorElement.inputs.put(\"headers\", \"=headers\");";
+    assertThat(typeSpec.methodSpecs.get(0)).containsCode(expected);
+    expected = "outboundConnectorElement.inputs.put(\"queryParameters\", \"=queryParameters\");";
+    assertThat(typeSpec.methodSpecs.get(0)).containsCode(expected);
+    expected = "outboundConnectorElement.inputs.put(\"storeResponse\", \"=false\");";
+    assertThat(typeSpec.methodSpecs.get(0)).containsCode(expected);
+    expected = "outboundConnectorElement.inputs.put(\"connectionTimeoutInSeconds\", \"=20\");";
+    assertThat(typeSpec.methodSpecs.get(0)).containsCode(expected);
+    expected = "outboundConnectorElement.inputs.put(\"readTimeoutInSeconds\", \"=20\");";
+    assertThat(typeSpec.methodSpecs.get(0)).containsCode(expected);
+    expected = "outboundConnectorElement.inputs.put(\"ignoreNullValues\", \"=false\");";
+    assertThat(typeSpec.methodSpecs.get(0)).containsCode(expected);
+
+    expected = "outboundConnectorElement.taskHeaders = new java.util.HashMap<java.lang.String, java.lang.String>();";
+    assertThat(typeSpec.methodSpecs.get(0)).containsCode(expected);
+    expected = "outboundConnectorElement.taskHeaders.put(\"elementTemplateVersion\", \"12\");";
+    assertThat(typeSpec.methodSpecs.get(0)).containsCode(expected);
+    expected = "outboundConnectorElement.taskHeaders.put(\"elementTemplateId\", \"io.camunda.connectors.HttpJson.v2\");";
+    assertThat(typeSpec.methodSpecs.get(0)).containsCode(expected);
+    expected = "outboundConnectorElement.taskHeaders.put(\"resultVariable\", \"responseBody\");";
+    assertThat(typeSpec.methodSpecs.get(0)).containsCode(expected);
+    expected = "outboundConnectorElement.taskHeaders.put(\"resultExpression\", \"={}\");";
+    assertThat(typeSpec.methodSpecs.get(0)).containsCode(expected);
+    expected = "outboundConnectorElement.taskHeaders.put(\"errorExpression\", \"=if error.code = \\\"400\\\" then\\n\"\n"
+        + "        + \"  bpmnError(\\\"400\\\", \\\"bad request\\\")\\n\"\n"
+        + "        + \"else\\n\"\n"
+        + "        + \"  null\");";
+    assertThat(typeSpec.methodSpecs.get(0)).containsCode(expected);
+    expected = "outboundConnectorElement.taskHeaders.put(\"retryBackoff\", \"PT1H\");";
+    assertThat(typeSpec.methodSpecs.get(0)).containsCode(expected);
   }
 
   @Test
@@ -467,8 +536,8 @@ class GeneratorSimpleTest {
     assertThat(result.getFiles()).hasSize(1);
 
     var typeSpec = result.getFiles().get(0).typeSpec;
-    assertThat(typeSpec).hasFields(3);
-    assertThat(typeSpec).hasMethods(10);
+    assertThat(typeSpec).hasFields(2);
+    assertThat(typeSpec).hasMethods(9);
 
     assertThat(typeSpec.fieldSpecs.get(0)).hasName("userTask");
     assertThat(typeSpec.fieldSpecs.get(0).type).isEqualTo(DefaultStrategy.USER_TASK);

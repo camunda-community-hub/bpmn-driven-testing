@@ -4,14 +4,13 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Objects;
 import java.util.function.Consumer;
 
 import org.camunda.community.bpmndt.api.TestCaseInstanceElement.TimerEventElement;
-import org.camunda.community.bpmndt.api.TestCaseInstanceMemo.TimerMemo;
 
-import io.camunda.zeebe.process.test.assertions.BpmnAssert;
-import io.camunda.zeebe.process.test.assertions.ProcessInstanceAssert;
+import io.camunda.process.test.api.CamundaAssert;
+import io.camunda.process.test.api.assertions.ProcessInstanceAssert;
+import io.camunda.process.test.api.assertions.ProcessInstanceSelectors;
 
 /**
  * Fluent API to handle timer catch events.
@@ -28,13 +27,30 @@ public class TimerEventHandler {
   private Consumer<LocalDateTime> timeDateConsumer;
   private Consumer<Duration> timeDurationConsumer;
 
+
+  /**
+   * Creates a new handler that by default increases the engine's time to trigger a timer.
+   *
+   * @param elementId ID of the BPMN timer event.
+   */
   public TimerEventHandler(String elementId) {
+    this(elementId, null);
+  }
+
+  /**
+   * Creates a new handler that by default increases the engine's time to trigger a timer.
+   *
+   * @param elementId  ID of the BPMN timer event.
+   * @param attachedTo ID of the BPMN element, the timer event is attached to.
+   */
+  public TimerEventHandler(String elementId, String attachedTo) {
     if (elementId == null) {
       throw new IllegalArgumentException("element ID is null");
     }
 
     element = new TimerEventElement();
     element.id = elementId;
+    element.attachedTo = attachedTo;
   }
 
   public TimerEventHandler(TimerEventElement element) {
@@ -50,8 +66,8 @@ public class TimerEventHandler {
 
   void apply(TestCaseInstance instance, long flowScopeKey) {
     if (verifier != null) {
-      var processInstanceKey = instance.getProcessInstanceKey(flowScopeKey);
-      verifier.accept(new ProcessInstanceAssert(processInstanceKey, BpmnAssert.getRecordStream()));
+      var processInstanceSelector = ProcessInstanceSelectors.byKey(instance.getProcessInstanceKey(flowScopeKey));
+      verifier.accept(CamundaAssert.assertThat(processInstanceSelector));
     }
 
     if (timeDateExpressionConsumer != null) {
@@ -72,7 +88,7 @@ public class TimerEventHandler {
       timeDurationConsumer.accept(toDuration(timer.dueDate, timer.creationDate));
     }
 
-    instance.getEngine().increaseTime(Duration.ofMillis(timer.dueDate - System.currentTimeMillis()));
+    instance.getProcessTestContext().increaseTime(Duration.ofMillis(timer.dueDate - System.currentTimeMillis()));
   }
 
   /**
@@ -160,20 +176,30 @@ public class TimerEventHandler {
     return Duration.ofMillis(millis);
   }
 
-  private TimerMemo getTimer(TestCaseInstance instance, long flowScopeKey) {
-    var flowScopeKeys = instance.getKeys(flowScopeKey);
+  private Timer getTimer(TestCaseInstance instance, long flowScopeKey) {
+    throw new UnsupportedOperationException();
+  }
 
-    return instance.select(memo -> {
-      var timer = memo.timers.stream().filter(t ->
-          flowScopeKeys.contains(t.flowScopeKey) && Objects.equals(t.elementId, element.id)
-      ).findFirst();
+  private static class Timer {
 
-      if (timer.isEmpty()) {
-        var message = String.format("element %s of flow scope %d has no timer", element.id, flowScopeKey);
-        throw instance.createException(message, flowScopeKey);
-      }
+    private long creationDate;
+    private long dueDate;
 
-      return timer.get();
-    });
+
+    public long getCreationDate() {
+      return creationDate;
+    }
+
+    public long getDueDate() {
+      return dueDate;
+    }
+
+    public void setCreationDate(long creationDate) {
+      this.creationDate = creationDate;
+    }
+
+    public void setDueDate(long dueDate) {
+      this.dueDate = dueDate;
+    }
   }
 }

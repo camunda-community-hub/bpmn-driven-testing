@@ -1,42 +1,27 @@
 package org.camunda.community.bpmndt.api;
 
-import java.net.URI;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.camunda.community.bpmndt.api.TestCaseInstance.Holder;
 
-import io.camunda.zeebe.client.ZeebeClient;
-import io.camunda.zeebe.client.api.JsonMapper;
-import io.camunda.zeebe.client.api.command.ClientStatusException;
-import io.camunda.zeebe.client.api.command.DeployResourceCommandStep1.DeployResourceCommandStep2;
-import io.camunda.zeebe.client.api.response.DeploymentEvent;
-import io.camunda.zeebe.client.api.response.Process;
-import io.camunda.zeebe.client.api.response.ProcessInstanceEvent;
-import io.camunda.zeebe.client.api.response.PublishMessageResponse;
-import io.camunda.zeebe.client.impl.ZeebeObjectMapper;
-import io.camunda.zeebe.process.test.api.ZeebeTestEngine;
-import io.camunda.zeebe.process.test.assertions.BpmnAssert;
-import io.camunda.zeebe.process.test.assertions.ProcessInstanceAssert;
-import io.camunda.zeebe.process.test.filters.RecordStream;
-import io.camunda.zeebe.protocol.record.Record;
-import io.camunda.zeebe.protocol.record.RecordType;
-import io.camunda.zeebe.protocol.record.ValueType;
-import io.camunda.zeebe.protocol.record.intent.ProcessInstanceIntent;
-import io.camunda.zeebe.protocol.record.value.BpmnElementType;
-import io.camunda.zeebe.protocol.record.value.MessageStartEventSubscriptionRecordValue;
-import io.camunda.zeebe.protocol.record.value.ProcessEventRecordValue;
-import io.camunda.zeebe.protocol.record.value.SignalSubscriptionRecordValue;
-import io.camunda.zeebe.protocol.record.value.TimerRecordValue;
+import io.camunda.client.CamundaClient;
+import io.camunda.client.api.command.DeployResourceCommandStep1.DeployResourceCommandStep2;
+import io.camunda.client.api.response.DeploymentEvent;
+import io.camunda.client.api.response.Process;
+import io.camunda.client.api.response.ProcessInstanceEvent;
+import io.camunda.client.api.search.response.ElementInstance;
+import io.camunda.process.test.api.CamundaAssert;
+import io.camunda.process.test.api.CamundaProcessTestContext;
+import io.camunda.process.test.api.assertions.ProcessInstanceAssert;
+import io.camunda.process.test.api.assertions.ProcessInstanceSelectors;
+import io.camunda.process.test.impl.assertions.util.AwaitilityBehavior;
 
 /**
  * Fluent API to prepare and start the actual test case execution.
@@ -44,7 +29,8 @@ import io.camunda.zeebe.protocol.record.value.TimerRecordValue;
 public class TestCaseExecutor {
 
   private final AbstractTestCase testCase;
-  private final ZeebeTestEngine engine;
+  private final CamundaClient client;
+  private final CamundaProcessTestContext processTestContext;
   private final String simulateSubProcessResource;
 
   private final Map<String, Object> variableMap = new HashMap<>();
@@ -53,19 +39,17 @@ public class TestCaseExecutor {
   private final List<String> additionalResources = new ArrayList<>(0);
   private final List<String> additionalResourceVersionTags = new ArrayList<>(0);
 
-  private ObjectMapper objectMapper;
-  private long waitTimeout = 5000;
-  private boolean printRecordStreamEnabled;
+  private final AwaitilityBehavior awaitilityBehavior = new AwaitilityBehavior();
+
   private String tenantId;
   private Object variables;
   private Consumer<ProcessInstanceAssert> verifier;
 
-  public TestCaseExecutor(AbstractTestCase testCase, ZeebeTestEngine engine, String simulateSubProcessResource) {
+  public TestCaseExecutor(AbstractTestCase testCase, CamundaClient client, CamundaProcessTestContext processTestContext, String simulateSubProcessResource) {
     this.testCase = testCase;
-    this.engine = engine;
+    this.client = client;
+    this.processTestContext = processTestContext;
     this.simulateSubProcessResource = simulateSubProcessResource;
-
-    BpmnAssert.initRecordStream(RecordStream.of(engine.getRecordStreamSource()));
   }
 
   /**
@@ -92,101 +76,90 @@ public class TestCaseExecutor {
    * @return The key of the newly created process instance.
    */
   public long execute() {
-    try (ZeebeClient client = createClient()) {
-      var deploymentEvent = deployResources(client);
+    var deploymentEvent = deployResources();
 
-      var processDefinitionKey = findProcessDefinitionKey(deploymentEvent);
+    var processDefinitionKey = findProcessDefinitionKey(deploymentEvent);
 
-      if (variables != null && !variableMap.isEmpty()) {
-        throw new IllegalStateException("either use an object (POJO) as variables or a variable map");
-      }
-
-      long processInstanceKey;
-      if (testCase.isMessageStart()) {
-        // handle message start event
-        var publishMessageCommandStep3 = client.newPublishMessageCommand()
-            .messageName(findStartMessageName(processDefinitionKey))
-            .correlationKey(String.format("%s.%s", testCase.testClass.getSimpleName(), testCase.testMethodName));
-
-        if (variables != null) {
-          publishMessageCommandStep3 = publishMessageCommandStep3.variables(variables);
-        } else {
-          publishMessageCommandStep3 = publishMessageCommandStep3.variables(variableMap);
-        }
-
-        if (tenantId != null) {
-          publishMessageCommandStep3 = publishMessageCommandStep3.tenantId(tenantId);
-        }
-
-        // publish message
-        var publishMessageResponse = publishMessageCommandStep3.send().join();
-
-        // find key of created process instance
-        processInstanceKey = findProcessInstanceKey(publishMessageResponse);
-      } else if (testCase.isSignalStart()) {
-        // handle signal start event
-        var broadcastSignalCommandStep2 = client.newBroadcastSignalCommand().signalName(findStartSignalName(processDefinitionKey));
-
-        if (variables != null) {
-          broadcastSignalCommandStep2 = broadcastSignalCommandStep2.variables(variables);
-        } else {
-          broadcastSignalCommandStep2 = broadcastSignalCommandStep2.variables(variableMap);
-        }
-
-        // broadcast signal
-        broadcastSignalCommandStep2.send().join();
-
-        // find key of created process instance
-        processInstanceKey = findProcessInstanceKey(processDefinitionKey);
-      } else if (testCase.isTimerStart()) {
-        // handle timer start event
-        if (variables != null || !variableMap.isEmpty()) {
-          throw new IllegalStateException("not possible to create a process instance with variables, using a timer start event");
-        }
-
-        var startTimerDueDate = findStartTimerDueDate(processDefinitionKey);
-        engine.increaseTime(Duration.ofMillis(startTimerDueDate - System.currentTimeMillis()));
-
-        try {
-          TimeUnit.SECONDS.sleep(1L);
-          engine.waitForIdleState(Duration.ofMillis(waitTimeout));
-        } catch (InterruptedException e) {
-          Thread.currentThread().interrupt();
-        } catch (TimeoutException e) {
-          throw new RuntimeException("failed to wait for engine idle state", e);
-        }
-
-        // find key of created process instance
-        processInstanceKey = findProcessInstanceKey(processDefinitionKey);
-      } else {
-        // handle none start event
-        var createProcessInstanceCommandStep3 = client.newCreateInstanceCommand()
-            .bpmnProcessId(testCase.getBpmnProcessId())
-            .latestVersion();
-
-        if (!testCase.isProcessStart()) {
-          createProcessInstanceCommandStep3 = createProcessInstanceCommandStep3.startBeforeElement(testCase.getStart());
-        }
-
-        if (variables != null) {
-          createProcessInstanceCommandStep3 = createProcessInstanceCommandStep3.variables(variables);
-        } else {
-          createProcessInstanceCommandStep3 = createProcessInstanceCommandStep3.variables(variableMap);
-        }
-
-        if (tenantId != null) {
-          createProcessInstanceCommandStep3 = createProcessInstanceCommandStep3.tenantId(tenantId);
-        }
-
-        var processInstanceEvent = createProcessInstanceCommandStep3.send().join();
-
-        processInstanceKey = processInstanceEvent.getProcessInstanceKey();
-      }
-
-      executeTestCase(client, processInstanceKey);
-
-      return processInstanceKey;
+    if (variables != null && !variableMap.isEmpty()) {
+      throw new IllegalStateException("either use an object (POJO) as variables or a variable map");
     }
+
+    long processInstanceKey;
+    if (testCase.isMessageStart()) {
+      // handle message start event
+      var publishMessageCommandStep3 = client.newPublishMessageCommand()
+          .messageName(findStartMessageName())
+          .correlationKey(String.format("%s.%s", testCase.testClass.getSimpleName(), testCase.testMethodName));
+
+      if (variables != null) {
+        publishMessageCommandStep3 = publishMessageCommandStep3.variables(variables);
+      } else {
+        publishMessageCommandStep3 = publishMessageCommandStep3.variables(variableMap);
+      }
+
+      if (tenantId != null) {
+        publishMessageCommandStep3 = publishMessageCommandStep3.tenantId(tenantId);
+      }
+
+      // publish message
+      publishMessageCommandStep3.send().join();
+
+      // find key of created process instance
+      processInstanceKey = findProcessInstanceKey(processDefinitionKey);
+    } else if (testCase.isSignalStart()) {
+      // handle signal start event
+      var broadcastSignalCommandStep2 = client.newBroadcastSignalCommand().signalName(findStartSignalName(processDefinitionKey));
+
+      if (variables != null) {
+        broadcastSignalCommandStep2 = broadcastSignalCommandStep2.variables(variables);
+      } else {
+        broadcastSignalCommandStep2 = broadcastSignalCommandStep2.variables(variableMap);
+      }
+
+      // broadcast signal
+      broadcastSignalCommandStep2.send().join();
+
+      // find key of created process instance
+      processInstanceKey = findProcessInstanceKey(processDefinitionKey);
+    } else if (testCase.isTimerStart()) {
+      // handle timer start event
+      if (variables != null || !variableMap.isEmpty()) {
+        throw new IllegalStateException("not possible to create a process instance with variables, using a timer start event");
+      }
+
+      var startTimerDueDate = findStartTimerDueDate(processDefinitionKey);
+      processTestContext.increaseTime(Duration.ofMillis(startTimerDueDate - System.currentTimeMillis()));
+
+      // find key of created process instance
+      processInstanceKey = findProcessInstanceKey(processDefinitionKey);
+    } else {
+      // handle none start event
+      var createProcessInstanceCommandStep3 = client.newCreateInstanceCommand()
+          .bpmnProcessId(testCase.getBpmnProcessId())
+          .latestVersion();
+
+      if (!testCase.isProcessStart()) {
+        createProcessInstanceCommandStep3 = createProcessInstanceCommandStep3.startBeforeElement(testCase.getStart());
+      }
+
+      if (variables != null) {
+        createProcessInstanceCommandStep3 = createProcessInstanceCommandStep3.variables(variables);
+      } else {
+        createProcessInstanceCommandStep3 = createProcessInstanceCommandStep3.variables(variableMap);
+      }
+
+      if (tenantId != null) {
+        createProcessInstanceCommandStep3 = createProcessInstanceCommandStep3.tenantId(tenantId);
+      }
+
+      var processInstanceEvent = createProcessInstanceCommandStep3.send().join();
+
+      processInstanceKey = processInstanceEvent.getProcessInstanceKey();
+    }
+
+    executeTestCase(processInstanceKey);
+
+    return processInstanceKey;
   }
 
   /**
@@ -205,43 +178,19 @@ public class TestCaseExecutor {
       throw new IllegalStateException("variables and variable map are not supported when starting a process instance via runnable");
     }
 
-    try (ZeebeClient client = createClient()) {
-      var deploymentEvent = deployResources(client);
+    var deploymentEvent = deployResources();
 
-      var processDefinitionKey = findProcessDefinitionKey(deploymentEvent);
+    var processDefinitionKey = findProcessDefinitionKey(deploymentEvent);
 
-      // start process instance
-      startProcessInstance.run();
+    // start process instance
+    startProcessInstance.run();
 
-      try {
-        engine.waitForIdleState(Duration.ofMillis(waitTimeout));
-      } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
-      } catch (TimeoutException e) {
-        throw new RuntimeException("failed to wait for engine idle state", e);
-      }
+    // find process instance
+    var processInstanceKey = findProcessInstanceKey(processDefinitionKey);
 
-      // find process instance
-      var processInstanceRecords = StreamSupport.stream(BpmnAssert.getRecordStream().processInstanceRecords().spliterator(), false)
-          .filter(record ->
-              record.getRecordType() == RecordType.EVENT
-                  && record.getIntent() == ProcessInstanceIntent.ELEMENT_ACTIVATED
-                  && record.getValue().getBpmnElementType() == BpmnElementType.PROCESS
-                  && record.getValue().getProcessDefinitionKey() == processDefinitionKey
-          )
-          .collect(Collectors.toList());
+    executeTestCase(processInstanceKey);
 
-      if (processInstanceRecords.isEmpty()) {
-        throw new IllegalArgumentException("failed to find started process instance");
-      }
-
-      // get key of last record
-      var processInstanceKey = processInstanceRecords.get(processInstanceRecords.size() - 1).getValue().getProcessInstanceKey();
-
-      executeTestCase(client, processInstanceKey);
-
-      return processInstanceKey;
-    }
+    return processInstanceKey;
   }
 
   /**
@@ -257,17 +206,7 @@ public class TestCaseExecutor {
       throw new IllegalStateException("variables and variable map are not supported when process instance has already been created");
     }
 
-    try {
-      engine.waitForIdleState(Duration.ofMillis(waitTimeout));
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-    } catch (TimeoutException e) {
-      throw new RuntimeException("failed to wait for engine idle state", e);
-    }
-
-    try (ZeebeClient client = createClient()) {
-      executeTestCase(client, processInstanceEvent.getProcessInstanceKey());
-    }
+    executeTestCase(processInstanceEvent.getProcessInstanceKey());
   }
 
   /**
@@ -280,29 +219,7 @@ public class TestCaseExecutor {
       throw new IllegalStateException("variables and variable map are not supported when process instance has already been created");
     }
 
-    try {
-      engine.waitForIdleState(Duration.ofMillis(waitTimeout));
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-    } catch (TimeoutException e) {
-      throw new RuntimeException("failed to wait for engine idle state", e);
-    }
-
-    boolean exists = StreamSupport.stream(BpmnAssert.getRecordStream().processInstanceRecords().spliterator(), false)
-        .anyMatch(record ->
-            record.getRecordType() == RecordType.EVENT
-                && record.getIntent() == ProcessInstanceIntent.ELEMENT_ACTIVATED
-                && record.getValue().getBpmnElementType() == BpmnElementType.PROCESS
-                && record.getValue().getProcessInstanceKey() == processInstanceKey
-        );
-
-    if (!exists) {
-      throw new IllegalArgumentException(String.format("failed to find process instance %d", processInstanceKey));
-    }
-
-    try (ZeebeClient client = createClient()) {
-      executeTestCase(client, processInstanceKey);
-    }
+    executeTestCase(processInstanceKey);
   }
 
   /**
@@ -355,7 +272,7 @@ public class TestCaseExecutor {
   }
 
   /**
-   * Adds a classpath resource to the resource deployment ({@link ZeebeClient#newDeployResourceCommand()}).
+   * Adds a classpath resource to the resource deployment ({@link CamundaClient#newDeployResourceCommand()}).
    *
    * @param classpathResourceName Name of the classpath resource - e.g. "bpmn/my-process.bpmn", if the resource is under
    *                              src/main/resources/bpmn/my-process.bpmn.
@@ -373,7 +290,7 @@ public class TestCaseExecutor {
   }
 
   /**
-   * Adds a resource to the resource deployment ({@link ZeebeClient#newDeployResourceCommand()}).
+   * Adds a resource to the resource deployment ({@link CamundaClient#newDeployResourceCommand()}).
    *
    * @param resourceName Name of the resource.
    * @param resource     The resource as UTF-8 string.
@@ -394,7 +311,7 @@ public class TestCaseExecutor {
   }
 
   /**
-   * Adds a classpath resource to a separate versioned resource deployment ({@link ZeebeClient#newDeployResourceCommand()}). Versioned resources are needed to
+   * Adds a classpath resource to a separate versioned resource deployment ({@link CamundaClient#newDeployResourceCommand()}). Versioned resources are needed to
    * test business rule tasks with a DMN decision or user tasks with a form that have the binding type "version tag".
    *
    * @param classpathResourceName Name of the classpath resource - e.g. "bpmn/my-process.bpmn", if the resource is under
@@ -417,7 +334,7 @@ public class TestCaseExecutor {
   }
 
   /**
-   * Adds a resource to a separate versioned resource deployment ({@link ZeebeClient#newDeployResourceCommand()}). Versioned resources are needed to test
+   * Adds a resource to a separate versioned resource deployment ({@link CamundaClient#newDeployResourceCommand()}). Versioned resources are needed to test
    * business rule tasks with a DMN decision or user tasks with a form that have the binding type "version tag".
    *
    * @param resourceName Name of the resource.
@@ -443,38 +360,26 @@ public class TestCaseExecutor {
   }
 
   /**
-   * Sets the object mapper that is used by the {@link ZeebeClient}.
+   * Set the interval between the assertion attempts - default: 100ms
    *
-   * @param objectMapper A specific object mapper.
+   * @param assertionInterval The assertion interval to use.
    * @return The executor.
+   * @see CamundaAssert#DEFAULT_ASSERTION_INTERVAL
    */
-  public TestCaseExecutor withObjectMapper(ObjectMapper objectMapper) {
-    this.objectMapper = objectMapper;
+  public TestCaseExecutor withAssertionInterval(Duration assertionInterval) {
+    awaitilityBehavior.setAssertionInterval(assertionInterval);
     return this;
   }
 
   /**
-   * Enables record streaming printing to stdout. This is useful for debugging or reporting bugs.
+   * Set the timeout of the assertion - default: 10s
    *
-   * @param printRecordStreamEnabled Enable or disable the printing of records.
+   * @param assertionTimeout The assertion timeout to use.
    * @return The executor.
+   * @see CamundaAssert#DEFAULT_ASSERTION_TIMEOUT
    */
-  public TestCaseExecutor withPrintRecordStreamEnabled(boolean printRecordStreamEnabled) {
-    this.printRecordStreamEnabled = printRecordStreamEnabled;
-    return this;
-  }
-
-  /**
-   * Specifies a timeout in milliseconds for tasks that audit the test engine's record stream - e.g. tasks that check process instance is waiting at or has
-   * passed a certain BPMN element.
-   *
-   * @param taskTimeout The audit task timeout in milliseconds - the default value is {@code 5000}
-   * @return The executor.
-   * @deprecated use {@link #withWaitTimeout(long)} instead.
-   */
-  @Deprecated
-  public TestCaseExecutor withTaskTimeout(long taskTimeout) {
-    this.waitTimeout = taskTimeout;
+  public TestCaseExecutor withAssertionTimeout(Duration assertionTimeout) {
+    awaitilityBehavior.setAssertionTimeout(assertionTimeout);
     return this;
   }
 
@@ -523,35 +428,8 @@ public class TestCaseExecutor {
     return this;
   }
 
-  /**
-   * Specifies a timeout in milliseconds for tasks that audit the test engine's record stream (e.g. tasks that check process instance is waiting at or has
-   * passed a certain BPMN element) and for waiting that the engine's becomes idle.
-   *
-   * @param waitTimeout The wait timeout in milliseconds - the default value is {@code 5000}
-   * @return The executor.
-   */
-  public TestCaseExecutor withWaitTimeout(long waitTimeout) {
-    this.waitTimeout = waitTimeout;
-    return this;
-  }
-
-  ZeebeClient createClient() {
-    JsonMapper jsonMapper;
-    if (objectMapper != null) {
-      jsonMapper = new ZeebeObjectMapper(objectMapper);
-    } else {
-      jsonMapper = new ZeebeObjectMapper();
-    }
-
-    return ZeebeClient.newClientBuilder()
-        .grpcAddress(URI.create("https://" + engine.getGatewayAddress()))
-        .usePlaintext()
-        .withJsonMapper(jsonMapper)
-        .build();
-  }
-
-  DeploymentEvent deployResources(ZeebeClient client) {
-    deployVersionedResources(client);
+  DeploymentEvent deployResources() {
+    deployVersionedResources();
 
     var deployResourceCommandStep1 = client.newDeployResourceCommand();
 
@@ -586,20 +464,17 @@ public class TestCaseExecutor {
 
     var deploymentEvent = deployResourceCommandStep2.send().join();
 
-    try {
-      engine.waitForIdleState(Duration.ofMillis(waitTimeout));
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-    } catch (TimeoutException e) {
-      throw new RuntimeException("failed to wait for engine idle state", e);
-    }
+    var isProcessDeployed = deploymentEvent.getProcesses().stream()
+        .anyMatch(process -> process.getBpmnProcessId().equals(testCase.getBpmnProcessId()));
 
-    BpmnAssert.assertThat(deploymentEvent).containsProcessesByBpmnProcessId(testCase.getBpmnProcessId());
+    if (!isProcessDeployed) {
+      throw new RuntimeException(String.format("expected BPMN process %s to be deployed, but is not", testCase.getBpmnProcessId()));
+    }
 
     return deploymentEvent;
   }
 
-  void deployVersionedResources(ZeebeClient client) {
+  void deployVersionedResources() {
     var versionTags = additionalResourceVersionTags.stream().filter(Objects::nonNull).collect(Collectors.toSet());
     for (String versionTag : versionTags) {
       var deployResourceCommandStep1 = client.newDeployResourceCommand();
@@ -640,24 +515,14 @@ public class TestCaseExecutor {
     }
   }
 
-  void executeTestCase(ZeebeClient client, long processInstanceKey) {
-    try (TestCaseInstance testCaseInstance = new TestCaseInstance(engine, client, waitTimeout, printRecordStreamEnabled)) {
-      testCase.execute(testCaseInstance, processInstanceKey);
-    } catch (Throwable t) {
-      // cancel not ended process instance of failed test
-      // to ensure that message is not correlated with an old process instance
-      // when the same correlation key is used
-      try {
-        client.newCancelInstanceCommand(processInstanceKey).send().join();
-      } catch (ClientStatusException e) {
-        // ignore exception
-      }
+  void executeTestCase(long processInstanceKey) {
+    var testCaseInstance = new TestCaseInstance(client, processTestContext, awaitilityBehavior);
 
-      throw t;
-    }
+    testCase.execute(testCaseInstance, processInstanceKey);
 
     if (verifier != null) {
-      verifier.accept(new ProcessInstanceAssert(processInstanceKey, BpmnAssert.getRecordStream()));
+      var processInstanceSelector = ProcessInstanceSelectors.byKey(processInstanceKey);
+      verifier.accept(CamundaAssert.assertThat(processInstanceSelector));
     }
   }
 
@@ -670,63 +535,43 @@ public class TestCaseExecutor {
   }
 
   long findProcessInstanceKey(long processDefinitionKey) {
-    for (Record<?> record : BpmnAssert.getRecordStream().records()) {
-      if (record.getValueType() != ValueType.PROCESS_EVENT) {
-        continue;
+    var startElementInstanceHolder = new Holder<ElementInstance>();
+
+    awaitilityBehavior.untilAsserted(() -> {
+      var startElementInstance = client.newElementInstanceSearchRequest()
+          .filter(filter -> filter
+              .processDefinitionKey(processDefinitionKey)
+              .elementId(testCase.getStart())
+          )
+          .execute()
+          .singleItem();
+
+      if (startElementInstance == null) {
+        throw new AssertionError(String.format(
+            "failed to find start element instance for process definition key %d and element ID %s",
+            processDefinitionKey,
+            testCase.getStart()
+        ));
       }
 
-      var recordValue = (ProcessEventRecordValue) record.getValue();
-      if (recordValue.getProcessDefinitionKey() == processDefinitionKey && recordValue.getTargetElementId().equals(testCase.getStart())) {
-        return recordValue.getProcessInstanceKey();
-      }
-    }
-    throw new RuntimeException(String.format("failed to find process instance key for process definition key %d", processDefinitionKey));
+      return startElementInstance;
+    }, startElementInstanceHolder);
+
+    return startElementInstanceHolder.get().getProcessInstanceKey();
   }
 
-  long findProcessInstanceKey(PublishMessageResponse publishMessageResponse) {
-    for (Record<MessageStartEventSubscriptionRecordValue> record : BpmnAssert.getRecordStream().messageStartEventSubscriptionRecords()) {
-      var recordValue = record.getValue();
-
-      if (recordValue.getMessageKey() == publishMessageResponse.getMessageKey()) {
-        return record.getValue().getProcessInstanceKey();
-      }
-    }
-    throw new RuntimeException("failed to find process instance key for message start");
-  }
-
-  String findStartMessageName(long processDefinitionKey) {
-    for (Record<MessageStartEventSubscriptionRecordValue> record : BpmnAssert.getRecordStream().messageStartEventSubscriptionRecords()) {
-      var recordValue = record.getValue();
-
-      if (recordValue.getProcessDefinitionKey() == processDefinitionKey && recordValue.getStartEventId().equals(testCase.getStart())) {
-        return recordValue.getMessageName();
-      }
-    }
-    throw new RuntimeException(String.format("failed to find message name of message start event %s", testCase.getStart()));
+  String findStartMessageName() {
+    // currently there is no message subscription created for a message start event
+    throw new UnsupportedOperationException();
   }
 
   String findStartSignalName(long processDefinitionKey) {
-    for (Record<?> record : BpmnAssert.getRecordStream().records()) {
-      if (record.getValueType() != ValueType.SIGNAL_SUBSCRIPTION) {
-        continue;
-      }
-
-      var recordValue = (SignalSubscriptionRecordValue) record.getValue();
-      if (recordValue.getProcessDefinitionKey() == processDefinitionKey && recordValue.getCatchEventId().equals(testCase.getStart())) {
-        return recordValue.getSignalName();
-      }
-    }
-    throw new RuntimeException(String.format("failed to find signal name of signal start event %s", testCase.getStart()));
+    // currently the API does not provide signal subscriptions
+    throw new UnsupportedOperationException();
   }
 
   long findStartTimerDueDate(long processDefinitionKey) {
-    for (Record<TimerRecordValue> record : BpmnAssert.getRecordStream().timerRecords()) {
-      var recordValue = record.getValue();
-
-      if (recordValue.getProcessDefinitionKey() == processDefinitionKey && recordValue.getTargetElementId().equals(testCase.getStart())) {
-        return recordValue.getDueDate();
-      }
-    }
-    throw new RuntimeException(String.format("failed to find due date of timer start event %s", testCase.getStart()));
+    // currently the API does not provide timers
+    throw new UnsupportedOperationException();
   }
 }

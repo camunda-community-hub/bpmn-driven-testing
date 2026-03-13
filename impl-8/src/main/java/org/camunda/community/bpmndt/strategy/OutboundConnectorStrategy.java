@@ -68,6 +68,10 @@ public class OutboundConnectorStrategy extends DefaultHandlerStrategy {
       if (taskDefinition.getType() != null) {
         methodBuilder.addStatement("$LElement.taskDefinitionType = $S", literal, taskDefinition.getType());
       }
+
+      if (taskDefinition.getRetries() != null) {
+        methodBuilder.addStatement("$LElement.retries = $S", literal, taskDefinition.getRetries());
+      }
     }
 
     var ioMapping = (ZeebeIoMapping) extensionElements.getUniqueChildElementByType(ZeebeIoMapping.class);

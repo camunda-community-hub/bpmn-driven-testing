@@ -14,17 +14,19 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import io.camunda.zeebe.process.test.api.ZeebeTestEngine;
-import io.camunda.zeebe.process.test.assertions.ProcessInstanceAssert;
-import io.camunda.zeebe.process.test.extension.ZeebeProcessTest;
+import io.camunda.client.CamundaClient;
+import io.camunda.process.test.api.CamundaProcessTest;
+import io.camunda.process.test.api.CamundaProcessTestContext;
+import io.camunda.process.test.api.assertions.ProcessInstanceAssert;
 
-@ZeebeProcessTest
+@CamundaProcessTest
 class TimerCatchEventTest {
 
   @RegisterExtension
   TestCase tc = new TestCase();
 
-  ZeebeTestEngine engine;
+  CamundaClient client;
+  CamundaProcessTestContext processTestContext;
 
   private TimerEventHandler handler;
 
@@ -40,14 +42,14 @@ class TimerCatchEventTest {
 
   @Test
   void testExecute() {
-    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+    tc.createExecutor(client, processTestContext).verify(ProcessInstanceAssert::isCompleted).execute();
   }
 
   @Test
   void testVerify() {
-    handler.verify(processInstanceAssert -> processInstanceAssert.hasVariableWithValue("x", "test"));
+    handler.verify(processInstanceAssert -> processInstanceAssert.hasVariable("x", "test"));
 
-    tc.createExecutor(engine)
+    tc.createExecutor(client, processTestContext)
         .withVariable("x", "test")
         .verify(ProcessInstanceAssert::isCompleted)
         .execute();
@@ -57,44 +59,44 @@ class TimerCatchEventTest {
   void testVerifyTimeDate() {
     handler.verifyTimeDate(date -> assertThat(date).isEqualTo(LocalDateTime.now()));
 
-    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
+    assertThrows(AssertionError.class, () -> tc.createExecutor(client, processTestContext).execute());
 
     handler.verifyTimeDate(date -> assertThat(date).isLessThan(LocalDateTime.now().plusHours(1)));
 
-    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+    tc.createExecutor(client, processTestContext).verify(ProcessInstanceAssert::isCompleted).execute();
   }
 
   @Test
   void testVerifyTimeDateExpression() {
     handler.verifyTimeDateExpression(expr -> assertThat(expr).isEqualTo("wrong date"));
 
-    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
+    assertThrows(AssertionError.class, () -> tc.createExecutor(client, processTestContext).execute());
 
     handler.verifyTimeDateExpression(expr -> assertThat(expr).isEqualTo("2024-02-01T10:11:12Z"));
 
-    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+    tc.createExecutor(client, processTestContext).verify(ProcessInstanceAssert::isCompleted).execute();
   }
 
   @Test
   void testVerifyTimeDuration() {
     handler.verifyTimeDuration(duration -> assertThat(duration.toMillis()).isEqualTo(0));
 
-    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
+    assertThrows(AssertionError.class, () -> tc.createExecutor(client, processTestContext).execute());
 
     handler.verifyTimeDuration(duration -> assertThat(duration.toMillis()).isEqualTo(3600000));
 
-    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+    tc.createExecutor(client, processTestContext).verify(ProcessInstanceAssert::isCompleted).execute();
   }
 
   @Test
   void testVerifyTimeDurationExpression() {
     handler.verifyTimeDurationExpression(expr -> assertThat(expr).isEqualTo("wrong duration"));
 
-    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
+    assertThrows(AssertionError.class, () -> tc.createExecutor(client, processTestContext).execute());
 
     handler.verifyTimeDurationExpression(expr -> assertThat(expr).isEqualTo("PT1H"));
 
-    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+    tc.createExecutor(client, processTestContext).verify(ProcessInstanceAssert::isCompleted).execute();
   }
 
   private class TestCase extends AbstractJUnit5TestCase {

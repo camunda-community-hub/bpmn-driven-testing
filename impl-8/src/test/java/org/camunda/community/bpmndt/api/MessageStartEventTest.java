@@ -11,12 +11,13 @@ import org.camunda.community.bpmndt.test.TestPaths;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import io.camunda.zeebe.client.api.command.ClientStatusException;
-import io.camunda.zeebe.process.test.api.ZeebeTestEngine;
-import io.camunda.zeebe.process.test.assertions.ProcessInstanceAssert;
-import io.camunda.zeebe.process.test.extension.ZeebeProcessTest;
+import io.camunda.client.CamundaClient;
+import io.camunda.client.api.command.ClientStatusException;
+import io.camunda.process.test.api.CamundaProcessTest;
+import io.camunda.process.test.api.CamundaProcessTestContext;
+import io.camunda.process.test.api.assertions.ProcessInstanceAssert;
 
-@ZeebeProcessTest
+@CamundaProcessTest
 class MessageStartEventTest {
 
   @RegisterExtension
@@ -24,20 +25,21 @@ class MessageStartEventTest {
   @RegisterExtension
   TestCaseMessageStart tcMessageStart = new TestCaseMessageStart();
 
-  ZeebeTestEngine engine;
+  CamundaClient client;
+  CamundaProcessTestContext processTestContext;
 
   /**
    * Tests that create instance commands without #startBeforeElement only support none start events.
    */
   @Test
   void testExecute() {
-    var e = assertThrows(ClientStatusException.class, () -> tc.createExecutor(engine).execute());
+    var e = assertThrows(ClientStatusException.class, () -> tc.createExecutor(client, processTestContext).execute());
     assertThat(e.getMessage()).contains("Expected to create instance of process with none start event, but there is no such event");
   }
 
   @Test
   void testExecuteMessageStart() {
-    tcMessageStart.createExecutor(engine)
+    tcMessageStart.createExecutor(client, processTestContext)
         .verify(ProcessInstanceAssert::isCompleted)
         .execute();
   }

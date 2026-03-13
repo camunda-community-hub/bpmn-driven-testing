@@ -15,19 +15,19 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import io.camunda.zeebe.client.ZeebeClient;
-import io.camunda.zeebe.process.test.api.ZeebeTestEngine;
-import io.camunda.zeebe.process.test.assertions.ProcessInstanceAssert;
-import io.camunda.zeebe.process.test.extension.ZeebeProcessTest;
+import io.camunda.client.CamundaClient;
+import io.camunda.process.test.api.CamundaProcessTest;
+import io.camunda.process.test.api.CamundaProcessTestContext;
+import io.camunda.process.test.api.assertions.ProcessInstanceAssert;
 
-@ZeebeProcessTest
+@CamundaProcessTest
 class ServiceTaskTest {
 
   @RegisterExtension
   TestCase tc = new TestCase();
 
-  ZeebeTestEngine engine;
-  ZeebeClient client;
+  CamundaClient client;
+  CamundaProcessTestContext processTestContext;
 
   private JobHandler handler;
 
@@ -48,7 +48,7 @@ class ServiceTaskTest {
         .handler((client, job) -> client.newCompleteCommand(job).variable("test", "123").send());
 
     try (var ignored = workerBuilder.open()) {
-      tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+      tc.createExecutor(client, processTestContext).verify(ProcessInstanceAssert::isCompleted).execute();
     }
   }
 
@@ -56,7 +56,7 @@ class ServiceTaskTest {
   void testExecuteWithCustomAction() {
     handler.execute((client, jobKey) -> client.newCompleteCommand(jobKey).send());
 
-    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+    tc.createExecutor(client, processTestContext).verify(ProcessInstanceAssert::isCompleted).execute();
   }
 
   @Test
@@ -78,7 +78,7 @@ class ServiceTaskTest {
     variableMap.put("z", true);
 
     try (var ignored = workerBuilder.open()) {
-      tc.createExecutor(engine)
+      tc.createExecutor(client, processTestContext)
           .withVariable("x", "test")
           .withVariableMap(variableMap)
           .verify(ProcessInstanceAssert::isCompleted)
@@ -103,7 +103,7 @@ class ServiceTaskTest {
       variables.setY(1);
       variables.setZ(true);
 
-      tc.createExecutor(engine)
+      tc.createExecutor(client, processTestContext)
           .withVariables(variables)
           .verify(ProcessInstanceAssert::isCompleted)
           .execute();
@@ -113,9 +113,9 @@ class ServiceTaskTest {
   @Test
   void testVerify() {
     handler.verify(processInstanceAssert -> {
-      processInstanceAssert.hasVariableWithValue("x", "test");
-      processInstanceAssert.hasVariableWithValue("y", 1);
-      processInstanceAssert.hasVariableWithValue("z", true);
+      processInstanceAssert.hasVariable("x", "test");
+      processInstanceAssert.hasVariable("y", 1);
+      processInstanceAssert.hasVariable("z", true);
     });
 
     handler.complete();
@@ -125,7 +125,7 @@ class ServiceTaskTest {
     variables.setY(1);
     variables.setZ(true);
 
-    tc.createExecutor(engine)
+    tc.createExecutor(client, processTestContext)
         .withVariables(variables)
         .verify(ProcessInstanceAssert::isCompleted)
         .execute();
@@ -140,7 +140,7 @@ class ServiceTaskTest {
     handler.verifyRetries(2);
 
     try (var ignored = workerBuilder.open()) {
-      var e = assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
+      var e = assertThrows(AssertionError.class, () -> tc.createExecutor(client, processTestContext).execute());
       assertThat(e).hasMessageThat().contains("but was 3");
       assertThat(e).hasMessageThat().contains("retry count of 2");
     }
@@ -149,12 +149,12 @@ class ServiceTaskTest {
 
     handler.verifyRetries(retries -> assertThat(retries).isEqualTo(2));
 
-    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
+    assertThrows(AssertionError.class, () -> tc.createExecutor(client, processTestContext).execute());
 
     handler.verifyRetries(retries -> assertThat(retries).isEqualTo(3));
 
     try (var ignored = workerBuilder.open()) {
-      tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+      tc.createExecutor(client, processTestContext).verify(ProcessInstanceAssert::isCompleted).execute();
     }
   }
 
@@ -167,13 +167,13 @@ class ServiceTaskTest {
     handler.verifyRetriesExpression(expr -> assertThat(expr).isEqualTo("wrong retries expression"));
 
     try (var ignored = workerBuilder.open()) {
-      assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
+      assertThrows(AssertionError.class, () -> tc.createExecutor(client, processTestContext).execute());
     }
 
     handler.verifyRetriesExpression(expr -> assertThat(expr).isEqualTo("=3"));
 
     try (var ignored = workerBuilder.open()) {
-      tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+      tc.createExecutor(client, processTestContext).verify(ProcessInstanceAssert::isCompleted).execute();
     }
   }
 
@@ -186,7 +186,7 @@ class ServiceTaskTest {
     handler.verifyType("wrong type");
 
     try (var ignored = workerBuilder.open()) {
-      var e = assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
+      var e = assertThrows(AssertionError.class, () -> tc.createExecutor(client, processTestContext).execute());
       assertThat(e).hasMessageThat().contains("'wrong type'");
       assertThat(e).hasMessageThat().contains("'serviceTaskType'");
     }
@@ -195,7 +195,7 @@ class ServiceTaskTest {
     handler.verifyType(type -> assertThat(type).isEqualTo("serviceTaskType"));
 
     try (var ignored = workerBuilder.open()) {
-      tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+      tc.createExecutor(client, processTestContext).verify(ProcessInstanceAssert::isCompleted).execute();
     }
   }
 
@@ -208,13 +208,13 @@ class ServiceTaskTest {
     handler.verifyTypeExpression(expr -> assertThat(expr).isEqualTo("wrong type expression"));
 
     try (var ignored = workerBuilder.open()) {
-      assertThrows(AssertionError.class, () -> tc.createExecutor(engine).execute());
+      assertThrows(AssertionError.class, () -> tc.createExecutor(client, processTestContext).execute());
     }
 
     handler.verifyTypeExpression(expr -> assertThat(expr).isEqualTo("=\"serviceTaskType\""));
 
     try (var ignored = workerBuilder.open()) {
-      tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+      tc.createExecutor(client, processTestContext).verify(ProcessInstanceAssert::isCompleted).execute();
     }
   }
 
@@ -222,7 +222,7 @@ class ServiceTaskTest {
   void testExecuteAction() {
     handler.execute((client, jobKey) -> client.newCompleteCommand(jobKey).send());
 
-    tc.createExecutor(engine).verify(ProcessInstanceAssert::isCompleted).execute();
+    tc.createExecutor(client, processTestContext).verify(ProcessInstanceAssert::isCompleted).execute();
   }
 
   @Test
@@ -234,12 +234,12 @@ class ServiceTaskTest {
 
     handler.withVariables(variables).complete();
 
-    tc.createExecutor(engine).verify(piAssert -> {
+    tc.createExecutor(client, processTestContext).verify(piAssert -> {
       piAssert.isCompleted();
 
-      piAssert.hasVariableWithValue("x", "test");
-      piAssert.hasVariableWithValue("y", 1);
-      piAssert.hasVariableWithValue("z", true);
+      piAssert.hasVariable("x", "test");
+      piAssert.hasVariable("y", 1);
+      piAssert.hasVariable("z", true);
     }).execute();
   }
 
@@ -254,12 +254,12 @@ class ServiceTaskTest {
         .withVariableMap(variableMap)
         .complete();
 
-    tc.createExecutor(engine).verify(piAssert -> {
+    tc.createExecutor(client, processTestContext).verify(piAssert -> {
       piAssert.isCompleted();
 
-      piAssert.hasVariableWithValue("x", "test");
-      piAssert.hasVariableWithValue("y", 1);
-      piAssert.hasVariableWithValue("z", true);
+      piAssert.hasVariable("x", "test");
+      piAssert.hasVariable("y", 1);
+      piAssert.hasVariable("z", true);
     }).execute();
   }
 

@@ -13,17 +13,19 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import io.camunda.zeebe.process.test.api.ZeebeTestEngine;
-import io.camunda.zeebe.process.test.assertions.ProcessInstanceAssert;
-import io.camunda.zeebe.process.test.extension.ZeebeProcessTest;
+import io.camunda.client.CamundaClient;
+import io.camunda.process.test.api.CamundaProcessTest;
+import io.camunda.process.test.api.CamundaProcessTestContext;
+import io.camunda.process.test.api.assertions.ProcessInstanceAssert;
 
-@ZeebeProcessTest
+@CamundaProcessTest
 class CallActivityTest {
 
   @RegisterExtension
   TestCase tc = new TestCase();
 
-  ZeebeTestEngine engine;
+  CamundaClient client;
+  CamundaProcessTestContext processTestContext;
 
   private CallActivityHandler handler;
 
@@ -40,16 +42,16 @@ class CallActivityTest {
 
   @Test
   void testExecute() {
-    tc.createExecutor(engine).customize(this::customize).execute();
+    tc.createExecutor(client, processTestContext).customize(this::customize).execute();
   }
 
   @Test
   void testVerifyInputOutput() {
     handler
-        .verify(piAssert -> piAssert.hasVariableWithValue("x", "test"))
+        .verify(piAssert -> piAssert.hasVariable("x", "test"))
         .verifyInput(piAssert -> {
           // all parent variables are propagated
-          piAssert.hasVariableWithValue("x", "test");
+          piAssert.hasVariable("x", "test");
         });
 
     handler
@@ -59,12 +61,12 @@ class CallActivityTest {
 
     handler.verifyOutput(piAssert -> {
       // all child variables are propagated
-      piAssert.hasVariableWithValue("x", "test123");
-      piAssert.hasVariableWithValue("y", 1);
-      piAssert.hasVariableWithValue("z", true);
+      piAssert.hasVariable("x", "test123");
+      piAssert.hasVariable("y", 1);
+      piAssert.hasVariable("z", true);
     });
 
-    tc.createExecutor(engine)
+    tc.createExecutor(client, processTestContext)
         .customize(this::customize)
         .withVariable("x", "test")
         .execute();
@@ -74,66 +76,54 @@ class CallActivityTest {
   void testVerifyProcessId() {
     handler.verifyProcessId("wrong process ID");
 
-    var e = assertThrows(AssertionError.class, () -> tc.createExecutor(engine).customize(this::customize).withWaitTimeout(1000L).execute());
+    var e = assertThrows(AssertionError.class, () -> tc.createExecutor(client, processTestContext).customize(this::customize).execute());
     assertThat(e).hasMessageThat().contains("'wrong process ID'");
     assertThat(e).hasMessageThat().contains("'simple'");
 
     handler.verifyProcessId("simple");
 
-    tc.createExecutor(engine).customize(this::customize).execute();
+    tc.createExecutor(client, processTestContext).customize(this::customize).execute();
 
     handler.verifyProcessId(assignee -> assertThat(assignee).isEqualTo("wrong process ID"));
 
-    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).customize(this::customize).withWaitTimeout(1000L).execute());
+    assertThrows(AssertionError.class, () -> tc.createExecutor(client, processTestContext).customize(this::customize).execute());
 
     handler.verifyProcessId(processId -> assertThat(processId).isEqualTo("simple"));
 
-    tc.createExecutor(engine).customize(this::customize).execute();
+    tc.createExecutor(client, processTestContext).customize(this::customize).execute();
   }
 
   @Test
   void testVerifyProcessIdExpression() {
     handler.verifyProcessIdExpression(expr -> assertThat(expr).isEqualTo("wrong process ID expression"));
 
-    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).customize(this::customize).withWaitTimeout(1000L).execute());
+    assertThrows(AssertionError.class, () -> tc.createExecutor(client, processTestContext).customize(this::customize).execute());
 
     handler.verifyProcessIdExpression(expr -> assertThat(expr).isEqualTo("=\"simple\""));
 
-    tc.createExecutor(engine).customize(this::customize).verify(ProcessInstanceAssert::isCompleted).execute();
+    tc.createExecutor(client, processTestContext).customize(this::customize).verify(ProcessInstanceAssert::isCompleted).execute();
   }
 
   @Test
   void testVerifyPropagateAllChildVariables() {
     handler.verifyPropagateAllChildVariables(false);
 
-    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).customize(this::customize).withWaitTimeout(1000L).execute());
+    assertThrows(AssertionError.class, () -> tc.createExecutor(client, processTestContext).customize(this::customize).execute());
 
     handler.verifyPropagateAllChildVariables(true);
 
-    tc.createExecutor(engine).customize(this::customize).execute();
+    tc.createExecutor(client, processTestContext).customize(this::customize).execute();
   }
 
   @Test
   void testVerifyPropagateAllParentVariables() {
     handler.verifyPropagateAllParentVariables(false);
 
-    assertThrows(AssertionError.class, () -> tc.createExecutor(engine).customize(this::customize).withWaitTimeout(1000L).execute());
+    assertThrows(AssertionError.class, () -> tc.createExecutor(client, processTestContext).customize(this::customize).execute());
 
     handler.verifyPropagateAllParentVariables(true);
 
-    tc.createExecutor(engine).customize(this::customize).execute();
-  }
-
-  @Test
-  void testErrorContainsIncidents() {
-    var e = assertThrows(RuntimeException.class, () -> tc.createExecutor(engine)
-        .verify(ProcessInstanceAssert::isCompleted)
-        .withWaitTimeout(1000L)
-        .execute()
-    );
-
-    assertThat(e.getMessage()).contains("found incidents:");
-    assertThat(e.getMessage()).contains("  - element callActivity: CALLED_ELEMENT_ERROR: Expected process with BPMN process id 'simple' to be deployed");
+    tc.createExecutor(client, processTestContext).customize(this::customize).execute();
   }
 
   private void customize(TestCaseExecutor testCaseExecutor) {
