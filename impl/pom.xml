@@ -11,7 +11,7 @@
 
   <properties>
     <!-- Versions -->
-    <assertj.version>3.27.3</assertj.version>
+    <assertj.version>3.27.7</assertj.version>
     <camunda.bpm.assert.version>15.0.0</camunda.bpm.assert.version>
     <spring.version>6.2.12</spring.version>
   </properties>

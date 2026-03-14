@@ -127,7 +127,7 @@ Recommended versions:
 | Camunda BPM        | 7.24.0  |
 | Camunda BPM Assert | 15.0.0  |
 | JUnit 5 (Jupiter)  | 5.11.4  |
-| Assertj            | 3.27.3  |
+| Assertj            | 3.27.7  |
 | Spring Framework   | 6.2.12  |
 | Spring Boot        | 3.5.7   |
 
