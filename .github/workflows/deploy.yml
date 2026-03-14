@@ -33,6 +33,6 @@ jobs:
           maven-gpg-passphrase: ${{ secrets.MAVEN_CENTRAL_GPG_SIGNING_KEY_PASSPHRASE }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           artifacts-pattern: ""
-          run-tests: false # disabled because CPT requires Testcontainers
+          maven-build-options: "-DskipTests" # disabled tests because CPT requires Testcontainers
           maven-auto-release-after-close: true
         id: release
