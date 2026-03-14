@@ -17,7 +17,7 @@ dependencies {
   implementation 'com.google.truth:truth:1.4.5'
 
   testImplementation 'org.camunda.bpm.assert:camunda-bpm-assert:15.0.0'
-  testImplementation 'org.assertj:assertj-core:3.27.3'
+  testImplementation 'org.assertj:assertj-core:3.27.7'
   testImplementation 'org.springframework.boot:spring-boot-starter-test:3.5.7'
   testImplementation 'org.junit.jupiter:junit-jupiter-api:5.13.2'
   testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.13.2'

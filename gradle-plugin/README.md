@@ -83,7 +83,7 @@ dependencies {
   implementation 'org.camunda.bpm:camunda-engine:7.24.0'
 
   testImplementation 'com.h2database:h2:2.2.224'
-  testImplementation 'org.assertj:assertj-core:3.27.3'
+  testImplementation 'org.assertj:assertj-core:3.27.7'
   testImplementation 'org.camunda.bpm.assert:camunda-bpm-assert:15.0.0'
   testImplementation 'org.junit.jupiter:junit-jupiter-api:5.11.4'
 
@@ -125,7 +125,7 @@ Recommended versions:
 | Camunda BPM        | 7.24.0  |
 | Camunda BPM Assert | 15.0.0  |
 | JUnit 5 (Jupiter)  | 5.11.4  |
-| Assertj            | 3.27.3  |
+| Assertj            | 3.27.7  |
 | Spring Framework   | 6.2.12  |
 | Spring Boot        | 3.5.7   |
 
