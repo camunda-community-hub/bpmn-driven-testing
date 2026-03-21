@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.util.Map;
 
+import org.camunda.bpm.engine.variable.Variables;
 import org.camunda.spin.Spin;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -44,7 +45,14 @@ class ExampleTest {
     input.setVstring("abc");
 
     tc.createExecutor()
-        .withVariables(Map.of("a", "text", "b", 1, "c", true, "input", input, "inputJson", Spin.JSON("{}")))
+        .withVariables(Map.of(
+            "a", "text",
+            "b", 1,
+            "c", true,
+            "input", input,
+            "inputJson", Spin.JSON("{}"),
+            "nullUntyped", Variables.untypedNullValue()
+        ))
         .verify(piAssert -> {
           piAssert.isEnded();
 
@@ -66,6 +74,9 @@ class ExampleTest {
           assertThat(variables.get("outputString")).isEqualTo("vstring");
           assertThat(variables.get("outputIntegerTyped")).isEqualTo(123);
           assertThat(variables.get("outputInteger")).isEqualTo(123);
+
+          assertThat(variables.get("null")).isNull();
+          assertThat(variables.get("nullUntyped")).isNull();
         })
         .execute();
   }

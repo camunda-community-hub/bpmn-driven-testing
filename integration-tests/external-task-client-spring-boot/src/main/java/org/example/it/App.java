@@ -4,15 +4,16 @@ import static com.google.common.truth.Truth.assertThat;
 
 import java.time.LocalDate;
 import java.time.Month;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
 import org.camunda.bpm.engine.HistoryService;
 import org.camunda.bpm.engine.RuntimeService;
 import org.camunda.bpm.engine.history.HistoricVariableInstance;
+import org.camunda.bpm.engine.variable.Variables;
 import org.camunda.spin.Spin;
 import org.h2.Driver;
 import org.springframework.boot.SpringApplication;
@@ -45,7 +46,14 @@ public class App {
     input.setVinteger(123);
     input.setVstring("abc");
 
-    var pi = runtimeService.startProcessInstanceByKey("example", Map.of("a", "text", "b", 1, "c", true, "input", input, "inputJson", Spin.JSON("{}")));
+    var pi = runtimeService.startProcessInstanceByKey("example", Map.of(
+        "a", "text",
+        "b", 1,
+        "c", true,
+        "input", input,
+        "inputJson", Spin.JSON("{}"),
+        "nullUntyped", Variables.untypedNullValue()
+    ));
 
     try {
       TimeUnit.SECONDS.sleep(10L);
@@ -62,11 +70,14 @@ public class App {
 
     assertThat(piState).isEqualTo("COMPLETED");
 
-    var variables = historyService.createHistoricVariableInstanceQuery()
+    var historicVariables = historyService.createHistoricVariableInstanceQuery()
         .processInstanceId(pi.getId())
-        .list()
-        .stream()
-        .collect(Collectors.toMap(HistoricVariableInstance::getName, HistoricVariableInstance::getValue));
+        .list();
+
+    var variables = new HashMap<String, Object>(historicVariables.size());
+    for (HistoricVariableInstance historicVariable : historicVariables) {
+      variables.put(historicVariable.getName(), historicVariable.getValue());
+    }
 
     var outputTyped = (ComplexVariable) variables.get("outputTyped");
     assertThat(outputTyped.getVboolean()).isEqualTo(true);
@@ -84,6 +95,9 @@ public class App {
     assertThat(variables.get("outputString")).isEqualTo("vstring");
     assertThat(variables.get("outputIntegerTyped")).isEqualTo(123);
     assertThat(variables.get("outputInteger")).isEqualTo(123);
+
+    assertThat(variables.get("null")).isNull();
+    assertThat(variables.get("nullUntyped")).isNull();
   }
 
   @Bean

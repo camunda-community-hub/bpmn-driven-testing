@@ -15,6 +15,7 @@ import org.camunda.bpm.engine.test.assertions.ProcessEngineTests;
 import org.camunda.bpm.engine.test.assertions.bpmn.ProcessInstanceAssert;
 import org.camunda.bpm.engine.variable.VariableMap;
 import org.camunda.bpm.engine.variable.Variables;
+import org.camunda.bpm.engine.variable.impl.value.NullValueImpl;
 import org.camunda.bpm.engine.variable.value.TypedValue;
 import org.camunda.community.bpmndt.test.TestPaths;
 import org.camunda.spin.Spin;
@@ -152,6 +153,30 @@ public class ExternalTaskClientTest {
           Object outputJson = variables.get("outputJson");
           assertThat(outputJson).isNotNull();
           assertThat(outputJson.toString()).isEqualTo("{}");
+        })
+        .execute();
+  }
+
+  @Test
+  public void testExecuteExternalTaskWithNullAndNotExisting() {
+    handler.executeExternalTask((externalTask, externalTaskService) -> {
+      assertThat((TypedValue) externalTask.getVariableTyped("notExisting")).isNull();
+      assertThat((TypedValue) externalTask.getVariableTyped("nullUntyped")).isEqualTo(NullValueImpl.INSTANCE);
+
+      VariableMap variables = Variables.createVariables()
+          .putValue("null", null)
+          .putValue("nullUntyped", ClientValues.untypedNullValue());
+
+      externalTaskService.complete(externalTask, variables);
+    });
+
+    tc.createExecutor()
+        .withVariable("nullUntyped", Variables.untypedNullValue())
+        .verify(piAssert -> {
+          Map<String, Object> variables = piAssert.variables().actual();
+
+          assertThat(variables.get("null")).isNull();
+          assertThat(variables.get("nullUntyped")).isNull();
         })
         .execute();
   }

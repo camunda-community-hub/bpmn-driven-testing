@@ -261,6 +261,10 @@ public class ExternalTaskClientHandler<T extends ExternalTaskHandler<?>> extends
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     private <T extends TypedValue> T convertTypedValue(TypedValue value, boolean deserializeValue) {
+      if (value == null) {
+        return null;
+      }
+
       TypedValueField typedValueField = new TypedValueField();
       typedValueField.setType(value.getType().getName());
       typedValueField.setValueInfo(value.getType().getValueInfo(value));
