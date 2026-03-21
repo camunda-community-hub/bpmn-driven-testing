@@ -11,9 +11,11 @@ import org.camunda.bpm.client.task.ExternalTaskHandler;
 import org.camunda.bpm.client.task.ExternalTaskService;
 import org.camunda.bpm.client.variable.ClientValues;
 import org.camunda.bpm.engine.variable.Variables;
+import org.camunda.bpm.engine.variable.impl.value.NullValueImpl;
 import org.camunda.bpm.engine.variable.value.BooleanValue;
 import org.camunda.bpm.engine.variable.value.IntegerValue;
 import org.camunda.bpm.engine.variable.value.StringValue;
+import org.camunda.bpm.engine.variable.value.TypedValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Configuration;
@@ -56,6 +58,8 @@ public class ExampleAHandler implements ExternalTaskHandler {
     assertThat((Boolean) externalTask.getVariable("c")).isTrue();
     assertThat(((BooleanValue) externalTask.getVariableTyped("c")).getValue()).isTrue();
     assertThat(((BooleanValue) externalTask.getVariableTyped("c", false)).getValue()).isTrue();
+    assertThat((TypedValue) externalTask.getVariableTyped("notExisting")).isNull();
+    assertThat((TypedValue) externalTask.getVariableTyped("nullUntyped")).isEqualTo(NullValueImpl.INSTANCE);
 
     assertThat(externalTask.getAllVariables()).containsEntry("kA", "vA");
 
@@ -74,7 +78,9 @@ public class ExampleAHandler implements ExternalTaskHandler {
         .putValue("outputString", "vstring")
         .putValue("outputIntegerTyped", ClientValues.integerValue(123))
         .putValue("outputInteger", 123)
-        .putValue("outputJson", ClientValues.jsonValue("{\"test\":123}"));
+        .putValue("outputJson", ClientValues.jsonValue("{\"test\":123}"))
+        .putValue("null", null)
+        .putValue("nullUntyped", ClientValues.untypedNullValue());
 
     externalTaskService.complete(externalTask, variables);
 
