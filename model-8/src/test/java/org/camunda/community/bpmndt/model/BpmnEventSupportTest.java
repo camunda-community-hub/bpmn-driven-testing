@@ -23,12 +23,18 @@ class BpmnEventSupportTest {
   }
 
   @Test
-  void testIsMesageEvent() {
+  void testIsConditionalEvent() {
+    var bpmnSupport = of(TestPaths.simple("simpleConditionalCatchEvent.bpmn"));
+    var bpmnEventSupport = new BpmnEventSupport((CatchEvent) bpmnSupport.get("conditionalCatchEvent"));
+    assertThat(bpmnEventSupport.isConditional()).isTrue();
+  }
+
+  @Test
+  void testIsMessageEvent() {
     var bpmnSupport = of(TestPaths.simple("simpleMessageStartEvent.bpmn"));
     var bpmnEventSupport = new BpmnEventSupport((CatchEvent) bpmnSupport.get("messageStartEvent"));
     assertThat(bpmnEventSupport.isMessage()).isTrue();
   }
-
 
   @Test
   void testIsNotMessageEvent() {

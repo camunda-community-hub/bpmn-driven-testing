@@ -3,6 +3,7 @@ package org.camunda.community.bpmndt.strategy;
 import org.camunda.community.bpmndt.GeneratorStrategy;
 import org.camunda.community.bpmndt.Literal;
 import org.camunda.community.bpmndt.api.CallActivityHandler;
+import org.camunda.community.bpmndt.api.ConditionalEventHandler;
 import org.camunda.community.bpmndt.api.CustomMultiInstanceHandler;
 import org.camunda.community.bpmndt.api.JobHandler;
 import org.camunda.community.bpmndt.api.MessageEventHandler;
@@ -25,6 +26,7 @@ import io.camunda.zeebe.model.bpmn.instance.EndEvent;
 public class DefaultStrategy implements GeneratorStrategy {
 
   public static final TypeName CALL_ACTIVITY = TypeName.get(CallActivityHandler.class);
+  public static final TypeName CONDITIONAL_EVENT = TypeName.get(ConditionalEventHandler.class);
   public static final TypeName CUSTOM_MULTI_INSTANCE = TypeName.get(CustomMultiInstanceHandler.class);
   public static final TypeName JOB = TypeName.get(JobHandler.class);
   public static final TypeName MESSAGE_EVENT = TypeName.get(MessageEventHandler.class);

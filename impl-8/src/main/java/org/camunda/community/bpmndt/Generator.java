@@ -9,6 +9,7 @@ import org.camunda.community.bpmndt.api.AbstractJUnit5TestCase;
 import org.camunda.community.bpmndt.api.AbstractTestCase;
 import org.camunda.community.bpmndt.api.CallActivityBindingType;
 import org.camunda.community.bpmndt.api.CallActivityHandler;
+import org.camunda.community.bpmndt.api.ConditionalEventHandler;
 import org.camunda.community.bpmndt.api.CustomMultiInstanceHandler;
 import org.camunda.community.bpmndt.api.JobHandler;
 import org.camunda.community.bpmndt.api.MessageEventHandler;
@@ -92,6 +93,7 @@ public class Generator {
     apiClasses.add(AbstractTestCase.class);
     apiClasses.add(CallActivityBindingType.class);
     apiClasses.add(CallActivityHandler.class);
+    apiClasses.add(ConditionalEventHandler.class);
     apiClasses.add(CustomMultiInstanceHandler.class);
     apiClasses.add(JobHandler.class);
     apiClasses.add(MessageEventHandler.class);

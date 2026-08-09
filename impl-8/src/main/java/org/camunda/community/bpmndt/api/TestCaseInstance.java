@@ -39,6 +39,10 @@ public class TestCaseInstance {
     handler.apply(this, flowScopeKey);
   }
 
+  public void apply(long flowScopeKey, ConditionalEventHandler handler) {
+    handler.apply(this, flowScopeKey);
+  }
+
   public void apply(long flowScopeKey, CustomMultiInstanceHandler handler) {
     handler.apply(this, flowScopeKey);
   }
