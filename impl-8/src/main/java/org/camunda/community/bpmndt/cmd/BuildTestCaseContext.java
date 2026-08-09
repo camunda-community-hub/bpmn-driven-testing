@@ -103,7 +103,12 @@ public class BuildTestCaseContext implements Function<TestCase, TestCaseContext>
       if (element.getNestingLevel() < nestingLevel) {
         scope = null; // reset if multi instance scope is passed
       }
-      if (scope != null) {
+      if (scope != null && !scope.getId().equals(element.getParent().getId())) {
+        // in case of subsequent sub processes
+        nestingLevel--;
+        scope = null;
+      }
+      if (scope != null && scope.isMultiInstance()) {
         continue; // skip element with a multi instance parent scope
       }
 
@@ -115,7 +120,8 @@ public class BuildTestCaseContext implements Function<TestCase, TestCaseContext>
           ctx.addStrategy(new CustomMultiInstanceScopeStrategy(scope));
           continue;
         } else {
-          ctx.addStrategy(new SubProcessStrategy(element.getParent()));
+          scope = element.getParent();
+          ctx.addStrategy(new SubProcessStrategy(scope));
         }
       }
 

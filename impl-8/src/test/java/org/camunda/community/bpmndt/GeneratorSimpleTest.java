@@ -441,6 +441,52 @@ class GeneratorSimpleTest {
   }
 
   @Test
+  void testSimpleSubProcesses() {
+    generator.generateTestCases(ctx, bpmnFile);
+
+    assertThat(result.getFiles()).hasSize(1);
+    assertThat(result.getFiles().get(0).typeSpec).hasName("TC_startEvent__endEvent");
+
+    var typeSpec = result.getFiles().get(0).typeSpec;
+    assertThat(typeSpec).hasMethods(11);
+
+    assertThat(typeSpec.methodSpecs.get(1)).hasName("execute");
+    assertThat(typeSpec.methodSpecs.get(1)).hasParameters("instance", "flowScopeKey");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("// startEvent: startEvent");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(flowScopeKey, \"startEvent\");");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("// subProcess: subProcessA");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("executeSubProcessA(instance, flowScopeKey);");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("// subProcess: subProcessB");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("executeSubProcessB(instance, flowScopeKey);");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("// endEvent: endEvent");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(flowScopeKey, \"endEvent\");");
+
+    assertThat(typeSpec.methodSpecs.get(2)).hasName("executeSubProcessA");
+    assertThat(typeSpec.methodSpecs.get(2)).hasParameters("instance", "parentFlowScopeKey");
+    assertThat(typeSpec.methodSpecs.get(2)).containsCode("long flowScopeKey = instance.getElementInstanceKey(parentFlowScopeKey, \"subProcessA\");");
+    assertThat(typeSpec.methodSpecs.get(2)).containsCode("// startEvent: subProcessStartEventA");
+    assertThat(typeSpec.methodSpecs.get(2)).containsCode("instance.hasPassed(flowScopeKey, \"subProcessStartEventA\");");
+    assertThat(typeSpec.methodSpecs.get(2)).containsCode("// userTask: userTaskA");
+    assertThat(typeSpec.methodSpecs.get(2)).containsCode("instance.isWaitingAt(flowScopeKey, \"userTaskA\");");
+    assertThat(typeSpec.methodSpecs.get(2)).containsCode("instance.apply(flowScopeKey, userTaskA);");
+    assertThat(typeSpec.methodSpecs.get(2)).containsCode("instance.hasPassed(flowScopeKey, \"userTaskA\");");
+    assertThat(typeSpec.methodSpecs.get(2)).containsCode("// endEvent: subProcessEndEventA");
+    assertThat(typeSpec.methodSpecs.get(2)).containsCode("instance.hasPassed(flowScopeKey, \"subProcessEndEventA\");");
+
+    assertThat(typeSpec.methodSpecs.get(3)).hasName("executeSubProcessB");
+    assertThat(typeSpec.methodSpecs.get(3)).hasParameters("instance", "parentFlowScopeKey");
+    assertThat(typeSpec.methodSpecs.get(3)).containsCode("long flowScopeKey = instance.getElementInstanceKey(parentFlowScopeKey, \"subProcessB\");");
+    assertThat(typeSpec.methodSpecs.get(3)).containsCode("// startEvent: subProcessStartEventB");
+    assertThat(typeSpec.methodSpecs.get(3)).containsCode("instance.hasPassed(flowScopeKey, \"subProcessStartEventB\");");
+    assertThat(typeSpec.methodSpecs.get(3)).containsCode("// userTask: userTaskB");
+    assertThat(typeSpec.methodSpecs.get(3)).containsCode("instance.isWaitingAt(flowScopeKey, \"userTaskB\");");
+    assertThat(typeSpec.methodSpecs.get(3)).containsCode("instance.apply(flowScopeKey, userTaskB);");
+    assertThat(typeSpec.methodSpecs.get(3)).containsCode("instance.hasPassed(flowScopeKey, \"userTaskB\");");
+    assertThat(typeSpec.methodSpecs.get(3)).containsCode("// endEvent: subProcessEndEventB");
+    assertThat(typeSpec.methodSpecs.get(3)).containsCode("instance.hasPassed(flowScopeKey, \"subProcessEndEventB\");");
+  }
+
+  @Test
   void testSimpleSubProcessNested() {
     generator.generateTestCases(ctx, bpmnFile);
 
