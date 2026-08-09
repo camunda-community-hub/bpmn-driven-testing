@@ -16,6 +16,8 @@ import org.camunda.community.bpmndt.model.BpmnElement;
 import org.camunda.community.bpmndt.model.BpmnElementScope;
 import org.camunda.community.bpmndt.model.TestCase;
 import org.camunda.community.bpmndt.strategy.CallActivityStrategy;
+import org.camunda.community.bpmndt.strategy.ConditionalBoundaryEventStrategy;
+import org.camunda.community.bpmndt.strategy.ConditionalEventStrategy;
 import org.camunda.community.bpmndt.strategy.CustomMultiInstanceScopeStrategy;
 import org.camunda.community.bpmndt.strategy.CustomMultiInstanceStrategy;
 import org.camunda.community.bpmndt.strategy.DefaultStrategy;
@@ -134,6 +136,10 @@ public class BuildTestCaseContext implements Function<TestCase, TestCaseContext>
     switch (element.getType()) {
       case CALL_ACTIVITY:
         return new CallActivityStrategy(element);
+      case CONDITIONAL_BOUNDARY:
+        return new ConditionalBoundaryEventStrategy(element);
+      case CONDITIONAL_CATCH:
+        return new ConditionalEventStrategy(element);
       case MESSAGE_BOUNDARY:
         return new MessageBoundaryEventStrategy(element);
       case MESSAGE_CATCH:

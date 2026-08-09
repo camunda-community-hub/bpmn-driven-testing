@@ -20,6 +20,7 @@ mvn clean test
   Should contain  ${result.stdout}  Running org.example.it.SimpleBusinessRuleTaskTest
   Should contain  ${result.stdout}  Running org.example.it.SimpleCallActivityTest
   Should contain  ${result.stdout}  Running org.example.it.SimpleCollaborationTest
+  Should contain  ${result.stdout}  Running org.example.it.SimpleConditionalCatchEventTest
   Should contain  ${result.stdout}  Running org.example.it.SimpleEventBasedGatewayTest
   Should contain  ${result.stdout}  Running org.example.it.SimpleMessageCatchEventTest
   Should contain  ${result.stdout}  Running org.example.it.SimpleMessageEndEventTest
@@ -75,6 +76,7 @@ Assert Test Code Generation
   Should contain  ${result.stdout}  Found BPMN file: simpleBusinessRuleTask.bpmn
   Should contain  ${result.stdout}  Found BPMN file: simpleCallActivity.bpmn
   Should contain  ${result.stdout}  Found BPMN file: simpleCollaboration.bpmn
+  Should contain  ${result.stdout}  Found BPMN file: simpleConditionalCatchEvent.bpmn
   Should contain  ${result.stdout}  Found BPMN file: simpleEventBasedGateway.bpmn
   Should contain  ${result.stdout}  Found BPMN file: simpleMessageCatchEvent.bpmn
   Should contain  ${result.stdout}  Found BPMN file: simpleMessageEndEvent.bpmn
@@ -131,6 +133,7 @@ Assert Test Code Generation
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/simplecallactivity/TC_startEvent__callActivity.java
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/simplecallactivity/TC_startEvent__endEvent.java
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/simplecollaboration/TC_startEvent__endEvent.java
+  Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/simpleconditionalcatchevent/TC_startEvent__endEvent.java
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/simpleeventbasedgateway/TC_Message.java
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/simpleeventbasedgateway/TC_startEvent__eventBasedGateway.java
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/simpleeventbasedgateway/TC_Timer.java
@@ -160,6 +163,7 @@ Assert Test Code Generation
   File should exist  ${testSources}/generated/simplecallactivity/TC_startEvent__callActivity.java
   File should exist  ${testSources}/generated/simplecallactivity/TC_startEvent__endEvent.java
   File should exist  ${testSources}/generated/simplecollaboration/TC_startEvent__endEvent.java
+  File should exist  ${testSources}/generated/simpleconditionalcatchevent/TC_startEvent__endEvent.java
   File should exist  ${testSources}/generated/simpleeventbasedgateway/TC_Message.java
   File should exist  ${testSources}/generated/simpleeventbasedgateway/TC_startEvent__eventBasedGateway.java
   File should exist  ${testSources}/generated/simpleeventbasedgateway/TC_Timer.java
@@ -190,6 +194,7 @@ Assert Test Code Generation
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/org/camunda/community/bpmndt/api/AbstractTestCase.java
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/org/camunda/community/bpmndt/api/CallActivityBindingType.java
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/org/camunda/community/bpmndt/api/CallActivityHandler.java
+  Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/org/camunda/community/bpmndt/api/ConditionalEventHandler.java
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/org/camunda/community/bpmndt/api/CustomMultiInstanceHandler.java
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/org/camunda/community/bpmndt/api/JobHandler.java
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/org/camunda/community/bpmndt/api/MessageEventHandler.java
@@ -207,6 +212,7 @@ Assert Test Code Generation
   File should exist  ${testSources}/org/camunda/community/bpmndt/api/AbstractTestCase.java
   File should exist  ${testSources}/org/camunda/community/bpmndt/api/CallActivityBindingType.java
   File should exist  ${testSources}/org/camunda/community/bpmndt/api/CallActivityHandler.java
+  File should exist  ${testSources}/org/camunda/community/bpmndt/api/ConditionalEventHandler.java
   File should exist  ${testSources}/org/camunda/community/bpmndt/api/CustomMultiInstanceHandler.java
   File should exist  ${testSources}/org/camunda/community/bpmndt/api/JobHandler.java
   File should exist  ${testSources}/org/camunda/community/bpmndt/api/MessageEventHandler.java

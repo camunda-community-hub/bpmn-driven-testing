@@ -1,5 +1,6 @@
 package org.camunda.community.bpmndt.model;
 
+import static io.camunda.zeebe.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_CONDITIONAL_EVENT_DEFINITION;
 import static io.camunda.zeebe.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_ERROR_EVENT_DEFINITION;
 import static io.camunda.zeebe.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_ESCALATION_EVENT_DEFINITION;
 import static io.camunda.zeebe.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_LINK_EVENT_DEFINITION;
@@ -10,6 +11,7 @@ import static io.camunda.zeebe.model.bpmn.impl.BpmnModelConstants.BPMN_ELEMENT_T
 import java.util.Collection;
 
 import io.camunda.zeebe.model.bpmn.instance.CatchEvent;
+import io.camunda.zeebe.model.bpmn.instance.ConditionalEventDefinition;
 import io.camunda.zeebe.model.bpmn.instance.ErrorEventDefinition;
 import io.camunda.zeebe.model.bpmn.instance.EscalationEventDefinition;
 import io.camunda.zeebe.model.bpmn.instance.EventDefinition;
@@ -39,6 +41,10 @@ public class BpmnEventSupport {
 
   private BpmnEventSupport(Collection<EventDefinition> eventDefinitions) {
     eventDefinition = eventDefinitions.stream().findFirst().orElse(null);
+  }
+
+  public ConditionalEventDefinition getConditionalDefinition() {
+    return (ConditionalEventDefinition) eventDefinition;
   }
 
   public String getErrorCode() {
@@ -87,6 +93,10 @@ public class BpmnEventSupport {
     } else {
       return false;
     }
+  }
+
+  public boolean isConditional() {
+    return is(BPMN_ELEMENT_CONDITIONAL_EVENT_DEFINITION);
   }
 
   public boolean isError() {

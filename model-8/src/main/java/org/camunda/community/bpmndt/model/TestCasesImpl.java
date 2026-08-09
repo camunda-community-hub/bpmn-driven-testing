@@ -157,7 +157,9 @@ class TestCasesImpl implements TestCases {
 
     element.attachedTo = event.getAttachedTo().getId();
 
-    if (eventSupport.isError()) {
+    if (eventSupport.isConditional()) {
+      element.type = BpmnElementType.CONDITIONAL_BOUNDARY;
+    } else if (eventSupport.isError()) {
       element.type = BpmnElementType.ERROR_BOUNDARY;
     } else if (eventSupport.isEscalation()) {
       element.type = BpmnElementType.ESCALATION_BOUNDARY;
@@ -188,7 +190,9 @@ class TestCasesImpl implements TestCases {
     var event = element.getFlowNode(IntermediateCatchEvent.class);
     var eventSupport = new BpmnEventSupport(event);
 
-    if (eventSupport.isMessage()) {
+    if (eventSupport.isConditional()) {
+      element.type = BpmnElementType.CONDITIONAL_CATCH;
+    } else if (eventSupport.isMessage()) {
       element.type = BpmnElementType.MESSAGE_CATCH;
     } else if (eventSupport.isSignal()) {
       element.type = BpmnElementType.SIGNAL_CATCH;

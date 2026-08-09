@@ -21,6 +21,13 @@ public abstract class TestCaseInstanceElement {
     public String versionTag;
   }
 
+  public static class ConditionalEventElement extends TestCaseInstanceElement {
+
+    public String attachedTo; // Optional ID of the BPMN element, the event is attached to
+
+    public String condition;
+  }
+
   public static class JobElement extends TestCaseInstanceElement {
 
     public String retries;

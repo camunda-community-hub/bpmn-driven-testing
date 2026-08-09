@@ -133,6 +133,32 @@ class GeneratorSimpleTest {
   }
 
   @Test
+  void testSimpleConditionalCatchEvent() {
+    generator.generateTestCases(ctx, bpmnFile);
+    assertThat(result.getFiles()).hasSize(1);
+
+    var typeSpec = result.getFiles().get(0).typeSpec;
+    assertThat(typeSpec).hasFields(1);
+    assertThat(typeSpec).hasMethods(8);
+
+    assertThat(typeSpec.fieldSpecs.get(0)).hasName("conditionalCatchEvent");
+    assertThat(typeSpec.fieldSpecs.get(0)).hasType(DefaultStrategy.CONDITIONAL_EVENT);
+
+    assertThat(typeSpec.methodSpecs.get(7)).hasName("handleConditionalCatchEvent");
+    assertThat(typeSpec.methodSpecs.get(7)).hasReturnType(DefaultStrategy.CONDITIONAL_EVENT);
+
+    var expected = "conditionalCatchEvent = new %s(conditionalCatchEventElement);";
+    assertThat(typeSpec.methodSpecs.get(0)).containsCode(String.format(expected, DefaultStrategy.CONDITIONAL_EVENT));
+
+    expected = "conditionalCatchEventElement.condition = \"=x > 10\";";
+    assertThat(typeSpec.methodSpecs.get(0)).containsCode(expected);
+
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.isWaitingAt(flowScopeKey, \"conditionalCatchEvent\");");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.apply(flowScopeKey, conditionalCatchEvent);");
+    assertThat(typeSpec.methodSpecs.get(1)).containsCode("instance.hasPassed(flowScopeKey, \"conditionalCatchEvent\");");
+  }
+
+  @Test
   void testSimpleEventBasedGateway() {
     generator.generateTestCases(ctx, bpmnFile);
     assertThat(result.getFiles()).hasSize(3);
