@@ -60,7 +60,7 @@ These elements must be handled, using custom code!
 |:--------|:-------------------|:-------------------|
 | Call activity support | Supported via **simulation** (see [test](integration-tests/advanced/src/test/java/org/example/it/CallActivityWithMappingTest.java)) or **execution of a test case**, generated for the called process (see `CallActivityHandler#executeTestCase`) | Supported via **simulation** or **execution of a test case**, generated for the called process.<br><br>`TestCaseExecutor#simulateProcess` must be called for every BPMN process ID that should be simulated - see [test](integration-tests-8/simple/src/test/java/org/example/it/SimpleCallActivityTest.java)<br><br>If binding type is **version tag**, `TestCaseExecutor#simulateVersionedProcess` must be called - see [test](integration-tests-8/advanced/src/test/java/org/example/it/CallActivityBindingVersionTagTest.java)<br><br>For executing a test case, `CallActivityHandler#executeTestCase` must be used - see [test](integration-tests-8/advanced/src/test/java/org/example/it/CallActivityWithoutSimulationTest.java) |
 | Multi instance support | Multi instance activities and embedded subprocesses are supported - see [tests](integration-tests/advanced-multi-instance/src/test/java/org/example/it) | No test code generation implemented yet. But a possibility to write custom test code to handle and verify multi instances exists - see [test](integration-tests-8/advanced-multi-instance/src/test/java/org/example/it/ScopeSequentialTest.java) |
-| Spring/Spring Boot test support | Supported - see `advanced-spring*` projects under [integration tests](integration-tests/) | Not needed, since the `TestCaseExecutor` requires only a `ZeebeTestEngine` instance. It can be injected via `@ZeebeProcessTest` or `@ZeebeSpringTest` or be manually created |
+| Spring/Spring Boot test support | Supported - see `advanced-spring*` projects under [integration tests](integration-tests/) | Not needed, since the `TestCaseExecutor` requires only `CamundaClient` and `CamundaProcessTestContext`, which can be injected via `@CamundaProcessTest` or `@CamundaSpringProcessTest` |
 | Process test coverage extension support | Supported - see `coverage*` projects under [integration tests](integration-tests/) | Not verified yet |
 
 ### Handler
@@ -214,7 +214,7 @@ import io.camunda.process.test.api.CamundaProcessTest;
 import io.camunda.process.test.api.CamundaProcessTestContext;
 import io.camunda.process.test.api.assertions.ProcessInstanceAssert;
 
-@ZeebeProcessTest
+@CamundaProcessTest
 class OrderFulfillmentTest {
 
   @RegisterExtension
