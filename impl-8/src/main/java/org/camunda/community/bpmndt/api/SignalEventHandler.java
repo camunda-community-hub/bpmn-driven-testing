@@ -1,5 +1,7 @@
 package org.camunda.community.bpmndt.api;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -17,8 +19,11 @@ public class SignalEventHandler {
 
   private final SignalEventElement element;
 
+  private final Map<String, Object> variableMap = new HashMap<>();
+
   private Consumer<ProcessInstanceAssert> verifier;
   private BiConsumer<CamundaClient, String> action;
+  private Object variables;
 
   private Consumer<String> signalNameExpressionConsumer;
 
@@ -95,6 +100,10 @@ public class SignalEventHandler {
 
   /**
    * Broadcasts a signal, when the process instance is waiting at the corresponding element.
+   *
+   * @see #withVariable(String, Object)
+   * @see #withVariables(Object)
+   * @see #withVariableMap(Map)
    */
   public void broadcast() {
     action = this::broadcast;
@@ -175,8 +184,60 @@ public class SignalEventHandler {
     return this;
   }
 
+  /**
+   * Sets a variable that is used to broadcast the signal.
+   *
+   * @param name  The name of the variable.
+   * @param value The variable's value.
+   * @return The handler.
+   * @see #broadcast()
+   */
+  public SignalEventHandler withVariable(String name, Object value) {
+    if (variables != null) {
+      throw new IllegalStateException("either use an object (POJO) as variables or a variable map");
+    }
+    variableMap.put(name, value);
+    return this;
+  }
+
+  /**
+   * Sets an object as variables that is used to broadcast the signal.
+   *
+   * @param variables The variables as POJO.
+   * @return The handler.
+   * @see #broadcast()
+   */
+  public SignalEventHandler withVariables(Object variables) {
+    if (!variableMap.isEmpty()) {
+      throw new IllegalStateException("either use an object (POJO) as variables or a variable map");
+    }
+    this.variables = variables;
+    return this;
+  }
+
+  /**
+   * Sets variables that are used to broadcast the signal.
+   *
+   * @param variableMap A map of variables.
+   * @return The handler.
+   * @see #broadcast()
+   */
+  public SignalEventHandler withVariableMap(Map<String, Object> variableMap) {
+    if (variables != null) {
+      throw new IllegalStateException("either use an object (POJO) as variables or a variable map");
+    }
+    this.variableMap.putAll(variableMap);
+    return this;
+  }
+
   void broadcast(CamundaClient client, String signalName) {
-    client.newBroadcastSignalCommand().signalName(signalName).send().join();
+    var broadcastSignalCommandStep2 = client.newBroadcastSignalCommand().signalName(signalName);
+
+    if (variables != null) {
+      broadcastSignalCommandStep2.variables(variables).send().join();
+    } else if (!variableMap.isEmpty()) {
+      broadcastSignalCommandStep2.variables(variableMap).send().join();
+    }
   }
 
   private String getSignalName(TestCaseInstance instance, long flowScopeKey) {
