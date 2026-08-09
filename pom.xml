@@ -29,7 +29,7 @@
 
     <!-- Versions -->
     <camunda.bpm.version>7.24.0</camunda.bpm.version>
-    <camunda.version>8.8.16</camunda.version>
+    <camunda.version>8.9.9</camunda.version>
     <google.truth.version>1.4.5</google.truth.version>
     <javapoet.version>1.13.0</javapoet.version>
     <junit.jupiter.version>5.11.4</junit.jupiter.version>

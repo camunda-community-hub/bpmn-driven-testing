@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.camunda.client.CamundaClient;
-import io.camunda.client.api.command.ClientStatusException;
+import io.camunda.client.api.command.ProblemException;
 import io.camunda.process.test.api.CamundaProcessTest;
 import io.camunda.process.test.api.CamundaProcessTestContext;
 import io.camunda.process.test.api.assertions.ProcessInstanceAssert;
@@ -33,7 +33,7 @@ class MessageStartEventTest {
    */
   @Test
   void testExecute() {
-    var e = assertThrows(ClientStatusException.class, () -> tc.createExecutor(client, processTestContext).execute());
+    var e = assertThrows(ProblemException.class, () -> tc.createExecutor(client, processTestContext).execute());
     assertThat(e.getMessage()).contains("Expected to create instance of process with none start event, but there is no such event");
   }
 

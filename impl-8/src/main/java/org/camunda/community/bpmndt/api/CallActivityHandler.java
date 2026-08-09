@@ -138,7 +138,7 @@ public class CallActivityHandler {
     if (testCase == null && (errorCode != null || escalationCode != null)) {
       if (variables != null) {
         instance.getClient().newSetVariablesCommand(calledProcessInstanceKey).variables(variables).send().join();
-      } else {
+      } else if (!variableMap.isEmpty()) {
         instance.getClient().newSetVariablesCommand(calledProcessInstanceKey).variables(variableMap).send().join();
       }
 

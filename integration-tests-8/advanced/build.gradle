@@ -9,7 +9,7 @@ repositories {
 }
 
 dependencies {
-  testImplementation 'io.camunda:camunda-process-test-java:8.8.16'
+  testImplementation 'io.camunda:camunda-process-test-java:8.9.9'
   testImplementation 'org.junit.jupiter:junit-jupiter-api:5.11.4'
   testImplementation 'com.google.truth:truth:1.4.5'
   testImplementation 'org.slf4j:slf4j-api:2.0.17'
