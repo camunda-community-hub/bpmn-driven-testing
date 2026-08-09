@@ -34,7 +34,7 @@ pluginManagement {
   resolutionStrategy {
     eachPlugin {
       if (requested.id.toString() == 'org.camunda.community.bpmndt') {
-        useModule("org.camunda.community:bpmn-driven-testing-8-gradle-plugin:1.4.0")
+        useModule("org.camunda.community:bpmn-driven-testing-8-gradle-plugin:1.5.0")
       }
     }
   }
@@ -76,7 +76,7 @@ Add dependencies, which are required to execute the generated test code:
 
 ```groovy
 dependencies {
-  testImplementation 'io.camunda:camunda-process-test-java:8.8.16'
+  testImplementation 'io.camunda:camunda-process-test-java:8.9.9'
   testImplementation 'org.junit.jupiter:junit-jupiter-api:5.11.4'
 
   testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
@@ -92,7 +92,7 @@ Recommended versions:
 
 | Dependency           | Version |
 |:---------------------|:--------|
-| Camunda Process Test | 8.8.16  |
+| Camunda Process Test | 8.9.9   |
 | JUnit 5 (Jupiter)    | 5.11.4  |
 
 ## Testing

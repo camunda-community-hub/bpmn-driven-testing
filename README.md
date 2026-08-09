@@ -30,6 +30,8 @@ For information on how to install, configure and use the plugins visit:
 - [bpmn-driven-testing-gradle-plugin](gradle-plugin)
 - [bpmn-driven-testing-8-gradle-plugin](gradle-plugin-8) (Camunda Platform 8)
 
+:warning: Camunda Platform 8: Version [1.5.0](https://github.com/camunda-community-hub/bpmn-driven-testing/tree/1.5.0) requires Camunda 8.9.x
+
 :warning: Camunda Platform 8: Version [1.4.0](https://github.com/camunda-community-hub/bpmn-driven-testing/tree/1.4.0) switched from Zeebe process test to [Camunda process test](https://docs.camunda.io/docs/apis-tools/testing/getting-started/) (CPT).
 
 CPT is based on the orchestration cluster API and does no longer provide Zeebe's record stream.
@@ -79,6 +81,7 @@ For Camunda Platform 7:
 
 For Camunda Platform 8:
 - [CallActivityHandler](impl-8/src/main/java/org/camunda/community/bpmndt/api/CallActivityHandler.java)
+- [ConditionalEventHandler](impl-8/src/main/java/org/camunda/community/bpmndt/api/ConditionalEventHandler.java) for intermediate catch and boundary conditional events
 - [CustomMultiInstanceHandler](impl-8/src/main/java/org/camunda/community/bpmndt/api/CustomMultiInstanceHandler.java) for a custom handling of multi instance activities and scopes
 - [JobHandler](impl-8/src/main/java/org/camunda/community/bpmndt/api/JobHandler.java) for service, script, send or business rule tasks as well as intermediate message throw or message end events
 - [MessageEventHandler](impl-8/src/main/java/org/camunda/community/bpmndt/api/MessageEventHandler.java) for intermediate catch and boundary message events
