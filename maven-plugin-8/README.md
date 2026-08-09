@@ -12,7 +12,7 @@ Right click on `target/bpmndt` > `Mark Directory as` > `Test Sources Root`
 <plugin>
   <groupId>org.camunda.community</groupId>
   <artifactId>bpmn-driven-testing-8-maven-plugin</artifactId>
-  <version>1.4.0</version>
+  <version>1.5.0</version>
   <executions>
     <execution>
       <goals>
@@ -56,7 +56,7 @@ Recommended versions:
 
 | Dependency           | Version |
 |:---------------------|:--------|
-| Camunda Process Test | 8.8.16  |
+| Camunda Process Test | 8.9.9   |
 | JUnit 5 (Jupiter)    | 5.11.4  |
 
 ## Testing
