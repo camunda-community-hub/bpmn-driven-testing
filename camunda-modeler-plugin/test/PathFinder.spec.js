@@ -22,6 +22,7 @@ describe("PathFinder", () => {
 
   let subProcessErrorEscalation;
   let subProcessErrorEscalationNegative;
+  let nestedSubProcessErrorEscalation;
   let subProcessGateway;
 
   let multipleSubProcesses;
@@ -39,6 +40,7 @@ describe("PathFinder", () => {
     
     subProcessErrorEscalation = await moddle.fromXML(readBpmnFile("subProcessErrorEscalation.bpmn"));
     subProcessErrorEscalationNegative = await moddle.fromXML(readBpmnFile("subProcessErrorEscalationNegative.bpmn"));
+    nestedSubProcessErrorEscalation = await moddle.fromXML(readBpmnFile("nestedSubProcessErrorEscalation.bpmn"));
     subProcessGateway = await moddle.fromXML(readBpmnFile("subProcessGateway.bpmn"));
 
     multipleSubProcesses = await moddle.fromXML(readBpmnFile("multipleSubProcesses.bpmn"));
@@ -114,6 +116,28 @@ describe("PathFinder", () => {
 
     const paths = pathFinder.find("startEvent", "altEndEvent");
     expect(paths).to.have.lengthOf(0);
+  });
+
+  /**
+   * Tests if error and escalation end event matching is propagated to parent scopes and catch all is possible.
+   */
+  it("should find path through nested embedded sub process error and escalation end events", () => {
+    const pathFinder = createPathFinder(nestedSubProcessErrorEscalation);
+
+    const paths = pathFinder.find("startEvent", "altEndEvent");
+    expect(paths).to.have.lengthOf(4);
+
+    expect(paths[0]).to.have.lengthOf(8);
+    expect(paths[0]).to.deep.equal(["startEvent", "subProcessStartEvent", "nestedSubProcessStartEvent", "g1", "errorEndEventA", "errorBoundaryEventAll", "g2", "altEndEvent"]);
+
+    expect(paths[1]).to.have.lengthOf(8);
+    expect(paths[1]).to.deep.equal(["startEvent", "subProcessStartEvent", "nestedSubProcessStartEvent", "g1", "escalationEndEventA", "escalationBoundaryEventAll", "g2", "altEndEvent"]);
+
+    expect(paths[2]).to.have.lengthOf(8);
+    expect(paths[2]).to.deep.equal(["startEvent", "subProcessStartEvent", "nestedSubProcessStartEvent", "g1", "errorEndEventB", "errorBoundaryEventB", "g2", "altEndEvent"]);
+
+    expect(paths[3]).to.have.lengthOf(8);
+    expect(paths[3]).to.deep.equal(["startEvent", "subProcessStartEvent", "nestedSubProcessStartEvent", "g1", "escalationEndEventB", "escalationBoundaryEventB", "g2", "altEndEvent"]);
   });
 
   it("should find path through embedded sub process with subsequent labeled gateway", () => {

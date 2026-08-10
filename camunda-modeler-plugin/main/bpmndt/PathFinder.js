@@ -6,8 +6,11 @@ import {
   BPMN_INTERMEDIATE_CATCH_EVENT,
   BPMN_INTERMEDIATE_THROW_EVENT,
   BPMN_LINK_EVENT_DEFINITION,
+  BPMN_PROCESS,
   BPMN_START_EVENT,
-  BPMN_SUB_PROCESS
+  BPMN_SUB_PROCESS,
+
+  POSSIBLE_WAIT_STATES
 } from "./constants";
 
 /**
@@ -26,6 +29,8 @@ export default class PathFinder {
 
     const stack = [];
     stack.push({ id: start, path: [] });
+
+    const boundaryEvents = this._filterElementsByType(BPMN_BOUNDARY_EVENT);
 
     while (stack.length !== 0) {
       const current = stack.pop();
@@ -47,7 +52,7 @@ export default class PathFinder {
         continue;
       }
 
-      const next = this._getOutgoing(element).concat(this._getBoundary(element.id));
+      const next = this._getOutgoing(element).concat(this._getBoundary(boundaryEvents, element));
       for (const id of next) {
         stack.push({ id: id, path: current.path.slice() });
       }
@@ -99,60 +104,105 @@ export default class PathFinder {
     });
   }
 
-  _getBoundary(elementId) {
+  _getBoundary(boundaryEvents, element) {
     const next = [];
-    
-    this._filterElementsByType(BPMN_BOUNDARY_EVENT).forEach(element => {
-      if (element.businessObject.attachedToRef.id === elementId) {
+
+    boundaryEvents.forEach(boundaryEvent => {
+      if (boundaryEvent.businessObject.attachedToRef.id === element.id) {
         next.push(element.id);
       }
     });
+
+    if (!this._isPossibleWaitSate(element)) {
+      return next;
+    }
+
+    let parent = element.businessObject.$parent;
+    while (parent.$type !== BPMN_PROCESS) { // until process scope is reached
+      boundaryEvents.forEach(boundaryEvent => {
+        if (boundaryEvent.businessObject.attachedToRef.id === parent.id) {
+          next.push(boundaryEvent.id);
+        }
+      });
+
+      parent = parent.$parent;
+    }
 
     return next;
   }
 
-  _getErrorBoundary(elementId, expectedErrorCode) {
+  _getErrorBoundary(parent, expectedErrorCode) {
     const next = [];
 
-    this._filterElementsByType(BPMN_BOUNDARY_EVENT).forEach(element => {
-      const { attachedToRef, eventDefinitions } = element.businessObject;
+    if (!expectedErrorCode) {
+      return next;
+    }
 
-      if (attachedToRef.id !== elementId) {
-        return;
-      }
-
-      if (!this._isErrorEventDefinition(eventDefinitions)) {
-        return;
-      }
-
-      const errorCode = eventDefinitions[0]?.errorRef?.errorCode;
-      if (expectedErrorCode && expectedErrorCode === errorCode) {
-        next.push(element.id);
-      }
+    const errorBoundaryEvents = this._filterElementsByType(BPMN_BOUNDARY_EVENT).filter(element => {
+      return this._isErrorEventDefinition(element.businessObject.eventDefinitions)
     });
+
+    let match;
+    while (!match && parent.$type !== BPMN_PROCESS) { // until match found or process scope is reached
+      errorBoundaryEvents.forEach(element => {
+        const { attachedToRef, eventDefinitions } = element.businessObject;
+  
+        if (attachedToRef.id !== parent.id) {
+          return;
+        }
+  
+        const errorCode = eventDefinitions[0]?.errorRef?.errorCode;
+        if (expectedErrorCode === errorCode) { // catch exact
+          match = element.id;
+        } else if (!errorCode && !match) { // catch all
+          match = element.id;
+        }
+      });
+
+      parent = parent.$parent; // propagate to parent scope
+    }
+
+    if (match) {
+      next.push(match);
+    }
 
     return next;
   }
 
-  _getEscalationBoundary(elementId, expectedEscalationCode) {
+  _getEscalationBoundary(parent, expectedEscalationCode) {
     const next = [];
 
-    this._filterElementsByType(BPMN_BOUNDARY_EVENT).forEach(element => {
-      const { attachedToRef, eventDefinitions } = element.businessObject;
+    if (!expectedEscalationCode) {
+      return next;
+    }
 
-      if (attachedToRef.id !== elementId) {
-        return;
-      }
-
-      if (!this._isEscalationEventDefinition(eventDefinitions)) {
-        return;
-      }
-
-      const escalationCode = eventDefinitions[0]?.escalationRef?.escalationCode;
-      if (expectedEscalationCode && expectedEscalationCode === escalationCode) {
-        next.push(element.id);
-      }
+    const escalationBoundaryEvents = this._filterElementsByType(BPMN_BOUNDARY_EVENT).filter(element => {
+      return this._isEscalationEventDefinition(element.businessObject.eventDefinitions)
     });
+
+    let match;
+    while (!match && parent.$type !== BPMN_PROCESS) { // until match found or process scope is reached
+      escalationBoundaryEvents.forEach(element => {
+        const { attachedToRef, eventDefinitions } = element.businessObject;
+  
+        if (attachedToRef.id !== parent.id) {
+          return;
+        }
+  
+        const escalationCode = eventDefinitions[0]?.escalationRef?.escalationCode;
+        if (expectedEscalationCode === escalationCode) { // catch exact
+          match = element.id;
+        } else if (!escalationCode && !match) { // catch all
+          match = element.id;
+        }
+      });
+
+      parent = parent.$parent; // propagate to parent scope
+    }
+
+    if (match) {
+      next.push(match);
+    }
 
     return next;
   }
@@ -190,10 +240,10 @@ export default class PathFinder {
       if ($parent.$type === BPMN_SUB_PROCESS) {
         if (this._isErrorEventDefinition(eventDefinitions)) {
           // handle error end events of sub process
-          return this._getErrorBoundary($parent.id, eventDefinitions[0].errorRef?.errorCode);
+          return this._getErrorBoundary($parent, eventDefinitions[0].errorRef?.errorCode);
         } else if (this._isEscalationEventDefinition(eventDefinitions)) {
           // handle escalation end events of sub process
-          return this._getEscalationBoundary($parent.id, eventDefinitions[0].escalationRef?.escalationCode);
+          return this._getEscalationBoundary($parent, eventDefinitions[0].escalationRef?.escalationCode);
         } else {
           // handle end events of sub process
           this._findIncoming($parent.id).map(element => {
@@ -255,5 +305,9 @@ export default class PathFinder {
 
   _isLoop(state) {
     return state.path.find(elementId => elementId === state.id) !== undefined;
+  }
+
+  _isPossibleWaitSate(element) {
+    return POSSIBLE_WAIT_STATES.has(element.type)
   }
 }

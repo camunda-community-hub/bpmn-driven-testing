@@ -100,17 +100,18 @@ export default class Plugin {
   }
 
   show() {
-    const { mode, testCases } = this;
+    const { bpmnModelChanged, mode, testCases } = this;
 
     if (mode) {
-      mode.updateMarkers();
+      mode.updateMarkers(bpmnModelChanged);
     } else if (testCases.length !== 0) {
       this.mode = new ViewMode(this);
     } else {
       this.mode = new SelectMode(this);
     }
 
-    this._validateTestCases();
+    this._validateTestCases(bpmnModelChanged);
+    this.bpmnModelChanged = false;
 
     const { rootElement, styleElement } = this;
 
@@ -214,15 +215,13 @@ export default class Plugin {
     this.testCases.forEach(testCase => testCase.updateFlowNodeId(oldProperties.id, properties.id));
   }
 
-  _validateTestCases() {
-    const { bpmnModelChanged, pathValidator, testCases } = this;
+  _validateTestCases(bpmnModelChanged) {
+    const { pathValidator, testCases } = this;
 
     if (!bpmnModelChanged || testCases.length === 0) {
       // nothing to validate
       return;
     }
-
-    this.bpmnModelChanged = false;
 
     setTimeout(() => {
       testCases.forEach((testCase) => {

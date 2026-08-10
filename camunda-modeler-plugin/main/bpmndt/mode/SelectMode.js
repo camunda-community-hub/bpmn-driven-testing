@@ -144,12 +144,19 @@ export default class SelectMode extends BaseMode {
     this.updateMarkers();
   }
 
-  updateMarkers() {
+  updateMarkers(bpmnModelChanged) {
     const { migration, selection } = this;
 
     let markers;
     if (migration) {
       markers = migration.getMarkers(selection);
+    } else if (bpmnModelChanged) { // reset mode if BPMN model changed
+      this.paths = [];
+      this.pathEquality = [];
+      this.pathIndex = -1;
+      this.selection = new TestCase();
+
+      markers = [];
     } else {
       markers = getMarkers(selection);
     }

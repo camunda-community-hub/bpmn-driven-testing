@@ -56,6 +56,21 @@ export const PLUGIN_VIEW_STYLE = `
   .secondary.links { display: none; }
 `;
 
+// element types, that can be wait states
+export const POSSIBLE_WAIT_STATES = new Set([
+  "bpmn:AdHocSubProcess",
+  "bpmn:BusinessRuleTask",
+  "bpmn:CallActivity",
+  "bpmn:EventBasedGateway",
+  BPMN_INTERMEDIATE_CATCH_EVENT,
+  BPMN_INTERMEDIATE_THROW_EVENT,
+  "bpmn:ReceiveTask",
+  "bpmn:ScriptTask",
+  "bpmn:SendTask",
+  "bpmn:ServiceTask",
+  "bpmn:UserTask"
+]);
+
 // problem types
 export const PROBLEM_START = 1;
 export const PROBLEM_END = 2;
