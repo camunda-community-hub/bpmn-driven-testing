@@ -8,6 +8,7 @@ import io.camunda.client.CamundaClient;
 import io.camunda.client.api.command.ProblemException;
 import io.camunda.client.api.search.enums.ElementInstanceState;
 import io.camunda.client.api.search.enums.ElementInstanceType;
+import io.camunda.client.api.search.enums.JobKind;
 import io.camunda.client.api.search.response.ElementInstance;
 import io.camunda.client.api.search.response.Job;
 import io.camunda.client.api.search.response.MessageSubscription;
@@ -308,17 +309,20 @@ public class TestCaseInstance {
 
       var elementInstance = elementInstances.get(elementInstances.size() - 1);
 
-      var job = client.newJobSearchRequest()
+      var jobs = client.newJobSearchRequest()
           .filter(filter -> filter.elementInstanceKey(elementInstance.getElementInstanceKey()))
           .execute()
-          .singleItem();
+          .items();
 
-      if (job == null) {
+      // reject execution listener jobs
+      var job = jobs.stream().filter(j -> j.getKind() == JobKind.BPMN_ELEMENT).findFirst();
+
+      if (job.isEmpty()) {
         var message = String.format("element %s of flow scope %d has no job", elementId, flowScopeKey);
         throw new AssertionError(message);
       }
 
-      return job;
+      return job.get();
     });
   }
 
