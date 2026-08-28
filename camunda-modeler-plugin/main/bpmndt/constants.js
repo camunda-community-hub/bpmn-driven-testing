@@ -5,6 +5,7 @@ export const TAB_TYPE_CLOUD_BPMN = "cloud-bpmn";
 // BPMN element types
 export const BPMN_BOUNDARY_EVENT = "bpmn:BoundaryEvent";
 export const BPMN_COLLABORATION = "bpmn:Collaboration";
+export const BPMN_CONDITIONAL_EVENT_DEFINITION = "bpmn:ConditionalEventDefinition";
 export const BPMN_END_EVENT = "bpmn:EndEvent";
 export const BPMN_ERROR_EVENT_DEFINITION = "bpmn:ErrorEventDefinition";
 export const BPMN_ESCALATION_EVENT_DEFINITION = "bpmn:EscalationEventDefinition";
@@ -12,11 +13,14 @@ export const BPMN_EXTENSION_ELEMENTS = "bpmn:ExtensionElements";
 export const BPMN_INTERMEDIATE_CATCH_EVENT = "bpmn:IntermediateCatchEvent";
 export const BPMN_INTERMEDIATE_THROW_EVENT = "bpmn:IntermediateThrowEvent";
 export const BPMN_LINK_EVENT_DEFINITION = "bpmn:LinkEventDefinition";
+export const BPMN_MESSAGE_EVENT_DEFINITION = "bpmn:MessageEventDefinition";
 export const BPMN_PARTICIPANT = "bpmn:Participant";
 export const BPMN_PROCESS = "bpmn:Process";
 export const BPMN_SEQUENCE_FLOW = "bpmn:SequenceFlow";
+export const BPMN_SIGNAL_EVENT_DEFINITION = "bpmn:SignalEventDefinition";
 export const BPMN_START_EVENT = "bpmn:StartEvent";
 export const BPMN_SUB_PROCESS = "bpmn:SubProcess";
+export const BPMN_TIMER_EVENT_DEFINITION = "bpmn:TimerEventDefinition";
 
 // BPMNDT extension element types
 export const BPMNDT_PATH = "bpmndt:Path";
@@ -62,8 +66,6 @@ export const POSSIBLE_WAIT_STATES = new Set([
   "bpmn:BusinessRuleTask",
   "bpmn:CallActivity",
   "bpmn:EventBasedGateway",
-  BPMN_INTERMEDIATE_CATCH_EVENT,
-  BPMN_INTERMEDIATE_THROW_EVENT,
   "bpmn:ReceiveTask",
   "bpmn:ScriptTask",
   "bpmn:SendTask",

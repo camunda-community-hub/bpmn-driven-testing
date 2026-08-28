@@ -1,14 +1,18 @@
 import {
   BPMN_BOUNDARY_EVENT,
+  BPMN_CONDITIONAL_EVENT_DEFINITION,
   BPMN_END_EVENT,
   BPMN_ERROR_EVENT_DEFINITION,
   BPMN_ESCALATION_EVENT_DEFINITION,
   BPMN_INTERMEDIATE_CATCH_EVENT,
   BPMN_INTERMEDIATE_THROW_EVENT,
   BPMN_LINK_EVENT_DEFINITION,
+  BPMN_MESSAGE_EVENT_DEFINITION,
   BPMN_PROCESS,
+  BPMN_SIGNAL_EVENT_DEFINITION,
   BPMN_START_EVENT,
   BPMN_SUB_PROCESS,
+  BPMN_TIMER_EVENT_DEFINITION,
 
   POSSIBLE_WAIT_STATES
 } from "./constants";
@@ -308,6 +312,30 @@ export default class PathFinder {
   }
 
   _isPossibleWaitSate(element) {
-    return POSSIBLE_WAIT_STATES.has(element.type)
+    if (POSSIBLE_WAIT_STATES.has(element.type)) {
+      return true;
+    }
+
+    const { eventDefinitions } = element.businessObject;
+    if (!eventDefinitions || eventDefinitions.length === 0) {
+      return false;
+    }
+
+    const eventDefinitionType = eventDefinitions[0].$type;
+    if (element.type === BPMN_INTERMEDIATE_CATCH_EVENT) {
+      switch (eventDefinitionType) {
+        case BPMN_CONDITIONAL_EVENT_DEFINITION:
+        case BPMN_MESSAGE_EVENT_DEFINITION:
+        case BPMN_SIGNAL_EVENT_DEFINITION:
+        case BPMN_TIMER_EVENT_DEFINITION:
+          return true;
+        default:
+          return false;
+      }
+    } else if (element.type === BPMN_INTERMEDIATE_THROW_EVENT && eventDefinitionType === BPMN_MESSAGE_EVENT_DEFINITION) {
+      return true;
+    } else {
+      return false;
+    }
   }
 }
