@@ -10,14 +10,6 @@
             <bpmndt:node>endEvent</bpmndt:node>
           </bpmndt:path>
         </bpmndt:testCase>
-        <bpmndt:testCase>
-          <bpmndt:name>x</bpmndt:name>
-          <bpmndt:description>y</bpmndt:description>
-          <bpmndt:path>
-            <bpmndt:node>conditionalCatchEvent</bpmndt:node>
-            <bpmndt:node>endEvent</bpmndt:node>
-          </bpmndt:path>
-        </bpmndt:testCase>
       </bpmndt:testCases>
     </bpmn:extensionElements>
     <bpmn:startEvent id="startEvent">
