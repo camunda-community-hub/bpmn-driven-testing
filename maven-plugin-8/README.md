@@ -56,7 +56,7 @@ Recommended versions:
 
 | Dependency           | Version |
 |:---------------------|:--------|
-| Camunda Process Test | 8.9.9   |
+| Camunda Process Test | 8.10.9  |
 | JUnit 5 (Jupiter)    | 5.11.4  |
 
 ## Testing

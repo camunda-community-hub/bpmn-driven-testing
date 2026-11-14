@@ -88,7 +88,7 @@ public class TestCaseExecutor {
     if (testCase.isMessageStart()) {
       // handle message start event
       var publishMessageCommandStep3 = client.newPublishMessageCommand()
-          .messageName(findStartMessageName())
+          .messageName(findStartMessageName(processDefinitionKey))
           .correlationKey(String.format("%s.%s", testCase.testClass.getSimpleName(), testCase.testMethodName));
 
       if (variables != null) {
@@ -560,9 +560,30 @@ public class TestCaseExecutor {
     return startElementInstanceHolder.get().getProcessInstanceKey();
   }
 
-  String findStartMessageName() {
-    // currently there is no message subscription created for a message start event
-    throw new UnsupportedOperationException("currently not supported - please use #execute(long) or #execute(Runnable) to start a process instance");
+  String findStartMessageName(long processDefinitionKey) {
+    var messageNameHolder = new Holder<String>();
+
+    awaitilityBehavior.untilAsserted(() -> {
+      var messageSubscription = client.newMessageSubscriptionSearchRequest()
+          .filter(filter -> filter
+              .processDefinitionKey(processDefinitionKey)
+              .elementId(testCase.getStart())
+          )
+          .execute()
+          .singleItem();
+
+      if (messageSubscription == null) {
+        throw new AssertionError(String.format(
+            "failed to find message name for process definition key %d and element ID %s",
+            processDefinitionKey,
+            testCase.getStart()
+        ));
+      }
+
+      return messageSubscription.getMessageName();
+    }, messageNameHolder);
+
+    return messageNameHolder.get();
   }
 
   String findStartSignalName(long processDefinitionKey) {
