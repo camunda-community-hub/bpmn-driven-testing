@@ -79,6 +79,7 @@ export default class SelectMode extends BaseMode {
       selectStartEnd(selection, elementId);
     }
 
+    this.error = false;
     this.updateMarkers();
 
     if (!selection.start || !selection.end) {
@@ -96,8 +97,7 @@ export default class SelectMode extends BaseMode {
     const pathEquality = this._determinePathEquality(paths);
 
     if (paths.length === 0) {
-      plugin.markError();
-
+      this.error = true;
       this.paths = [];
       this.pathIndex = -1;
     } else {
@@ -108,9 +108,9 @@ export default class SelectMode extends BaseMode {
       this.paths = paths;
       this.pathEquality = pathEquality;
       this.pathIndex = 0;
-
-      this.updateMarkers();
     }
+
+    this.updateMarkers();
   }
 
   migrateTestCase() {
@@ -155,6 +155,10 @@ export default class SelectMode extends BaseMode {
     }
 
     this.plugin.mark(markers);
+
+    if (this.error) {
+      this.plugin.markError();
+    }
   }
 
   _determinePathEquality(paths) {
