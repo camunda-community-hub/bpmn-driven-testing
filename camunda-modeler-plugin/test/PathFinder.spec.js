@@ -22,10 +22,16 @@ describe("PathFinder", () => {
 
   let subProcessErrorEscalation;
   let subProcessErrorEscalationNegative;
+  let nestedSubProcessErrorEscalation;
   let subProcessGateway;
 
   let multipleSubProcesses;
   let multipleSubProcessesAdvanced;
+
+  let eventBasedGatewayBoundary;
+  let serviceTaskBoundary;
+  let taskBoundary;
+  let waitStateBoundary;
 
   before(async () => {
     const moddle = new BpmnModdle();
@@ -39,10 +45,16 @@ describe("PathFinder", () => {
     
     subProcessErrorEscalation = await moddle.fromXML(readBpmnFile("subProcessErrorEscalation.bpmn"));
     subProcessErrorEscalationNegative = await moddle.fromXML(readBpmnFile("subProcessErrorEscalationNegative.bpmn"));
+    nestedSubProcessErrorEscalation = await moddle.fromXML(readBpmnFile("nestedSubProcessErrorEscalation.bpmn"));
     subProcessGateway = await moddle.fromXML(readBpmnFile("subProcessGateway.bpmn"));
 
     multipleSubProcesses = await moddle.fromXML(readBpmnFile("multipleSubProcesses.bpmn"));
     multipleSubProcessesAdvanced = await moddle.fromXML(readBpmnFile("multipleSubProcessesAdvanced.bpmn"));
+
+    eventBasedGatewayBoundary = await moddle.fromXML(readBpmnFile("eventBasedGatewayBoundary.bpmn"));
+    serviceTaskBoundary = await moddle.fromXML(readBpmnFile("serviceTaskBoundary.bpmn"));
+    taskBoundary = await moddle.fromXML(readBpmnFile("taskBoundary.bpmn"));
+    waitStateBoundary = await moddle.fromXML(readBpmnFile("waitStateBoundary.bpmn"));
   });
 
   it("should find simple path", () => {
@@ -114,6 +126,28 @@ describe("PathFinder", () => {
 
     const paths = pathFinder.find("startEvent", "altEndEvent");
     expect(paths).to.have.lengthOf(0);
+  });
+
+  /**
+   * Tests if error and escalation end event matching is propagated to parent scopes and catch all is possible.
+   */
+  it("should find path through nested embedded sub process error and escalation end events", () => {
+    const pathFinder = createPathFinder(nestedSubProcessErrorEscalation);
+
+    const paths = pathFinder.find("startEvent", "altEndEvent");
+    expect(paths).to.have.lengthOf(4);
+
+    expect(paths[0]).to.have.lengthOf(8);
+    expect(paths[0]).to.deep.equal(["startEvent", "subProcessStartEvent", "nestedSubProcessStartEvent", "g1", "errorEndEventA", "errorBoundaryEventAll", "g2", "altEndEvent"]);
+
+    expect(paths[1]).to.have.lengthOf(8);
+    expect(paths[1]).to.deep.equal(["startEvent", "subProcessStartEvent", "nestedSubProcessStartEvent", "g1", "escalationEndEventA", "escalationBoundaryEventAll", "g2", "altEndEvent"]);
+
+    expect(paths[2]).to.have.lengthOf(8);
+    expect(paths[2]).to.deep.equal(["startEvent", "subProcessStartEvent", "nestedSubProcessStartEvent", "g1", "errorEndEventB", "errorBoundaryEventB", "g2", "altEndEvent"]);
+
+    expect(paths[3]).to.have.lengthOf(8);
+    expect(paths[3]).to.deep.equal(["startEvent", "subProcessStartEvent", "nestedSubProcessStartEvent", "g1", "escalationEndEventB", "escalationBoundaryEventB", "g2", "altEndEvent"]);
   });
 
   it("should find path through embedded sub process with subsequent labeled gateway", () => {
@@ -221,7 +255,6 @@ describe("PathFinder", () => {
 
     expect(paths[0]).to.have.lengthOf(8);
     expect(paths[0]).to.deep.equal(["startEvent", "startEvent_SubprocessA", "activity_SubprocessA", "endEvent_SubprocessA", "startEvent_SubprocessB", "activity_SubprocessB", "endEvent_SubprocessB", "endEvent"]);
-
   });
 
   it("should find paths through embedded sub processes with branching paths", () => {
@@ -235,6 +268,35 @@ describe("PathFinder", () => {
 
     expect(paths[1]).to.have.lengthOf(11);
     expect(paths[1]).to.deep.equal(["startEvent", "startEvent_SubprocessA", "activity_SubprocessA", "endEvent_SubprocessA", "startEvent_SubprocessC", "activity_SubprocessC", "endEvent_SubprocessC", "startEvent_SubprocessD", "activity_SubprocessD", "endEvent_SubprocessD", "endEvent"]);
+  });
 
+  it("should find path through event-based gateway and boundary event", () => {
+    const pathFinder = createPathFinder(eventBasedGatewayBoundary);
+
+    const paths = pathFinder.find("startEvent", "altEndEvent");
+    expect(paths).to.have.lengthOf(1);
+    expect(paths[0]).to.deep.equal(["startEvent", "subProcessStartEvent", "eventBasedGateway", "boundaryEvent", "altEndEvent"]);
+  });
+
+  it("should find path through service task and boundary event", () => {
+    const pathFinder = createPathFinder(serviceTaskBoundary);
+
+    const paths = pathFinder.find("startEvent", "altEndEvent");
+    expect(paths).to.have.lengthOf(1);
+    expect(paths[0]).to.deep.equal(["startEvent", "serviceTask", "boundaryEvent", "altEndEvent"]);
+  });
+
+  it("should not find path through task and boundary event", () => {
+    const pathFinder = createPathFinder(taskBoundary);
+
+    const paths = pathFinder.find("startEvent", "altEndEvent");
+    expect(paths).to.have.lengthOf(0);
+  });
+
+  it("should find paths through wait states and boundary event", () => {
+    const pathFinder = createPathFinder(waitStateBoundary);
+
+    const paths = pathFinder.find("startEvent", "altEndEvent");
+    expect(paths).to.have.lengthOf(14);
   });
 });
