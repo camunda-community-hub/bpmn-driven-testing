@@ -1,5 +1,6 @@
 package org.camunda.community.bpmndt.api;
 
+import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -101,23 +102,25 @@ public class TestCaseInstance {
    */
   public long getFlowScopeKey(long elementInstanceKey) {
     return await(() -> {
-      var multiInstanceBodies = client.newElementInstanceSearchRequest()
+      var scopes = client.newElementInstanceSearchRequest()
           .execute()
           .items()
           .stream()
-          .filter(elementInstance -> elementInstance.getType() == ElementInstanceType.MULTI_INSTANCE_BODY)
+          .filter(elementInstance -> elementInstance.getType() == ElementInstanceType.MULTI_INSTANCE_BODY
+              || elementInstance.getType() == ElementInstanceType.SUB_PROCESS
+          )
           .collect(Collectors.toList());
 
-      for (ElementInstance multiInstanceBody : multiInstanceBodies) {
+      for (ElementInstance scope : scopes) {
         var isElementInstance = client.newElementInstanceSearchRequest()
-            .filter(filter -> filter.elementInstanceScopeKey(multiInstanceBody.getElementInstanceKey()))
+            .filter(filter -> filter.elementInstanceScopeKey(scope.getElementInstanceKey()))
             .execute()
             .items()
             .stream()
             .anyMatch(elementInstance -> elementInstance.getElementInstanceKey() == elementInstanceKey);
 
         if (isElementInstance) {
-          return multiInstanceBody.getElementInstanceKey();
+          return scope.getElementInstanceKey();
         }
       }
 
@@ -273,6 +276,41 @@ public class TestCaseInstance {
   }
 
   /**
+   * Finds the element instance within a given flow scope.
+   *
+   * @param flowScopeKey The key of an existing flow scope.
+   * @param elementId    The BPMN element ID.
+   * @return The element instance or an empty optional, if not found.
+   */
+  Optional<ElementInstance> findElementInstance(long flowScopeKey, String elementId) {
+    var elementInstances = client.newElementInstanceSearchRequest()
+        .filter(filter -> filter.elementInstanceScopeKey(flowScopeKey).elementId(elementId))
+        .execute()
+        .items();
+
+    if (elementInstances.isEmpty()) {
+      return Optional.empty();
+    }
+
+    return Optional.of(elementInstances.get(elementInstances.size() - 1));
+  }
+
+  /**
+   * Finds the message subscription for a given element instance.
+   *
+   * @param elementInstanceKey The key of an existing element instance.
+   * @return The message subscription or an empty optional, if not found.
+   */
+  Optional<MessageSubscription> findMessageSubscription(long elementInstanceKey) {
+    var messageSubscription = client.newMessageSubscriptionSearchRequest()
+        .filter(filter -> filter.elementInstanceKey(elementInstanceKey))
+        .execute()
+        .singleItem();
+
+    return Optional.ofNullable(messageSubscription);
+  }
+
+  /**
    * Get the element instance within the given flow scope and ID.
    *
    * @param flowScopeKey The key of an existing flow scope.
@@ -327,52 +365,40 @@ public class TestCaseInstance {
   }
 
   MessageSubscription getMessageSubscription(long flowScopeKey, String elementId, String attachedTo) {
-    ElementInstance flowScope = null;
-    if (attachedTo != null) {
-      flowScope = await(() -> {
-        try {
-          return client.newElementInstanceGetRequest(flowScopeKey).execute();
-        } catch (ProblemException e) {
-          return null; // if flow scope is process instance
-        }
-      });
-    }
+    if (attachedTo == null) { // message catch event or receive task
+      var elementInstance = getElementInstance(flowScopeKey, elementId);
 
-    if (flowScope != null && flowScope.getType() == ElementInstanceType.MULTI_INSTANCE_BODY) {
       return await(() -> {
-        var messageSubscription = client.newMessageSubscriptionSearchRequest()
-            .filter(filter -> filter.elementInstanceKey(flowScopeKey))
-            .execute()
-            .singleItem();
-
-        if (messageSubscription == null) {
-          var message = String.format("multi instance element %s with ID %d has no message subscription", attachedTo, flowScopeKey);
-          throw new AssertionError(message);
+        var messageSubscription = findMessageSubscription(elementInstance.getElementInstanceKey());
+        if (messageSubscription.isPresent()) {
+          return messageSubscription.get();
         }
 
-        return messageSubscription;
+        var message = String.format("element %s of flow scope %d has no message subscription", elementInstance.getElementId(), flowScopeKey);
+        throw new AssertionError(message);
       });
-    }
-
-    ElementInstance elementInstance;
-    if (attachedTo == null) {
-      elementInstance = getElementInstance(flowScopeKey, elementId);
-    } else {
-      elementInstance = getElementInstance(flowScopeKey, attachedTo);
     }
 
     return await(() -> {
-      var messageSubscription = client.newMessageSubscriptionSearchRequest()
-          .filter(filter -> filter.elementInstanceKey(elementInstance.getElementInstanceKey()))
-          .execute()
-          .singleItem();
+      var elementInstance = findElementInstance(flowScopeKey, attachedTo);
 
-      if (messageSubscription == null) {
-        var message = String.format("element %s of flow scope %d has no message subscription", elementInstance.getElementId(), flowScopeKey);
-        throw new AssertionError(message);
+      long current;
+      if (elementInstance.isPresent()) {
+        // message boundary event attached to element (e.g. service task or call activity)
+        current = elementInstance.get().getElementInstanceKey();
+      } else {
+        // message boundary event attached to scope
+        current = flowScopeKey;
       }
 
-      return messageSubscription;
+      while (true) {
+        var messageSubscription = findMessageSubscription(current);
+        if (messageSubscription.isPresent()) {
+          return messageSubscription.get();
+        }
+
+        current = getFlowScopeKey(current);
+      }
     });
   }
 
