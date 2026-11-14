@@ -31,6 +31,7 @@ mvn clean test
   Should contain  ${result.stdout}  Running org.example.it.ServiceTaskMessageTest
   Should contain  ${result.stdout}  Running org.example.it.ServiceTaskSignalTest
   Should contain  ${result.stdout}  Running org.example.it.ServiceTaskTimerTest
+  Should contain  ${result.stdout}  Running org.example.it.SubProcessServiceTaskBoundaryTest
   Should contain  ${result.stdout}  Running org.example.it.UserTaskErrorTest
   Should contain  ${result.stdout}  Running org.example.it.UserTaskMessageTest
   Should contain  ${result.stdout}  Running org.example.it.UserTaskSignalTest

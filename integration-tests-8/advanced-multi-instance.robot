@@ -17,6 +17,7 @@ mvn clean test
   # tests executed
   Should contain  ${result.stdout}  Running org.example.it.ParallelTest
   Should contain  ${result.stdout}  Running org.example.it.ScopeErrorEndEventTest
+  Should contain  ${result.stdout}  Running org.example.it.ScopeMessageBoundaryTest
   Should contain  ${result.stdout}  Running org.example.it.ScopeNestedTest
   Should contain  ${result.stdout}  Running org.example.it.ScopeParallelTest
   Should contain  ${result.stdout}  Running org.example.it.ScopeSequentialTest

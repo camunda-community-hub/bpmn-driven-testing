@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:bpmndt="http://camunda.org/schema/extension/bpmn-driven-testing" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0ow074j" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.48.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.9.0">
+  <bpmn:process id="subProcessServiceTaskBoundary" isExecutable="true">
+    <bpmn:extensionElements>
+      <bpmndt:testCases>
+        <bpmndt:testCase>
+          <bpmndt:path>
+            <bpmndt:node>startEvent</bpmndt:node>
+            <bpmndt:node>subProcessStartEvent</bpmndt:node>
+            <bpmndt:node>serviceTask</bpmndt:node>
+            <bpmndt:node>messageBoundaryEvent</bpmndt:node>
+            <bpmndt:node>endEvent</bpmndt:node>
+          </bpmndt:path>
+        </bpmndt:testCase>
+      </bpmndt:testCases>
+    </bpmn:extensionElements>
+    <bpmn:startEvent id="startEvent">
+      <bpmn:outgoing>Flow_1v93ie0</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:subProcess id="subProcess">
+      <bpmn:incoming>Flow_1v93ie0</bpmn:incoming>
+      <bpmn:outgoing>Flow_1h29c2q</bpmn:outgoing>
+      <bpmn:startEvent id="subProcessStartEvent">
+        <bpmn:outgoing>Flow_0fi4qkq</bpmn:outgoing>
+      </bpmn:startEvent>
+      <bpmn:sequenceFlow id="Flow_0fi4qkq" sourceRef="subProcessStartEvent" targetRef="serviceTask" />
+      <bpmn:serviceTask id="serviceTask">
+        <bpmn:extensionElements>
+          <zeebe:taskDefinition type="serviceTaskType" />
+        </bpmn:extensionElements>
+        <bpmn:incoming>Flow_0fi4qkq</bpmn:incoming>
+        <bpmn:outgoing>Flow_0eprfkb</bpmn:outgoing>
+      </bpmn:serviceTask>
+      <bpmn:endEvent id="subProcessEndEvent">
+        <bpmn:incoming>Flow_0eprfkb</bpmn:incoming>
+      </bpmn:endEvent>
+      <bpmn:sequenceFlow id="Flow_0eprfkb" sourceRef="serviceTask" targetRef="subProcessEndEvent" />
+    </bpmn:subProcess>
+    <bpmn:sequenceFlow id="Flow_1v93ie0" sourceRef="startEvent" targetRef="subProcess" />
+    <bpmn:endEvent id="Event_0iuftjs">
+      <bpmn:incoming>Flow_1h29c2q</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_1h29c2q" sourceRef="subProcess" targetRef="Event_0iuftjs" />
+    <bpmn:boundaryEvent id="messageBoundaryEvent" attachedToRef="subProcess">
+      <bpmn:outgoing>Flow_0tc7lvp</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_0eqrb43" messageRef="Message_3251fgr" />
+    </bpmn:boundaryEvent>
+    <bpmn:endEvent id="endEvent">
+      <bpmn:incoming>Flow_0tc7lvp</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_0tc7lvp" sourceRef="messageBoundaryEvent" targetRef="endEvent" />
+  </bpmn:process>
+  <bpmn:message id="Message_3251fgr" name="advancedMessage">
+    <bpmn:extensionElements>
+      <zeebe:subscription correlationKey="=correlationKey" />
+    </bpmn:extensionElements>
+  </bpmn:message>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="subProcessServiceTaskBoundary">
+      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="startEvent">
+        <dc:Bounds x="182" y="262" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0iuftjs_di" bpmnElement="Event_0iuftjs">
+        <dc:Bounds x="702" y="262" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0f2lyiu_di" bpmnElement="endEvent">
+        <dc:Bounds x="432" y="82" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_11xb49b_di" bpmnElement="subProcess" isExpanded="true">
+        <dc:Bounds x="270" y="180" width="380" height="200" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_12dh0s0_di" bpmnElement="subProcessStartEvent">
+        <dc:Bounds x="310" y="262" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0kzs5ie_di" bpmnElement="serviceTask">
+        <dc:Bounds x="400" y="240" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0qazo4w_di" bpmnElement="subProcessEndEvent">
+        <dc:Bounds x="562" y="262" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_0fi4qkq_di" bpmnElement="Flow_0fi4qkq">
+        <di:waypoint x="346" y="280" />
+        <di:waypoint x="400" y="280" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0eprfkb_di" bpmnElement="Flow_0eprfkb">
+        <di:waypoint x="500" y="280" />
+        <di:waypoint x="562" y="280" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Event_01xo9t7_di" bpmnElement="messageBoundaryEvent">
+        <dc:Bounds x="432" y="162" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1v93ie0_di" bpmnElement="Flow_1v93ie0">
+        <di:waypoint x="218" y="280" />
+        <di:waypoint x="270" y="280" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1h29c2q_di" bpmnElement="Flow_1h29c2q">
+        <di:waypoint x="650" y="280" />
+        <di:waypoint x="702" y="280" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0tc7lvp_di" bpmnElement="Flow_0tc7lvp">
+        <di:waypoint x="450" y="162" />
+        <di:waypoint x="450" y="118" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
