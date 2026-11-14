@@ -30,13 +30,14 @@ For information on how to install, configure and use the plugins visit:
 - [bpmn-driven-testing-gradle-plugin](gradle-plugin)
 - [bpmn-driven-testing-8-gradle-plugin](gradle-plugin-8) (Camunda Platform 8)
 
+:warning: Camunda Platform 8: Version [1.6.0](https://github.com/camunda-community-hub/bpmn-driven-testing/tree/1.6.0) requires Camunda 8.10.x
+
 :warning: Camunda Platform 8: Version [1.5.0](https://github.com/camunda-community-hub/bpmn-driven-testing/tree/1.5.0) requires Camunda 8.9.x
 
 :warning: Camunda Platform 8: Version [1.4.0](https://github.com/camunda-community-hub/bpmn-driven-testing/tree/1.4.0) switched from Zeebe process test to [Camunda process test](https://docs.camunda.io/docs/apis-tools/testing/getting-started/) (CPT).
 
 CPT is based on the orchestration cluster API and does no longer provide Zeebe's record stream.
 As a result, the necessary information to handle following BPMN elements automatically is currently missing:
-- message start event
 - signal start, catch and boundary events
 - timer start, catch and boundary events
 
