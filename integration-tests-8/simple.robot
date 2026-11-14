@@ -30,6 +30,7 @@ mvn clean test
   Should contain  ${result.stdout}  Running org.example.it.SimpleScriptTaskTest
   Should contain  ${result.stdout}  Running org.example.it.SimpleSendTaskTest
   Should contain  ${result.stdout}  Running org.example.it.SimpleServiceTaskTest
+  Should contain  ${result.stdout}  Running org.example.it.SimpleServiceTaskListenerTest
   Should contain  ${result.stdout}  Running org.example.it.SimpleSignalCatchEventTest
   Should contain  ${result.stdout}  Running org.example.it.SimpleSignalStartEventTest
   Should contain  ${result.stdout}  Running org.example.it.SimpleSubProcessNestedTest
@@ -87,6 +88,7 @@ Assert Test Code Generation
   Should contain  ${result.stdout}  Found BPMN file: simpleScriptTask.bpmn
   Should contain  ${result.stdout}  Found BPMN file: simpleSendTask.bpmn
   Should contain  ${result.stdout}  Found BPMN file: simpleServiceTask.bpmn
+  Should contain  ${result.stdout}  Found BPMN file: simpleServiceTaskListener.bpmn
   Should contain  ${result.stdout}  Found BPMN file: simpleSignalCatchEvent.bpmn
   Should contain  ${result.stdout}  Found BPMN file: simpleSignalStartEvent.bpmn
   Should contain  ${result.stdout}  Found BPMN file: simpleSubProcess.bpmn
@@ -146,6 +148,7 @@ Assert Test Code Generation
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/simplescripttask/TC_startEvent__endEvent.java
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/simplesendtask/TC_startEvent__endEvent.java
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/simpleservicetask/TC_startEvent__endEvent.java
+  Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/simpleservicetasklistener/TC_startEvent__endEvent.java
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/simplesignalcatchevent/TC_startEvent__endEvent.java
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/simplesignalstartevent/TC_signalStartEvent__endEvent.java
   Should contain  ${result.stdout}  Writing file: ${buildDir}/bpmndt/generated/simplesubprocess/TC_startEvent__endEvent.java
